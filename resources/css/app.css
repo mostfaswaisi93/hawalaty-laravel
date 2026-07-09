@@ -1,0 +1,324 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/*
+ * Navy/amber Material-3-ish palette, ported from the Angular app's
+ * src/tailwind.config.js + src/styles.scss (see BACKEND_PROMPT.md task
+ * notes). Angular drove Tailwind colors via CSS vars holding
+ * space-separated RGB channels (`rgb(var(--c-x) / <alpha-value>)`) so a
+ * `.dark` class swap could repaint the whole palette at once. Tailwind v4
+ * has no JS config file / <alpha-value> placeholder, but `@theme` color
+ * tokens accept any valid CSS color — including `rgb(var(--c-x))` — and v4
+ * automatically supports opacity modifiers (`bg-primary/50`) on those via
+ * `color-mix()`, so the same two-layer approach (raw channels in :root/.dark,
+ * theme tokens referencing them) carries over unchanged.
+ */
+@theme {
+    --font-sans: 'Cairo', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-body-lg: var(--app-font), 'Cairo', 'Inter', sans-serif;
+    --font-body-sm: var(--app-font), 'Cairo', 'Inter', sans-serif;
+    --font-display-lg: var(--app-font), 'Cairo', 'Inter', sans-serif;
+    --font-display-lg-mobile: var(--app-font), 'Cairo', 'Inter', sans-serif;
+    --font-headline-md: var(--app-font), 'Cairo', 'Inter', sans-serif;
+    --font-numeral-lg: 'Inter', sans-serif;
+    --font-label-caps: 'Inter', sans-serif;
+
+    --text-body-lg: 16px;
+    --text-body-lg--line-height: 1.6;
+    --text-numeral-lg: 24px;
+    --text-numeral-lg--line-height: 1;
+    --text-display-lg: 32px;
+    --text-display-lg--line-height: 1.2;
+    --text-body-sm: 14px;
+    --text-body-sm--line-height: 1.5;
+    --text-label-caps: 12px;
+    --text-label-caps--line-height: 1;
+    --text-headline-md: 20px;
+    --text-headline-md--line-height: 1.4;
+    --text-display-lg-mobile: 24px;
+    --text-display-lg-mobile--line-height: 1.2;
+
+    --spacing-inline-md: 16px;
+    --spacing-inline-lg: 24px;
+    --spacing-inline-sm: 8px;
+    --spacing-stack-md: 20px;
+    --spacing-stack-sm: 12px;
+    --spacing-safe-area-inset: 16px;
+    --spacing-unit: 4px;
+
+    --color-surface: rgb(var(--c-surface));
+    --color-primary: rgb(var(--c-primary));
+    --color-on-error: rgb(var(--c-on-error));
+    --color-on-secondary-container: rgb(var(--c-on-secondary-container));
+    --color-on-surface: rgb(var(--c-on-surface));
+    --color-secondary: rgb(var(--c-secondary));
+    --color-inverse-primary: rgb(var(--c-inverse-primary));
+    --color-surface-bright: rgb(var(--c-surface-bright));
+    --color-inverse-on-surface: rgb(var(--c-inverse-on-surface));
+    --color-surface-container: rgb(var(--c-surface-container));
+    --color-tertiary-fixed: rgb(var(--c-tertiary-fixed));
+    --color-surface-container-highest: rgb(var(--c-surface-container-highest));
+    --color-error-container: rgb(var(--c-error-container));
+    --color-background: rgb(var(--c-background));
+    --color-on-tertiary-container: rgb(var(--c-on-tertiary-container));
+    --color-tertiary-fixed-dim: rgb(var(--c-tertiary-fixed-dim));
+    --color-surface-container-high: rgb(var(--c-surface-container-high));
+    --color-primary-fixed-dim: rgb(var(--c-primary-fixed-dim));
+    --color-on-tertiary: rgb(var(--c-on-tertiary));
+    --color-surface-variant: rgb(var(--c-surface-variant));
+    --color-primary-fixed: rgb(var(--c-primary-fixed));
+    --color-secondary-container: rgb(var(--c-secondary-container));
+    --color-surface-tint: rgb(var(--c-surface-tint));
+    --color-secondary-fixed-dim: rgb(var(--c-secondary-fixed-dim));
+    --color-inverse-surface: rgb(var(--c-inverse-surface));
+    --color-surface-container-low: rgb(var(--c-surface-container-low));
+    --color-on-secondary-fixed: rgb(var(--c-on-secondary-fixed));
+    --color-outline: rgb(var(--c-outline));
+    --color-on-primary-container: rgb(var(--c-on-primary-container));
+    --color-surface-container-lowest: rgb(var(--c-surface-container-lowest));
+    --color-on-tertiary-fixed: rgb(var(--c-on-tertiary-fixed));
+    --color-on-secondary: rgb(var(--c-on-secondary));
+    --color-secondary-fixed: rgb(var(--c-secondary-fixed));
+    --color-on-primary-fixed-variant: rgb(var(--c-on-primary-fixed-variant));
+    --color-on-secondary-fixed-variant: rgb(var(--c-on-secondary-fixed-variant));
+    --color-on-background: rgb(var(--c-on-background));
+    --color-surface-dim: rgb(var(--c-surface-dim));
+    --color-tertiary: rgb(var(--c-tertiary));
+    --color-outline-variant: rgb(var(--c-outline-variant));
+    --color-on-tertiary-fixed-variant: rgb(var(--c-on-tertiary-fixed-variant));
+    --color-on-primary-fixed: rgb(var(--c-on-primary-fixed));
+    --color-primary-container: rgb(var(--c-primary-container));
+    --color-on-surface-variant: rgb(var(--c-on-surface-variant));
+    --color-on-error-container: rgb(var(--c-on-error-container));
+    --color-error: rgb(var(--c-error));
+    --color-on-primary: rgb(var(--c-on-primary));
+    --color-tertiary-container: rgb(var(--c-tertiary-container));
+    --color-brand: rgb(var(--c-brand));
+    --color-on-brand: rgb(var(--c-on-brand));
+}
+
+:root {
+    --c-surface: 248 249 255;
+    --c-primary: 0 35 111;
+    --c-on-error: 255 255 255;
+    --c-on-secondary-container: 102 53 0;
+    --c-on-surface: 11 28 48;
+    --c-secondary: 144 77 0;
+    --c-inverse-primary: 182 196 255;
+    --c-surface-bright: 248 249 255;
+    --c-inverse-on-surface: 234 241 255;
+    --c-surface-container: 229 238 255;
+    --c-tertiary-fixed: 224 227 229;
+    --c-surface-container-highest: 211 228 254;
+    --c-error-container: 255 218 214;
+    --c-background: 248 249 255;
+    --c-on-tertiary-container: 170 173 175;
+    --c-tertiary-fixed-dim: 196 199 201;
+    --c-surface-container-high: 220 233 255;
+    --c-primary-fixed-dim: 182 196 255;
+    --c-on-tertiary: 255 255 255;
+    --c-surface-variant: 211 228 254;
+    --c-primary-fixed: 220 225 255;
+    --c-secondary-container: 254 147 44;
+    --c-surface-tint: 64 89 170;
+    --c-secondary-fixed-dim: 255 183 125;
+    --c-inverse-surface: 33 49 69;
+    --c-surface-container-low: 239 244 255;
+    --c-on-secondary-fixed: 47 21 0;
+    --c-outline: 117 118 130;
+    --c-on-primary-container: 144 168 255;
+    --c-surface-container-lowest: 255 255 255;
+    --c-on-tertiary-fixed: 25 28 30;
+    --c-on-secondary: 255 255 255;
+    --c-secondary-fixed: 255 220 195;
+    --c-on-primary-fixed-variant: 38 65 145;
+    --c-on-secondary-fixed-variant: 110 57 0;
+    --c-on-background: 11 28 48;
+    --c-surface-dim: 203 219 245;
+    --c-tertiary: 39 43 45;
+    --c-outline-variant: 197 197 211;
+    --c-on-tertiary-fixed-variant: 68 71 73;
+    --c-on-primary-fixed: 0 22 78;
+    --c-primary-container: 30 58 138;
+    --c-on-surface-variant: 68 70 81;
+    --c-on-error-container: 147 0 10;
+    --c-error: 186 26 26;
+    --c-on-primary: 255 255 255;
+    --c-tertiary-container: 61 65 67;
+
+    --c-brand: 123 46 40;
+    --c-on-brand: 255 255 255;
+
+    --app-font: 'Cairo', system-ui, sans-serif;
+}
+
+.dark {
+    color-scheme: dark;
+    --c-primary: 182 196 255;
+    --c-on-primary: 0 42 108;
+    --c-primary-container: 30 58 138;
+    --c-on-primary-container: 219 225 255;
+    --c-secondary: 255 183 125;
+    --c-on-secondary: 77 38 0;
+    --c-on-secondary-container: 255 220 195;
+    --c-tertiary: 196 199 201;
+    --c-on-tertiary: 43 47 49;
+    --c-on-tertiary-container: 224 227 229;
+    --c-error: 255 180 171;
+    --c-on-error: 105 0 5;
+    --c-error-container: 147 0 10;
+    --c-on-error-container: 255 218 214;
+    --c-background: 10 14 23;
+    --c-on-background: 230 234 242;
+    --c-surface: 10 14 23;
+    --c-on-surface: 230 234 242;
+    --c-surface-variant: 68 70 81;
+    --c-on-surface-variant: 194 199 210;
+    --c-surface-dim: 10 14 23;
+    --c-surface-bright: 48 52 62;
+    --c-surface-container-lowest: 5 7 13;
+    --c-surface-container-low: 18 22 31;
+    --c-surface-container: 22 27 36;
+    --c-surface-container-high: 33 38 48;
+    --c-surface-container-highest: 43 48 59;
+    --c-outline: 139 144 160;
+    --c-outline-variant: 58 63 74;
+    --c-inverse-surface: 230 234 242;
+    --c-inverse-on-surface: 47 48 54;
+    --c-inverse-primary: 0 35 111;
+    --c-surface-tint: 182 196 255;
+
+    --c-brand: 196 108 98;
+    --c-on-brand: 43 15 13;
+}
+
+html.lang-ar {
+    --app-font: 'Cairo', system-ui, sans-serif;
+}
+html.lang-en {
+    --app-font: 'Inter', system-ui, sans-serif;
+}
+
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: var(--app-font);
+    background-color: rgb(var(--c-background));
+    color: rgb(var(--c-on-background));
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+}
+.material-symbols-outlined[data-weight='fill'] {
+    font-variation-settings: 'FILL' 1;
+}
+
+/* ---------- Design utilities (ported from the Angular app) ---------- */
+.glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0px 1px 2px rgba(30, 58, 138, 0.04), 0px 8px 24px -4px rgba(30, 58, 138, 0.08);
+}
+.dark .glass-card {
+    background: rgba(22, 27, 36, 0.7);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0px 8px 24px -4px rgba(0, 0, 0, 0.35);
+}
+.tonal-elevation {
+    box-shadow: 0px 1px 2px rgba(30, 58, 138, 0.04), 0px 8px 24px -4px rgba(30, 58, 138, 0.08);
+    transition: box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dark .tonal-elevation {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0px 8px 24px -4px rgba(0, 0, 0, 0.35);
+}
+.tonal-elevation:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 2px 4px rgba(30, 58, 138, 0.06), 0px 16px 32px -8px rgba(30, 58, 138, 0.14);
+}
+.dark .tonal-elevation:hover {
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25), 0px 16px 32px -8px rgba(0, 0, 0, 0.45);
+}
+
+a,
+button,
+input,
+select,
+textarea,
+[tabindex] {
+    outline-offset: 2px;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid rgb(var(--c-primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.search-pill:focus-within {
+    box-shadow: 0 0 0 2px rgba(0, 35, 111, 0.35);
+}
+.dark .search-pill:focus-within {
+    box-shadow: 0 0 0 2px rgba(182, 196, 255, 0.35);
+}
+.search-pill input:focus-visible {
+    outline: none;
+}
+
+@keyframes app-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.page-enter {
+    animation: app-fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+    .page-enter {
+        animation: none;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-outline-variant));
+    border-radius: 10px;
+}

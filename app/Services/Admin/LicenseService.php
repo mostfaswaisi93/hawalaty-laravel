@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Services\Admin;
+
+use App\Enums\LicenseStatus;
+use App\Models\ActivityLog;
+use App\Models\Admin;
+use App\Models\License;
+use App\Models\Package;
+use App\Models\Tenant\AuditLog;
+use App\Models\Tenant\TeamMember;
+use App\Services\TenantProvisioner;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+
+class LicenseService
+{
+    public function __construct(private readonly TenantProvisioner $provisioner) {}
+
+    public function list(?string $search, ?string $status, ?string $packageId, int $perPage = 20): LengthAwarePaginator
+    {
+        $query = License::query()->with('package');
+
+        if ($search) {
+            $query->where(function ($inner) use ($search) {
+                $inner->where('customer_name', 'like', "%{$search}%")
+                    ->orWhere('license_code', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        if ($packageId) {
+            $query->where('package_id', $packageId);
+        }
+
+        return $query->latest()->paginate($perPage)->withQueryString();
+    }
+
+    /**
+     * Reuses TenantProvisioner::provision() end-to-end (license row +
+     * physical database + tenant migrations + roles/owner seed) — see
+     * BACKEND_PROMPT.md section 6. Not duplicated here.
+     */
+    public function create(array $data, ?Admin $actor): License
+    {
+        return $this->provisioner->provision($data, $actor);
+    }
+
+    /**
+     * Peeks at ONE tenant's team roster and recent audit activity —
+     * explicitly resolving the dynamic `tenant` connection READ-ONLY for
+     * this single call, then restoring whatever it pointed at before (or
+     * clearing it) so the platform process never keeps the connection
+     * pointed at a tenant database beyond this request — see
+     * BACKEND_PROMPT.md section 8's explicit instruction on this for
+     * `/admin/*` routes.
+     *
+     * Deliberately does NOT reuse App\Services\TenantConnectionResolver
+     * here: that helper refuses to resolve a suspended/expired license (by
+     * design — it's the gate tenant LOGIN must respect). An admin viewing
+     * license details is a different, unconditional read: exactly the
+     * suspended/expired licenses are the ones an admin most needs to
+     * inspect (e.g. to check the team roster before deciding whether to
+     * reactivate). So the tenant connection is wired up directly from the
+     * DatabaseConnection row here, with no status check. A real bug caught
+     * live during this task's verification: the naive first version reused
+     * TenantConnectionResolver::resolve() and 500'd on every suspended/
+     * expired license.
+     *
+     * @return array{license: License, team: Collection, recentActivity: Collection}
+     */
+    public function show(License $license): array
+    {
+        $license->load('package');
+
+        $team = new Collection;
+        $recentActivity = new Collection;
+
+        $connection = $license->databaseConnection;
+
+        if ($connection) {
+            $previousTenantConfig = config('database.connections.tenant');
+
+            try {
+                config(['database.connections.tenant' => [
+                    'driver' => 'mysql',
+                    'host' => $connection->host,
+                    'port' => $connection->port,
+                    'database' => $connection->database_name,
+                    'username' => $connection->username,
+                    'password' => $connection->password,
+                    'charset' => 'utf8mb4',
+                    'collation' => 'utf8mb4_unicode_ci',
+                    'prefix' => '',
+                    'strict' => true,
+                ]]);
+
+                DB::purge('tenant');
+
+                $team = TeamMember::query()->with('role')->get();
+                $recentActivity = AuditLog::query()->latest()->take(10)->get();
+            } finally {
+                // Restore the connection config to whatever it was before
+                // this peek (the inert template from config/database.php on
+                // a fresh admin request) and drop the live PDO handle to the
+                // tenant database.
+                config(['database.connections.tenant' => $previousTenantConfig]);
+                DB::purge('tenant');
+            }
+        }
+
+        return [
+            'license' => $license,
+            'team' => $team,
+            'recentActivity' => $recentActivity,
+        ];
+    }
+
+    public function suspend(License $license, ?Admin $actor): License
+    {
+        return DB::transaction(function () use ($license, $actor) {
+            $license->update(['status' => LicenseStatus::Suspended]);
+
+            ActivityLog::create([
+                'admin_id' => $actor?->id,
+                'action' => 'suspended',
+                'entity_type' => 'license',
+                'entity_label' => $license->customer_name,
+            ]);
+
+            return $license;
+        });
+    }
+
+    public function activate(License $license, ?Admin $actor): License
+    {
+        return DB::transaction(function () use ($license, $actor) {
+            $license->update(['status' => LicenseStatus::Active]);
+
+            ActivityLog::create([
+                'admin_id' => $actor?->id,
+                'action' => 'activated',
+                'entity_type' => 'license',
+                'entity_label' => $license->customer_name,
+            ]);
+
+            return $license;
+        });
+    }
+
+    public function changePackage(License $license, string $packageId, ?Admin $actor): License
+    {
+        return DB::transaction(function () use ($license, $packageId, $actor) {
+            $package = Package::findOrFail($packageId);
+
+            $license->update(['package_id' => $package->id]);
+
+            ActivityLog::create([
+                'admin_id' => $actor?->id,
+                'action' => 'package_changed',
+                'entity_type' => 'license',
+                'entity_label' => "{$license->customer_name} → {$package->name}",
+            ]);
+
+            return $license->fresh('package');
+        });
+    }
+}
