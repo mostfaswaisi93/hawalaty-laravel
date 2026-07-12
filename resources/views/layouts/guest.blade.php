@@ -27,7 +27,7 @@
             </button>
         </header>
 
-        <main class="flex flex-grow pt-16">
+        <main class="w-full flex-grow pt-16 lg:grid lg:grid-cols-2">
             @yield('content')
         </main>
 
@@ -40,9 +40,9 @@
                 <span class="font-body-sm text-on-surface-variant">© 2026 حوالاتي. جميع الحقوق محفوظة.</span>
             </div>
             <nav class="flex flex-wrap justify-center gap-4">
-                <a class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">سياسة الخصوصية</a>
-                <a class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">شروط الخدمة</a>
-                <a class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">مركز المساعدة</a>
+                <a href="/privacy" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">سياسة الخصوصية</a>
+                <a href="/terms" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">شروط الخدمة</a>
+                <a href="/help" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">مركز المساعدة</a>
             </nav>
         </footer>
     </div>

@@ -6,7 +6,6 @@ use App\Exceptions\InvalidLicenseException;
 use App\Services\TenantConnectionResolver;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -43,7 +42,21 @@ class ResolveTenantConnectionFromSession
         try {
             $license = TenantConnectionResolver::resolve($licenseCode);
         } catch (InvalidLicenseException) {
-            Auth::guard('tenant')->logout();
+            // Deliberately does NOT call Auth::guard('tenant')->logout() —
+            // empirically caught during this task's verification: the
+            // `tenant` guard's own logout() first calls user() to resolve
+            // who's currently logged in, which queries `team_members` on
+            // the `tenant` connection (see TeamMember::getConnectionName())
+            // — but that connection was never configured this request,
+            // because TenantConnectionResolver::resolve() threw BEFORE
+            // reaching the config(['database.connections.tenant' => ...])
+            // call. That turned "license just went inactive" into an
+            // unrelated 500 ("Access denied for user ''@'localhost'")
+            // instead of the intended redirect. Invalidating the whole
+            // session (which wipes the tenant guard's stored user id along
+            // with everything else, no DB query required) achieves the same
+            // "log the user out" outcome without touching the now-unreachable
+            // tenant database at all.
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 

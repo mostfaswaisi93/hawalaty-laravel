@@ -69,7 +69,7 @@
                         type="submit"
                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
                         aria-label="تسجيل الخروج">
-                        <span class="material-symbols-outlined">logout</span>
+                        <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
                     </button>
                 </form>
             </div>
@@ -78,7 +78,7 @@
 
     <div class="flex min-h-screen flex-col lg:ms-64">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface px-inline-lg">
-            <button type="button" class="text-on-surface-variant lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="القائمة">
+            <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="القائمة">
                 <span class="material-symbols-outlined">menu</span>
             </button>
 

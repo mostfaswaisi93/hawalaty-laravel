@@ -31,13 +31,14 @@
                     type="password"
                     label="كلمة المرور"
                     icon="lock"
-                    dir="ltr" />
+                    dir="ltr"
+                    autocomplete="current-password" />
 
                 <button
                     type="submit"
                     class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]">
                     <span>تسجيل الدخول</span>
-                    <span class="material-symbols-outlined">login</span>
+                    <span class="material-symbols-outlined rtl:-scale-x-100">login</span>
                 </button>
             </form>
         </div>

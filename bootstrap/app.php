@@ -47,6 +47,20 @@ return Application::configure(basePath: dirname(__DIR__))
             return $request->is('admin/*') ? route('admin.login') : route('login');
         });
 
+        // Mirror fix for the OTHER direction: `guest:tenant` / `guest:admin`
+        // (Illuminate\Auth\Middleware\RedirectIfAuthenticated) guard GET
+        // /login and /admin/login so an already-logged-in user re-visiting
+        // them gets bounced onward instead of seeing the form again. Its
+        // un-configured default falls back to `Route::has('dashboard') ?
+        // route('dashboard') : ...` — which always resolves to the TENANT
+        // dashboard route by name, even for an already-authenticated Super
+        // Admin hitting /admin/login (there's no route literally named
+        // `dashboard` in admin space, it's `admin.dashboard`). Guard-aware
+        // here too, same as redirectGuestsTo above.
+        $middleware->redirectUsersTo(
+            fn (Request $request) => $request->is('admin/*') ? route('admin.dashboard') : route('dashboard'),
+        );
+
         // See BACKEND_PROMPT.md section 8.1 — apply to tenant-space route
         // groups only, always ahead of `auth:sanctum`, e.g.
         // Route::middleware(['tenant.header', 'auth:sanctum'])->group(...).

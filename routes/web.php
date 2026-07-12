@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
+use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\HistoryController;
+use App\Http\Controllers\Web\TransferController;
 use Illuminate\Support\Facades\Route;
 
 // Everything below is the server-rendered Blade web app that sits alongside
@@ -17,7 +20,14 @@ Route::redirect('/', '/login');
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest:tenant')->group(function () {
+// `tenant.session` ahead of `guest:tenant` here too — same reasoning as the
+// logout route below: `guest:tenant` (RedirectIfAuthenticated) also has to
+// resolve "is there already a logged-in tenant user in this session?",
+// which queries `team_members` on the `tenant` connection. A visitor whose
+// session already carries a valid license_code + logged-in user (e.g.
+// re-opening /login in a second tab) would 500 here instead of being
+// redirected to the dashboard without this middleware first.
+Route::middleware(['tenant.session', 'guest:tenant'])->group(function () {
     Route::get('login', [TenantAuthController::class, 'showLogin'])->name('login');
     Route::post('login', [TenantAuthController::class, 'login']);
     Route::get('signup', [TenantAuthController::class, 'showSignup'])->name('signup');
@@ -43,9 +53,12 @@ Route::get('license-inactive', function () {
 Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('logout', [TenantAuthController::class, 'logout'])->name('logout');
 
-    Route::get('dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('transfers', [TransferController::class, 'index'])->name('transfers.index');
+    Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
+
+    Route::get('history', [HistoryController::class, 'index'])->name('history.index');
 });
 
 /*
