@@ -10,9 +10,9 @@
         </header>
 
         <form method="GET" action="{{ route('customers.index') }}" class="relative max-w-md">
-            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-4 text-outline">search</span>
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الهاتف...') }}"
-                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 pr-12 pl-4 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
+            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الهاتف...') }}" aria-label="{{ __('بحث') }}"
+                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />
         </form>
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
@@ -26,7 +26,10 @@
                 <x-table-responsive :headers="[__('العميل'), __('الهاتف'), __('عدد الطلبات'), __('إجمالي الإنفاق'), __('آخر طلب')]">
                     <x-slot:table>
                         @foreach ($customers as $c)
-                            <tr class="cursor-pointer transition-colors hover:bg-surface-container-low/50" onclick="location.href='{{ route('customers.show', $c->id) }}'">
+                            <tr class="cursor-pointer transition-colors hover:bg-surface-container-low/50 focus:bg-surface-container-low/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+                                tabindex="0" role="link" aria-label="{{ $c->name }}"
+                                onclick="location.href='{{ route('customers.show', $c->id) }}'"
+                                @keydown.enter="location.href='{{ route('customers.show', $c->id) }}'">
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">{{ mb_substr($c->name, 0, 1) }}</div>

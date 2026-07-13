@@ -51,11 +51,12 @@
                 ] as $i => [$q, $a])
                     <div class="tonal-elevation overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest">
                         <button type="button" @click="open === {{ $i }} ? open = null : open = {{ $i }}"
+                            id="faq-question-{{ $i }}" aria-controls="faq-answer-{{ $i }}" :aria-expanded="open === {{ $i }} ? 'true' : 'false'"
                             class="flex w-full items-center justify-between gap-4 p-5 text-start transition-colors hover:bg-surface-container-low/50">
                             <span class="font-body-lg font-bold text-on-surface">{{ $q }}</span>
                             <span class="material-symbols-outlined flex-shrink-0 text-primary transition-transform" :class="open === {{ $i }} && 'rotate-180'">expand_more</span>
                         </button>
-                        <div x-show="open === {{ $i }}" x-cloak
+                        <div x-show="open === {{ $i }}" x-cloak id="faq-answer-{{ $i }}" role="region" aria-labelledby="faq-question-{{ $i }}"
                             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
                             <p class="border-t border-outline-variant/50 p-5 font-body-lg leading-relaxed text-on-surface-variant">{{ $a }}</p>
                         </div>

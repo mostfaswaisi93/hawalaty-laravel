@@ -34,9 +34,9 @@
         </header>
 
         <form method="GET" action="{{ route('team.index') }}" class="relative max-w-md">
-            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-4 text-outline">search</span>
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو البريد...') }}"
-                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 pr-12 pl-4 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
+            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو البريد...') }}" aria-label="{{ __('بحث') }}"
+                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />
         </form>
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">

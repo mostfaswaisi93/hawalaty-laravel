@@ -42,9 +42,9 @@
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
-                    <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-3 text-outline">search</span>
+                    <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
                     <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('اسم العميل...') }}"
-                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 pr-10 pl-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-10 pl-3' : 'pl-10 pr-3' }}" />
                 </div>
             </div>
 

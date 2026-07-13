@@ -26,9 +26,9 @@
             <div class="space-y-1.5 sm:col-span-1">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
-                    <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-3 text-outline">search</span>
+                    <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
                     <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('المنفّذ أو العنصر...') }}"
-                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 pr-10 pl-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-10 pl-3' : 'pl-10 pr-3' }}" />
                 </div>
             </div>
             <div class="space-y-1.5">
@@ -45,7 +45,7 @@
                     <span class="material-symbols-outlined !text-xl">filter_alt</span> {{ __('تطبيق') }}
                 </button>
                 @if ($hasFilters)
-                    <a href="{{ route('activity-log.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
+                    <a href="{{ route('activity-log.index') }}" aria-label="{{ __('مسح الفلاتر') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
                         <span class="material-symbols-outlined !text-xl">close</span>
                     </a>
                 @endif

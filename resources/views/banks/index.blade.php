@@ -25,9 +25,9 @@
         </header>
 
         <form method="GET" action="{{ route('banks.index') }}" class="relative max-w-md">
-            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-4 text-outline">search</span>
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث عن بنك...') }}"
-                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 pr-12 pl-4 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
+            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث عن بنك...') }}" aria-label="{{ __('بحث') }}"
+                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />
         </form>
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
@@ -106,11 +106,13 @@
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false"
+                x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input, select, textarea')?.focus()))"
+                role="dialog" aria-modal="true" aria-labelledby="bank-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
 
-                <h3 class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل وسيلة الدفع') }}' : '{{ __('إضافة وسيلة دفع') }}'"></h3>
+                <h3 id="bank-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل وسيلة الدفع') }}' : '{{ __('إضافة وسيلة دفع') }}'"></h3>
 
                 <form :action="mode === 'edit' ? '{{ url('banks') }}/' + form.id : '{{ route('banks.store') }}'" method="POST" class="space-y-4">
                     @csrf
