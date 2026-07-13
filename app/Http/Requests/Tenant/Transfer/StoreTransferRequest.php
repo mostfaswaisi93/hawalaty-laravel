@@ -7,13 +7,15 @@ use Illuminate\Validation\Rule;
 
 /**
  * Body shape mirrors the Angular `Transfer` interface's writable fields
- * (D:\Angular\Hawalaty\src\app\data\transfers.ts): customer, items[]
- * (client-computed cart snapshot, trusted as-is except each itemId's
- * existence), plus the cash-scenario fields (hasChange/changeMethod/
- * changeBankId/changeAmount) or bank-scenario fields (bankId/senderName/
- * senderPhone/transferredAmount) depending on paymentMethod. `amount` is
- * intentionally NOT accepted here — TransferService computes it
- * server-side from the line items, never trusting a client-sent total.
+ * (D:\Angular\Hawalaty\src\app\data\transfers.ts): customer, items[], plus
+ * the cash-scenario fields (hasChange/changeMethod/changeBankId/
+ * changeAmount) or bank-scenario fields (bankId/senderName/senderPhone/
+ * transferredAmount) depending on paymentMethod. `amount` is intentionally
+ * NOT accepted here — TransferService computes it server-side from the line
+ * items. `items.*.price`/`items.*.name` are validated as present here for a
+ * well-formed request, but TransferService::create() ignores both and
+ * re-derives them from the canonical MenuItem row per `itemId` — a
+ * client-submitted price/name is never trusted, only the item's identity.
  */
 class StoreTransferRequest extends FormRequest
 {

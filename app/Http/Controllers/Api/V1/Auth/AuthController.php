@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditCategory;
+use App\Enums\AuditEntityType;
 use App\Exceptions\InvalidLicenseException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\SignupRequest;
 use App\Models\License;
 use App\Models\Tenant\TeamMember;
+use App\Services\Tenant\AuditLogger;
 use App\Services\TenantConnectionResolver;
 use App\Services\TenantProvisioner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -48,6 +53,14 @@ class AuthController extends Controller
             if (! $member || ! $member->active || ! Hash::check($data['password'], $member->password)) {
                 return response()->json(['message' => 'Invalid credentials.'], 422);
             }
+
+            // AuditLogger resolves its actor from the `tenant` guard, which
+            // this manual Hash::check() flow never populates (no
+            // Auth::attempt() call) — set it explicitly so the login event
+            // attributes to the real member instead of falling back to
+            // "System".
+            Auth::guard('tenant')->setUser($member);
+            AuditLogger::record(AuditAction::LoggedIn, AuditEntityType::TeamMember, $member->name, AuditCategory::Auth);
 
             return response()->json($this->tokenResponse($member, $license));
         } catch (Throwable $e) {

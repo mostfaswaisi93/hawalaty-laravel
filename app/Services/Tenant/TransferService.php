@@ -6,11 +6,13 @@ use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Enums\TransferStatus;
+use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Notifications\Tenant\NewOrderNotification;
 use App\Notifications\Tenant\OrderStatusChangedNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -61,16 +63,26 @@ class TransferService
      * Creates the Transfer + its TransferLineItems in one DB::transaction().
      * `amount` is always computed server-side as the sum of quantity ×
      * price across line items — a client-sent total is never trusted.
+     *
+     * The per-line `name`/`price` are likewise never trusted from the
+     * client: StoreTransferRequest only validates that each `itemId` exists,
+     * not that the submitted price matches it, so a caller holding only
+     * TransfersCreate could otherwise report an arbitrary price for a real
+     * menu item and skew revenue. Every line is priced from the canonical
+     * MenuItem row instead — the client's `price`/`name` are ignored.
      */
     public function create(array $data): Transfer
     {
         $transfer = DB::transaction(function () use ($data) {
+            $menuItems = MenuItem::whereIn('id', array_column($data['items'], 'itemId'))->get()->keyBy('id');
+
             $amount = 0;
             $summaryParts = [];
 
             foreach ($data['items'] as $item) {
-                $amount += $item['quantity'] * $item['price'];
-                $summaryParts[] = "{$item['name']} ×{$item['quantity']}";
+                $menuItem = $menuItems->get($item['itemId']);
+                $amount += $item['quantity'] * $menuItem->price;
+                $summaryParts[] = "{$menuItem->name} ×{$item['quantity']}";
             }
 
             $customer = $this->customers->findOrCreate($data['customer'], $data['customerPhone'] ?? null);
@@ -93,11 +105,12 @@ class TransferService
             ]);
 
             foreach ($data['items'] as $item) {
+                $menuItem = $menuItems->get($item['itemId']);
                 $transfer->lineItems()->create([
                     'menu_item_id' => $item['itemId'],
-                    'name' => $item['name'],
+                    'name' => $menuItem->name,
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'],
+                    'price' => $menuItem->price,
                 ]);
             }
 
@@ -133,9 +146,9 @@ class TransferService
      * Every active team member except whoever is performing the action
      * (avoids notifying someone about their own order/status change).
      *
-     * @return \Illuminate\Support\Collection<int, TeamMember>
+     * @return Collection<int, TeamMember>
      */
-    private function teammatesToNotify(): \Illuminate\Support\Collection
+    private function teammatesToNotify(): Collection
     {
         $actorId = auth('tenant')->id();
 

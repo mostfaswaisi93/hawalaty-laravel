@@ -53,7 +53,7 @@ Route::get('locale/{locale}', function (string $locale) {
 // redirected to the dashboard without this middleware first.
 Route::middleware(['tenant.session', 'guest:tenant'])->group(function () {
     Route::get('login', [TenantAuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [TenantAuthController::class, 'login']);
+    Route::post('login', [TenantAuthController::class, 'login'])->middleware('throttle:6,1');
     Route::get('signup', [TenantAuthController::class, 'showSignup'])->name('signup');
     Route::post('signup', [TenantAuthController::class, 'signup']);
 });
@@ -160,7 +160,7 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest:admin')->group(function () {
         Route::get('login', [AdminAuthController::class, 'showLogin'])->name('login');
-        Route::post('login', [AdminAuthController::class, 'login']);
+        Route::post('login', [AdminAuthController::class, 'login'])->middleware('throttle:6,1');
     });
 
     Route::post('logout', [AdminAuthController::class, 'logout'])

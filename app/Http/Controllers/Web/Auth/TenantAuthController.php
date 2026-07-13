@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Web\Auth;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditCategory;
+use App\Enums\AuditEntityType;
 use App\Exceptions\InvalidLicenseException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\Auth\TenantLoginRequest;
 use App\Http\Requests\Web\Auth\TenantSignupRequest;
 use App\Models\Tenant\TeamMember;
+use App\Services\Tenant\AuditLogger;
 use App\Services\TenantConnectionResolver;
 use App\Services\TenantProvisioner;
 use Illuminate\Http\RedirectResponse;
@@ -76,6 +80,9 @@ class TenantAuthController extends Controller
 
         $request->session()->regenerate();
         $request->session()->put('license_code', $license->license_code);
+
+        $member = Auth::guard('tenant')->user();
+        AuditLogger::record(AuditAction::LoggedIn, AuditEntityType::TeamMember, $member->name, AuditCategory::Auth);
 
         return redirect()->intended(route('dashboard'));
     }

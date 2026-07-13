@@ -127,12 +127,24 @@ class MenuService
             ->orderBy('position')
             ->get()
             ->flatMap(fn (MenuCategory $category) => $category->menuItems->map(fn (MenuItem $item) => [
-                'category' => $category->name,
-                'name' => $item->name,
+                'category' => self::sanitizeCsvField($category->name),
+                'name' => self::sanitizeCsvField($item->name),
                 'price' => (string) $item->price,
                 'active' => $item->active ? '1' : '0',
             ]))
             ->all();
+    }
+
+    /**
+     * Category/item names are free text, so a name starting with an equals,
+     * plus, minus, or at-sign would be interpreted as a formula by
+     * Excel/LibreOffice when the export is opened (CSV/formula injection,
+     * CWE-1236). Prefixing with a single quote neutralizes it while keeping
+     * the visible text unchanged.
+     */
+    private static function sanitizeCsvField(string $value): string
+    {
+        return preg_match('/^[=+\-@\t\r]/', $value) === 1 ? "'".$value : $value;
     }
 
     /**
@@ -166,13 +178,15 @@ class MenuService
             $categoriesByName = MenuCategory::query()->get()->keyBy('name');
             $nextPosition = ((int) MenuCategory::max('position')) + 1;
 
+            $itemsByKey = MenuItem::query()->get()->keyBy(fn (MenuItem $item) => "{$item->menu_category_id}|{$item->name}");
+
             while (($row = fgetcsv($handle)) !== false) {
                 $categoryName = trim((string) ($row[$columnIndex['category'] ?? -1] ?? ''));
                 $name = trim((string) ($row[$columnIndex['name'] ?? -1] ?? ''));
                 $price = $row[$columnIndex['price'] ?? -1] ?? null;
                 $active = $row[$columnIndex['active'] ?? -1] ?? '1';
 
-                if ($categoryName === '' || $name === '' || ! is_numeric($price)) {
+                if ($categoryName === '' || $name === '' || ! is_numeric($price) || (float) $price < 0) {
                     $skipped++;
 
                     continue;
@@ -185,7 +199,8 @@ class MenuService
                     $categoriesByName->put($categoryName, $category);
                 }
 
-                $item = MenuItem::where('menu_category_id', $category->id)->where('name', $name)->first();
+                $itemKey = "{$category->id}|{$name}";
+                $item = $itemsByKey->get($itemKey);
                 $attributes = [
                     'price' => $price,
                     'active' => in_array(strtolower((string) $active), ['0', 'false', 'no', ''], true) ? false : true,
@@ -195,7 +210,8 @@ class MenuService
                     $item->update($attributes);
                     $updated++;
                 } else {
-                    MenuItem::create([...$attributes, 'menu_category_id' => $category->id, 'name' => $name]);
+                    $item = MenuItem::create([...$attributes, 'menu_category_id' => $category->id, 'name' => $name]);
+                    $itemsByKey->put($itemKey, $item);
                     $created++;
                 }
             }

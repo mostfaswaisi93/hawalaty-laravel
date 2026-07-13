@@ -26,7 +26,13 @@ class AuditLogger
         string $entityLabel,
         AuditCategory $category,
     ): void {
-        $actor = auth('sanctum')->user();
+        // The web app authenticates via the session-based `tenant` guard;
+        // Sanctum only covers API/mobile clients. Checking `tenant` first
+        // means the real actor is captured for every Blade-driven action —
+        // `sanctum` remains the fallback so API-originated writes still
+        // attribute correctly, with "System" reserved for truly unauthenticated
+        // contexts (console commands, queued jobs).
+        $actor = auth('tenant')->user() ?? auth('sanctum')->user();
 
         $actorName = 'System';
         $actorEmail = 'system@hawalaty.local';

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\Auth\AdminLoginRequest;
+use App\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -37,6 +38,14 @@ class AdminAuthController extends Controller
         }
 
         $request->session()->regenerate();
+
+        $admin = Auth::guard('admin')->user();
+        ActivityLog::create([
+            'admin_id' => $admin->id,
+            'action' => 'logged_in',
+            'entity_type' => 'admin',
+            'entity_label' => $admin->name,
+        ]);
 
         return redirect()->intended(route('admin.dashboard'));
     }
