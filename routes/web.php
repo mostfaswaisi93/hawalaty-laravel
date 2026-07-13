@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\DeviceController;
 use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\MenuController;
+use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SettingsController;
@@ -85,6 +86,11 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     // Customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+
+    // Notifications (header bell dropdown)
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
     // Banks & wallets
     Route::get('banks', [BankController::class, 'index'])->name('banks.index');

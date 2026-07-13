@@ -6,9 +6,13 @@ use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Enums\TransferStatus;
+use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
+use App\Notifications\Tenant\NewOrderNotification;
+use App\Notifications\Tenant\OrderStatusChangedNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 class TransferService
 {
@@ -104,6 +108,8 @@ class TransferService
 
         AuditLogger::record(AuditAction::Created, AuditEntityType::Order, $transfer->id, AuditCategory::Transfers);
 
+        Notification::send($this->teammatesToNotify(), new NewOrderNotification($transfer));
+
         return $transfer;
     }
 
@@ -114,7 +120,28 @@ class TransferService
 
         AuditLogger::record(AuditAction::Updated, AuditEntityType::Order, $transfer->id, AuditCategory::Transfers);
 
+        // Only a completed/failed transition is a meaningful update to
+        // announce — pending is just the default state at creation.
+        if (in_array($transfer->status, [TransferStatus::Completed, TransferStatus::Failed], true)) {
+            Notification::send($this->teammatesToNotify(), new OrderStatusChangedNotification($transfer));
+        }
+
         return $transfer;
+    }
+
+    /**
+     * Every active team member except whoever is performing the action
+     * (avoids notifying someone about their own order/status change).
+     *
+     * @return \Illuminate\Support\Collection<int, TeamMember>
+     */
+    private function teammatesToNotify(): \Illuminate\Support\Collection
+    {
+        $actorId = auth('tenant')->id();
+
+        return TeamMember::where('active', true)
+            ->when($actorId, fn ($query) => $query->where('id', '!=', $actorId))
+            ->get();
     }
 
     public function delete(Transfer $transfer): void

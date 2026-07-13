@@ -33,6 +33,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('حوالاتي'))</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,6 +113,50 @@
             </div>
 
             <div class="flex items-center gap-4 md:gap-6">
+                {{-- notifications --}}
+                <div class="relative" x-data="notificationBell({{ auth('tenant')->user()->unreadNotifications()->count() }})" @click.outside="open = false">
+                    <button type="button" @click="toggle()" class="relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('الإشعارات') }}">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span x-show="unreadCount > 0" x-cloak x-text="unreadCount > 9 ? '9+' : unreadCount"
+                            class="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 font-numeral-lg text-[10px] font-bold text-on-error"></span>
+                    </button>
+
+                    <div x-show="open" x-cloak @keydown.escape.window="open = false"
+                        x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        class="absolute end-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl sm:w-96">
+                        <div class="flex items-center justify-between border-b border-outline-variant/60 p-4">
+                            <h3 class="font-headline-md text-headline-md text-on-surface">{{ __('الإشعارات') }}</h3>
+                            <button type="button" @click="markAllRead()" x-show="unreadCount > 0" class="font-body-sm font-bold text-primary hover:underline">{{ __('تعليم الكل كمقروء') }}</button>
+                        </div>
+
+                        <div class="max-h-96 overflow-y-auto">
+                            <template x-if="loading">
+                                <p class="p-6 text-center font-body-sm text-outline">{{ __('جارٍ التحميل...') }}</p>
+                            </template>
+                            <template x-if="!loading && notifications.length === 0">
+                                <div class="flex flex-col items-center gap-2 py-10 text-center">
+                                    <span class="material-symbols-outlined !text-4xl text-outline/50">notifications_off</span>
+                                    <p class="font-body-sm text-outline">{{ __('لا توجد إشعارات') }}</p>
+                                </div>
+                            </template>
+                            <template x-for="n in notifications" :key="n.id">
+                                <button type="button" @click="markRead(n)" class="flex w-full items-start gap-3 border-b border-outline-variant/40 p-4 text-start transition-colors hover:bg-surface-container-low"
+                                    :class="!n.readAt && 'bg-primary/5'">
+                                    <span class="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+                                        :class="n.data.kind === 'new_order' ? 'bg-primary/10 text-primary' : (n.data.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'bg-error-container text-error dark:bg-error/15')">
+                                        <span class="material-symbols-outlined !text-xl" x-text="n.data.kind === 'new_order' ? 'receipt_long' : (n.data.status === 'completed' ? 'check_circle' : 'error')"></span>
+                                    </span>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-body-sm font-bold text-on-surface" x-text="n.data.kind === 'new_order' ? '{{ __('طلب جديد من') }} ' + n.data.customer : '{{ __('تغيّرت حالة طلب') }} ' + n.data.customer"></p>
+                                        <p class="mt-0.5 text-[11px] text-outline" x-text="n.createdAt"></p>
+                                    </div>
+                                    <span x-show="!n.readAt" class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-primary"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-1 border-s border-outline-variant ps-4 md:ps-6">
                     <a href="{{ route('locale.switch', $otherLocale) }}" class="flex h-10 items-center gap-1.5 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تغيير اللغة') }}">
                         <span class="material-symbols-outlined">translate</span>
