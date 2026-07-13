@@ -1,49 +1,49 @@
 @extends('layouts.app')
 
-@section('title', 'التقارير — حوالاتي')
+@section('title', __('التقارير — حوالاتي'))
 
 @section('content')
     @php
         $statusLabel = fn ($status) => match ($status->value) {
-            'completed' => 'مكتملة',
-            'pending' => 'قيد الانتظار',
-            default => 'فاشلة',
+            'completed' => __('مكتملة'),
+            'pending' => __('قيد الانتظار'),
+            default => __('فاشلة'),
         };
         $maxDaily = $daily->max() ?: 1;
-        $dayLabels = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+        $dayLabels = [__('أحد'), __('اثنين'), __('ثلاثاء'), __('أربعاء'), __('خميس'), __('جمعة'), __('سبت')];
     @endphp
 
     <div class="page-enter space-y-6">
         <header>
-            <h1 class="font-display-lg text-display-lg text-on-surface">التقارير</h1>
-            <p class="mt-1 font-body-lg text-on-surface-variant">تحليل أداء عملك خلال فترة محددة.</p>
+            <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('التقارير') }}</h1>
+            <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('تحليل أداء عملك خلال فترة محددة.') }}</p>
         </header>
 
         {{-- date range --}}
         <form method="GET" action="{{ route('reports.index') }}"
             class="tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end">
             <div class="flex-1 space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">من تاريخ</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
                 <input type="date" name="from" value="{{ $from }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
             <div class="flex-1 space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">إلى تاريخ</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
                 <input type="date" name="to" value="{{ $to }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
             <button type="submit" class="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
                 <span class="material-symbols-outlined !text-xl">query_stats</span>
-                عرض
+                {{ __('عرض') }}
             </button>
         </form>
 
         {{-- summary cards --}}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             @foreach ([
-                ['receipt_long', 'primary', 'عدد الطلبات', number_format($count), ''],
-                ['payments', 'secondary', 'إجمالي الإيرادات', number_format($total, 2), '₪'],
-                ['trending_up', 'primary', 'متوسط الطلب', number_format($average, 2), '₪'],
+                ['receipt_long', 'primary', __('عدد الطلبات'), number_format($count), ''],
+                ['payments', 'secondary', __('إجمالي الإيرادات'), number_format($total, 2), '₪'],
+                ['trending_up', 'primary', __('متوسط الطلب'), number_format($average, 2), '₪'],
             ] as [$icon, $accent, $label, $value, $unit])
                 <div class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
                     <div class="flex items-center justify-between">
@@ -59,11 +59,11 @@
 
         {{-- daily revenue chart --}}
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
-            <h2 class="mb-6 font-headline-md text-headline-md text-on-surface">الإيراد اليومي</h2>
+            <h2 class="mb-6 font-headline-md text-headline-md text-on-surface">{{ __('الإيراد اليومي') }}</h2>
             @if ($daily->isEmpty())
                 <div class="flex flex-col items-center gap-2 py-12 text-center text-outline">
                     <span class="material-symbols-outlined !text-4xl">bar_chart</span>
-                    <p class="font-body-sm">لا نشاط في هذه الفترة</p>
+                    <p class="font-body-sm">{{ __('لا نشاط في هذه الفترة') }}</p>
                 </div>
             @else
                 <div class="flex h-56 items-end gap-2 overflow-x-auto pb-2">
@@ -83,8 +83,8 @@
         {{-- transfers in range --}}
         @if ($transfers->isNotEmpty())
             <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
-                <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">طلبات الفترة ({{ number_format($count) }})</h2>
-                <x-table-responsive :headers="['العميل', 'التاريخ', 'الحالة', 'المبلغ']">
+                <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">{{ __('طلبات الفترة') }} ({{ number_format($count) }})</h2>
+                <x-table-responsive :headers="[__('العميل'), __('التاريخ'), __('الحالة'), __('المبلغ')]">
                     <x-slot:table>
                         @foreach ($transfers->sortByDesc('created_at') as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">

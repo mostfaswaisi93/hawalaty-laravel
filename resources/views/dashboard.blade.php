@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'لوحة التحكم — حوالاتي')
+@section('title', __('لوحة التحكم — حوالاتي'))
 
 @section('content')
     @php
         $member = auth('tenant')->user();
         $maxDaily = max(1, ...array_map(fn ($d) => $d['count'], $weeklyActivity));
         $weeklyTotalCount = array_sum(array_map(fn ($d) => $d['count'], $weeklyActivity));
-        $dayLabels = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+        $dayLabels = [__('أحد'), __('اثنين'), __('ثلاثاء'), __('أربعاء'), __('خميس'), __('جمعة'), __('سبت')];
 
         $statusPill = fn ($status) => match ($status->value) {
             'completed' => 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
@@ -20,9 +20,9 @@
             default => 'bg-error',
         };
         $statusLabel = fn ($status) => match ($status->value) {
-            'completed' => 'مكتملة',
-            'pending' => 'قيد الانتظار',
-            default => 'فاشلة',
+            'completed' => __('مكتملة'),
+            'pending' => __('قيد الانتظار'),
+            default => __('فاشلة'),
         };
     @endphp
 
@@ -32,7 +32,7 @@
             <div class="group relative flex min-h-[240px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] to-[#1e3a8a] p-8 text-white shadow-xl lg:col-span-2">
                 <div class="relative z-10 flex items-start justify-between">
                     <div>
-                        <p class="mb-2 font-body-sm text-body-sm text-white/80">إجمالي الإيرادات</p>
+                        <p class="mb-2 font-body-sm text-body-sm text-white/80">{{ __('إجمالي الإيرادات') }}</p>
                         <h2 class="font-display-lg text-4xl leading-none tracking-tight sm:text-[48px]" dir="ltr">{{ number_format($totalRevenue, 2) }} ₪</h2>
                     </div>
                     <span class="material-symbols-outlined !text-4xl opacity-30 transition-opacity group-hover:opacity-60">point_of_sale</span>
@@ -40,11 +40,11 @@
 
                 <div class="relative z-10 flex items-end justify-between">
                     <div class="space-y-1">
-                        <p class="font-label-caps text-[10px] uppercase tracking-widest opacity-60">إجمالي الطلبات</p>
+                        <p class="font-label-caps text-[10px] uppercase tracking-widest opacity-60">{{ __('إجمالي الطلبات') }}</p>
                         <p class="font-numeral-lg text-lg tracking-widest" dir="ltr">{{ $orderCount }}</p>
                     </div>
                     <a href="/history" class="rounded-lg bg-white/10 px-6 py-2 text-sm font-bold backdrop-blur-md transition-all hover:bg-white/20">
-                        عرض السجل
+                        {{ __('عرض السجل') }}
                     </a>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-container/10 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-white">
                             <span class="material-symbols-outlined">add</span>
                         </div>
-                        <span class="text-body-sm font-bold">طلب جديد</span>
+                        <span class="text-body-sm font-bold">{{ __('طلب جديد') }}</span>
                     </a>
                 @endif
 
@@ -64,7 +64,7 @@
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
                             <span class="material-symbols-outlined">restaurant_menu</span>
                         </div>
-                        <span class="text-body-sm font-bold">قائمة الطعام</span>
+                        <span class="text-body-sm font-bold">{{ __('قائمة الطعام') }}</span>
                     </a>
                 @endif
 
@@ -73,7 +73,7 @@
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-tertiary/10 text-tertiary transition-colors group-hover:bg-tertiary group-hover:text-on-tertiary">
                             <span class="material-symbols-outlined">payments</span>
                         </div>
-                        <span class="text-body-sm font-bold">المصروفات</span>
+                        <span class="text-body-sm font-bold">{{ __('المصروفات') }}</span>
                     </a>
                 @endif
 
@@ -81,7 +81,7 @@
                     <div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-dim/30 text-on-surface-variant transition-colors group-hover:bg-primary-container group-hover:text-white">
                         <span class="material-symbols-outlined">assessment</span>
                     </div>
-                    <span class="text-body-sm font-bold">التقارير</span>
+                    <span class="text-body-sm font-bold">{{ __('التقارير') }}</span>
                 </a>
             </div>
         </section>
@@ -90,11 +90,11 @@
         <section class="tonal-elevation relative overflow-hidden rounded-3xl bg-inverse-surface p-6 text-inverse-on-surface">
             <div class="relative z-10 flex h-full flex-col">
                 <div class="mb-8 flex items-center justify-between">
-                    <h3 class="font-headline-md text-headline-md">نشاط الأسبوع</h3>
+                    <h3 class="font-headline-md text-headline-md">{{ __('نشاط الأسبوع') }}</h3>
                     <span class="material-symbols-outlined text-secondary-container">trending_up</span>
                 </div>
                 <div>
-                    <p class="mb-1 text-sm opacity-70">إجمالي طلبات هذا الأسبوع</p>
+                    <p class="mb-1 text-sm opacity-70">{{ __('إجمالي طلبات هذا الأسبوع') }}</p>
                     <h4 class="mb-4 text-3xl font-bold" dir="ltr">{{ $weeklyTotalCount }}</h4>
                     <div class="mt-4 flex h-24 items-end gap-2">
                         @foreach ($weeklyActivity as $day)
@@ -117,22 +117,22 @@
         <section class="tonal-elevation rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-8">
             <div class="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                 <div>
-                    <h3 class="font-headline-md text-headline-md">أحدث الطلبات</h3>
-                    <p class="text-body-sm text-outline">تتبّع أحدث طلبات المطعم في مكان واحد</p>
+                    <h3 class="font-headline-md text-headline-md">{{ __('أحدث الطلبات') }}</h3>
+                    <p class="text-body-sm text-outline">{{ __('تتبّع أحدث طلبات المطعم في مكان واحد') }}</p>
                 </div>
                 <a href="/history" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 text-body-sm font-bold transition-colors hover:bg-surface-container-high">
                     <span class="material-symbols-outlined !text-lg">receipt_long</span>
-                    عرض كل الطلبات
+                    {{ __('عرض كل الطلبات') }}
                 </a>
             </div>
 
             @if ($recentTransfers->isEmpty())
                 <div class="flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">receipt_long</span>
-                    <p class="text-on-surface-variant">لا توجد طلبات بعد</p>
+                    <p class="text-on-surface-variant">{{ __('لا توجد طلبات بعد') }}</p>
                 </div>
             @else
-                <x-table-responsive :headers="['العميل', 'الصنف', 'التاريخ', 'الحالة', 'المبلغ']">
+                <x-table-responsive :headers="[__('العميل'), __('الصنف'), __('التاريخ'), __('الحالة'), __('المبلغ')]">
                     <x-slot:table>
                         @foreach ($recentTransfers as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
@@ -143,7 +143,7 @@
                                         </div>
                                         <div>
                                             <p class="whitespace-nowrap text-body-sm font-bold">{{ $t->customer }}</p>
-                                            <p class="whitespace-nowrap text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? 'نقدي' : $t->bank?->name }}</p>
+                                            <p class="whitespace-nowrap text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -170,7 +170,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-body-sm font-bold">{{ $t->customer }}</p>
-                                        <p class="truncate text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? 'نقدي' : $t->bank?->name }}</p>
+                                        <p class="truncate text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>

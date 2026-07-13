@@ -23,6 +23,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 
+// UI language toggle (ar/en). Public so guests can switch on the auth pages
+// too; stores the choice in the session, then returns to the previous page.
+Route::get('locale/{locale}', function (string $locale) {
+    if (in_array($locale, \App\Http\Middleware\SetLocale::SUPPORTED, true)) {
+        session(['locale' => $locale]);
+    }
+
+    return back();
+})->name('locale.switch');
+
 /*
 |--------------------------------------------------------------------------
 | Tenant space — a license's own team members

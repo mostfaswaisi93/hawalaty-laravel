@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'سجل الطلبات — حوالاتي')
+@section('title', __('سجل الطلبات — حوالاتي'))
 
 @section('content')
     @php
@@ -15,9 +15,9 @@
             default => 'bg-error',
         };
         $statusLabel = fn ($status) => match ($status->value) {
-            'completed' => 'مكتملة',
-            'pending' => 'قيد الانتظار',
-            default => 'فاشلة',
+            'completed' => __('مكتملة'),
+            'pending' => __('قيد الانتظار'),
+            default => __('فاشلة'),
         };
         $hasFilters = ! empty($filters);
     @endphp
@@ -25,14 +25,14 @@
     <div class="page-enter space-y-6">
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
-                <h1 class="font-display-lg text-display-lg text-on-surface">سجل الطلبات</h1>
+                <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('سجل الطلبات') }}</h1>
                 <p class="mt-1 font-body-lg text-on-surface-variant">
-                    {{ $transfers->total() }} طلب — تصفّح وابحث في كل معاملاتك.
+                    {{ $transfers->total() }} {{ __('طلب — تصفّح وابحث في كل معاملاتك.') }}
                 </p>
             </div>
             <a href="/transfers" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
                 <span class="material-symbols-outlined !text-xl">add</span>
-                طلب جديد
+                {{ __('طلب جديد') }}
             </a>
         </header>
 
@@ -40,41 +40,41 @@
         <form method="GET" action="{{ route('history.index') }}"
             class="tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5">
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">بحث</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-3 text-outline">search</span>
-                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="اسم العميل..."
+                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('اسم العميل...') }}"
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 pr-10 pl-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                 </div>
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">الحالة</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الحالة') }}</label>
                 <select name="status" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                    <option value="">الكل</option>
-                    <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>مكتملة</option>
-                    <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>قيد الانتظار</option>
-                    <option value="failed" @selected(($filters['status'] ?? '') === 'failed')>فاشلة</option>
+                    <option value="">{{ __('الكل') }}</option>
+                    <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>{{ __('مكتملة') }}</option>
+                    <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>{{ __('قيد الانتظار') }}</option>
+                    <option value="failed" @selected(($filters['status'] ?? '') === 'failed')>{{ __('فاشلة') }}</option>
                 </select>
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">طريقة الدفع</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</label>
                 <select name="paymentMethod" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                    <option value="">الكل</option>
-                    <option value="cash" @selected(($filters['paymentMethod'] ?? '') === 'cash')>نقدي</option>
-                    <option value="bank" @selected(($filters['paymentMethod'] ?? '') === 'bank')>تحويل بنكي</option>
+                    <option value="">{{ __('الكل') }}</option>
+                    <option value="cash" @selected(($filters['paymentMethod'] ?? '') === 'cash')>{{ __('نقدي') }}</option>
+                    <option value="bank" @selected(($filters['paymentMethod'] ?? '') === 'bank')>{{ __('تحويل بنكي') }}</option>
                 </select>
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">من تاريخ</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
                 <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">إلى تاريخ</label>
+                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
                 <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
@@ -82,12 +82,12 @@
             <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-5">
                 <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
                     <span class="material-symbols-outlined !text-xl">filter_alt</span>
-                    تطبيق
+                    {{ __('تطبيق') }}
                 </button>
                 @if ($hasFilters)
                     <a href="{{ route('history.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
                         <span class="material-symbols-outlined !text-xl">close</span>
-                        مسح
+                        {{ __('مسح') }}
                     </a>
                 @endif
             </div>
@@ -98,13 +98,13 @@
             @if ($transfers->isEmpty())
                 <div class="flex flex-col items-center gap-3 py-20 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">{{ $hasFilters ? 'search_off' : 'receipt_long' }}</span>
-                    <p class="font-body-lg text-on-surface-variant">{{ $hasFilters ? 'لا توجد طلبات مطابقة للفلاتر' : 'لا توجد طلبات بعد' }}</p>
+                    <p class="font-body-lg text-on-surface-variant">{{ $hasFilters ? __('لا توجد طلبات مطابقة للفلاتر') : __('لا توجد طلبات بعد') }}</p>
                     @if ($hasFilters)
-                        <a href="{{ route('history.index') }}" class="font-body-sm font-bold text-primary hover:underline">مسح الفلاتر</a>
+                        <a href="{{ route('history.index') }}" class="font-body-sm font-bold text-primary hover:underline">{{ __('مسح الفلاتر') }}</a>
                     @endif
                 </div>
             @else
-                <x-table-responsive :headers="['العميل', 'الصنف', 'التاريخ', 'الحالة', 'طريقة الدفع', 'المبلغ']">
+                <x-table-responsive :headers="[__('العميل'), __('الصنف'), __('التاريخ'), __('الحالة'), __('طريقة الدفع'), __('المبلغ')]">
                     <x-slot:table>
                         @foreach ($transfers as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
@@ -125,7 +125,7 @@
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">
-                                    {{ $t->payment_method->value === 'cash' ? 'نقدي' : ($t->bank?->name ?? 'تحويل بنكي') }}
+                                    {{ $t->payment_method->value === 'cash' ? __('نقدي') : ($t->bank?->name ?? __('تحويل بنكي')) }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary">
                                     <span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span>
@@ -142,7 +142,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-body-sm font-bold">{{ $t->customer }}</p>
-                                        <p class="truncate text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? 'نقدي' : $t->bank?->name }}</p>
+                                        <p class="truncate text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>
@@ -162,26 +162,26 @@
                 @if ($transfers->hasPages())
                     <div class="mt-6 flex items-center justify-between gap-4 border-t border-outline-variant/50 pt-5">
                         <span class="font-body-sm text-on-surface-variant">
-                            صفحة {{ $transfers->currentPage() }} من {{ $transfers->lastPage() }}
+                            {{ __('صفحة') }} {{ $transfers->currentPage() }} {{ __('من') }} {{ $transfers->lastPage() }}
                         </span>
                         <div class="flex items-center gap-2">
                             @if ($transfers->onFirstPage())
                                 <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
-                                    <span class="material-symbols-outlined !text-lg">arrow_forward</span> السابق
+                                    <span class="material-symbols-outlined !text-lg">arrow_forward</span> {{ __('السابق') }}
                                 </span>
                             @else
                                 <a href="{{ $transfers->previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
-                                    <span class="material-symbols-outlined !text-lg">arrow_forward</span> السابق
+                                    <span class="material-symbols-outlined !text-lg">arrow_forward</span> {{ __('السابق') }}
                                 </a>
                             @endif
 
                             @if ($transfers->hasMorePages())
                                 <a href="{{ $transfers->nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
-                                    التالي <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg">arrow_back</span>
                                 </a>
                             @else
                                 <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
-                                    التالي <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg">arrow_back</span>
                                 </span>
                             @endif
                         </div>

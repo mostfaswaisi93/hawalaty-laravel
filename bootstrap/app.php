@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\ResolveTenantConnection;
 use App\Http\Middleware\ResolveTenantConnectionFromSession;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -65,6 +66,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // groups only, always ahead of `auth:sanctum`, e.g.
         // Route::middleware(['tenant.header', 'auth:sanctum'])->group(...).
         // Never applied to /admin/* (Super Admin) routes.
+        // Apply the chosen UI language (ar/en) to every server-rendered web
+        // request so <html dir/lang> and all __() strings follow the toggle.
+        $middleware->web(append: [SetLocale::class]);
+
         $middleware->alias([
             'tenant.header' => ResolveTenantConnection::class,
             // Session-cookie equivalent of tenant.header, for the Blade web

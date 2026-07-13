@@ -18,7 +18,7 @@ class ConstantController extends Controller
     public function index(): View|RedirectResponse
     {
         if (! $this->canManage()) {
-            return redirect()->route('dashboard')->with('error', 'ليست لديك صلاحية لإدارة الثوابت.');
+            return redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإدارة الثوابت.'));
         }
 
         $lists = ConstantList::query()
@@ -35,7 +35,7 @@ class ConstantController extends Controller
 
         $this->service->create($request->validated());
 
-        return redirect()->route('constants.index')->with('success', 'تمت إضافة القائمة بنجاح.');
+        return redirect()->route('constants.index')->with('success', __('تمت إضافة القائمة بنجاح.'));
     }
 
     public function destroy(string $list): RedirectResponse
@@ -44,7 +44,7 @@ class ConstantController extends Controller
 
         $this->service->delete(ConstantList::findOrFail($list));
 
-        return redirect()->route('constants.index')->with('success', 'تم حذف القائمة.');
+        return redirect()->route('constants.index')->with('success', __('تم حذف القائمة.'));
     }
 
     public function storeItem(StoreConstantListItemRequest $request, string $list): RedirectResponse
@@ -53,7 +53,7 @@ class ConstantController extends Controller
 
         $this->service->addItem(ConstantList::findOrFail($list), $request->validated());
 
-        return redirect()->route('constants.index')->with('success', 'تمت إضافة العنصر.');
+        return redirect()->route('constants.index')->with('success', __('تمت إضافة العنصر.'));
     }
 
     public function destroyItem(string $list, string $item): RedirectResponse
@@ -62,7 +62,7 @@ class ConstantController extends Controller
 
         $this->service->deleteItem(ConstantList::findOrFail($list), $item);
 
-        return redirect()->route('constants.index')->with('success', 'تم حذف العنصر.');
+        return redirect()->route('constants.index')->with('success', __('تم حذف العنصر.'));
     }
 
     private function canManage(): bool

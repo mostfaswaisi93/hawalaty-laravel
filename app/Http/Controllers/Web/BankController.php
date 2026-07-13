@@ -42,7 +42,7 @@ class BankController extends Controller
 
         $this->service->create($request->validated());
 
-        return redirect()->route('banks.index')->with('success', 'تم إضافة البنك بنجاح.');
+        return redirect()->route('banks.index')->with('success', __('تم إضافة البنك بنجاح.'));
     }
 
     public function update(UpdateBankRequest $request, string $bank): RedirectResponse
@@ -51,7 +51,7 @@ class BankController extends Controller
 
         $this->service->update(Bank::findOrFail($bank), $request->validated());
 
-        return redirect()->route('banks.index')->with('success', 'تم تحديث البنك بنجاح.');
+        return redirect()->route('banks.index')->with('success', __('تم تحديث البنك بنجاح.'));
     }
 
     public function destroy(string $bank): RedirectResponse
@@ -60,7 +60,7 @@ class BankController extends Controller
 
         $this->service->delete(Bank::findOrFail($bank));
 
-        return redirect()->route('banks.index')->with('success', 'تم حذف البنك.');
+        return redirect()->route('banks.index')->with('success', __('تم حذف البنك.'));
     }
 
     private function canManage(): bool
@@ -72,6 +72,6 @@ class BankController extends Controller
     {
         return $this->canManage()
             ? null
-            : redirect()->route('dashboard')->with('error', 'ليست لديك صلاحية لإدارة البنوك.');
+            : redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإدارة البنوك.'));
     }
 }

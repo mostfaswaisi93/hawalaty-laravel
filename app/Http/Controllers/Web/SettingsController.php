@@ -38,6 +38,6 @@ class SettingsController extends Controller
 
         $this->service->update(auth('tenant')->user(), $data);
 
-        return redirect()->route('settings.index')->with('success', 'تم تحديث بياناتك بنجاح.');
+        return redirect()->route('settings.index')->with('success', __('تم تحديث بياناتك بنجاح.'));
     }
 }

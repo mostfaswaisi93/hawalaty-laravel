@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'طلب جديد — حوالاتي')
+@section('title', __('طلب جديد — حوالاتي'))
 
 @section('content')
     <div class="page-enter"
         x-data="orderBuilder({{ $menuJson }}, {{ \Illuminate\Support\Js::from($banks) }}, {{ \Illuminate\Support\Js::from($wallets) }})">
 
         <header class="mb-8">
-            <h1 class="font-display-lg text-display-lg text-on-surface">طلب جديد</h1>
-            <p class="mt-1 font-body-lg text-on-surface-variant">اختر الأصناف، حدّد طريقة الدفع، وأنشئ الطلب.</p>
+            <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('طلب جديد') }}</h1>
+            <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('اختر الأصناف، حدّد طريقة الدفع، وأنشئ الطلب.') }}</p>
         </header>
 
         <form method="POST" action="{{ route('transfers.store') }}" @submit="onSubmit"
@@ -20,7 +20,7 @@
                 {{-- search --}}
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-4 text-outline">search</span>
-                    <input type="text" x-model="search" placeholder="ابحث عن صنف..."
+                    <input type="text" x-model="search" placeholder="{{ __('ابحث عن صنف...') }}"
                         class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3.5 pr-12 pl-4 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary" />
                 </div>
 
@@ -58,7 +58,7 @@
                         {{-- no search results --}}
                         <div x-show="!filteredItems.length" class="col-span-full flex flex-col items-center gap-2 py-16 text-center text-outline">
                             <span class="material-symbols-outlined !text-5xl">search_off</span>
-                            <p>لا توجد أصناف مطابقة</p>
+                            <p>{{ __('لا توجد أصناف مطابقة') }}</p>
                         </div>
                     </div>
                 </template>
@@ -67,8 +67,8 @@
                 <template x-if="!menu.length">
                     <div class="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                         <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
-                        <p class="font-body-lg text-on-surface-variant">لا توجد أصناف في القائمة بعد</p>
-                        <a href="/menu" class="font-body-sm font-bold text-primary hover:underline">أضف أصنافاً إلى قائمتك أولاً</a>
+                        <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد أصناف في القائمة بعد') }}</p>
+                        <a href="/menu" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضف أصنافاً إلى قائمتك أولاً') }}</a>
                     </div>
                 </template>
             </section>
@@ -77,10 +77,10 @@
             <aside class="space-y-5 lg:sticky lg:top-24">
                 <div class="tonal-elevation overflow-hidden rounded-3xl border border-outline-variant/50 bg-surface-container-lowest">
                     <div class="flex items-center justify-between border-b border-outline-variant/50 p-5">
-                        <h2 class="font-headline-md text-headline-md text-on-surface">الطلب الحالي</h2>
+                        <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('الطلب الحالي') }}</h2>
                         <span x-show="itemCount > 0" x-cloak
                             class="rounded-full bg-secondary-container/20 px-3 py-1 font-body-sm font-bold text-secondary">
-                            <span x-text="itemCount"></span> صنف
+                            <span x-text="itemCount"></span> {{ __('صنف') }}
                         </span>
                     </div>
 
@@ -88,7 +88,7 @@
                     <div class="max-h-72 space-y-2 overflow-y-auto p-4">
                         <div x-show="!cart.length" class="flex flex-col items-center gap-2 py-10 text-center text-outline">
                             <span class="material-symbols-outlined !text-4xl">shopping_cart</span>
-                            <p class="font-body-sm">لم تُضِف أي صنف بعد</p>
+                            <p class="font-body-sm">{{ __('لم تُضِف أي صنف بعد') }}</p>
                         </div>
 
                         <template x-for="line in cart" :key="line.id">
@@ -98,12 +98,12 @@
                                     <p class="text-[11px] text-outline" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <button type="button" @click="dec(line)" aria-label="إنقاص"
+                                    <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}"
                                         class="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                         <span class="material-symbols-outlined !text-lg" x-text="line.qty > 1 ? 'remove' : 'delete'"></span>
                                     </button>
                                     <span class="w-6 text-center font-numeral-lg font-bold text-on-surface" x-text="line.qty"></span>
-                                    <button type="button" @click="inc(line)" aria-label="زيادة"
+                                    <button type="button" @click="inc(line)" aria-label="{{ __('زيادة') }}"
                                         class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-on-primary">
                                         <span class="material-symbols-outlined !text-lg">add</span>
                                     </button>
@@ -116,26 +116,26 @@
                     {{-- customer + payment --}}
                     <div class="space-y-5 border-t border-outline-variant/50 p-5">
                         <div class="space-y-2">
-                            <label for="customer" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">اسم العميل</label>
-                            <input id="customer" name="customer" x-model="customer" placeholder="مثال: أحمد أبو ياسين"
+                            <label for="customer" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم العميل') }}</label>
+                            <input id="customer" name="customer" x-model="customer" placeholder="{{ __('مثال: أحمد أبو ياسين') }}"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
 
                         {{-- payment method segmented --}}
                         <div class="space-y-2">
-                            <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">طريقة الدفع</span>
+                            <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</span>
                             <div class="grid grid-cols-2 gap-2 rounded-xl bg-surface-container p-1">
                                 <label class="flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 font-body-sm font-bold transition-all"
                                     :class="paymentMethod === 'cash' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'">
                                     <input type="radio" name="paymentMethod" value="cash" x-model="paymentMethod" class="sr-only" />
                                     <span class="material-symbols-outlined !text-xl">payments</span>
-                                    نقدي
+                                    {{ __('نقدي') }}
                                 </label>
                                 <label class="flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 font-body-sm font-bold transition-all"
                                     :class="paymentMethod === 'bank' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'">
                                     <input type="radio" name="paymentMethod" value="bank" x-model="paymentMethod" class="sr-only" />
                                     <span class="material-symbols-outlined !text-xl">account_balance</span>
-                                    تحويل بنكي
+                                    {{ __('تحويل بنكي') }}
                                 </label>
                             </div>
                         </div>
@@ -143,7 +143,7 @@
                         {{-- ── CASH scenario ── --}}
                         <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-4">
                             <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3">
-                                <span class="font-body-sm font-bold text-on-surface">يوجد باقٍ للعميل؟</span>
+                                <span class="font-body-sm font-bold text-on-surface">{{ __('يوجد باقٍ للعميل؟') }}</span>
                                 <input type="checkbox" x-model="hasChange" class="h-5 w-5 rounded accent-primary" />
                             </label>
                             <input type="hidden" name="hasChange" :value="(paymentMethod === 'cash' && hasChange) ? 1 : 0" />
@@ -153,20 +153,20 @@
                                     <label class="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 font-body-sm font-bold transition-all"
                                         :class="changeMethod === 'cash' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'">
                                         <input type="radio" name="changeMethod" value="cash" x-model="changeMethod" class="sr-only" />
-                                        باقٍ نقدي
+                                        {{ __('باقٍ نقدي') }}
                                     </label>
                                     <label class="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 font-body-sm font-bold transition-all"
                                         :class="changeMethod === 'bank' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'">
                                         <input type="radio" name="changeMethod" value="bank" x-model="changeMethod" class="sr-only" />
-                                        باقٍ للبنك
+                                        {{ __('باقٍ للبنك') }}
                                     </label>
                                 </div>
 
                                 <div x-show="changeMethod === 'bank'" x-cloak class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">البنك / المحفظة</label>
+                                    <label class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
                                     <select name="changeBankId" x-model="changeBankId"
                                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                                        <option value="">اختر...</option>
+                                        <option value="">{{ __('اختر...') }}</option>
                                         <template x-for="b in allBanks" :key="b.id">
                                             <option :value="b.id" x-text="b.name"></option>
                                         </template>
@@ -174,7 +174,7 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">قيمة الباقي (₪)</label>
+                                    <label class="block font-body-sm text-on-surface-variant">{{ __('قيمة الباقي (₪)') }}</label>
                                     <input type="number" step="0.01" min="0" name="changeAmount" x-model="changeAmount" dir="ltr" placeholder="0.00"
                                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                                 </div>
@@ -184,16 +184,16 @@
                         {{-- ── BANK scenario ── --}}
                         <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-4">
                             <div class="space-y-2">
-                                <label class="block font-body-sm text-on-surface-variant">البنك / المحفظة</label>
+                                <label class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
                                 <select name="bankId" x-model="bankId"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                                    <option value="">اختر...</option>
-                                    <optgroup label="البنوك">
+                                    <option value="">{{ __('اختر...') }}</option>
+                                    <optgroup label="{{ __('البنوك') }}">
                                         <template x-for="b in banks" :key="b.id">
                                             <option :value="b.id" x-text="b.name"></option>
                                         </template>
                                     </optgroup>
-                                    <optgroup label="المحافظ">
+                                    <optgroup label="{{ __('المحافظ') }}">
                                         <template x-for="b in wallets" :key="b.id">
                                             <option :value="b.id" x-text="b.name"></option>
                                         </template>
@@ -202,18 +202,18 @@
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">اسم المُرسِل</label>
-                                    <input name="senderName" x-model="senderName" placeholder="اختياري"
+                                    <label class="block font-body-sm text-on-surface-variant">{{ __('اسم المُرسِل') }}</label>
+                                    <input name="senderName" x-model="senderName" placeholder="{{ __('اختياري') }}"
                                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">هاتف المُرسِل</label>
+                                    <label class="block font-body-sm text-on-surface-variant">{{ __('هاتف المُرسِل') }}</label>
                                     <input name="senderPhone" x-model="senderPhone" dir="ltr" placeholder="059..."
                                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="block font-body-sm text-on-surface-variant">المبلغ المُحوَّل (₪)</label>
+                                <label class="block font-body-sm text-on-surface-variant">{{ __('المبلغ المُحوَّل (₪)') }}</label>
                                 <input type="number" step="0.01" min="0" name="transferredAmount" x-model="transferredAmount" dir="ltr" placeholder="0.00"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                             </div>
@@ -222,13 +222,13 @@
                         {{-- total + submit --}}
                         <div class="border-t border-outline-variant/50 pt-4">
                             <div class="mb-4 flex items-end justify-between">
-                                <span class="font-body-lg text-on-surface-variant">الإجمالي</span>
+                                <span class="font-body-lg text-on-surface-variant">{{ __('الإجمالي') }}</span>
                                 <span class="font-display-lg text-3xl font-bold text-primary" dir="ltr"><span x-text="fmt(total)"></span> ₪</span>
                             </div>
                             <button type="submit" :disabled="!canSubmit || submitting"
                                 class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
                                 <span class="material-symbols-outlined" x-show="!submitting">check_circle</span>
-                                <span x-text="submitting ? 'جارٍ الإنشاء...' : 'إنشاء الطلب'"></span>
+                                <span x-text="submitting ? '{{ __('جارٍ الإنشاء...') }}' : '{{ __('إنشاء الطلب') }}'"></span>
                             </button>
                         </div>
                     </div>

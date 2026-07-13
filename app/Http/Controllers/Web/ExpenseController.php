@@ -23,7 +23,7 @@ class ExpenseController extends Controller
     public function index(Request $request): View|RedirectResponse
     {
         if (! $this->canManage()) {
-            return redirect()->route('dashboard')->with('error', 'ليست لديك صلاحية لإدارة المصروفات.');
+            return redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإدارة المصروفات.'));
         }
 
         $search = $request->query('search');
@@ -41,7 +41,7 @@ class ExpenseController extends Controller
 
         $this->service->create($request->validated());
 
-        return redirect()->route('expenses.index')->with('success', 'تم إضافة المصروف بنجاح.');
+        return redirect()->route('expenses.index')->with('success', __('تم إضافة المصروف بنجاح.'));
     }
 
     public function update(UpdateExpenseRequest $request, string $expense): RedirectResponse
@@ -50,7 +50,7 @@ class ExpenseController extends Controller
 
         $this->service->update(Expense::findOrFail($expense), $request->validated());
 
-        return redirect()->route('expenses.index')->with('success', 'تم تحديث المصروف بنجاح.');
+        return redirect()->route('expenses.index')->with('success', __('تم تحديث المصروف بنجاح.'));
     }
 
     public function destroy(string $expense): RedirectResponse
@@ -59,7 +59,7 @@ class ExpenseController extends Controller
 
         $this->service->delete(Expense::findOrFail($expense));
 
-        return redirect()->route('expenses.index')->with('success', 'تم حذف المصروف.');
+        return redirect()->route('expenses.index')->with('success', __('تم حذف المصروف.'));
     }
 
     private function canManage(): bool

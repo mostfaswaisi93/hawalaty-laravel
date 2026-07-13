@@ -39,6 +39,6 @@ class DeviceController extends Controller
 
         $this->service->revoke($model);
 
-        return redirect()->route('devices.index')->with('success', 'تم إلغاء الجهاز.');
+        return redirect()->route('devices.index')->with('success', __('تم إلغاء الجهاز.'));
     }
 }

@@ -26,12 +26,13 @@
 
     $visibleNav = array_filter($navItems, fn ($item) => ! $item['permission'] || $member?->hasPermission($item['permission']));
 @endphp
+@php $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar'; @endphp
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" x-data="{ dark: localStorage.getItem('theme') === 'dark', sidebarOpen: false }" x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)" :class="{ dark: dark }">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}" x-data="{ dark: localStorage.getItem('theme') === 'dark', sidebarOpen: false }" x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)" :class="{ dark: dark }">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'حوالاتي')</title>
+    <title>@yield('title', __('حوالاتي'))</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +50,7 @@
         <div class="mb-10 flex items-center gap-3 px-4">
             <x-logo />
             <div class="min-w-0">
-                <span class="block font-display-lg text-2xl font-bold leading-tight text-primary">حوالاتي</span>
+                <span class="block font-display-lg text-2xl font-bold leading-tight text-primary">{{ __('حوالاتي') }}</span>
                 <p class="font-body-sm text-body-sm text-on-surface-variant">My Transfers</p>
             </div>
         </div>
@@ -61,7 +62,7 @@
                     href="{{ $item['href'] }}"
                     class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-primary bg-surface-container-high font-bold text-primary' : 'border-transparent text-on-surface-variant hover:bg-surface-container-highest' }}">
                     <span class="material-symbols-outlined {{ $item['icon'] === 'send' ? 'rtl:-scale-x-100' : '' }}" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
-                    <span>{{ $item['label'] }}</span>
+                    <span>{{ __($item['label']) }}</span>
                 </a>
             @endforeach
         </nav>
@@ -72,7 +73,7 @@
                     href="/transfers"
                     class="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container px-4 py-3 font-bold text-on-secondary-fixed shadow-lg transition-transform active:scale-95">
                     <span class="material-symbols-outlined">add</span>
-                    <span>طلب جديد</span>
+                    <span>{{ __('طلب جديد') }}</span>
                 </a>
             @endif
 
@@ -89,7 +90,7 @@
                     <button
                         type="submit"
                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
-                        aria-label="تسجيل الخروج">
+                        aria-label="{{ __('تسجيل الخروج') }}">
                         <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
                     </button>
                 </form>
@@ -100,21 +101,25 @@
     <div class="flex min-h-screen flex-col lg:ms-64">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface px-inline-lg">
             <div class="flex flex-1 items-center gap-3">
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="القائمة">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
                 <div class="search-pill hidden w-full max-w-md items-center gap-2 rounded-full bg-surface-container px-4 py-1.5 transition-shadow sm:flex">
                     <span class="material-symbols-outlined text-outline">search</span>
-                    <input type="text" aria-label="بحث عن معاملة أو مستلم" placeholder="بحث عن معاملة أو مستلم..." class="w-full border-none bg-transparent px-2 font-body-sm text-sm outline-none focus:ring-0" />
+                    <input type="text" aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}" class="w-full border-none bg-transparent px-2 font-body-sm text-sm outline-none focus:ring-0" />
                 </div>
             </div>
 
             <div class="flex items-center gap-4 md:gap-6">
                 <div class="flex items-center gap-1 border-s border-outline-variant ps-4 md:ps-6">
-                    <button type="button" @click="dark = !dark" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="تبديل المظهر">
+                    <a href="{{ route('locale.switch', $otherLocale) }}" class="flex h-10 items-center gap-1.5 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تغيير اللغة') }}">
+                        <span class="material-symbols-outlined">translate</span>
+                        <span class="font-body-sm font-bold">{{ $otherLocale === 'en' ? 'EN' : 'ع' }}</span>
+                    </a>
+                    <button type="button" @click="dark = !dark" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تبديل المظهر') }}">
                         <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                     </button>
-                    <a href="/help" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="المساعدة">
+                    <a href="/help" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('المساعدة') }}">
                         <span class="material-symbols-outlined">help</span>
                     </a>
                 </div>
@@ -127,7 +132,7 @@
         </main>
 
         <footer class="mt-auto border-t border-outline-variant/40 p-6 text-center text-body-sm text-outline">
-            <p>© 2026 حوالاتي. جميع الحقوق محفوظة. مرخّص من قبل البنك المركزي.</p>
+            <p>{{ __('© 2026 حوالاتي. جميع الحقوق محفوظة. مرخّص من قبل البنك المركزي.') }}</p>
         </footer>
     </div>
 </body>

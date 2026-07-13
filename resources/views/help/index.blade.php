@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'مركز المساعدة — حوالاتي')
+@section('title', __('مركز المساعدة — حوالاتي'))
 
 @section('content')
     <div class="page-enter mx-auto max-w-4xl space-y-8">
@@ -8,21 +8,21 @@
             <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
                 <span class="material-symbols-outlined !text-4xl">help</span>
             </div>
-            <h1 class="font-display-lg text-display-lg text-on-surface">كيف يمكننا مساعدتك؟</h1>
-            <p class="mt-2 font-body-lg text-on-surface-variant">دليل سريع وأجوبة لأكثر الأسئلة شيوعاً.</p>
+            <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('كيف يمكننا مساعدتك؟') }}</h1>
+            <p class="mt-2 font-body-lg text-on-surface-variant">{{ __('دليل سريع وأجوبة لأكثر الأسئلة شيوعاً.') }}</p>
         </header>
 
         {{-- quick links --}}
         <section>
-            <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">روابط سريعة</h2>
+            <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('روابط سريعة') }}</h2>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ([
-                    ['/transfers', 'add_shopping_cart', 'طلب جديد', 'أنشئ طلباً واحسب المجموع تلقائياً'],
-                    ['/history', 'receipt_long', 'السجل', 'تصفّح وابحث في كل طلباتك'],
-                    ['/banks', 'account_balance', 'البنوك والمحافظ', 'أدر وسائل الدفع'],
-                    ['/menu', 'restaurant_menu', 'قائمة الطعام', 'نظّم الفئات والأصناف'],
-                    ['/reports', 'assessment', 'التقارير', 'تابع إيراداتك ونشاطك'],
-                    ['/team', 'group', 'الفريق', 'ادعُ موظفين وامنح صلاحيات'],
+                    ['/transfers', 'add_shopping_cart', __('طلب جديد'), __('أنشئ طلباً واحسب المجموع تلقائياً')],
+                    ['/history', 'receipt_long', __('السجل'), __('تصفّح وابحث في كل طلباتك')],
+                    ['/banks', 'account_balance', __('البنوك والمحافظ'), __('أدر وسائل الدفع')],
+                    ['/menu', 'restaurant_menu', __('قائمة الطعام'), __('نظّم الفئات والأصناف')],
+                    ['/reports', 'assessment', __('التقارير'), __('تابع إيراداتك ونشاطك')],
+                    ['/team', 'group', __('الفريق'), __('ادعُ موظفين وامنح صلاحيات')],
                 ] as [$href, $icon, $title, $desc])
                     <a href="{{ $href }}" class="tonal-elevation group flex items-start gap-4 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 transition-all hover:border-primary">
                         <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
@@ -39,15 +39,15 @@
 
         {{-- FAQ --}}
         <section x-data="{ open: 0 }">
-            <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">الأسئلة الشائعة</h2>
+            <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('الأسئلة الشائعة') }}</h2>
             <div class="space-y-3">
                 @foreach ([
-                    ['كيف أنشئ طلباً جديداً؟', 'من «طلب جديد»، اختر الأصناف من القائمة لتُضاف إلى السلة، حدّد اسم العميل وطريقة الدفع (نقدي أو تحويل بنكي)، ثم اضغط «إنشاء الطلب». يُحسب الإجمالي تلقائياً من الأصناف.'],
-                    ['كيف أضيف بنكاً أو محفظة؟', 'من «البنوك والمحافظ» اضغط «إضافة»، أدخل الاسم والنوع (بنك/محفظة) والرمز واختيارياً الهاتف. يمكنك تفعيل أو إيقاف أي وسيلة دفع في أي وقت من مفتاح الحالة.'],
-                    ['كيف أنظّم قائمة الطعام؟', 'من «قائمة الطعام» أنشئ فئة أولاً (مثل: المشاوي)، ثم أضِف الأصناف إليها مع أسعارها. يمكنك إخفاء أي صنف مؤقتاً بإيقاف «متاح للطلب» دون حذفه.'],
-                    ['ما الفرق بين الأدوار؟', 'المالك يملك كل الصلاحيات. المدير يملك كل الصلاحيات عدا إدارة الفريق. الموظف يمكنه إنشاء الطلبات فقط. يمكنك تعيين الدور المناسب لكل عضو من صفحة «الفريق».'],
-                    ['ماذا تعني حالات الطلب؟', '«مكتملة» أي تم استلام الدفع وإنهاء الطلب، «قيد الانتظار» أي جديد لم يُنجَز بعد، و«فاشلة» أي أُلغي أو تعذّر إتمامه.'],
-                    ['كيف أتابع إيراداتي؟', 'لوحة التحكم تعرض إجمالي الإيرادات ونشاط الأسبوع وأحدث الطلبات. وصفحة «التقارير» تعطيك تفصيلاً أعمق لأداء عملك.'],
+                    [__('كيف أنشئ طلباً جديداً؟'), __('من «طلب جديد»، اختر الأصناف من القائمة لتُضاف إلى السلة، حدّد اسم العميل وطريقة الدفع (نقدي أو تحويل بنكي)، ثم اضغط «إنشاء الطلب». يُحسب الإجمالي تلقائياً من الأصناف.')],
+                    [__('كيف أضيف بنكاً أو محفظة؟'), __('من «البنوك والمحافظ» اضغط «إضافة»، أدخل الاسم والنوع (بنك/محفظة) والرمز واختيارياً الهاتف. يمكنك تفعيل أو إيقاف أي وسيلة دفع في أي وقت من مفتاح الحالة.')],
+                    [__('كيف أنظّم قائمة الطعام؟'), __('من «قائمة الطعام» أنشئ فئة أولاً (مثل: المشاوي)، ثم أضِف الأصناف إليها مع أسعارها. يمكنك إخفاء أي صنف مؤقتاً بإيقاف «متاح للطلب» دون حذفه.')],
+                    [__('ما الفرق بين الأدوار؟'), __('المالك يملك كل الصلاحيات. المدير يملك كل الصلاحيات عدا إدارة الفريق. الموظف يمكنه إنشاء الطلبات فقط. يمكنك تعيين الدور المناسب لكل عضو من صفحة «الفريق».')],
+                    [__('ماذا تعني حالات الطلب؟'), __('«مكتملة» أي تم استلام الدفع وإنهاء الطلب، «قيد الانتظار» أي جديد لم يُنجَز بعد، و«فاشلة» أي أُلغي أو تعذّر إتمامه.')],
+                    [__('كيف أتابع إيراداتي؟'), __('لوحة التحكم تعرض إجمالي الإيرادات ونشاط الأسبوع وأحدث الطلبات. وصفحة «التقارير» تعطيك تفصيلاً أعمق لأداء عملك.')],
                 ] as $i => [$q, $a])
                     <div class="tonal-elevation overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest">
                         <button type="button" @click="open === {{ $i }} ? open = null : open = {{ $i }}"
@@ -70,13 +70,13 @@
                 <span class="material-symbols-outlined !text-3xl">support_agent</span>
             </div>
             <div>
-                <h3 class="font-headline-md text-headline-md text-on-surface">ما زلت بحاجة إلى مساعدة؟</h3>
-                <p class="mt-1 font-body-lg text-on-surface-variant">فريق الدعم جاهز لخدمتك.</p>
+                <h3 class="font-headline-md text-headline-md text-on-surface">{{ __('ما زلت بحاجة إلى مساعدة؟') }}</h3>
+                <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('فريق الدعم جاهز لخدمتك.') }}</p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-3">
                 <a href="mailto:support@hawalaty.test" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
                     <span class="material-symbols-outlined !text-xl">mail</span>
-                    راسلنا
+                    {{ __('راسلنا') }}
                 </a>
                 <span class="font-body-sm text-on-surface-variant" dir="ltr">+970 59 000 0000</span>
             </div>

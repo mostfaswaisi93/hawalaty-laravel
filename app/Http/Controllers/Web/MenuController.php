@@ -25,7 +25,7 @@ class MenuController extends Controller
     public function index(): View|RedirectResponse
     {
         if (! $this->canManage()) {
-            return redirect()->route('dashboard')->with('error', 'ليست لديك صلاحية لإدارة القائمة.');
+            return redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإدارة القائمة.'));
         }
 
         $categories = MenuCategory::query()
@@ -44,7 +44,7 @@ class MenuController extends Controller
 
         $this->service->createCategory($request->validated());
 
-        return redirect()->route('menu.index')->with('success', 'تمت إضافة الفئة بنجاح.');
+        return redirect()->route('menu.index')->with('success', __('تمت إضافة الفئة بنجاح.'));
     }
 
     public function destroyCategory(string $category): RedirectResponse
@@ -53,7 +53,7 @@ class MenuController extends Controller
 
         $this->service->deleteCategory(MenuCategory::findOrFail($category));
 
-        return redirect()->route('menu.index')->with('success', 'تم حذف الفئة وأصنافها.');
+        return redirect()->route('menu.index')->with('success', __('تم حذف الفئة وأصنافها.'));
     }
 
     // --- Items ---
@@ -64,7 +64,7 @@ class MenuController extends Controller
 
         $this->service->createItem($request->validated());
 
-        return redirect()->route('menu.index')->with('success', 'تمت إضافة الصنف بنجاح.');
+        return redirect()->route('menu.index')->with('success', __('تمت إضافة الصنف بنجاح.'));
     }
 
     public function updateItem(UpdateMenuItemRequest $request, string $item): RedirectResponse
@@ -73,7 +73,7 @@ class MenuController extends Controller
 
         $this->service->updateItem(MenuItem::findOrFail($item), $request->validated());
 
-        return redirect()->route('menu.index')->with('success', 'تم تحديث الصنف بنجاح.');
+        return redirect()->route('menu.index')->with('success', __('تم تحديث الصنف بنجاح.'));
     }
 
     public function destroyItem(string $item): RedirectResponse
@@ -82,7 +82,7 @@ class MenuController extends Controller
 
         $this->service->deleteItem(MenuItem::findOrFail($item));
 
-        return redirect()->route('menu.index')->with('success', 'تم حذف الصنف.');
+        return redirect()->route('menu.index')->with('success', __('تم حذف الصنف.'));
     }
 
     private function canManage(): bool

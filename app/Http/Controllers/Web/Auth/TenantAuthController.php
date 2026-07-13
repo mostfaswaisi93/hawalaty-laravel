@@ -136,6 +136,6 @@ class TenantAuthController extends Controller
     {
         return redirect()->route('login')
             ->withInput($request->only('licenseCode', 'email'))
-            ->withErrors(['login' => 'رمز الترخيص أو البريد الإلكتروني أو كلمة المرور غير صحيحة.']);
+            ->withErrors(['login' => __('رمز الترخيص أو البريد الإلكتروني أو كلمة المرور غير صحيحة.')]);
     }
 }

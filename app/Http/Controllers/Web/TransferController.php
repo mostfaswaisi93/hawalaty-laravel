@@ -29,7 +29,7 @@ class TransferController extends Controller
         $member = auth('tenant')->user();
 
         if (! $member?->hasPermission(PermissionKey::TransfersCreate)) {
-            return redirect()->route('dashboard')->with('error', 'ليست لديك صلاحية لإنشاء طلبات جديدة.');
+            return redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإنشاء طلبات جديدة.'));
         }
 
         $categories = MenuCategory::query()
@@ -76,6 +76,6 @@ class TransferController extends Controller
 
         $this->service->create($request->validated());
 
-        return redirect()->route('transfers.index')->with('success', 'تم إنشاء الطلب بنجاح.');
+        return redirect()->route('transfers.index')->with('success', __('تم إنشاء الطلب بنجاح.'));
     }
 }

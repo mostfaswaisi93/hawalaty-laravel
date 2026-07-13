@@ -19,8 +19,10 @@
     // both silently overridden — the glyph ends up ~14px too high and, on RTL
     // fields, on the wrong horizontal side. So position the icon *physically*
     // instead: centred vertically with top-1/2 + translate, and on the field's
-    // start side derived from its reading direction ($dir; default = page rtl).
-    $leadingIconPos = $dir === 'ltr' ? 'left-0 pl-3' : 'right-0 pr-3';
+    // start side derived from its effective reading direction: the explicit
+    // $dir prop when given, otherwise the current page locale (ar = rtl).
+    $effectiveLtr = $dir ? ($dir === 'ltr') : (app()->getLocale() !== 'ar');
+    $leadingIconPos = $effectiveLtr ? 'left-0 pl-3' : 'right-0 pr-3';
 @endphp
 
 <div class="space-y-2">

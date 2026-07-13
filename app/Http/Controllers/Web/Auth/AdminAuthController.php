@@ -33,7 +33,7 @@ class AdminAuthController extends Controller
         if (! $attempted) {
             return redirect()->route('admin.login')
                 ->withInput($request->only('email'))
-                ->withErrors(['login' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة.']);
+                ->withErrors(['login' => __('البريد الإلكتروني أو كلمة المرور غير صحيحة.')]);
         }
 
         $request->session()->regenerate();

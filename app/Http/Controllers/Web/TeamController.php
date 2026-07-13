@@ -24,7 +24,7 @@ class TeamController extends Controller
     public function index(Request $request): View|RedirectResponse
     {
         if (! $this->canManage()) {
-            return redirect()->route('dashboard')->with('error', 'ليست لديك صلاحية لإدارة الفريق.');
+            return redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإدارة الفريق.'));
         }
 
         $search = $request->query('search');
@@ -42,7 +42,7 @@ class TeamController extends Controller
 
         $this->service->create($request->validated());
 
-        return redirect()->route('team.index')->with('success', 'تمت إضافة العضو بنجاح.');
+        return redirect()->route('team.index')->with('success', __('تمت إضافة العضو بنجاح.'));
     }
 
     // Route param name is {teamMember} so UpdateTeamMemberRequest's
@@ -53,7 +53,7 @@ class TeamController extends Controller
 
         $this->service->update(TeamMember::findOrFail($teamMember), $request->validated());
 
-        return redirect()->route('team.index')->with('success', 'تم تحديث العضو بنجاح.');
+        return redirect()->route('team.index')->with('success', __('تم تحديث العضو بنجاح.'));
     }
 
     public function destroy(string $teamMember): RedirectResponse
@@ -68,7 +68,7 @@ class TeamController extends Controller
             return redirect()->route('team.index')->with('error', $e->validator->errors()->first());
         }
 
-        return redirect()->route('team.index')->with('success', 'تم حذف العضو.');
+        return redirect()->route('team.index')->with('success', __('تم حذف العضو.'));
     }
 
     private function canManage(): bool

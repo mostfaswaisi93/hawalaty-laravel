@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'قائمة الطعام — حوالاتي')
+@section('title', __('قائمة الطعام — حوالاتي'))
 
 @section('content')
     <div class="page-enter space-y-6"
@@ -15,19 +15,19 @@
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
-                <h1 class="font-display-lg text-display-lg text-on-surface">قائمة الطعام</h1>
-                <p class="mt-1 font-body-lg text-on-surface-variant">نظّم فئاتك وأصنافك وأسعارها.</p>
+                <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('قائمة الطعام') }}</h1>
+                <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('نظّم فئاتك وأصنافك وأسعارها.') }}</p>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" @click="catOpen = true"
                     class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                     <span class="material-symbols-outlined !text-xl">create_new_folder</span>
-                    فئة جديدة
+                    {{ __('فئة جديدة') }}
                 </button>
                 <button type="button" @click="openAddItem('')" @disabled($categories->isEmpty())
                     class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
                     <span class="material-symbols-outlined !text-xl">add</span>
-                    صنف جديد
+                    {{ __('صنف جديد') }}
                 </button>
             </div>
         </header>
@@ -35,8 +35,8 @@
         @if ($categories->isEmpty())
             <div class="tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
-                <p class="font-body-lg text-on-surface-variant">لا توجد فئات بعد</p>
-                <button type="button" @click="catOpen = true" class="font-body-sm font-bold text-primary hover:underline">أنشئ أول فئة</button>
+                <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد فئات بعد') }}</p>
+                <button type="button" @click="catOpen = true" class="font-body-sm font-bold text-primary hover:underline">{{ __('أنشئ أول فئة') }}</button>
             </div>
         @else
             <div class="space-y-5">
@@ -49,18 +49,18 @@
                                 </div>
                                 <div>
                                     <h2 class="font-headline-md text-headline-md text-on-surface">{{ $cat->name }}</h2>
-                                    <p class="font-body-sm text-outline">{{ $cat->menuItems->count() }} صنف</p>
+                                    <p class="font-body-sm text-outline">{{ $cat->menuItems->count() }} {{ __('صنف') }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-1">
                                 <button type="button" @click="openAddItem(@js($cat->id))"
-                                    class="flex h-9 items-center gap-1 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="إضافة صنف">
+                                    class="flex h-9 items-center gap-1 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('إضافة صنف') }}">
                                     <span class="material-symbols-outlined !text-xl">add</span>
-                                    <span class="hidden font-body-sm font-bold sm:inline">صنف</span>
+                                    <span class="hidden font-body-sm font-bold sm:inline">{{ __('صنف') }}</span>
                                 </button>
-                                <form method="POST" action="{{ route('menu.categories.destroy', $cat->id) }}" onsubmit="return confirm('حذف الفئة وكل أصنافها؟')" class="inline-flex">
+                                <form method="POST" action="{{ route('menu.categories.destroy', $cat->id) }}" onsubmit="return confirm('{{ __('حذف الفئة وكل أصنافها؟') }}')" class="inline-flex">
                                     @csrf @method('DELETE')
-                                    <button type="submit" aria-label="حذف الفئة"
+                                    <button type="submit" aria-label="{{ __('حذف الفئة') }}"
                                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                         <span class="material-symbols-outlined !text-xl">delete</span>
                                     </button>
@@ -69,7 +69,7 @@
                         </div>
 
                         @if ($cat->menuItems->isEmpty())
-                            <p class="p-6 text-center font-body-sm text-outline">لا أصناف في هذه الفئة — أضِف واحداً.</p>
+                            <p class="p-6 text-center font-body-sm text-outline">{{ __('لا أصناف في هذه الفئة — أضِف واحداً.') }}</p>
                         @else
                             <ul class="divide-y divide-outline-variant/50">
                                 @foreach ($cat->menuItems as $item)
@@ -86,20 +86,20 @@
                                         <form method="POST" action="{{ route('menu.items.update', $item->id) }}" class="inline-flex">
                                             @csrf @method('PUT')
                                             <input type="hidden" name="active" value="{{ $item->active ? 0 : 1 }}">
-                                            <button type="submit" aria-label="{{ $item->active ? 'إيقاف' : 'تفعيل' }}"
+                                            <button type="submit" aria-label="{{ $item->active ? __('إيقاف') : __('تفعيل') }}"
                                                 class="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors {{ $item->active ? 'bg-primary' : 'bg-surface-container-high' }}">
                                                 <span class="absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all {{ $item->active ? 'start-1' : 'end-1' }}"></span>
                                             </button>
                                         </form>
 
                                         <button type="button" @click="openEditItem(@js(['id' => $item->id, 'name' => $item->name, 'menuCategoryId' => $item->menu_category_id, 'price' => (float) $item->price, 'active' => (bool) $item->active]))"
-                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="تعديل">
+                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                             <span class="material-symbols-outlined !text-xl">edit</span>
                                         </button>
 
-                                        <form method="POST" action="{{ route('menu.items.destroy', $item->id) }}" onsubmit="return confirm('حذف هذا الصنف؟')" class="inline-flex">
+                                        <form method="POST" action="{{ route('menu.items.destroy', $item->id) }}" onsubmit="return confirm('{{ __('حذف هذا الصنف؟') }}')" class="inline-flex">
                                             @csrf @method('DELETE')
-                                            <button type="submit" aria-label="حذف"
+                                            <button type="submit" aria-label="{{ __('حذف') }}"
                                                 class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                                 <span class="material-symbols-outlined !text-xl">delete</span>
                                             </button>
@@ -119,19 +119,19 @@
             <div x-show="catOpen" @keydown.escape.window="catOpen = false"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-5 font-headline-md text-headline-md">فئة جديدة</h3>
+                <h3 class="mb-5 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
                 <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4">
                     @csrf
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">اسم الفئة</label>
-                        <input name="name" required placeholder="مثال: المشاوي"
+                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم الفئة') }}</label>
+                        <input name="name" required placeholder="{{ __('مثال: المشاوي') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="catOpen = false"
-                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">إلغاء</button>
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
                         <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">إضافة</button>
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">{{ __('إضافة') }}</button>
                     </div>
                 </form>
             </div>
@@ -143,47 +143,47 @@
             <div x-show="itemOpen" @keydown.escape.window="itemOpen = false"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? 'تعديل الصنف' : 'صنف جديد'"></h3>
+                <h3 class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
                 <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="itemMode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
                     <input type="hidden" name="active" :value="itemForm.active ? 1 : 0">
 
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">اسم الصنف</label>
-                        <input name="name" x-model="itemForm.name" required placeholder="مثال: شاورما لحمة"
+                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم الصنف') }}</label>
+                        <input name="name" x-model="itemForm.name" required placeholder="{{ __('مثال: شاورما لحمة') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">الفئة</label>
+                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الفئة') }}</label>
                             <select name="menuCategoryId" x-model="itemForm.menuCategoryId" required
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                                <option value="" disabled>اختر...</option>
+                                <option value="" disabled>{{ __('اختر...') }}</option>
                                 @foreach ($categories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="space-y-1.5">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">السعر (₪)</label>
+                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('السعر (₪)') }}</label>
                             <input type="number" step="0.01" min="0" name="price" x-model="itemForm.price" required dir="ltr" placeholder="0.00"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
 
                     <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
-                        <span class="font-body-sm font-bold text-on-surface">متاح للطلب</span>
+                        <span class="font-body-sm font-bold text-on-surface">{{ __('متاح للطلب') }}</span>
                         <input type="checkbox" x-model="itemForm.active" class="h-5 w-5 rounded accent-primary" />
                     </label>
 
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="itemOpen = false"
-                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">إلغاء</button>
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
                         <button type="submit"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
-                            x-text="itemMode === 'edit' ? 'حفظ التغييرات' : 'إضافة'"></button>
+                            x-text="itemMode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}'"></button>
                     </div>
                 </form>
             </div>
