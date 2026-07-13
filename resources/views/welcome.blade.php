@@ -32,13 +32,13 @@
 
     {{-- ─────────────────────────  NAV  ───────────────────────── --}}
     <header x-data="{ open: false }" class="sticky top-0 z-50 border-b border-outline-variant/60 bg-surface/80 backdrop-blur-lg">
-        <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-inline-md md:px-inline-lg">
+        <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-inline-md md:h-20 md:px-inline-lg">
             <a href="{{ url('/') }}" class="flex items-center gap-3">
                 <x-logo />
                 <span class="font-display-lg text-2xl font-bold leading-none text-primary">{{ __('حوالاتي') }}</span>
             </a>
 
-            <div class="hidden items-center gap-8 md:flex">
+            <div class="hidden items-center gap-10 md:flex">
                 <a href="#features" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary">{{ __('المزايا') }}</a>
                 <a href="#how" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary">{{ __('كيف يعمل') }}</a>
                 <a href="#pricing" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary">{{ __('الأسعار') }}</a>
@@ -90,19 +90,19 @@
             <div class="pointer-events-none absolute -top-40 start-[-10%] h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-3xl"></div>
             <div class="pointer-events-none absolute -bottom-52 end-[-8%] h-[26rem] w-[26rem] rounded-full bg-secondary-container/25 blur-3xl"></div>
 
-            <div class="relative mx-auto grid max-w-7xl items-center gap-16 px-inline-md py-20 md:px-inline-lg lg:grid-cols-2 lg:py-28">
+            <div class="relative mx-auto grid max-w-7xl items-center gap-16 px-inline-md py-24 md:px-inline-lg md:py-32 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20 lg:py-36">
                 <div class="page-enter text-center lg:text-start">
                     <span class="inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-low px-4 py-1.5 font-body-sm text-on-surface-variant">
                         <span class="h-2 w-2 rounded-full bg-secondary-container"></span>
                         {{ __('منصّة عربية ثنائية اللغة للأعمال') }}
                     </span>
 
-                    <h1 class="mt-6 font-display-lg text-4xl font-bold leading-[1.15] text-on-surface sm:text-5xl lg:text-[56px]">
+                    <h1 class="mt-8 font-display-lg text-4xl font-bold leading-[1.1] tracking-tight text-on-surface sm:text-5xl md:text-6xl lg:text-[64px]">
                         {{ __('أدر مطعمك وحوالاتك') }}
-                        <span class="bg-gradient-to-l from-primary to-[#3b63d6] bg-clip-text text-transparent">{{ __('من مكان واحد') }}</span>
+                        <span class="bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent">{{ __('من مكان واحد') }}</span>
                     </h1>
 
-                    <p class="mx-auto mt-6 max-w-xl font-body-lg leading-relaxed text-on-surface-variant lg:mx-0">
+                    <p class="mx-auto mt-7 max-w-2xl font-body-lg leading-relaxed text-on-surface-variant lg:mx-0">
                         {{ __('منصّة متكاملة لإدارة الطلبات، البنوك والمحافظ، القوائم، المصروفات والتقارير — بواجهة أنيقة، صلاحيات دقيقة، وتقارير فورية تنمّي عملك.') }}
                     </p>
 
@@ -123,15 +123,16 @@
                 </div>
 
                 {{-- floating dashboard preview --}}
-                <div class="reveal is-visible relative lg:ps-6" aria-hidden="true">
-                    <div class="floaty glass-card mx-auto max-w-md rounded-3xl p-6">
+                <div class="reveal is-visible relative mx-auto w-full max-w-lg lg:mx-0 lg:max-w-none" aria-hidden="true">
+                    <div class="pointer-events-none absolute -inset-4 -z-10 hidden rounded-[2.5rem] bg-gradient-to-br from-primary-container/30 to-secondary-container/20 blur-2xl lg:block"></div>
+                    <div class="floaty glass-card w-full rounded-3xl p-7 sm:p-8">
                         <div class="flex items-start justify-between">
                             <div>
                                 <p class="font-body-sm text-on-surface-variant">{{ __('إجمالي الإيرادات') }}</p>
-                                <p class="mt-1 font-display-lg text-3xl font-bold text-on-surface" dir="ltr">18,240.00 ₪</p>
+                                <p class="mt-1 font-display-lg text-4xl font-bold text-on-surface" dir="ltr">18,240.00 ₪</p>
                             </div>
-                            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                                <span class="material-symbols-outlined">point_of_sale</span>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined !text-2xl">point_of_sale</span>
                             </div>
                         </div>
 
@@ -141,7 +142,7 @@
                             <span class="font-body-sm text-outline">{{ __('مقارنة بالأسبوع الماضي') }}</span>
                         </div>
 
-                        <div class="mt-4 flex h-24 items-end gap-2">
+                        <div class="mt-5 flex h-28 items-end gap-2">
                             @foreach ([40, 65, 35, 90, 55, 75, 60] as $h)
                                 <div class="w-full rounded-t-lg {{ $h === 90 ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}" style="height: {{ $h }}%"></div>
                             @endforeach
@@ -170,17 +171,19 @@
         </section>
 
         {{-- ─────────────────────────  STATS STRIP  ───────────────────────── --}}
-        <section class="border-y border-outline-variant/50 bg-surface-container-low/50">
-            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-inline-md py-10 md:grid-cols-4 md:px-inline-lg">
+        <section class="border-y border-outline-variant/50 bg-surface-container-low">
+            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-inline-md py-14 md:grid-cols-4 md:gap-6 md:px-inline-lg md:py-16">
                 @foreach ([
                     ['bolt', __('٧+'), __('بنوك ومحافظ مدعومة')],
                     ['language', __('عربي/إنجليزي'), __('واجهة ثنائية اللغة')],
                     ['admin_panel_settings', __('أدوار وصلاحيات'), __('تحكّم دقيق بالفريق')],
                     ['insights', __('فورية'), __('تقارير لحظية')],
                 ] as [$icon, $big, $label])
-                    <div class="reveal flex flex-col items-center gap-1 text-center">
-                        <span class="material-symbols-outlined mb-1 text-secondary" data-weight="fill">{{ $icon }}</span>
-                        <span class="font-display-lg text-xl font-bold text-on-surface">{{ $big }}</span>
+                    <div class="reveal tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-6 text-center">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">
+                            <span class="material-symbols-outlined !text-2xl" data-weight="fill">{{ $icon }}</span>
+                        </span>
+                        <span class="font-display-lg text-2xl font-bold text-on-surface">{{ $big }}</span>
                         <span class="font-body-sm text-on-surface-variant">{{ $label }}</span>
                     </div>
                 @endforeach
@@ -188,25 +191,30 @@
         </section>
 
         {{-- ─────────────────────────  FEATURES  ───────────────────────── --}}
-        <section id="features" class="mx-auto max-w-7xl scroll-mt-20 px-inline-md py-24 md:px-inline-lg">
+        <section id="features" class="scroll-mt-20 bg-surface py-24 md:py-28 lg:py-32">
+            <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
             <div class="reveal mx-auto max-w-2xl text-center">
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('كل ما تحتاجه') }}</p>
-                <h2 class="mt-3 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl">{{ __('مزايا مصمّمة لإدارة عملك بالكامل') }}</h2>
+                <h2 class="mt-4 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl lg:text-5xl">{{ __('مزايا مصمّمة لإدارة عملك بالكامل') }}</h2>
                 <p class="mt-4 font-body-lg text-on-surface-variant">{{ __('من أول طلب حتى آخر تقرير — كل أدواتك في مساحة عمل واحدة أنيقة ومعزولة.') }}</p>
             </div>
 
-            <div class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                 @foreach ([
                     ['receipt_long', 'primary', __('طلبات سريعة'), __('أنشئ الطلبات في ثوانٍ عبر منشئ طلب ذكي يحسب المجموع تلقائياً من قائمتك.')],
                     ['account_balance', 'secondary', __('البنوك والمحافظ'), __('ادعم الدفع نقداً أو عبر البنوك والمحافظ الإلكترونية مع تتبّع كامل لكل حوالة.')],
-                    ['restaurant_menu', 'primary', __('قائمة الطعام'), __('نظّم أصنافك في فئات مرتّبة مع أسعار مرنة وتفعيل/إخفاء فوري لأي صنف.')],
+                    ['restaurant_menu', 'tertiary', __('قائمة الطعام'), __('نظّم أصنافك في فئات مرتّبة مع أسعار مرنة وتفعيل/إخفاء فوري لأي صنف.')],
                     ['assessment', 'secondary', __('تقارير احترافية'), __('تقارير فورية عن الإيرادات والنشاط اليومي والأسبوعي، وتصدير PDF بنقرة واحدة.')],
                     ['group', 'primary', __('الفريق والصلاحيات'), __('ادعُ فريقك بأدوار جاهزة (مالك/مدير/موظف) وصلاحيات دقيقة لكل إجراء.')],
-                    ['contacts', 'secondary', __('عملاء دائمون'), __('تعرّف تلقائياً على عملائك المتكررين وتابع سجل طلباتهم وإجمالي إنفاقهم.')],
+                    ['contacts', 'tertiary', __('عملاء دائمون'), __('تعرّف تلقائياً على عملائك المتكررين وتابع سجل طلباتهم وإجمالي إنفاقهم.')],
                 ] as [$icon, $accent, $title, $desc])
+                    @php $accentClasses = match ($accent) {
+                        'secondary' => 'bg-secondary-container/15 text-secondary',
+                        'tertiary' => 'bg-tertiary/10 text-tertiary',
+                        default => 'bg-primary/10 text-primary',
+                    }; @endphp
                     <div class="reveal tonal-elevation group rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-7">
-                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110
-                            {{ $accent === 'primary' ? 'bg-primary/10 text-primary' : 'bg-secondary-container/15 text-secondary' }}">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 {{ $accentClasses }}">
                             <span class="material-symbols-outlined !text-3xl">{{ $icon }}</span>
                         </div>
                         <h3 class="mt-5 font-headline-md text-headline-md text-on-surface">{{ $title }}</h3>
@@ -214,17 +222,19 @@
                     </div>
                 @endforeach
             </div>
+            </div>
         </section>
 
         {{-- ─────────────────────────  HOW IT WORKS  ───────────────────────── --}}
-        <section id="how" class="scroll-mt-20 bg-surface-container-low/40 py-24">
+        <section id="how" class="scroll-mt-20 bg-surface-container-low py-24 md:py-28 lg:py-32">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
                 <div class="reveal mx-auto max-w-2xl text-center">
                     <p class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('ابدأ خلال دقائق') }}</p>
-                    <h2 class="mt-3 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl">{{ __('ثلاث خطوات وأنت جاهز') }}</h2>
+                    <h2 class="mt-4 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl lg:text-5xl">{{ __('ثلاث خطوات وأنت جاهز') }}</h2>
                 </div>
 
-                <div class="mt-16 grid gap-8 md:grid-cols-3">
+                <div class="relative mt-20 grid gap-10 md:grid-cols-3">
+                    <div class="pointer-events-none absolute top-10 hidden border-t-2 border-dashed border-outline-variant/60 md:block" style="inset-inline: 16%;"></div>
                     @foreach ([
                         ['person_add', __('أنشئ حسابك'), __('سجّل عملك في دقائق واحصل على مساحة عمل خاصة ومعزولة بالكامل.')],
                         ['tune', __('جهّز قائمتك وبنوكك'), __('أضف أصنافك وأسعارك، وبنوكك ومحافظك، ووسائل الدفع المتاحة.')],
@@ -244,14 +254,15 @@
         </section>
 
         {{-- ─────────────────────────  PRICING  ───────────────────────── --}}
-        <section id="pricing" class="mx-auto max-w-7xl scroll-mt-20 px-inline-md py-24 md:px-inline-lg">
+        <section id="pricing" class="scroll-mt-20 bg-surface py-24 md:py-28 lg:py-32">
+            <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
             <div class="reveal mx-auto max-w-2xl text-center">
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('أسعار بسيطة وشفّافة') }}</p>
-                <h2 class="mt-3 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl">{{ __('اختر الباقة المناسبة لعملك') }}</h2>
+                <h2 class="mt-4 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl lg:text-5xl">{{ __('اختر الباقة المناسبة لعملك') }}</h2>
                 <p class="mt-4 font-body-lg text-on-surface-variant">{{ __('ابدأ مجاناً، وارتقِ متى شئت. كل الباقات تشمل التحديثات والدعم.') }}</p>
             </div>
 
-            <div class="mt-16 grid items-stretch gap-6 lg:grid-cols-3">
+            <div class="mt-20 grid items-stretch gap-6 lg:grid-cols-3 lg:gap-8">
                 @php
                     $plans = [
                         ['ar' => __('الأساسية'), 'price' => '0', 'unit' => __('مجاناً'), 'devices' => __('٣ أجهزة'), 'popular' => false,
@@ -266,7 +277,7 @@
                 @foreach ($plans as $plan)
                     <div class="reveal relative flex flex-col rounded-3xl p-8 transition-all
                         {{ $plan['popular']
-                            ? 'border-2 border-secondary-container bg-surface-container-lowest shadow-2xl shadow-secondary-container/20 lg:-translate-y-4'
+                            ? 'border-2 border-secondary-container bg-surface-container-lowest shadow-2xl shadow-secondary-container/20 lg:-translate-y-4 lg:p-10'
                             : 'tonal-elevation border border-outline-variant/50 bg-surface-container-lowest' }}">
 
                         @if ($plan['popular'])
@@ -301,15 +312,16 @@
                     </div>
                 @endforeach
             </div>
+            </div>
         </section>
 
         {{-- ─────────────────────────  CTA BAND  ───────────────────────── --}}
-        <section class="mx-auto max-w-7xl px-inline-md pb-24 md:px-inline-lg">
-            <div class="reveal relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#00236f] to-[#1e3a8a] px-8 py-16 text-center shadow-2xl md:px-16">
+        <section class="mx-auto max-w-7xl px-inline-md py-24 md:px-inline-lg md:py-32">
+            <div class="reveal relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#00236f] to-[#1e3a8a] px-8 py-16 text-center shadow-2xl sm:py-20 md:px-16 md:py-24">
                 <div class="pointer-events-none absolute -top-1/3 start-[-5%] h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
                 <div class="pointer-events-none absolute -bottom-1/2 end-[-5%] h-80 w-80 rounded-full bg-secondary-container/20 blur-3xl"></div>
                 <div class="relative">
-                    <h2 class="font-display-lg text-3xl font-bold text-white sm:text-4xl">{{ __('جاهز لتنمية عملك؟') }}</h2>
+                    <h2 class="font-display-lg text-3xl font-bold text-white sm:text-4xl md:text-5xl">{{ __('جاهز لتنمية عملك؟') }}</h2>
                     <p class="mx-auto mt-4 max-w-xl font-body-lg text-white/80">{{ __('انضم إلى الأعمال التي تدير طلباتها وحوالاتها باحترافية. جهّز مساحتك خلال دقائق.') }}</p>
                     <a href="{{ route('signup') }}"
                         class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-primary shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]">
@@ -323,8 +335,8 @@
 
     {{-- ─────────────────────────  FOOTER  ───────────────────────── --}}
     <footer class="border-t border-outline-variant/60 bg-surface-container-lowest">
-        <div class="mx-auto max-w-7xl px-inline-md py-14 md:px-inline-lg">
-            <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div class="mx-auto max-w-7xl px-inline-md py-16 md:px-inline-lg md:py-20">
+            <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr] md:gap-12">
                 <div>
                     <div class="flex items-center gap-3">
                         <x-logo />
