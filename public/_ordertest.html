@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/build/assets/app-eZWG5Vkc.css">
+<script>
+window.orderBuilder = function (menu, banks, wallets) {
+    return {
+        menu: menu, banks: banks, wallets: wallets,
+        search: '', activeCat: menu.length ? menu[0].id : null,
+        cart: [], customer: '', paymentMethod: 'cash',
+        hasChange: false, changeMethod: 'cash', changeBankId: '', changeAmount: '',
+        bankId: '', senderName: '', senderPhone: '', transferredAmount: '', submitting: false,
+        init() {
+            this.$watch('paymentMethod', () => {
+                this.hasChange = false; this.changeMethod = 'cash'; this.changeBankId = '';
+                this.changeAmount = ''; this.bankId = ''; this.senderName = ''; this.senderPhone = '';
+                this.transferredAmount = this.paymentMethod === 'bank' ? this.total.toFixed(2) : '';
+            });
+        },
+        get allBanks() { return this.banks.concat(this.wallets); },
+        get filteredItems() {
+            const term = this.search.trim(); const out = [];
+            this.menu.forEach(cat => cat.items.forEach(item => {
+                if (term ? item.name.includes(term) : cat.id === this.activeCat) out.push(item);
+            }));
+            return out;
+        },
+        get total() { return this.cart.reduce((s, l) => s + l.price * l.qty, 0); },
+        get itemCount() { return this.cart.reduce((s, l) => s + l.qty, 0); },
+        qtyOf(id) { const l = this.cart.find(c => c.id === id); return l ? l.qty : 0; },
+        addItem(item) {
+            const e = this.cart.find(c => c.id === item.id);
+            if (e) e.qty++; else this.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 });
+            if (this.paymentMethod === 'bank') this.transferredAmount = this.total.toFixed(2);
+        },
+        inc(l) { l.qty++; if (this.paymentMethod === 'bank') this.transferredAmount = this.total.toFixed(2); },
+        dec(l) { l.qty--; if (l.qty <= 0) this.cart = this.cart.filter(c => c !== l); if (this.paymentMethod === 'bank') this.transferredAmount = this.total.toFixed(2); },
+        fmt(n) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+        get canSubmit() {
+            if (!this.customer.trim() || !this.cart.length) return false;
+            if (this.paymentMethod === 'bank') { if (!this.bankId || !this.transferredAmount) return false; }
+            if (this.paymentMethod === 'cash' && this.hasChange) {
+                if (this.changeAmount === '' || this.changeAmount === null) return false;
+                if (this.changeMethod === 'bank' && !this.changeBankId) return false;
+            }
+            return true;
+        },
+        onSubmit(e) { if (!this.canSubmit) { e.preventDefault(); return; } this.submitting = true; },
+    };
+};
+</script>
+</head>
+<body>
+<form id="f" method="POST" action="/transfers" @submit.prevent="onSubmit($event)"
+    x-data="orderBuilder(
+        [{id:'m1',name:'المشاوي',items:[{id:'i1',name:'شاورما لحمة',price:25},{id:'i2',name:'كباب',price:40}]},{id:'m2',name:'المشروبات',items:[{id:'i3',name:'ماء',price:2}]}],
+        [{id:'b1',name:'بنك فلسطين'}],
+        [{id:'w1',name:'جوال باي'}]
+    )">
+    <input name="customer" x-model="customer" id="customer">
+    <template x-for="item in filteredItems" :key="item.id">
+        <button type="button" class="additem" :data-id="item.id" @click="addItem(item)" x-text="item.name"></button>
+    </template>
+    <input type="radio" name="paymentMethod" value="cash" x-model="paymentMethod">
+    <input type="radio" name="paymentMethod" value="bank" x-model="paymentMethod">
+    <div x-show="paymentMethod==='cash'">
+        <input type="checkbox" id="hasChange" x-model="hasChange">
+        <input type="hidden" name="hasChange" :value="(paymentMethod==='cash' && hasChange)?1:0">
+        <div x-show="hasChange">
+            <input type="radio" name="changeMethod" value="cash" x-model="changeMethod">
+            <input type="radio" name="changeMethod" value="bank" x-model="changeMethod">
+            <select name="changeBankId" x-model="changeBankId"><option value="">-</option>
+                <template x-for="b in allBanks" :key="b.id"><option :value="b.id" x-text="b.name"></option></template>
+            </select>
+            <input name="changeAmount" x-model="changeAmount">
+        </div>
+    </div>
+    <div x-show="paymentMethod==='bank'">
+        <select name="bankId" x-model="bankId"><option value="">-</option>
+            <template x-for="b in banks" :key="b.id"><option :value="b.id" x-text="b.name"></option></template>
+            <template x-for="b in wallets" :key="b.id"><option :value="b.id" x-text="b.name"></option></template>
+        </select>
+        <input name="senderName" x-model="senderName">
+        <input name="senderPhone" x-model="senderPhone">
+        <input name="transferredAmount" x-model="transferredAmount">
+    </div>
+    <button type="submit" id="submitbtn" :disabled="!canSubmit">go</button>
+    <span id="total" x-text="fmt(total)"></span>
+    <span id="cansubmit" x-text="canSubmit"></span>
+    <template x-for="(line, idx) in cart" :key="'in-'+line.id">
+        <div>
+            <input type="hidden" :name="`items[${idx}][itemId]`" :value="line.id">
+            <input type="hidden" :name="`items[${idx}][name]`" :value="line.name">
+            <input type="hidden" :name="`items[${idx}][quantity]`" :value="line.qty">
+            <input type="hidden" :name="`items[${idx}][price]`" :value="line.price">
+        </div>
+    </template>
+</form>
+<script type="module" src="/build/assets/app-B9qO1Jfl.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 @section('title', 'الترخيص غير نشط — حوالاتي')
 
 @section('content')
-    <section class="mx-auto flex w-full items-center justify-center px-inline-md py-16">
+    <section class="mx-auto flex w-full items-center justify-center px-inline-md py-16 lg:col-span-2">
         <div class="w-full max-w-md text-center">
             <div class="mb-6 flex justify-center">
                 <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-error-container text-on-error-container">

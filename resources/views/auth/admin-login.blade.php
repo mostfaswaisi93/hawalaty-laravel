@@ -3,7 +3,7 @@
 @section('title', 'دخول المشرف — حوالاتي')
 
 @section('content')
-    <section class="mx-auto flex w-full items-center justify-center px-inline-md py-16">
+    <section class="mx-auto flex w-full items-center justify-center px-inline-md py-16 lg:col-span-2">
         <div class="w-full max-w-sm">
             <div class="mb-8 text-center">
                 <div class="mb-4 flex justify-center">
