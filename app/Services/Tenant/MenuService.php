@@ -8,6 +8,8 @@ use App\Enums\AuditEntityType;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Categories + items live in one Service — they're tightly coupled (an item
@@ -111,5 +113,98 @@ class MenuService
         $item->delete();
 
         AuditLogger::record(AuditAction::Deleted, AuditEntityType::MenuItem, $name, AuditCategory::Menu);
+    }
+
+    // --- Bulk CSV import/export ---
+
+    /**
+     * @return array<int, array{category: string, name: string, price: string, active: string}>
+     */
+    public function exportRows(): array
+    {
+        return MenuCategory::query()
+            ->with(['menuItems' => fn ($query) => $query->orderBy('name')])
+            ->orderBy('position')
+            ->get()
+            ->flatMap(fn (MenuCategory $category) => $category->menuItems->map(fn (MenuItem $item) => [
+                'category' => $category->name,
+                'name' => $item->name,
+                'price' => (string) $item->price,
+                'active' => $item->active ? '1' : '0',
+            ]))
+            ->all();
+    }
+
+    /**
+     * Expects a `category,name,price,active` header row. Categories are
+     * matched by exact name and created on the fly (appended after the
+     * current highest position); items are matched by (category, name) —
+     * an existing match is updated in place, everything else is created.
+     * One DB::transaction so a bad file never leaves a half-applied import.
+     *
+     * @return array{created: int, updated: int, skipped: int}
+     */
+    public function importCsv(UploadedFile $file): array
+    {
+        $handle = fopen($file->getRealPath(), 'rb');
+        $header = fgetcsv($handle);
+
+        if ($header === false) {
+            fclose($handle);
+
+            return ['created' => 0, 'updated' => 0, 'skipped' => 0];
+        }
+
+        $header = array_map(fn ($column) => strtolower(trim((string) $column)), $header);
+        $columnIndex = array_flip($header);
+
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        DB::connection('tenant')->transaction(function () use ($handle, $columnIndex, &$created, &$updated, &$skipped) {
+            $categoriesByName = MenuCategory::query()->get()->keyBy('name');
+            $nextPosition = ((int) MenuCategory::max('position')) + 1;
+
+            while (($row = fgetcsv($handle)) !== false) {
+                $categoryName = trim((string) ($row[$columnIndex['category'] ?? -1] ?? ''));
+                $name = trim((string) ($row[$columnIndex['name'] ?? -1] ?? ''));
+                $price = $row[$columnIndex['price'] ?? -1] ?? null;
+                $active = $row[$columnIndex['active'] ?? -1] ?? '1';
+
+                if ($categoryName === '' || $name === '' || ! is_numeric($price)) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $category = $categoriesByName->get($categoryName);
+
+                if (! $category) {
+                    $category = MenuCategory::create(['name' => $categoryName, 'position' => $nextPosition++]);
+                    $categoriesByName->put($categoryName, $category);
+                }
+
+                $item = MenuItem::where('menu_category_id', $category->id)->where('name', $name)->first();
+                $attributes = [
+                    'price' => $price,
+                    'active' => in_array(strtolower((string) $active), ['0', 'false', 'no', ''], true) ? false : true,
+                ];
+
+                if ($item) {
+                    $item->update($attributes);
+                    $updated++;
+                } else {
+                    MenuItem::create([...$attributes, 'menu_category_id' => $category->id, 'name' => $name]);
+                    $created++;
+                }
+            }
+        });
+
+        fclose($handle);
+
+        AuditLogger::record(AuditAction::Updated, AuditEntityType::MenuItem, __('استيراد جماعي'), AuditCategory::Menu);
+
+        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
     }
 }

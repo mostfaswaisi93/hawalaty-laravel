@@ -14,9 +14,11 @@ use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
 // Everything below is the server-rendered Blade web app that sits alongside
@@ -29,7 +31,7 @@ Route::view('/', 'welcome')->name('home');
 // UI language toggle (ar/en). Public so guests can switch on the auth pages
 // too; stores the choice in the session, then returns to the previous page.
 Route::get('locale/{locale}', function (string $locale) {
-    if (in_array($locale, \App\Http\Middleware\SetLocale::SUPPORTED, true)) {
+    if (in_array($locale, SetLocale::SUPPORTED, true)) {
         session(['locale' => $locale]);
     }
 
@@ -87,6 +89,9 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 
+    // Global search (header search pill)
+    Route::get('search', [SearchController::class, 'index'])->name('search.index');
+
     // Notifications (header bell dropdown)
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
@@ -100,6 +105,8 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 
     // Menu — categories + items
     Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
+    Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
+    Route::post('menu/import', [MenuController::class, 'import'])->name('menu.import');
     Route::post('menu/categories', [MenuController::class, 'storeCategory'])->name('menu.categories.store');
     Route::delete('menu/categories/{category}', [MenuController::class, 'destroyCategory'])->name('menu.categories.destroy');
     Route::post('menu/items', [MenuController::class, 'storeItem'])->name('menu.items.store');

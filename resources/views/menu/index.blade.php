@@ -7,6 +7,7 @@
         x-data="{
             catOpen: false,
             itemOpen: false,
+            importOpen: false,
             itemMode: 'add',
             itemForm: { id: '', name: '', menuCategoryId: '', price: '', active: true },
             openAddItem(catId) { this.itemMode = 'add'; this.itemForm = { id: '', name: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
@@ -18,7 +19,15 @@
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('قائمة الطعام') }}</h1>
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('نظّم فئاتك وأصنافك وأسعارها.') }}</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('menu.export') }}"
+                    class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تصدير CSV') }}" title="{{ __('تصدير CSV') }}">
+                    <span class="material-symbols-outlined !text-xl">download</span>
+                </a>
+                <button type="button" @click="importOpen = true"
+                    class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('استيراد CSV') }}" title="{{ __('استيراد CSV') }}">
+                    <span class="material-symbols-outlined !text-xl">upload</span>
+                </button>
                 <button type="button" @click="catOpen = true"
                     class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                     <span class="material-symbols-outlined !text-xl">create_new_folder</span>
@@ -184,6 +193,28 @@
                         <button type="submit"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
                             x-text="itemMode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}'"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- ══════════════ import CSV modal ══════════════ --}}
+        <div x-show="importOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
+            <div class="fixed inset-0 bg-black/40" @click="importOpen = false" x-show="importOpen" x-transition.opacity></div>
+            <div x-show="importOpen" @keydown.escape.window="importOpen = false"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                <h3 class="mb-2 font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
+                <p class="mb-5 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
+                <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    <input type="file" name="file" accept=".csv,text/csv" required
+                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none file:me-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:font-body-sm file:font-bold file:text-on-primary" />
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="importOpen = false"
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                        <button type="submit"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">{{ __('استيراد') }}</button>
                     </div>
                 </form>
             </div>

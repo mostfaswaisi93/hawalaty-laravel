@@ -106,9 +106,78 @@
                 <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <div class="search-pill hidden w-full max-w-md items-center gap-2 rounded-full bg-surface-container px-4 py-1.5 transition-shadow sm:flex">
-                    <span class="material-symbols-outlined text-outline">search</span>
-                    <input type="text" aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}" class="w-full border-none bg-transparent px-2 font-body-sm text-sm outline-none focus:ring-0" />
+                <div class="search-pill relative hidden w-full max-w-md sm:block" x-data="globalSearch()" @click.outside="open = false">
+                    <div class="flex items-center gap-2 rounded-full bg-surface-container px-4 py-1.5 transition-shadow">
+                        <span class="material-symbols-outlined text-outline">search</span>
+                        <input type="text" x-model="query" @input="onInput()" @focus="if (hasResults) open = true" autocomplete="off"
+                            aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}"
+                            class="w-full border-none bg-transparent px-2 font-body-sm text-sm outline-none focus:ring-0" />
+                        <span x-show="loading" x-cloak class="material-symbols-outlined animate-spin !text-lg text-outline">progress_activity</span>
+                    </div>
+
+                    <div x-show="open && (hasResults || (searched && !loading))" x-cloak @keydown.escape.window="open = false"
+                        x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        class="absolute inset-x-0 top-12 z-50 max-h-96 overflow-y-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-2xl">
+                        <template x-if="searched && !hasResults">
+                            <p class="p-4 text-center font-body-sm text-outline">{{ __('لا نتائج مطابقة') }}</p>
+                        </template>
+
+                        <template x-if="results.orders.length">
+                            <div class="mb-1">
+                                <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('الطلبات') }}</p>
+                                <template x-for="o in results.orders" :key="o.id">
+                                    <a :href="o.url" class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined flex-shrink-0 text-primary">receipt_long</span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block truncate font-body-sm font-bold text-on-surface" x-text="o.customer"></span>
+                                            <span class="block truncate text-[11px] text-outline" x-text="o.itemName"></span>
+                                        </span>
+                                        <span class="flex-shrink-0 font-numeral-lg text-xs font-bold text-on-surface" x-text="o.amount.toFixed(2) + ' ₪'"></span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="results.customers.length">
+                            <div class="mb-1">
+                                <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('العملاء') }}</p>
+                                <template x-for="c in results.customers" :key="c.id">
+                                    <a :href="c.url" class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined flex-shrink-0 text-secondary">person</span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block truncate font-body-sm font-bold text-on-surface" x-text="c.name"></span>
+                                            <span class="block truncate text-[11px] text-outline" x-text="c.phone || ''"></span>
+                                        </span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="results.banks.length">
+                            <div class="mb-1">
+                                <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('البنوك') }}</p>
+                                <template x-for="b in results.banks" :key="b.id">
+                                    <a :href="b.url" class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined flex-shrink-0 text-tertiary">account_balance</span>
+                                        <span class="truncate font-body-sm font-bold text-on-surface" x-text="b.name"></span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="results.menuItems.length">
+                            <div>
+                                <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('الأصناف') }}</p>
+                                <template x-for="m in results.menuItems" :key="m.id">
+                                    <a :href="m.url" class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined flex-shrink-0 text-primary">restaurant_menu</span>
+                                        <span class="min-w-0 flex-1 truncate font-body-sm font-bold text-on-surface" x-text="m.name"></span>
+                                        <span class="flex-shrink-0 font-numeral-lg text-xs font-bold text-on-surface" x-text="m.price.toFixed(2) + ' ₪'"></span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
 

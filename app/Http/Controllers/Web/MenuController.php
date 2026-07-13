@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Web;
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\MenuCategory\StoreMenuCategoryRequest;
+use App\Http\Requests\Tenant\MenuItem\ImportMenuItemsRequest;
 use App\Http\Requests\Tenant\MenuItem\StoreMenuItemRequest;
 use App\Http\Requests\Tenant\MenuItem\UpdateMenuItemRequest;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use App\Services\Tenant\MenuService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Response;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Server-rendered menu management (categories + items). Gated on MenuManage.
@@ -83,6 +86,36 @@ class MenuController extends Controller
         $this->service->deleteItem(MenuItem::findOrFail($item));
 
         return redirect()->route('menu.index')->with('success', __('تم حذف الصنف.'));
+    }
+
+    // --- Bulk CSV import/export ---
+
+    public function export(): StreamedResponse
+    {
+        abort_unless($this->canManage(), 403);
+
+        $rows = $this->service->exportRows();
+
+        return Response::streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'wb');
+            fputcsv($out, ['category', 'name', 'price', 'active']);
+            foreach ($rows as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, 'menu-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    public function import(ImportMenuItemsRequest $request): RedirectResponse
+    {
+        abort_unless($this->canManage(), 403);
+
+        $result = $this->service->importCsv($request->file('file'));
+
+        return redirect()->route('menu.index')->with('success', __(
+            'تم الاستيراد: :created صنف جديد، :updated صنف محدث، :skipped صف متجاهَل.',
+            $result
+        ));
     }
 
     private function canManage(): bool
