@@ -22,20 +22,25 @@ class DashboardService
     }
 
     /**
-     * A plain PHP loop over the last 7 days (today inclusive) with one
-     * whereDate() count each, rather than a single raw SQL GROUP BY —
-     * slower, but trivially correct to verify by inspection.
+     * One GROUP BY query for the whole 7-day window (today inclusive)
+     * instead of 7 separate whereDate() counts; zero-count days are filled
+     * in afterward since the query only returns rows that actually exist.
      */
     public function weeklyActivity(): array
     {
+        $countsByDay = Transfer::where('created_at', '>=', Carbon::today()->subDays(6))
+            ->selectRaw('DATE(created_at) as day, COUNT(*) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
         $days = [];
 
         for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
+            $date = Carbon::today()->subDays($i)->toDateString();
 
             $days[] = [
-                'date' => $date->toDateString(),
-                'count' => Transfer::whereDate('created_at', $date)->count(),
+                'date' => $date,
+                'count' => (int) ($countsByDay[$date] ?? 0),
             ];
         }
 

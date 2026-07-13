@@ -30,19 +30,25 @@ class MenuService
      * index/store/destroy only — no update, matching
      * ConstantsService.addMenuCategory()/removeMenuCategory() in the
      * Angular app, which never renames a category, only adds/removes.
+     *
+     * lockForUpdate() inside a transaction so two concurrent creates can't
+     * both read the same MAX(position) and insert with an identical value —
+     * the second transaction's locked read waits for the first to commit.
      */
     public function createCategory(array $data): MenuCategory
     {
-        $nextPosition = ((int) MenuCategory::max('position')) + 1;
+        return DB::connection('tenant')->transaction(function () use ($data) {
+            $nextPosition = ((int) MenuCategory::lockForUpdate()->max('position')) + 1;
 
-        $category = MenuCategory::create([
-            'name' => $data['name'],
-            'position' => $nextPosition,
-        ]);
+            $category = MenuCategory::create([
+                'name' => $data['name'],
+                'position' => $nextPosition,
+            ]);
 
-        AuditLogger::record(AuditAction::Created, AuditEntityType::MenuItem, $category->name, AuditCategory::Menu);
+            AuditLogger::record(AuditAction::Created, AuditEntityType::MenuItem, $category->name, AuditCategory::Menu);
 
-        return $category;
+            return $category;
+        });
     }
 
     public function deleteCategory(MenuCategory $category): void

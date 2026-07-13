@@ -179,21 +179,21 @@
                         <div class="flex items-center gap-2">
                             @if ($transfers->onFirstPage())
                                 <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
-                                    <span class="material-symbols-outlined !text-lg">arrow_forward</span> {{ __('السابق') }}
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
                                 </span>
                             @else
                                 <a href="{{ $transfers->previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
-                                    <span class="material-symbols-outlined !text-lg">arrow_forward</span> {{ __('السابق') }}
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
                                 </a>
                             @endif
 
                             @if ($transfers->hasMorePages())
                                 <a href="{{ $transfers->nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
-                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
                                 </a>
                             @else
                                 <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
-                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
                                 </span>
                             @endif
                         </div>

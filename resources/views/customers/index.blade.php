@@ -59,6 +59,35 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                @if ($customers->hasPages())
+                    <div class="mt-6 flex items-center justify-between gap-4 border-t border-outline-variant/50 pt-5">
+                        <span class="font-body-sm text-on-surface-variant">
+                            {{ __('صفحة') }} {{ $customers->currentPage() }} {{ __('من') }} {{ $customers->lastPage() }}
+                        </span>
+                        <div class="flex items-center gap-2">
+                            @if ($customers->onFirstPage())
+                                <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
+                                </span>
+                            @else
+                                <a href="{{ $customers->previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
+                                </a>
+                            @endif
+
+                            @if ($customers->hasMorePages())
+                                <a href="{{ $customers->nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
+                                </a>
+                            @else
+                                <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             @endif
         </section>
     </div>

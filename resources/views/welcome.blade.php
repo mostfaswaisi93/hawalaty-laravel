@@ -110,7 +110,7 @@
                         <a href="{{ route('signup') }}"
                             class="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-headline-md text-headline-md text-on-primary shadow-xl shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] sm:w-auto">
                             <span>{{ __('أنشئ حسابك المجاني') }}</span>
-                            <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:-translate-x-1">arrow_back</span>
+                            <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                         </a>
                         <a href="{{ route('login') }}"
                             class="flex w-full items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-8 py-4 font-headline-md text-headline-md text-on-surface transition-all hover:bg-surface-container active:scale-[0.98] sm:w-auto">
@@ -326,7 +326,7 @@
                     <a href="{{ route('signup') }}"
                         class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-primary shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]">
                         <span>{{ __('أنشئ حسابك المجاني') }}</span>
-                        <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:-translate-x-1">arrow_back</span>
+                        <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                     </a>
                 </div>
             </div>

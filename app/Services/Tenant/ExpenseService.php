@@ -6,11 +6,16 @@ use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Models\Tenant\Expense;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ExpenseService
 {
-    public function list(?string $search = null): Collection
+    /**
+     * Paginated (matching History/ActivityLog) — every logged expense is a
+     * new row with no ceiling, so an unbounded get() would eventually load
+     * the tenant's entire expense history on one request.
+     */
+    public function list(?string $search = null): LengthAwarePaginator
     {
         $query = Expense::query()->with('bank');
 
@@ -18,7 +23,7 @@ class ExpenseService
             $query->where('description', 'like', "%{$search}%");
         }
 
-        return $query->latest('date')->get();
+        return $query->latest('date')->paginate(20)->withQueryString();
     }
 
     public function create(array $data): Expense

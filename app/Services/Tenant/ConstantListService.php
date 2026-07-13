@@ -7,6 +7,7 @@ use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Models\Tenant\ConstantList;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ConstantListService
@@ -40,14 +41,21 @@ class ConstantListService
         AuditLogger::record(AuditAction::Deleted, AuditEntityType::Constant, $title, AuditCategory::Constants);
     }
 
+    /**
+     * lockForUpdate() inside a transaction so two concurrent adds to the
+     * same list can't both read the same MAX(position) and insert with an
+     * identical value.
+     */
     public function addItem(ConstantList $list, array $data): ConstantList
     {
-        $nextPosition = ((int) $list->items()->max('position')) + 1;
+        DB::connection('tenant')->transaction(function () use ($list, $data) {
+            $nextPosition = ((int) $list->items()->lockForUpdate()->max('position')) + 1;
 
-        $list->items()->create([
-            'value' => $data['value'],
-            'position' => $nextPosition,
-        ]);
+            $list->items()->create([
+                'value' => $data['value'],
+                'position' => $nextPosition,
+            ]);
+        });
 
         $list->load('items');
 

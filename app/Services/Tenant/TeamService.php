@@ -8,6 +8,7 @@ use App\Enums\AuditEntityType;
 use App\Enums\RoleKey;
 use App\Models\Tenant\TeamMember;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class TeamService
@@ -74,10 +75,17 @@ class TeamService
 
     /**
      * BLOCKS: a team member removing their own currently-authenticated
-     * account, and removing the tenant's last remaining team member who
-     * holds the `owner`-keyed system role — mirrors Angular's Team
+     * account, and removing the tenant's last remaining ACTIVE team member
+     * who holds the `owner`-keyed system role — mirrors Angular's Team
      * component (removeMember()) guard rails, see
      * src/app/features/team/team.ts.
+     *
+     * The owner-count check only applies when the member being deleted is
+     * themselves active — deleting an already-inactive owner never reduces
+     * how many owners can actually log in. The count/delete is wrapped in a
+     * transaction with lockForUpdate() so two concurrent deletes of two
+     * different owners can't both read "2 active owners remain" and both
+     * proceed, leaving zero.
      */
     public function delete(TeamMember $actingUser, TeamMember $member): void
     {
@@ -89,19 +97,24 @@ class TeamService
 
         $member->loadMissing('role');
 
-        if ($member->role?->key === RoleKey::Owner) {
-            $remainingOwners = TeamMember::where('role_id', $member->role_id)->count();
+        DB::connection('tenant')->transaction(function () use ($member) {
+            if ($member->role?->key === RoleKey::Owner && $member->active) {
+                $remainingActiveOwners = TeamMember::where('role_id', $member->role_id)
+                    ->where('active', true)
+                    ->where('id', '!=', $member->id)
+                    ->lockForUpdate()
+                    ->count();
 
-            if ($remainingOwners <= 1) {
-                throw ValidationException::withMessages([
-                    'teamMember' => 'You cannot remove the last remaining owner.',
-                ]);
+                if ($remainingActiveOwners === 0) {
+                    throw ValidationException::withMessages([
+                        'teamMember' => 'You cannot remove the last remaining owner.',
+                    ]);
+                }
             }
-        }
 
-        $name = $member->name;
-        $member->delete();
+            $member->delete();
+        });
 
-        AuditLogger::record(AuditAction::Deleted, AuditEntityType::TeamMember, $name, AuditCategory::Team);
+        AuditLogger::record(AuditAction::Deleted, AuditEntityType::TeamMember, $member->name, AuditCategory::Team);
     }
 }

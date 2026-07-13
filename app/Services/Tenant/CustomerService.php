@@ -3,8 +3,8 @@
 namespace App\Services\Tenant;
 
 use App\Models\Tenant\Customer;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Collection;
 
 /**
  * Backs the customer/recipient directory. transfers.customer stays a plain
@@ -15,10 +15,15 @@ use Illuminate\Support\Collection;
 class CustomerService
 {
     /**
-     * @return Collection<int, Customer> each with order_count/total_spent
-     *                                   aggregates and the most recent order's timestamp attached.
+     * Paginated (matching History/ActivityLog) — this directory grows
+     * monotonically with tenant usage, since every order creates or reuses
+     * a customer, so an unbounded get() would eventually load every
+     * customer the tenant has ever had on one request.
+     *
+     * @return LengthAwarePaginator<int, Customer> each with order_count/total_spent
+     *                                             aggregates and the most recent order's timestamp attached.
      */
-    public function list(?string $search = null): Collection
+    public function list(?string $search = null): LengthAwarePaginator
     {
         $query = Customer::query()
             ->withCount('transfers as order_count')
@@ -32,7 +37,7 @@ class CustomerService
             });
         }
 
-        return $query->orderByDesc('last_order_at')->get();
+        return $query->orderByDesc('last_order_at')->paginate(20)->withQueryString();
     }
 
     public function find(string $id): Customer

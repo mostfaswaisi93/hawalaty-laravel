@@ -40,7 +40,7 @@
                             <form method="POST" action="{{ route('devices.destroy', $device->id) }}" onsubmit="return confirm('{{ __('إلغاء هذا الجهاز وتسجيل الخروج منه؟') }}')" class="inline-flex">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="flex items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface-variant transition-colors hover:border-error/40 hover:bg-error/10 hover:text-error">
-                                    <span class="material-symbols-outlined !text-lg">logout</span>
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">logout</span>
                                     {{ __('إلغاء') }}
                                 </button>
                             </form>
