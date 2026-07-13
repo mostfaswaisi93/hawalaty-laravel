@@ -28,6 +28,7 @@ class StoreTransferRequest extends FormRequest
     {
         return [
             'customer' => ['required', 'string', 'max:255'],
+            'customerPhone' => ['nullable', 'string', 'max:30'],
 
             'items' => ['required', 'array', 'min:1'],
             // "tenant." prefix required on every exists:/unique: rule in

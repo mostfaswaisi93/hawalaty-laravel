@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * A tenant's OWN business expenses — NOT the platform's own operating
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['description', 'amount', 'bank_id', 'date'])]
 class Expense extends Model
 {
-    use HasUlids;
+    use HasUlids, SoftDeletes;
 
     public function getConnectionName(): string
     {
@@ -33,8 +34,10 @@ class Expense extends Model
         ];
     }
 
+    // withTrashed(): a soft-deleted bank must still show its name on
+    // historical expenses instead of silently going null.
     public function bank(): BelongsTo
     {
-        return $this->belongsTo(Bank::class);
+        return $this->belongsTo(Bank::class)->withTrashed();
     }
 }

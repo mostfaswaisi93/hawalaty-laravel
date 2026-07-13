@@ -117,7 +117,20 @@
                     <div class="space-y-5 border-t border-outline-variant/50 p-5">
                         <div class="space-y-2">
                             <label for="customer" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم العميل') }}</label>
-                            <input id="customer" name="customer" x-model="customer" placeholder="{{ __('مثال: أحمد أبو ياسين') }}"
+                            <input id="customer" name="customer" x-model="customer" list="customer-names" placeholder="{{ __('مثال: أحمد أبو ياسين') }}"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            <datalist id="customer-names">
+                                @foreach ($customerNames as $name)
+                                    <option value="{{ $name }}"></option>
+                                @endforeach
+                            </datalist>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="customerPhone" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
+                                {{ __('هاتف العميل') }} <span class="normal-case text-outline">({{ __('اختياري') }})</span>
+                            </label>
+                            <input id="customerPhone" name="customerPhone" x-model="customerPhone" dir="ltr" placeholder="059..."
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
 
@@ -255,6 +268,7 @@
                 activeCat: menu.length ? menu[0].id : null,
                 cart: [],
                 customer: '',
+                customerPhone: '',
                 paymentMethod: 'cash',
                 hasChange: false,
                 changeMethod: 'cash',

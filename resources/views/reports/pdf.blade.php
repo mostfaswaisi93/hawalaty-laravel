@@ -29,10 +29,10 @@
 
         .tx-head { font-size: 9px; color: #666; border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 2mm; }
         .tx-row { padding: 1.5mm 0; border-bottom: 1px solid #eee; }
-        .col-customer { display: inline-block; width: 30%; font-size: 10px; font-weight: bold; }
-        .col-date { display: inline-block; width: 22%; font-size: 10px; color: #444; }
-        .col-status { display: inline-block; width: 18%; font-size: 10px; color: #444; }
-        .col-amount { display: inline-block; width: 27%; text-align: {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}; font-size: 10px; font-weight: bold; padding-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 3mm; }
+        .col-customer { display: inline-block; width: 28%; font-size: 10px; font-weight: bold; }
+        .col-date { display: inline-block; width: 20%; font-size: 10px; color: #444; }
+        .col-status { display: inline-block; width: 16%; font-size: 10px; color: #444; }
+        .col-amount { display: inline-block; width: 26%; text-align: {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}; font-size: 10px; font-weight: bold; padding-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 10mm; }
 
         .footer { margin-top: 8mm; font-size: 9px; color: #888; text-align: center; }
     </style>

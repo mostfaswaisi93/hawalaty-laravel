@@ -6,6 +6,7 @@ use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Transfer\StoreTransferRequest;
 use App\Models\Tenant\Bank;
+use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuCategory;
 use App\Services\Tenant\TransferService;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,7 @@ class TransferController extends Controller
 
         $banks = Bank::query()->where('active', true)->where('type', 'bank')->orderBy('name')->get(['id', 'name']);
         $wallets = Bank::query()->where('active', true)->where('type', 'wallet')->orderBy('name')->get(['id', 'name']);
+        $customerNames = Customer::query()->orderBy('name')->pluck('name');
 
         // Handed to Alpine as a JSON blob (x-data="orderBuilder(...)") so the
         // menu browser/search/category filter runs entirely client-side
@@ -63,6 +65,7 @@ class TransferController extends Controller
             'banks' => $banks,
             'wallets' => $wallets,
             'menuJson' => $menuJson,
+            'customerNames' => $customerNames,
         ]);
     }
 

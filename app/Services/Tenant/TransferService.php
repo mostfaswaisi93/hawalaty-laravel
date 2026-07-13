@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class TransferService
 {
+    public function __construct(private readonly CustomerService $customers) {}
+
     /**
      * Backs both /transfers and /history (see BACKEND_PROMPT.md section 7 —
      * History is "same as transfers with wider filters + pagination").
@@ -67,8 +69,11 @@ class TransferService
                 $summaryParts[] = "{$item['name']} ×{$item['quantity']}";
             }
 
+            $customer = $this->customers->findOrCreate($data['customer'], $data['customerPhone'] ?? null);
+
             $transfer = Transfer::create([
                 'customer' => $data['customer'],
+                'customer_id' => $customer->id,
                 'status' => TransferStatus::Pending,
                 'amount' => $amount,
                 'item_name' => implode('، ', $summaryParts),

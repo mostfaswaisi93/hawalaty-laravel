@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
 use App\Http\Controllers\Web\BankController;
 use App\Http\Controllers\Web\ConstantController;
+use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DeviceController;
 use App\Http\Controllers\Web\ExpenseController;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 // clients). See BACKEND_PROMPT.md for the domain model and this task's
 // report for the session-based tenant connection resolution this relies on.
 
-Route::redirect('/', '/login');
+Route::view('/', 'welcome')->name('home');
 
 // UI language toggle (ar/en). Public so guests can switch on the auth pages
 // too; stores the choice in the session, then returns to the previous page.
@@ -80,6 +81,10 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
     Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show'])->name('transfers.receipt');
+
+    // Customers
+    Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 
     // Banks & wallets
     Route::get('banks', [BankController::class, 'index'])->name('banks.index');
