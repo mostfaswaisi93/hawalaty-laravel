@@ -3,13 +3,25 @@
 @section('title', __('قائمة الطعام — حوالاتي'))
 
 @section('content')
+    {{--
+        Three modals share one page, so a failed submission's old()/$errors
+        must be routed to the modal that actually caused it: import errors
+        are always on `file`; item errors always include menuCategoryId or
+        price (category errors never do); anything else with errors is the
+        category form.
+    --}}
+    @php
+        $importHasErrors = $errors->has('file');
+        $itemHasErrors = $errors->has('menuCategoryId') || $errors->has('price');
+        $categoryHasErrors = $errors->any() && ! $importHasErrors && ! $itemHasErrors;
+    @endphp
     <div class="page-enter space-y-6"
         x-data="{
-            catOpen: false,
-            itemOpen: false,
-            importOpen: false,
-            itemMode: 'add',
-            itemForm: { id: '', name: '', menuCategoryId: '', price: '', active: true },
+            catOpen: {{ $categoryHasErrors ? 'true' : 'false' }},
+            itemOpen: {{ $itemHasErrors ? 'true' : 'false' }},
+            importOpen: {{ $importHasErrors ? 'true' : 'false' }},
+            itemMode: '{{ old('id') ? 'edit' : 'add' }}',
+            itemForm: { id: '{{ old('id', '') }}', name: '{{ $itemHasErrors ? old('name', '') : '' }}', menuCategoryId: '{{ old('menuCategoryId', '') }}', price: '{{ old('price', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
             openAddItem(catId) { this.itemMode = 'add'; this.itemForm = { id: '', name: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
             openEditItem(item) { this.itemMode = 'edit'; this.itemForm = { ...item }; this.itemOpen = true; },
         }">
@@ -126,14 +138,16 @@
         <div x-show="catOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" @click="catOpen = false" x-show="catOpen" x-transition.opacity></div>
             <div x-show="catOpen" @keydown.escape.window="catOpen = false"
+                x-init="$watch('catOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
+                role="dialog" aria-modal="true" aria-labelledby="category-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-5 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
+                <h3 id="category-modal-title" class="mb-5 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
                 <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4">
                     @csrf
                     <div class="space-y-1.5">
                         <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم الفئة') }}</label>
-                        <input name="name" required placeholder="{{ __('مثال: المشاوي') }}"
+                        <input name="name" value="{{ $categoryHasErrors ? old('name') : '' }}" required placeholder="{{ __('مثال: المشاوي') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
@@ -150,12 +164,15 @@
         <div x-show="itemOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" @click="itemOpen = false" x-show="itemOpen" x-transition.opacity></div>
             <div x-show="itemOpen" @keydown.escape.window="itemOpen = false"
+                x-init="$watch('itemOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
+                role="dialog" aria-modal="true" aria-labelledby="item-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
+                <h3 id="item-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
                 <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="itemMode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
+                    <input type="hidden" name="id" :value="itemForm.id">
                     <input type="hidden" name="active" :value="itemForm.active ? 1 : 0">
 
                     <div class="space-y-1.5">
@@ -202,9 +219,11 @@
         <div x-show="importOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" @click="importOpen = false" x-show="importOpen" x-transition.opacity></div>
             <div x-show="importOpen" @keydown.escape.window="importOpen = false"
+                x-init="$watch('importOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
+                role="dialog" aria-modal="true" aria-labelledby="import-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-2 font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
+                <h3 id="import-modal-title" class="mb-2 font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
                 <p class="mb-5 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
                 <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf

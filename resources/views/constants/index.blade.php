@@ -3,7 +3,7 @@
 @section('title', __('الثوابت — حوالاتي'))
 
 @section('content')
-    <div class="page-enter space-y-6" x-data="{ listOpen: false }">
+    <div class="page-enter space-y-6" x-data="{ listOpen: {{ $errors->has('title') ? 'true' : 'false' }} }">
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('الثوابت') }}</h1>
@@ -81,14 +81,16 @@
         <div x-show="listOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" @click="listOpen = false" x-show="listOpen" x-transition.opacity></div>
             <div x-show="listOpen" @keydown.escape.window="listOpen = false"
+                x-init="$watch('listOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
+                role="dialog" aria-modal="true" aria-labelledby="list-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-5 font-headline-md text-headline-md">{{ __('قائمة جديدة') }}</h3>
+                <h3 id="list-modal-title" class="mb-5 font-headline-md text-headline-md">{{ __('قائمة جديدة') }}</h3>
                 <form method="POST" action="{{ route('constants.store') }}" class="space-y-4">
                     @csrf
                     <div class="space-y-1.5">
                         <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('عنوان القائمة') }}</label>
-                        <input name="title" required placeholder="{{ __('مثال: طرق التوصيل') }}"
+                        <input name="title" value="{{ old('title') }}" required placeholder="{{ __('مثال: طرق التوصيل') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="flex justify-end gap-3 pt-2">

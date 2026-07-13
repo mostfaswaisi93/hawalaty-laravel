@@ -5,9 +5,9 @@
 @section('content')
     <div class="page-enter space-y-6"
         x-data="{
-            open: false,
-            mode: 'add',
-            form: { id: '', description: '', amount: '', bankId: '', date: '{{ now()->toDateString() }}' },
+            open: {{ $errors->any() ? 'true' : 'false' }},
+            mode: '{{ old('id') ? 'edit' : 'add' }}',
+            form: { id: '{{ old('id', '') }}', description: '{{ old('description', '') }}', amount: '{{ old('amount', '') }}', bankId: '{{ old('bankId', '') }}', date: '{{ old('date', now()->toDateString()) }}' },
             openAdd() { this.mode = 'add'; this.form = { id: '', description: '', amount: '', bankId: '', date: '{{ now()->toDateString() }}' }; this.open = true; },
             openEdit(expense) { this.mode = 'edit'; this.form = { ...expense }; this.open = true; },
         }">
@@ -141,12 +141,15 @@
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false"
+                x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
+                role="dialog" aria-modal="true" aria-labelledby="expense-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل المصروف') }}' : '{{ __('إضافة مصروف') }}'"></h3>
+                <h3 id="expense-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل المصروف') }}' : '{{ __('إضافة مصروف') }}'"></h3>
                 <form :action="mode === 'edit' ? '{{ url('expenses') }}/' + form.id : '{{ route('expenses.store') }}'" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
+                    <input type="hidden" name="id" :value="form.id">
 
                     <div class="space-y-1.5">
                         <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الوصف') }}</label>
