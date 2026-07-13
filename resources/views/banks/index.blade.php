@@ -1,0 +1,164 @@
+@extends('layouts.app')
+
+@section('title', 'البنوك والمحافظ — حوالاتي')
+
+@section('content')
+    <div class="page-enter space-y-6"
+        x-data="{
+            open: false,
+            mode: 'add',
+            form: { id: '', name: '', type: 'bank', code: '', phone: '', active: true },
+            openAdd() { this.mode = 'add'; this.form = { id: '', name: '', type: 'bank', code: '', phone: '', active: true }; this.open = true; },
+            openEdit(bank) { this.mode = 'edit'; this.form = { ...bank }; this.open = true; },
+        }">
+
+        <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+            <div>
+                <h1 class="font-display-lg text-display-lg text-on-surface">البنوك والمحافظ</h1>
+                <p class="mt-1 font-body-lg text-on-surface-variant">أدر وسائل الدفع التي تستقبل بها الحوالات.</p>
+            </div>
+            <button type="button" @click="openAdd()"
+                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                <span class="material-symbols-outlined !text-xl">add</span>
+                إضافة بنك / محفظة
+            </button>
+        </header>
+
+        <form method="GET" action="{{ route('banks.index') }}" class="relative max-w-md">
+            <span class="material-symbols-outlined pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 pr-4 text-outline">search</span>
+            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="ابحث عن بنك..."
+                class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 pr-12 pl-4 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+        </form>
+
+        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+            @if ($banks->isEmpty())
+                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                    <span class="material-symbols-outlined !text-5xl text-outline/50">account_balance</span>
+                    <p class="font-body-lg text-on-surface-variant">لا توجد بنوك أو محافظ بعد</p>
+                    <button type="button" @click="openAdd()" class="font-body-sm font-bold text-primary hover:underline">أضف أول وسيلة دفع</button>
+                </div>
+            @else
+                <x-table-responsive :headers="['الاسم', 'النوع', 'الرمز', 'الهاتف', 'الحالة', 'إجراءات']">
+                    <x-slot:table>
+                        @foreach ($banks as $b)
+                            <tr class="transition-colors hover:bg-surface-container-low/50">
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                            <span class="material-symbols-outlined !text-xl">{{ $b->type->value === 'wallet' ? 'account_balance_wallet' : 'account_balance' }}</span>
+                                        </div>
+                                        <span class="font-body-sm font-bold">{{ $b->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    <span class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold text-on-surface-variant">
+                                        {{ $b->type->value === 'wallet' ? 'محفظة' : 'بنك' }}
+                                    </span>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->code }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->phone ?: '—' }}</td>
+                                <td class="px-4 py-3">
+                                    @include('banks._toggle', ['b' => $b])
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" @click="openEdit(@js(['id' => $b->id, 'name' => $b->name, 'type' => $b->type->value, 'code' => $b->code, 'phone' => $b->phone, 'active' => (bool) $b->active]))"
+                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="تعديل">
+                                            <span class="material-symbols-outlined !text-xl">edit</span>
+                                        </button>
+                                        @include('banks._delete', ['b' => $b])
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-slot:table>
+                    <x-slot:cards>
+                        @foreach ($banks as $b)
+                            <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                        <span class="material-symbols-outlined !text-xl">{{ $b->type->value === 'wallet' ? 'account_balance_wallet' : 'account_balance' }}</span>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate font-body-sm font-bold">{{ $b->name }}</p>
+                                        <p class="text-[11px] text-outline">{{ $b->type->value === 'wallet' ? 'محفظة' : 'بنك' }} · <span dir="ltr">{{ $b->code }}</span></p>
+                                    </div>
+                                    @include('banks._toggle', ['b' => $b])
+                                </div>
+                                <div class="mt-3 flex items-center justify-between gap-2 border-t border-outline-variant/50 pt-3">
+                                    <span class="text-[11px] text-outline" dir="ltr">{{ $b->phone ?: '—' }}</span>
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" @click="openEdit(@js(['id' => $b->id, 'name' => $b->name, 'type' => $b->type->value, 'code' => $b->code, 'phone' => $b->phone, 'active' => (bool) $b->active]))"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="تعديل">
+                                            <span class="material-symbols-outlined !text-lg">edit</span>
+                                        </button>
+                                        @include('banks._delete', ['b' => $b])
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </x-slot:cards>
+                </x-table-responsive>
+            @endif
+        </section>
+
+        {{-- ══════════════ add / edit modal ══════════════ --}}
+        <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
+            <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
+            <div x-show="open" @keydown.escape.window="open = false"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+
+                <h3 class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? 'تعديل وسيلة الدفع' : 'إضافة وسيلة دفع'"></h3>
+
+                <form :action="mode === 'edit' ? '{{ url('banks') }}/' + form.id : '{{ route('banks.store') }}'" method="POST" class="space-y-4">
+                    @csrf
+                    <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
+                    <input type="hidden" name="active" :value="form.active ? 1 : 0">
+
+                    <div class="space-y-1.5">
+                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">الاسم</label>
+                        <input name="name" x-model="form.name" required placeholder="مثال: بنك فلسطين"
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1.5">
+                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">النوع</label>
+                            <select name="type" x-model="form.type"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                <option value="bank">بنك</option>
+                                <option value="wallet">محفظة</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">الرمز</label>
+                            <input name="code" x-model="form.code" required dir="ltr" placeholder="BOP"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">الهاتف (اختياري)</label>
+                        <input name="phone" x-model="form.phone" dir="ltr" placeholder="059..."
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+
+                    <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                        <span class="font-body-sm font-bold text-on-surface">نشط</span>
+                        <input type="checkbox" x-model="form.active" class="h-5 w-5 rounded accent-primary" />
+                    </label>
+
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" @click="open = false"
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">إلغاء</button>
+                        <button type="submit"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
+                            x-text="mode === 'edit' ? 'حفظ التغييرات' : 'إضافة'"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endsection

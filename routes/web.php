@@ -1,9 +1,18 @@
 <?php
 
+use App\Http\Controllers\Web\ActivityLogController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
+use App\Http\Controllers\Web\BankController;
+use App\Http\Controllers\Web\ConstantController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\DeviceController;
+use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\HistoryController;
+use App\Http\Controllers\Web\MenuController;
+use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\SettingsController;
+use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +68,56 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
+
+    // Banks & wallets
+    Route::get('banks', [BankController::class, 'index'])->name('banks.index');
+    Route::post('banks', [BankController::class, 'store'])->name('banks.store');
+    Route::put('banks/{bank}', [BankController::class, 'update'])->name('banks.update');
+    Route::delete('banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
+
+    // Menu — categories + items
+    Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
+    Route::post('menu/categories', [MenuController::class, 'storeCategory'])->name('menu.categories.store');
+    Route::delete('menu/categories/{category}', [MenuController::class, 'destroyCategory'])->name('menu.categories.destroy');
+    Route::post('menu/items', [MenuController::class, 'storeItem'])->name('menu.items.store');
+    Route::put('menu/items/{item}', [MenuController::class, 'updateItem'])->name('menu.items.update');
+    Route::delete('menu/items/{item}', [MenuController::class, 'destroyItem'])->name('menu.items.destroy');
+
+    // Expenses
+    Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+    Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+    Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+    Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+
+    // Reports
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+
+    // Constants — lists + items
+    Route::get('constants', [ConstantController::class, 'index'])->name('constants.index');
+    Route::post('constants', [ConstantController::class, 'store'])->name('constants.store');
+    Route::delete('constants/{list}', [ConstantController::class, 'destroy'])->name('constants.destroy');
+    Route::post('constants/{list}/items', [ConstantController::class, 'storeItem'])->name('constants.items.store');
+    Route::delete('constants/{list}/items/{item}', [ConstantController::class, 'destroyItem'])->name('constants.items.destroy');
+
+    // Team
+    Route::get('team', [TeamController::class, 'index'])->name('team.index');
+    Route::post('team', [TeamController::class, 'store'])->name('team.store');
+    Route::put('team/{teamMember}', [TeamController::class, 'update'])->name('team.update');
+    Route::delete('team/{teamMember}', [TeamController::class, 'destroy'])->name('team.destroy');
+
+    // Devices
+    Route::get('devices', [DeviceController::class, 'index'])->name('devices.index');
+    Route::delete('devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
+
+    // Activity log (read-only)
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+
+    // Settings (self-service profile + password)
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('settings/profile', [SettingsController::class, 'update'])->name('settings.profile.update');
+
+    // Help
+    Route::view('help', 'help.index')->name('help.index');
 });
 
 /*
