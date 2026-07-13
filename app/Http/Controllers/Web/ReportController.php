@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
@@ -39,24 +40,33 @@ class ReportController extends Controller
         return $pdf->stream("report-{$report['from']}-to-{$report['to']}.pdf");
     }
 
-    /** @return array{from: string, to: string, count: int, total: float, average: float, transfers: \Illuminate\Support\Collection, daily: \Illuminate\Support\Collection} */
+    /** @return array{from: string, to: string, count: int, total: float, average: float, transfers: Collection, daily: Collection} */
     private function buildReport(Request $request): array
     {
         $validated = $request->validate([
             'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'to' => [
+                'nullable',
+                'date',
+                'after_or_equal:from',
+                // A truly unbounded range (e.g. from a hand-crafted URL) would
+                // otherwise pull every transfer the tenant has ever recorded
+                // into one PDF/HTML render — cap it to a year, generous for
+                // any normal reporting window.
+                function ($attribute, $value, $fail) use ($request) {
+                    $from = $request->input('from');
+                    if ($from && Carbon::parse($from)->diffInDays(Carbon::parse($value)) > 366) {
+                        $fail(__('لا يمكن أن يتجاوز نطاق التقرير 366 يوماً.'));
+                    }
+                },
+            ],
         ]);
 
         $from = $validated['from'] ?? Carbon::now()->startOfMonth()->toDateString();
         $to = $validated['to'] ?? Carbon::now()->toDateString();
 
         $report = $this->service->generate($from, $to);
-
-        // Aggregate per-day revenue for the bar chart (service returns raw rows).
-        $daily = collect($report['transfers'])
-            ->groupBy(fn ($t) => $t->created_at->toDateString())
-            ->map(fn ($rows) => (float) $rows->sum('amount'))
-            ->sortKeys();
+        $daily = $this->service->dailyTotals($from, $to);
 
         return [
             'from' => $from,

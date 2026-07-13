@@ -3,6 +3,7 @@
 namespace App\Services\Tenant;
 
 use App\Models\Tenant\Customer;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 
 /**
@@ -15,7 +16,7 @@ class CustomerService
 {
     /**
      * @return Collection<int, Customer> each with order_count/total_spent
-     *         aggregates and the most recent order's timestamp attached.
+     *                                   aggregates and the most recent order's timestamp attached.
      */
     public function list(?string $search = null): Collection
     {
@@ -43,6 +44,13 @@ class CustomerService
      * Finds an existing customer by exact trimmed name, or creates one.
      * Backfills phone onto an existing customer only if they didn't already
      * have one (never silently overwrites a previously-recorded phone).
+     *
+     * The initial lookup + create is not atomic, so two concurrent orders
+     * for the same new customer name can both miss the lookup and race to
+     * create — customers.name has a unique constraint specifically to turn
+     * the losing side of that race into a catchable exception rather than a
+     * silent duplicate customer; on that exception we just re-fetch the row
+     * the winner created and fall through to the same backfill logic below.
      */
     public function findOrCreate(string $name, ?string $phone = null): Customer
     {
@@ -51,7 +59,15 @@ class CustomerService
         $customer = Customer::where('name', $name)->first();
 
         if (! $customer) {
-            return Customer::create(['name' => $name, 'phone' => $phone]);
+            try {
+                $customer = Customer::create(['name' => $name, 'phone' => $phone]);
+            } catch (QueryException $e) {
+                if ($e->getCode() !== '23000') {
+                    throw $e;
+                }
+
+                $customer = Customer::where('name', $name)->firstOrFail();
+            }
         }
 
         if ($phone && ! $customer->phone) {

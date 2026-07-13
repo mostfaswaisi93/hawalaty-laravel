@@ -41,12 +41,15 @@ class TransferService
             $query->where('payment_method', $filters['paymentMethod']);
         }
 
+        // A plain >=/<= comparison (vs whereDate()'s DATE(created_at) wrap)
+        // lets MySQL use the index on created_at instead of forcing a full
+        // scan to evaluate the function on every row.
         if (! empty($filters['from'])) {
-            $query->whereDate('created_at', '>=', $filters['from']);
+            $query->where('created_at', '>=', "{$filters['from']} 00:00:00");
         }
 
         if (! empty($filters['to'])) {
-            $query->whereDate('created_at', '<=', $filters['to']);
+            $query->where('created_at', '<=', "{$filters['to']} 23:59:59");
         }
 
         $perPage = (int) ($filters['per_page'] ?? 15);

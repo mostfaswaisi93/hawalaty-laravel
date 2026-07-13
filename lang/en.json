@@ -363,6 +363,7 @@
   "لا نتائج مطابقة": "No matching results",
   "لا نشاط في هذه الفترة": "No activity in this period",
   "لا نشاط مسجّل بعد": "No activity logged yet",
+  "لا يمكن أن يتجاوز نطاق التقرير 366 يوماً.": "The report range cannot exceed 366 days.",
   "لا يمكن حذف هذا البنك لأنه مرتبط بمصروفات أو حوالات سابقة. عطّله بدلاً من ذلك.": "This bank cannot be deleted because it has related expenses or transfers. Deactivate it instead.",
   "لا يوجد أعضاء": "No members",
   "لا يوجد عملاء بعد": "No customers yet",
