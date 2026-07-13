@@ -10,6 +10,7 @@ use App\Models\Tenant\Bank;
 use App\Services\Tenant\BankService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -58,7 +59,11 @@ class BankController extends Controller
     {
         abort_unless($this->canManage(), 403);
 
-        $this->service->delete(Bank::findOrFail($bank));
+        try {
+            $this->service->delete(Bank::findOrFail($bank));
+        } catch (ValidationException $e) {
+            return redirect()->route('banks.index')->with('error', $e->validator->errors()->first());
+        }
 
         return redirect()->route('banks.index')->with('success', __('تم حذف البنك.'));
     }

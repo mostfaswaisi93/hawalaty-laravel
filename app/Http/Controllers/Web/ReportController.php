@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Services\Tenant\ReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
@@ -19,6 +21,26 @@ class ReportController extends Controller
     public function __construct(private readonly ReportService $service) {}
 
     public function index(Request $request): View
+    {
+        return view('reports.index', $this->buildReport($request));
+    }
+
+    public function export(Request $request): Response
+    {
+        $report = $this->buildReport($request);
+
+        $license = app()->bound('currentLicense') ? app('currentLicense') : null;
+
+        $pdf = Pdf::loadView('reports.pdf', [
+            ...$report,
+            'businessName' => $license?->customer_name ?? __('حوالاتي'),
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream("report-{$report['from']}-to-{$report['to']}.pdf");
+    }
+
+    /** @return array{from: string, to: string, count: int, total: float, average: float, transfers: \Illuminate\Support\Collection, daily: \Illuminate\Support\Collection} */
+    private function buildReport(Request $request): array
     {
         $validated = $request->validate([
             'from' => ['nullable', 'date'],
@@ -36,7 +58,7 @@ class ReportController extends Controller
             ->map(fn ($rows) => (float) $rows->sum('amount'))
             ->sortKeys();
 
-        return view('reports.index', [
+        return [
             'from' => $from,
             'to' => $to,
             'count' => $report['count'],
@@ -44,6 +66,6 @@ class ReportController extends Controller
             'average' => $report['average'],
             'transfers' => $report['transfers'],
             'daily' => $daily,
-        ]);
+        ];
     }
 }

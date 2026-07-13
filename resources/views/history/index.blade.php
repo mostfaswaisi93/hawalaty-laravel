@@ -104,7 +104,7 @@
                     @endif
                 </div>
             @else
-                <x-table-responsive :headers="[__('العميل'), __('الصنف'), __('التاريخ'), __('الحالة'), __('طريقة الدفع'), __('المبلغ')]">
+                <x-table-responsive :headers="[__('العميل'), __('الصنف'), __('التاريخ'), __('الحالة'), __('طريقة الدفع'), __('المبلغ'), '']">
                     <x-slot:table>
                         @foreach ($transfers as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
@@ -130,6 +130,12 @@
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary">
                                     <span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span>
                                 </td>
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    <a href="{{ route('transfers.receipt', $t->id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
+                                        class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">
+                                        <span class="material-symbols-outlined !text-xl">print</span>
+                                    </a>
+                                </td>
                             </tr>
                         @endforeach
                     </x-slot:table>
@@ -148,10 +154,16 @@
                                 </div>
                                 <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px]">
                                     <span class="truncate text-[11px] text-outline">{{ $t->item_name ?: '—' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
-                                    <span class="inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
-                                        <span class="h-1.5 w-1.5 rounded-full {{ $statusDot($t->status) }}"></span>
-                                        {{ $statusLabel($t->status) }}
-                                    </span>
+                                    <div class="flex flex-shrink-0 items-center gap-2">
+                                        <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $statusDot($t->status) }}"></span>
+                                            {{ $statusLabel($t->status) }}
+                                        </span>
+                                        <a href="{{ route('transfers.receipt', $t->id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
+                                            class="flex h-7 w-7 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">
+                                            <span class="material-symbols-outlined !text-lg">print</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach

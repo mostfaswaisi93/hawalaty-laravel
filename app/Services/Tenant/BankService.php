@@ -7,6 +7,7 @@ use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Models\Tenant\Bank;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 class BankService
 {
@@ -45,8 +46,24 @@ class BankService
         return $bank;
     }
 
+    /**
+     * @throws ValidationException if the bank has any expense or transfer
+     *         history — deleting it would silently destroy or orphan
+     *         financial records. Direct the caller to deactivate it
+     *         instead (the `active` toggle already exists for this).
+     */
     public function delete(Bank $bank): void
     {
+        $hasHistory = $bank->expenses()->exists()
+            || $bank->transfers()->exists()
+            || $bank->changeTransfers()->exists();
+
+        if ($hasHistory) {
+            throw ValidationException::withMessages([
+                'bank' => __('لا يمكن حذف هذا البنك لأنه مرتبط بمصروفات أو حوالات سابقة. عطّله بدلاً من ذلك.'),
+            ]);
+        }
+
         $name = $bank->name;
         $bank->delete();
 

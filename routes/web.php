@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\DeviceController;
 use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\MenuController;
+use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\TeamController;
@@ -78,6 +79,7 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
+    Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show'])->name('transfers.receipt');
 
     // Banks & wallets
     Route::get('banks', [BankController::class, 'index'])->name('banks.index');
@@ -101,6 +103,7 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
     // Constants — lists + items
     Route::get('constants', [ConstantController::class, 'index'])->name('constants.index');

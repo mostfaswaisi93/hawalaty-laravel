@@ -36,6 +36,11 @@
                 <span class="material-symbols-outlined !text-xl">query_stats</span>
                 {{ __('عرض') }}
             </button>
+            <a href="{{ route('reports.export', ['from' => $from, 'to' => $to]) }}" target="_blank"
+                class="flex items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                <span class="material-symbols-outlined !text-xl">picture_as_pdf</span>
+                {{ __('تصدير PDF') }}
+            </a>
         </form>
 
         {{-- summary cards --}}
