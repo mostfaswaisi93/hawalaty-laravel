@@ -148,7 +148,8 @@
                         </div>
 
                         <div class="mt-6 space-y-3">
-                            @foreach ([[__('أحمد أبو ياسين'), __('مكتملة'), '+85.00', 'bg-green-500'], [__('سميرة خليل'), __('قيد الانتظار'), '+42.00', 'bg-secondary-container']] as [$name, $status, $amount, $dot])
+                            {{-- Mock customer names in this demo widget stay as-is across locales — proper names aren't translated (same convention as real order data elsewhere in the app). --}}
+                            @foreach ([['أحمد أبو ياسين', __('مكتملة'), '+85.00', 'bg-green-500'], ['سميرة خليل', __('قيد الانتظار'), '+42.00', 'bg-secondary-container']] as [$name, $status, $amount, $dot])
                                 <div class="flex items-center gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3">
                                     <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                                         <span class="material-symbols-outlined !text-xl">account_balance</span>
