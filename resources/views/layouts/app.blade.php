@@ -53,7 +53,7 @@
             <x-logo />
             <div class="min-w-0">
                 <span class="block font-display-lg text-2xl font-bold leading-tight text-primary">{{ __('حوالاتي') }}</span>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">My Transfers</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">{{ __('تحويلاتي') }}</p>
             </div>
         </div>
 
