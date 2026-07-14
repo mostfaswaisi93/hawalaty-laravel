@@ -4,6 +4,7 @@ namespace App\Http\Requests\Web\Settings;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * Self-service profile + password update for the logged-in tenant member.
@@ -29,7 +30,7 @@ class UpdateProfileRequest extends FormRequest
             ],
             // Blank means "keep current". `confirmed` pairs with a
             // password_confirmation field on the form.
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+            'password' => ['nullable', 'string', Password::min(8)->mixedCase()->numbers(), 'confirmed'],
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class SignupRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class SignupRequest extends FormRequest
      * See the provisioning task report for this gap; not silently adding an
      * unplanned migration for it here.
      *
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
@@ -26,7 +27,7 @@ class SignupRequest extends FormRequest
             'ownerName' => ['required', 'string', 'max:255'],
             'ownerEmail' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()],
             'packageId' => ['nullable', 'string'],
         ];
     }

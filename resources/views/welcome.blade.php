@@ -157,7 +157,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-body-sm font-bold">{{ $name }}</p>
-                                        <p class="flex items-center gap-1.5 text-[11px] text-outline">
+                                        <p class="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
                                             <span class="h-1.5 w-1.5 rounded-full {{ $dot }}"></span>{{ $status }}
                                         </p>
                                     </div>

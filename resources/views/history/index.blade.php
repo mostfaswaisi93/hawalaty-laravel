@@ -5,7 +5,7 @@
 @section('content')
     @php
         $statusPill = fn ($status) => match ($status->value) {
-            'completed' => 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+            'completed' => 'bg-success-container text-success dark:bg-success-container/15',
             'pending' => 'bg-secondary-container/20 text-secondary',
             default => 'bg-error-container text-error dark:bg-error/15',
         };
@@ -37,7 +37,7 @@
         </header>
 
         {{-- ══════════════ filters ══════════════ --}}
-        <form method="GET" action="{{ route('history.index') }}"
+        <form method="GET" action="{{ route('history.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5">
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
@@ -80,9 +80,9 @@
             </div>
 
             <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-5">
-                <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
-                    <span class="material-symbols-outlined !text-xl">filter_alt</span>
-                    {{ __('تطبيق') }}
+                <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                    <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'" x-text="submitting ? 'progress_activity' : 'filter_alt'"></span>
+                    <span x-text="submitting ? '{{ __('جارٍ التطبيق...') }}' : '{{ __('تطبيق') }}'"></span>
                 </button>
                 @if ($hasFilters)
                     <a href="{{ route('history.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
@@ -148,12 +148,12 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-body-sm font-bold">{{ $t->customer }}</p>
-                                        <p class="truncate text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
+                                        <p class="truncate text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>
                                 <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px]">
-                                    <span class="truncate text-[11px] text-outline">{{ $t->item_name ?: '—' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
+                                    <span class="truncate text-[11px] text-on-surface-variant">{{ $t->item_name ?: '—' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
                                     <div class="flex flex-shrink-0 items-center gap-2">
                                         <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
                                             <span class="h-1.5 w-1.5 rounded-full {{ $statusDot($t->status) }}"></span>

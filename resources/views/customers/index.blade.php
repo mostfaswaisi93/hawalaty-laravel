@@ -50,11 +50,11 @@
                                     <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">{{ mb_substr($c->name, 0, 1) }}</div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-body-sm font-bold">{{ $c->name }}</p>
-                                        <p class="truncate text-[11px] text-outline" dir="ltr">{{ $c->phone ?: '—' }}</p>
+                                        <p class="truncate text-[11px] text-on-surface-variant" dir="ltr">{{ $c->phone ?: '—' }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary" dir="ltr">{{ number_format($c->total_spent ?? 0, 2) }} ₪</p>
                                 </div>
-                                <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px] text-[11px] text-outline">
+                                <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px] text-[11px] text-on-surface-variant">
                                     <span>{{ __('عدد الطلبات') }}: {{ $c->order_count }}</span>
                                     <span>{{ $c->last_order_at ? \Illuminate\Support\Carbon::parse($c->last_order_at)->diffForHumans() : '—' }}</span>
                                 </div>

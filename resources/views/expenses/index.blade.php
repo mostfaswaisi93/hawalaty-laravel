@@ -7,9 +7,11 @@
         x-data="{
             open: {{ $errors->any() ? 'true' : 'false' }},
             mode: '{{ old('id') ? 'edit' : 'add' }}',
+            submitting: false,
+            confirmOpen: false, confirmMessage: '', confirmFormId: null,
             form: { id: '{{ old('id', '') }}', description: '{{ old('description', '') }}', amount: '{{ old('amount', '') }}', bankId: '{{ old('bankId', '') }}', date: '{{ old('date', now()->toDateString()) }}' },
-            openAdd() { this.mode = 'add'; this.form = { id: '', description: '', amount: '', bankId: '', date: '{{ now()->toDateString() }}' }; this.open = true; },
-            openEdit(expense) { this.mode = 'edit'; this.form = { ...expense }; this.open = true; },
+            openAdd() { this.mode = 'add'; this.submitting = false; this.form = { id: '', description: '', amount: '', bankId: '', date: '{{ now()->toDateString() }}' }; this.open = true; },
+            openEdit(expense) { this.mode = 'edit'; this.submitting = false; this.form = { ...expense }; this.open = true; },
         }">
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -65,12 +67,14 @@
                                             class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                             <span class="material-symbols-outlined !text-xl">edit</span>
                                         </button>
-                                        <form method="POST" action="{{ route('expenses.destroy', $e->id) }}" onsubmit="return confirm('{{ __('حذف هذا المصروف؟') }}')" class="inline-flex">
+                                        <form method="POST" action="{{ route('expenses.destroy', $e->id) }}" id="delete-expense-row-{{ $e->id }}" class="inline-flex">
                                             @csrf @method('DELETE')
-                                            <button type="submit" aria-label="{{ __('حذف') }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
-                                                <span class="material-symbols-outlined !text-xl">delete</span>
-                                            </button>
                                         </form>
+                                        <button type="button" aria-label="{{ __('حذف') }}"
+                                            @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا المصروف؟') }}'; confirmFormId = 'delete-expense-row-{{ $e->id }}'"
+                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
+                                            <span class="material-symbols-outlined !text-xl">delete</span>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -85,7 +89,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-body-sm font-bold">{{ $e->description }}</p>
-                                        <p class="text-[11px] text-outline">{{ $e->bank?->name ?? '—' }} · {{ $e->date->translatedFormat('j M') }}</p>
+                                        <p class="text-[11px] text-on-surface-variant">{{ $e->bank?->name ?? '—' }} · {{ $e->date->translatedFormat('j M') }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-error"><span dir="ltr">-{{ number_format($e->amount, 2) }} ₪</span></p>
                                 </div>
@@ -94,12 +98,14 @@
                                         class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                         <span class="material-symbols-outlined !text-lg">edit</span>
                                     </button>
-                                    <form method="POST" action="{{ route('expenses.destroy', $e->id) }}" onsubmit="return confirm('{{ __('حذف هذا المصروف؟') }}')" class="inline-flex">
+                                    <form method="POST" action="{{ route('expenses.destroy', $e->id) }}" id="delete-expense-card-{{ $e->id }}" class="inline-flex">
                                         @csrf @method('DELETE')
-                                        <button type="submit" aria-label="{{ __('حذف') }}" class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
-                                            <span class="material-symbols-outlined !text-lg">delete</span>
-                                        </button>
                                     </form>
+                                    <button type="button" aria-label="{{ __('حذف') }}"
+                                        @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا المصروف؟') }}'; confirmFormId = 'delete-expense-card-{{ $e->id }}'"
+                                        class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
+                                        <span class="material-symbols-outlined !text-lg">delete</span>
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -146,7 +152,7 @@
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="expense-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل المصروف') }}' : '{{ __('إضافة مصروف') }}'"></h3>
-                <form :action="mode === 'edit' ? '{{ url('expenses') }}/' + form.id : '{{ route('expenses.store') }}'" method="POST" class="space-y-4">
+                <form :action="mode === 'edit' ? '{{ url('expenses') }}/' + form.id : '{{ route('expenses.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf
                     <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
                     <input type="hidden" name="id" :value="form.id">
@@ -181,12 +187,14 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="open = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
-                        <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
-                            x-text="mode === 'edit' ? '{{ __('حفظ') }}' : '{{ __('إضافة') }}'"></button>
+                        <button type="submit" :disabled="submitting"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                            x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : (mode === 'edit' ? '{{ __('حفظ') }}' : '{{ __('إضافة') }}')"></button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <x-confirm-modal />
     </div>
 @endsection

@@ -98,6 +98,12 @@
     --color-tertiary-container: rgb(var(--c-tertiary-container));
     --color-brand: rgb(var(--c-brand));
     --color-on-brand: rgb(var(--c-on-brand));
+
+    /* Not part of the ported MD3 palette — added so "completed"/"active"
+       status pills stop hand-rolling `bg-green-100 text-green-700
+       dark:bg-green-500/15 dark:text-green-300` identically in 8 places. */
+    --color-success: rgb(var(--c-success));
+    --color-success-container: rgb(var(--c-success-container));
 }
 
 :root {
@@ -152,6 +158,12 @@
     --c-brand: 123 46 40;
     --c-on-brand: 255 255 255;
 
+    /* success = Tailwind green-700, success-container = green-100 (used at
+       full opacity here, and at 15% via dark:bg-success-container/15 to
+       reproduce dark:bg-green-500/15 exactly — see .dark below). */
+    --c-success: 21 128 61;
+    --c-success-container: 220 252 231;
+
     --app-font: 'Cairo', system-ui, sans-serif;
 }
 
@@ -193,6 +205,12 @@
 
     --c-brand: 196 108 98;
     --c-on-brand: 43 15 13;
+
+    /* success = Tailwind green-300, success-container = green-500 (call
+       sites apply dark:bg-success-container/15 to reproduce the original
+       dark:bg-green-500/15 exactly). */
+    --c-success: 134 239 172;
+    --c-success-container: 34 197 94;
 }
 
 html.lang-ar {

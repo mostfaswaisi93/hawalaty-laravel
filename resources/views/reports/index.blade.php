@@ -20,7 +20,7 @@
         </header>
 
         {{-- date range --}}
-        <form method="GET" action="{{ route('reports.index') }}"
+        <form method="GET" action="{{ route('reports.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end">
             <div class="flex-1 space-y-1.5">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
@@ -32,9 +32,9 @@
                 <input type="date" name="to" value="{{ $to }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
-            <button type="submit" class="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
-                <span class="material-symbols-outlined !text-xl">query_stats</span>
-                {{ __('عرض') }}
+            <button type="submit" :disabled="submitting" class="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'" x-text="submitting ? 'progress_activity' : 'query_stats'"></span>
+                <span x-text="submitting ? '{{ __('جارٍ العرض...') }}' : '{{ __('عرض') }}'"></span>
             </button>
             <a href="{{ route('reports.export', ['from' => $from, 'to' => $to]) }}" target="_blank"
                 class="flex items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
@@ -71,16 +71,21 @@
                     <p class="font-body-sm">{{ __('لا نشاط في هذه الفترة') }}</p>
                 </div>
             @else
-                <div class="flex h-56 items-end gap-2 overflow-x-auto pb-2">
+                <div class="relative"
+                    x-data="{ overflowing: false }"
+                    x-init="$nextTick(() => { overflowing = $refs.chartScroll.scrollWidth > $refs.chartScroll.clientWidth })">
+                    <div x-show="overflowing" x-cloak class="pointer-events-none absolute inset-y-0 end-0 z-10 w-10 bg-gradient-to-l from-surface-container-lowest to-transparent rtl:bg-gradient-to-r"></div>
+                    <div class="flex h-56 items-end gap-2 overflow-x-auto pb-2" x-ref="chartScroll">
                     @foreach ($daily as $date => $sum)
                         <div class="flex min-w-10 flex-1 flex-col items-center gap-2">
                             <span class="font-numeral-lg text-[10px] text-on-surface-variant" dir="ltr">{{ number_format($sum, 0) }}</span>
                             <div class="flex w-full items-end" style="height: 160px">
                                 <div class="w-full rounded-t-lg bg-gradient-to-t from-primary to-primary-container transition-all" style="height: {{ max(4, ($sum / $maxDaily) * 100) }}%" title="{{ number_format($sum, 2) }} ₪"></div>
                             </div>
-                            <span class="font-label-caps text-[10px] text-outline">{{ $dayLabels[\Illuminate\Support\Carbon::parse($date)->dayOfWeek] }}</span>
+                            <span class="font-label-caps text-[10px] text-on-surface-variant">{{ $dayLabels[\Illuminate\Support\Carbon::parse($date)->dayOfWeek] }}</span>
                         </div>
                     @endforeach
+                    </div>
                 </div>
             @endif
         </section>
@@ -105,7 +110,7 @@
                             <div class="flex items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
                                 <div class="min-w-0">
                                     <p class="truncate font-body-sm font-bold">{{ $t->customer }}</p>
-                                    <p class="text-[11px] text-outline">{{ $t->created_at->translatedFormat('j M') }} · {{ $statusLabel($t->status) }}</p>
+                                    <p class="text-[11px] text-on-surface-variant">{{ $t->created_at->translatedFormat('j M') }} · {{ $statusLabel($t->status) }}</p>
                                 </div>
                                 <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                             </div>

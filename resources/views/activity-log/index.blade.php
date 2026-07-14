@@ -8,7 +8,7 @@
         $categoryLabels = ['auth' => __('المصادقة'), 'team' => __('الفريق'), 'banks' => __('البنوك'), 'menu' => __('القائمة'), 'expenses' => __('المصروفات'), 'constants' => __('الثوابت'), 'devices' => __('الأجهزة'), 'transfers' => __('الحوالات')];
         $entityLabels = ['expense' => __('مصروف'), 'bank' => __('بنك'), 'menuItem' => __('عنصر قائمة'), 'constant' => __('ثابت'), 'device' => __('جهاز'), 'order' => __('حوالة'), 'teamMember' => __('عضو فريق'), 'role' => __('دور')];
         $actionPill = fn ($v) => match ($v) {
-            'created' => 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+            'created' => 'bg-success-container text-success dark:bg-success-container/15',
             'deleted' => 'bg-error-container text-error dark:bg-error/15',
             'updated' => 'bg-secondary-container/20 text-secondary',
             default => 'bg-surface-container-high text-on-surface-variant',
@@ -22,7 +22,7 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('كل الإجراءات التي تمّت في مساحة عملك.') }}</p>
         </header>
 
-        <form method="GET" action="{{ route('activity-log.index') }}" class="tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3">
+        <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3">
             <div class="space-y-1.5 sm:col-span-1">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
@@ -41,8 +41,9 @@
                 </select>
             </div>
             <div class="flex items-end gap-2">
-                <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
-                    <span class="material-symbols-outlined !text-xl">filter_alt</span> {{ __('تطبيق') }}
+                <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                    <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'" x-text="submitting ? 'progress_activity' : 'filter_alt'"></span>
+                    <span x-text="submitting ? '{{ __('جارٍ التطبيق...') }}' : '{{ __('تطبيق') }}'"></span>
                 </button>
                 @if ($hasFilters)
                     <a href="{{ route('activity-log.index') }}" aria-label="{{ __('مسح الفلاتر') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
@@ -76,7 +77,7 @@
                                     · {{ $categoryLabels[$log->category->value] ?? $log->category->value }}
                                 </p>
                             </div>
-                            <span class="whitespace-nowrap text-[11px] text-outline">{{ $log->created_at->diffForHumans() }}</span>
+                            <span class="whitespace-nowrap text-[11px] text-on-surface-variant">{{ $log->created_at->diffForHumans() }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -86,14 +87,22 @@
                         <span class="font-body-sm text-on-surface-variant">{{ __('صفحة') }} {{ $logs->currentPage() }} {{ __('من') }} {{ $logs->lastPage() }}</span>
                         <div class="flex items-center gap-2">
                             @if ($logs->onFirstPage())
-                                <span class="rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">{{ __('السابق') }}</span>
+                                <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
+                                </span>
                             @else
-                                <a href="{{ $logs->previousPageUrl() }}" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">{{ __('السابق') }}</a>
+                                <a href="{{ $logs->previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
+                                </a>
                             @endif
                             @if ($logs->hasMorePages())
-                                <a href="{{ $logs->nextPageUrl() }}" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">{{ __('التالي') }}</a>
+                                <a href="{{ $logs->nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
+                                </a>
                             @else
-                                <span class="rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">{{ __('التالي') }}</span>
+                                <span class="flex items-center gap-1 rounded-xl border border-outline-variant/60 px-4 py-2 font-body-sm text-outline/60">
+                                    {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
+                                </span>
                             @endif
                         </div>
                     </div>

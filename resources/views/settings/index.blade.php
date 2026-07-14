@@ -14,7 +14,7 @@
         </header>
 
         {{-- profile + password --}}
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6 md:p-8">
+        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             <div class="mb-6 flex items-center gap-3">
                 <div class="grid h-12 w-12 place-items-center rounded-full bg-primary-container text-lg font-bold text-on-primary-container">{{ mb_substr($member->name, 0, 1) }}</div>
                 <div>
@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('settings.profile.update') }}" class="space-y-5">
+            <form method="POST" action="{{ route('settings.profile.update') }}" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
                 @csrf
                 @method('PUT')
 
@@ -57,9 +57,9 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-headline-md font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]">
-                        <span class="material-symbols-outlined">save</span>
-                        {{ __('حفظ التغييرات') }}
+                    <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                        <span class="material-symbols-outlined !text-xl" x-show="!submitting">save</span>
+                        <span x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : '{{ __('حفظ التغييرات') }}'"></span>
                     </button>
                 </div>
             </form>
@@ -67,7 +67,7 @@
 
         {{-- business / license info --}}
         @if ($license)
-            <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6 md:p-8">
+            <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <h2 class="mb-6 font-headline-md text-headline-md text-on-surface">{{ __('معلومات النشاط') }}</h2>
                 <dl class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
                     @php

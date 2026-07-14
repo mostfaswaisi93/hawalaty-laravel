@@ -10,7 +10,7 @@
         $dayLabels = [__('أحد'), __('اثنين'), __('ثلاثاء'), __('أربعاء'), __('خميس'), __('جمعة'), __('سبت')];
 
         $statusPill = fn ($status) => match ($status->value) {
-            'completed' => 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+            'completed' => 'bg-success-container text-success dark:bg-success-container/15',
             'pending' => 'bg-secondary-container/20 text-secondary',
             default => 'bg-error-container text-error dark:bg-error/15',
         };
@@ -87,7 +87,11 @@
         </section>
 
         <!-- Weekly activity -->
-        <section class="tonal-elevation relative overflow-hidden rounded-3xl bg-inverse-surface p-6 text-inverse-on-surface">
+        {{-- Fixed dark navy (not the bg-inverse-surface token, which flips to
+             near-white in dark mode) so this stays visually paired with the
+             hero card above it — which is also a fixed dark gradient —
+             instead of the two swapping contrast against each other. --}}
+        <section class="tonal-elevation relative overflow-hidden rounded-3xl bg-[rgb(33,49,69)] p-6 text-[rgb(234,241,255)]">
             <div class="relative z-10 flex h-full flex-col">
                 <div class="mb-8 flex items-center justify-between">
                     <h3 class="font-headline-md text-headline-md">{{ __('نشاط الأسبوع') }}</h3>
@@ -98,9 +102,12 @@
                     <h4 class="mb-4 text-3xl font-bold" dir="ltr">{{ $weeklyTotalCount }}</h4>
                     <div class="mt-4 flex h-24 items-end gap-2">
                         @foreach ($weeklyActivity as $day)
-                            <div
-                                class="w-full rounded-t-lg transition-all duration-500 {{ $day['count'] === $maxDaily ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}"
-                                style="height: {{ ($day['count'] / $maxDaily) * 100 }}%"></div>
+                            <div class="flex h-full w-full flex-col items-center justify-end gap-1">
+                                <span class="font-numeral-lg text-[10px] opacity-70" dir="ltr">{{ $day['count'] }}</span>
+                                <div
+                                    class="w-full rounded-t-lg transition-all duration-500 {{ $day['count'] === $maxDaily ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}"
+                                    style="height: {{ max(4, ($day['count'] / $maxDaily) * 100) }}%"></div>
+                            </div>
                         @endforeach
                     </div>
                     <div class="mt-2 flex justify-between font-label-caps text-[10px] opacity-50">
@@ -110,7 +117,7 @@
                     </div>
                 </div>
             </div>
-            <div class="pointer-events-none absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, rgb(var(--c-inverse-on-surface)) 1px, transparent 0); background-size: 24px 24px;"></div>
+            <div class="pointer-events-none absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, rgb(234,241,255) 1px, transparent 0); background-size: 24px 24px;"></div>
         </section>
 
         <!-- Recent orders -->
@@ -143,7 +150,7 @@
                                         </div>
                                         <div>
                                             <p class="whitespace-nowrap text-body-sm font-bold">{{ $t->customer }}</p>
-                                            <p class="whitespace-nowrap text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
+                                            <p class="whitespace-nowrap text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -170,12 +177,12 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-body-sm font-bold">{{ $t->customer }}</p>
-                                        <p class="truncate text-[11px] text-outline">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
+                                        <p class="truncate text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>
                                 <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px]">
-                                    <span class="truncate text-[11px] text-outline">{{ $t->item_name ?: '—' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
+                                    <span class="truncate text-[11px] text-on-surface-variant">{{ $t->item_name ?: '—' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
                                     <span class="inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
                                         <span class="h-1.5 w-1.5 rounded-full {{ $statusDot($t->status) }}"></span>
                                         {{ $statusLabel($t->status) }}

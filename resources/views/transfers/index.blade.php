@@ -95,7 +95,7 @@
                             <div class="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3">
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate font-body-sm font-bold text-on-surface" x-text="line.name"></p>
-                                    <p class="text-[11px] text-outline" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
+                                    <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
                                 </div>
                                 <div class="flex items-center gap-1.5">
                                     <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}"

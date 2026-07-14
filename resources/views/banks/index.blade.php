@@ -7,9 +7,11 @@
         x-data="{
             open: {{ $errors->any() ? 'true' : 'false' }},
             mode: '{{ old('id') ? 'edit' : 'add' }}',
+            submitting: false,
+            confirmOpen: false, confirmMessage: '', confirmFormId: null,
             form: { id: '{{ old('id', '') }}', name: '{{ old('name', '') }}', type: '{{ old('type', 'bank') }}', code: '{{ old('code', '') }}', phone: '{{ old('phone', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
-            openAdd() { this.mode = 'add'; this.form = { id: '', name: '', type: 'bank', code: '', phone: '', active: true }; this.open = true; },
-            openEdit(bank) { this.mode = 'edit'; this.form = { ...bank }; this.open = true; },
+            openAdd() { this.mode = 'add'; this.submitting = false; this.form = { id: '', name: '', type: 'bank', code: '', phone: '', active: true }; this.open = true; },
+            openEdit(bank) { this.mode = 'edit'; this.submitting = false; this.form = { ...bank }; this.open = true; },
         }">
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -81,12 +83,12 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-body-sm font-bold">{{ $b->name }}</p>
-                                        <p class="text-[11px] text-outline">{{ $b->type->value === 'wallet' ? __('محفظة') : __('بنك') }} · <span dir="ltr">{{ $b->code }}</span></p>
+                                        <p class="text-[11px] text-on-surface-variant">{{ $b->type->value === 'wallet' ? __('محفظة') : __('بنك') }} · <span dir="ltr">{{ $b->code }}</span></p>
                                     </div>
                                     @include('banks._toggle', ['b' => $b])
                                 </div>
                                 <div class="mt-3 flex items-center justify-between gap-2 border-t border-outline-variant/50 pt-3">
-                                    <span class="text-[11px] text-outline" dir="ltr">{{ $b->phone ?: '—' }}</span>
+                                    <span class="text-[11px] text-on-surface-variant" dir="ltr">{{ $b->phone ?: '—' }}</span>
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openEdit(@js(['id' => $b->id, 'name' => $b->name, 'type' => $b->type->value, 'code' => $b->code, 'phone' => $b->phone, 'active' => (bool) $b->active]))"
                                             class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
@@ -114,7 +116,7 @@
 
                 <h3 id="bank-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل وسيلة الدفع') }}' : '{{ __('إضافة وسيلة دفع') }}'"></h3>
 
-                <form :action="mode === 'edit' ? '{{ url('banks') }}/' + form.id : '{{ route('banks.store') }}'" method="POST" class="space-y-4">
+                <form :action="mode === 'edit' ? '{{ url('banks') }}/' + form.id : '{{ route('banks.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf
                     <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
                     <input type="hidden" name="id" :value="form.id">
@@ -156,12 +158,14 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="open = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
-                        <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
-                            x-text="mode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}'"></button>
+                        <button type="submit" :disabled="submitting"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                            x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : (mode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}')"></button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <x-confirm-modal />
     </div>
 @endsection

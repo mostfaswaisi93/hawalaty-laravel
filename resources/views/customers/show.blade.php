@@ -5,7 +5,7 @@
 @section('content')
     @php
         $statusPill = fn ($status) => match ($status->value) {
-            'completed' => 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+            'completed' => 'bg-success-container text-success dark:bg-success-container/15',
             'pending' => 'bg-secondary-container/20 text-secondary',
             default => 'bg-error-container text-error dark:bg-error/15',
         };
@@ -82,7 +82,7 @@
                                     <p class="font-bold text-primary" dir="ltr">+{{ number_format($t->amount, 2) }} ₪</p>
                                 </div>
                                 <p class="mt-2 truncate text-body-sm text-on-surface-variant">{{ $t->item_name ?: '—' }}</p>
-                                <p class="mt-1 text-[11px] text-outline">{{ $t->created_at->translatedFormat('j F Y') }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $t->created_at->translatedFormat('j F Y') }}</p>
                             </div>
                         @endforeach
                     </x-slot:cards>

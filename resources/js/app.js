@@ -67,10 +67,18 @@ Alpine.data('notificationBell', (initialUnread = 0) => ({
 Alpine.data('globalSearch', () => ({
     query: '',
     open: false,
+    mobileOpen: false,
     loading: false,
     searched: false,
     results: { orders: [], customers: [], banks: [], menuItems: [] },
     debounceTimer: null,
+
+    closeMobile() {
+        this.mobileOpen = false;
+        this.query = '';
+        this.results = { orders: [], customers: [], banks: [], menuItems: [] };
+        this.searched = false;
+    },
 
     get hasResults() {
         return (

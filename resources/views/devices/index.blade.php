@@ -3,7 +3,7 @@
 @section('title', __('الأجهزة — حوالاتي'))
 
 @section('content')
-    <div class="page-enter space-y-6">
+    <div class="page-enter space-y-6" x-data="{ confirmOpen: false, confirmMessage: '', confirmFormId: null }">
         <header>
             <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('أجهزتي') }}</h1>
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('الأجهزة التي سجّلت الدخول منها إلى حسابك — يمكنك إلغاء أيّ منها.') }}</p>
@@ -27,7 +27,7 @@
                                 <div class="flex items-center gap-2">
                                     <p class="truncate font-body-lg font-bold text-on-surface">{{ $device->name ?: __('جهاز غير معروف') }}</p>
                                     @if ($device->is_current)
-                                        <span class="rounded-full bg-green-100 px-2.5 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-500/15 dark:text-green-300">{{ __('الحالي') }}</span>
+                                        <span class="rounded-full bg-success-container px-2.5 py-0.5 text-[10px] font-bold text-success dark:bg-success-container/15">{{ __('الحالي') }}</span>
                                     @endif
                                 </div>
                                 <p class="truncate text-[12px] text-outline">
@@ -37,17 +37,21 @@
                                     @endif
                                 </p>
                             </div>
-                            <form method="POST" action="{{ route('devices.destroy', $device->id) }}" onsubmit="return confirm('{{ __('إلغاء هذا الجهاز وتسجيل الخروج منه؟') }}')" class="inline-flex">
+                            <form method="POST" action="{{ route('devices.destroy', $device->id) }}" id="delete-device-{{ $device->id }}" class="inline-flex">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="flex items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface-variant transition-colors hover:border-error/40 hover:bg-error/10 hover:text-error">
-                                    <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">logout</span>
-                                    {{ __('إلغاء') }}
-                                </button>
                             </form>
+                            <button type="button"
+                                @click="confirmOpen = true; confirmMessage = '{{ __('إلغاء هذا الجهاز وتسجيل الخروج منه؟') }}'; confirmFormId = 'delete-device-{{ $device->id }}'"
+                                class="flex items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface-variant transition-colors hover:border-error/40 hover:bg-error/10 hover:text-error">
+                                <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">logout</span>
+                                {{ __('إلغاء') }}
+                            </button>
                         </li>
                     @endforeach
                 </ul>
             @endif
         </section>
+
+        <x-confirm-modal />
     </div>
 @endsection

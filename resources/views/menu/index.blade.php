@@ -20,10 +20,12 @@
             catOpen: {{ $categoryHasErrors ? 'true' : 'false' }},
             itemOpen: {{ $itemHasErrors ? 'true' : 'false' }},
             importOpen: {{ $importHasErrors ? 'true' : 'false' }},
+            submitting: false,
+            confirmOpen: false, confirmMessage: '', confirmFormId: null,
             itemMode: '{{ old('id') ? 'edit' : 'add' }}',
             itemForm: { id: '{{ old('id', '') }}', name: '{{ $itemHasErrors ? old('name', '') : '' }}', menuCategoryId: '{{ old('menuCategoryId', '') }}', price: '{{ old('price', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
-            openAddItem(catId) { this.itemMode = 'add'; this.itemForm = { id: '', name: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
-            openEditItem(item) { this.itemMode = 'edit'; this.itemForm = { ...item }; this.itemOpen = true; },
+            openAddItem(catId) { this.itemMode = 'add'; this.submitting = false; this.itemForm = { id: '', name: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
+            openEditItem(item) { this.itemMode = 'edit'; this.submitting = false; this.itemForm = { ...item }; this.itemOpen = true; },
         }">
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -36,11 +38,11 @@
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تصدير CSV') }}" title="{{ __('تصدير CSV') }}">
                     <span class="material-symbols-outlined !text-xl">download</span>
                 </a>
-                <button type="button" @click="importOpen = true"
+                <button type="button" @click="importOpen = true; submitting = false"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('استيراد CSV') }}" title="{{ __('استيراد CSV') }}">
                     <span class="material-symbols-outlined !text-xl">upload</span>
                 </button>
-                <button type="button" @click="catOpen = true"
+                <button type="button" @click="catOpen = true; submitting = false"
                     class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                     <span class="material-symbols-outlined !text-xl">create_new_folder</span>
                     {{ __('فئة جديدة') }}
@@ -57,7 +59,7 @@
             <div class="tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد فئات بعد') }}</p>
-                <button type="button" @click="catOpen = true" class="font-body-sm font-bold text-primary hover:underline">{{ __('أنشئ أول فئة') }}</button>
+                <button type="button" @click="catOpen = true; submitting = false" class="font-body-sm font-bold text-primary hover:underline">{{ __('أنشئ أول فئة') }}</button>
             </div>
         @else
             <div class="space-y-5">
@@ -79,18 +81,23 @@
                                     <span class="material-symbols-outlined !text-xl">add</span>
                                     <span class="hidden font-body-sm font-bold sm:inline">{{ __('صنف') }}</span>
                                 </button>
-                                <form method="POST" action="{{ route('menu.categories.destroy', $cat->id) }}" onsubmit="return confirm('{{ __('حذف الفئة وكل أصنافها؟') }}')" class="inline-flex">
+                                <form method="POST" action="{{ route('menu.categories.destroy', $cat->id) }}" id="delete-category-{{ $cat->id }}" class="inline-flex">
                                     @csrf @method('DELETE')
-                                    <button type="submit" aria-label="{{ __('حذف الفئة') }}"
-                                        class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
-                                        <span class="material-symbols-outlined !text-xl">delete</span>
-                                    </button>
                                 </form>
+                                <button type="button" aria-label="{{ __('حذف الفئة') }}"
+                                    @click="confirmOpen = true; confirmMessage = '{{ __('حذف الفئة وكل أصنافها؟') }}'; confirmFormId = 'delete-category-{{ $cat->id }}'"
+                                    class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
+                                    <span class="material-symbols-outlined !text-xl">delete</span>
+                                </button>
                             </div>
                         </div>
 
                         @if ($cat->menuItems->isEmpty())
-                            <p class="p-6 text-center font-body-sm text-outline">{{ __('لا أصناف في هذه الفئة — أضِف واحداً.') }}</p>
+                            <div class="flex flex-col items-center gap-2 py-10 text-center">
+                                <span class="material-symbols-outlined !text-4xl text-outline/50">lunch_dining</span>
+                                <p class="font-body-sm text-on-surface-variant">{{ __('لا أصناف في هذه الفئة بعد') }}</p>
+                                <button type="button" @click="openAddItem(@js($cat->id))" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضِف أول صنف') }}</button>
+                            </div>
                         @else
                             <ul class="divide-y divide-outline-variant/50">
                                 @foreach ($cat->menuItems as $item)
@@ -118,13 +125,14 @@
                                             <span class="material-symbols-outlined !text-xl">edit</span>
                                         </button>
 
-                                        <form method="POST" action="{{ route('menu.items.destroy', $item->id) }}" onsubmit="return confirm('{{ __('حذف هذا الصنف؟') }}')" class="inline-flex">
+                                        <form method="POST" action="{{ route('menu.items.destroy', $item->id) }}" id="delete-item-{{ $item->id }}" class="inline-flex">
                                             @csrf @method('DELETE')
-                                            <button type="submit" aria-label="{{ __('حذف') }}"
-                                                class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
-                                                <span class="material-symbols-outlined !text-xl">delete</span>
-                                            </button>
                                         </form>
+                                        <button type="button" aria-label="{{ __('حذف') }}"
+                                            @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الصنف؟') }}'; confirmFormId = 'delete-item-{{ $item->id }}'"
+                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
+                                            <span class="material-symbols-outlined !text-xl">delete</span>
+                                        </button>
                                     </li>
                                 @endforeach
                             </ul>
@@ -143,7 +151,7 @@
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="category-modal-title" class="mb-5 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
-                <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
                         <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم الفئة') }}</label>
@@ -153,8 +161,9 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="catOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
-                        <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">{{ __('إضافة') }}</button>
+                        <button type="submit" :disabled="submitting"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                            x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : '{{ __('إضافة') }}'"></button>
                     </div>
                 </form>
             </div>
@@ -169,7 +178,7 @@
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="item-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
-                <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4">
+                <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf
                     <template x-if="itemMode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
                     <input type="hidden" name="id" :value="itemForm.id">
@@ -207,9 +216,9 @@
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="itemOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
-                        <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
-                            x-text="itemMode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}'"></button>
+                        <button type="submit" :disabled="submitting"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                            x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : (itemMode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}')"></button>
                     </div>
                 </form>
             </div>
@@ -225,18 +234,21 @@
                 class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="import-modal-title" class="mb-2 font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
                 <p class="mb-5 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
-                <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4">
+                <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4" @submit="submitting = true">
                     @csrf
                     <input type="file" name="file" accept=".csv,text/csv" required
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none file:me-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:font-body-sm file:font-bold file:text-on-primary" />
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="importOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
-                        <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">{{ __('استيراد') }}</button>
+                        <button type="submit" :disabled="submitting"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                            x-text="submitting ? '{{ __('جارٍ الاستيراد...') }}' : '{{ __('استيراد') }}'"></button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <x-confirm-modal />
     </div>
 @endsection

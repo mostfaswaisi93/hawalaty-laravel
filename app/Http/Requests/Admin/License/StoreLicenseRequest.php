@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\License;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * Same shape as App\Http\Requests\Auth\SignupRequest (both ultimately feed
@@ -25,7 +26,7 @@ class StoreLicenseRequest extends FormRequest
             'ownerName' => ['required', 'string', 'max:255'],
             'ownerEmail' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()],
             'packageId' => ['nullable', 'string', 'exists:packages,id'],
         ];
     }
