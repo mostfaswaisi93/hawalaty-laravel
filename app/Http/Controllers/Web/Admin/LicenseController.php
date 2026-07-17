@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
 use App\Http\Requests\Admin\License\ChangePackageRequest;
 use App\Http\Requests\Admin\License\StoreLicenseRequest;
 use App\Models\License;
@@ -15,20 +16,26 @@ use Throwable;
 
 class LicenseController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly LicenseService $service) {}
 
     public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         return view('admin.licenses.index', [
             'licenses' => $this->service->list(
                 $request->query('search'),
                 $request->query('status'),
                 $request->query('packageId'),
+                $perPage,
             ),
             'packages' => Package::query()->orderBy('price')->get(),
             'search' => $request->query('search'),
             'status' => $request->query('status'),
             'packageId' => $request->query('packageId'),
+            'perPage' => $perPage,
         ]);
     }
 

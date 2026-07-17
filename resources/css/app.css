@@ -340,3 +340,32 @@ textarea:focus-visible,
     background: rgb(var(--c-outline-variant));
     border-radius: 10px;
 }
+
+/* ---------- Native <select> styling ----------
+ * The browser's default select arrow renders on the wrong side under RTL and
+ * ignores the theme. Kept UNLAYERED (like the Material Symbols rule above) so
+ * the arrow-side padding wins over Tailwind's layered `px-*` utilities in v4,
+ * and a single rule restyles every dropdown across the tenant + admin apps.
+ * Two chevron images so the glyph follows light/dark; positioned on the
+ * inline-end side via the page's dir. `<select multiple>` opts out. */
+select:not([multiple]) {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23444651' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 1.05rem 1.05rem;
+    padding-inline-end: 2.5rem;
+}
+.dark select:not([multiple]) {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23c2c7d2' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+[dir='rtl'] select:not([multiple]) {
+    background-position: left 0.85rem center;
+}
+select:not([multiple]) option {
+    background-color: rgb(var(--c-surface-container-lowest));
+    color: rgb(var(--c-on-surface));
+}

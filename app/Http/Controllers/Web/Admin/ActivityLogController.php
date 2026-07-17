@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
 use App\Models\ActivityLog;
 use App\Models\Admin;
 use Illuminate\Http\Request;
@@ -15,8 +16,12 @@ use Illuminate\View\View;
  */
 class ActivityLogController extends Controller
 {
+    use HasPerPage;
+
     public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         $query = ActivityLog::query()->with('admin');
 
         if ($adminId = $request->query('adminId')) {
@@ -24,9 +29,10 @@ class ActivityLogController extends Controller
         }
 
         return view('admin.logs.index', [
-            'logs' => $query->latest()->paginate(30),
+            'logs' => $query->latest()->paginate($perPage)->withQueryString(),
             'admins' => Admin::query()->orderBy('name')->get(),
             'adminId' => $adminId,
+            'perPage' => $perPage,
         ]);
     }
 }

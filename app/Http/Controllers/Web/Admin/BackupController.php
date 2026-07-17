@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
 use App\Models\Backup;
 use App\Models\License;
 use App\Services\Admin\BackupService;
@@ -14,13 +15,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BackupController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly BackupService $service) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         return view('admin.backups.index', [
-            'backups' => Backup::with('license')->latest()->paginate(20),
+            'backups' => Backup::with('license')->latest()->paginate($perPage)->withQueryString(),
             'licenses' => License::query()->orderBy('customer_name')->get(),
+            'perPage' => $perPage,
         ]);
     }
 
