@@ -3,21 +3,28 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
 use App\Http\Requests\Admin\Box\StoreBoxRequest;
 use App\Http\Requests\Admin\Box\UpdateBoxRequest;
 use App\Models\Box;
 use App\Services\Admin\BoxService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BoxController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly BoxService $service) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         return view('admin.boxes.index', [
-            'boxes' => $this->service->list(),
+            'boxes' => Box::query()->orderBy('box_name')->paginate($perPage)->withQueryString(),
+            'perPage' => $perPage,
         ]);
     }
 

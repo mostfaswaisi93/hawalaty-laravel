@@ -75,7 +75,7 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                <div class="mt-6">{{ $backups->links() }}</div>
+                <x-table-footer :paginator="$backups" :perPage="$perPage" />
             @endif
         </section>
 

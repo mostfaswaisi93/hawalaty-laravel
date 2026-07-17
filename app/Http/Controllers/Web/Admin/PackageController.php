@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
 use App\Models\Package;
 use App\Services\Admin\PackageService;
 use Illuminate\Http\RedirectResponse;
@@ -17,12 +18,17 @@ use Illuminate\View\View;
  */
 class PackageController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly PackageService $service) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         return view('admin.packages.index', [
-            'packages' => $this->service->list(),
+            'packages' => Package::query()->orderBy('price')->paginate($perPage)->withQueryString(),
+            'perPage' => $perPage,
         ]);
     }
 

@@ -68,6 +68,8 @@
                     </div>
                 @endforeach
             </div>
+
+            <x-table-footer :paginator="$packages" :perPage="$perPage" />
         @endif
 
         {{-- add / edit modal --}}

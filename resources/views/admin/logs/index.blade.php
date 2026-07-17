@@ -53,7 +53,7 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                <div class="mt-6">{{ $logs->links() }}</div>
+                <x-table-footer :paginator="$logs" :perPage="$perPage" />
             @endif
         </section>
     </div>

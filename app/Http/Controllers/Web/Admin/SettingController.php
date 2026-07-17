@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
+use App\Models\Setting;
 use App\Services\Admin\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,12 +12,17 @@ use Illuminate\View\View;
 
 class SettingController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly SettingService $service) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         return view('admin.settings.index', [
-            'settings' => $this->service->list(),
+            'settings' => Setting::query()->orderBy('key')->paginate($perPage)->withQueryString(),
+            'perPage' => $perPage,
         ]);
     }
 

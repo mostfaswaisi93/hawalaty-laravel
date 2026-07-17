@@ -3,21 +3,28 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
 use App\Http\Requests\Admin\Partner\StorePartnerRequest;
 use App\Http\Requests\Admin\Partner\UpdatePartnerRequest;
 use App\Models\Partner;
 use App\Services\Admin\PartnerService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PartnerController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly PartnerService $service) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $perPage = $this->perPage($request);
+
         return view('admin.partners.index', [
-            'partners' => $this->service->list(),
+            'partners' => Partner::query()->orderBy('name')->paginate($perPage)->withQueryString(),
+            'perPage' => $perPage,
         ]);
     }
 

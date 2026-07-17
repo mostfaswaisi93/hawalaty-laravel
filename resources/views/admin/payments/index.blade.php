@@ -55,7 +55,7 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                <div class="mt-6">{{ $payments->links() }}</div>
+                <x-table-footer :paginator="$payments" :perPage="$perPage" />
             @endif
         </section>
 

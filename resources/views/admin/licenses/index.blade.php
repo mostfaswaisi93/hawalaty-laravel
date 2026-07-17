@@ -127,7 +127,7 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                <div class="mt-6">{{ $licenses->links() }}</div>
+                <x-table-footer :paginator="$licenses" :perPage="$perPage" />
             @endif
         </section>
 
