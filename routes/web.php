@@ -1,6 +1,16 @@
 <?php
 
 use App\Http\Controllers\Web\ActivityLogController;
+use App\Http\Controllers\Web\Admin\ActivityLogController as AdminActivityLogController;
+use App\Http\Controllers\Web\Admin\BackupController as AdminBackupController;
+use App\Http\Controllers\Web\Admin\BoxController as AdminBoxController;
+use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Web\Admin\FinanceController as AdminFinanceController;
+use App\Http\Controllers\Web\Admin\LicenseController as AdminLicenseController;
+use App\Http\Controllers\Web\Admin\PackageController as AdminPackageController;
+use App\Http\Controllers\Web\Admin\PartnerController as AdminPartnerController;
+use App\Http\Controllers\Web\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Web\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
 use App\Http\Controllers\Web\BankController;
@@ -168,8 +178,54 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('logout');
 
     Route::middleware('auth:admin')->group(function () {
-        Route::get('dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Licenses — provision, inspect, suspend/activate, change package
+        Route::get('licenses', [AdminLicenseController::class, 'index'])->name('licenses.index');
+        Route::post('licenses', [AdminLicenseController::class, 'store'])->name('licenses.store');
+        Route::get('licenses/{license}', [AdminLicenseController::class, 'show'])->name('licenses.show');
+        Route::post('licenses/{license}/suspend', [AdminLicenseController::class, 'suspend'])->name('licenses.suspend');
+        Route::post('licenses/{license}/activate', [AdminLicenseController::class, 'activate'])->name('licenses.activate');
+        Route::post('licenses/{license}/change-package', [AdminLicenseController::class, 'changePackage'])->name('licenses.change-package');
+
+        // Packages
+        Route::get('packages', [AdminPackageController::class, 'index'])->name('packages.index');
+        Route::post('packages', [AdminPackageController::class, 'store'])->name('packages.store');
+        Route::put('packages/{package}', [AdminPackageController::class, 'update'])->name('packages.update');
+        Route::delete('packages/{package}', [AdminPackageController::class, 'destroy'])->name('packages.destroy');
+
+        // Boxes
+        Route::get('boxes', [AdminBoxController::class, 'index'])->name('boxes.index');
+        Route::post('boxes', [AdminBoxController::class, 'store'])->name('boxes.store');
+        Route::put('boxes/{box}', [AdminBoxController::class, 'update'])->name('boxes.update');
+        Route::delete('boxes/{box}', [AdminBoxController::class, 'destroy'])->name('boxes.destroy');
+
+        // Partners
+        Route::get('partners', [AdminPartnerController::class, 'index'])->name('partners.index');
+        Route::post('partners', [AdminPartnerController::class, 'store'])->name('partners.store');
+        Route::put('partners/{partner}', [AdminPartnerController::class, 'update'])->name('partners.update');
+        Route::delete('partners/{partner}', [AdminPartnerController::class, 'destroy'])->name('partners.destroy');
+
+        // Payments (records payment + renews license)
+        Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::post('payments', [AdminPaymentController::class, 'store'])->name('payments.store');
+
+        // Finance summary + money-out actions (withdrawals, platform expenses)
+        Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance');
+        Route::post('finance/withdrawals', [AdminFinanceController::class, 'storeWithdrawal'])->name('finance.withdrawals.store');
+        Route::post('finance/expenses', [AdminFinanceController::class, 'storeExpense'])->name('finance.expenses.store');
+
+        // Backups
+        Route::get('backups', [AdminBackupController::class, 'index'])->name('backups.index');
+        Route::post('backups', [AdminBackupController::class, 'store'])->name('backups.store');
+        Route::get('backups/{backup}/download', [AdminBackupController::class, 'download'])->name('backups.download');
+        Route::delete('backups/{backup}', [AdminBackupController::class, 'destroy'])->name('backups.destroy');
+
+        // Activity log (read-only)
+        Route::get('logs', [AdminActivityLogController::class, 'index'])->name('logs.index');
+
+        // Platform key/value settings
+        Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [AdminSettingController::class, 'upsert'])->name('settings.upsert');
     });
 });
