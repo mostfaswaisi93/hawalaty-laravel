@@ -118,6 +118,27 @@ class AdminPagesTest extends TestCase
         $this->assertTrue($license->expired_at->isFuture());
     }
 
+    public function test_per_page_selector_controls_page_size(): void
+    {
+        foreach (range(1, 12) as $i) {
+            Partner::create(['name' => "Partner {$i}", 'percentage' => 1]);
+        }
+
+        // Default (10) → 2 pages of 12 rows.
+        $this->actingAs($this->admin(), 'admin')->get('/admin/partners')
+            ->assertOk()
+            ->assertViewHas('partners', fn ($p) => $p->perPage() === 10 && $p->total() === 12 && $p->lastPage() === 2);
+
+        // per_page=50 → everything on one page.
+        $this->actingAs($this->admin(), 'admin')->get('/admin/partners?per_page=50')
+            ->assertOk()
+            ->assertViewHas('partners', fn ($p) => $p->perPage() === 50 && $p->lastPage() === 1);
+
+        // A value outside the whitelist falls back to 10.
+        $this->actingAs($this->admin(), 'admin')->get('/admin/partners?per_page=9999')
+            ->assertViewHas('partners', fn ($p) => $p->perPage() === 10);
+    }
+
     public function test_finance_withdrawal_debits_the_box(): void
     {
         $box = Box::create(['box_name' => 'Main', 'box_balance' => 300]);
