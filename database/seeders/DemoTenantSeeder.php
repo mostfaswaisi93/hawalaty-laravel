@@ -122,14 +122,16 @@ class DemoTenantSeeder extends Seeder
     /** @return Collection<int, Bank> */
     private function seedBanks(): Collection
     {
+        // `phone` is the WhatsApp number new-order notifications are sent to,
+        // so these are stored in E.164 exactly as the bank form now saves them.
         $banks = [
-            ['name' => 'بنك فلسطين', 'type' => BankType::Bank, 'code' => 'BOP', 'phone' => '0599000001'],
-            ['name' => 'البنك الإسلامي الفلسطيني', 'type' => BankType::Bank, 'code' => 'IBP', 'phone' => '0599000002'],
-            ['name' => 'بنك القدس', 'type' => BankType::Bank, 'code' => 'QUDS', 'phone' => '0599000003'],
-            ['name' => 'البنك الوطني', 'type' => BankType::Bank, 'code' => 'TNB', 'phone' => '0599000004'],
-            ['name' => 'جوال باي', 'type' => BankType::Wallet, 'code' => 'JAWWAL', 'phone' => '0599000005'],
-            ['name' => 'PalPay', 'type' => BankType::Wallet, 'code' => 'PALPAY', 'phone' => '0599000006'],
-            ['name' => 'ريفلكت', 'type' => BankType::Wallet, 'code' => 'REFLECT', 'phone' => '0599000007'],
+            ['name' => 'بنك فلسطين', 'type' => BankType::Bank, 'code' => 'BOP', 'phone' => '+972599000001'],
+            ['name' => 'البنك الإسلامي الفلسطيني', 'type' => BankType::Bank, 'code' => 'IBP', 'phone' => '+972599000002'],
+            ['name' => 'بنك القدس', 'type' => BankType::Bank, 'code' => 'QUDS', 'phone' => '+972599000003'],
+            ['name' => 'البنك الوطني', 'type' => BankType::Bank, 'code' => 'TNB', 'phone' => '+972599000004'],
+            ['name' => 'جوال باي', 'type' => BankType::Wallet, 'code' => 'JAWWAL', 'phone' => '+972599000005'],
+            ['name' => 'PalPay', 'type' => BankType::Wallet, 'code' => 'PALPAY', 'phone' => '+972599000006'],
+            ['name' => 'ريفلكت', 'type' => BankType::Wallet, 'code' => 'REFLECT', 'phone' => '+972595817016'],
         ];
 
         return collect($banks)->map(fn (array $bank) => Bank::create($bank + ['active' => true]));

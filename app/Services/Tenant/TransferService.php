@@ -11,14 +11,20 @@ use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Notifications\Tenant\NewOrderNotification;
 use App\Notifications\Tenant\OrderStatusChangedNotification;
+use App\Services\WhatsApp\WhatsAppSender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 class TransferService
 {
-    public function __construct(private readonly CustomerService $customers) {}
+    public function __construct(
+        private readonly CustomerService $customers,
+        private readonly WhatsAppSender $whatsapp,
+    ) {}
 
     /**
      * Backs both /transfers and /history (see BACKEND_PROMPT.md section 7 —
@@ -125,6 +131,27 @@ class TransferService
         AuditLogger::record(AuditAction::Created, AuditEntityType::Order, $transfer->id, AuditCategory::Transfers);
 
         Notification::send($this->teammatesToNotify(), new NewOrderNotification($transfer));
+
+        // Notifies the bank/wallet the operator selected, when the order was
+        // paid by transfer. All the "should this send at all?" rules live in
+        // the sender; this call is unconditional on purpose.
+        //
+        // The catch is mandatory. The transfer is already committed by this
+        // point, so an escaping exception would 500 the operator on an order
+        // that persisted — and on the offline-sync path SyncService::push()'s
+        // catch(Throwable) would mark the event failed and force the client to
+        // re-push it. It would NOT roll the order back: the DB::transaction()
+        // above runs on the default (platform) connection while Transfer and
+        // TransferLineItem live on `tenant`.
+        try {
+            $this->whatsapp->sendNewOrder($transfer);
+        } catch (Throwable $e) {
+            Log::error('WhatsApp order notification failed.', [
+                'transferId' => $transfer->id,
+                'bankId' => $transfer->bank_id,
+                'exception' => $e,
+            ]);
+        }
 
         return $transfer;
     }

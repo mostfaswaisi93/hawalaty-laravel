@@ -40,7 +40,7 @@
                     <button type="button" @click="openAdd()" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضف أول وسيلة دفع') }}</button>
                 </div>
             @else
-                <x-table-responsive :headers="[__('الاسم'), __('النوع'), __('الرمز'), __('الهاتف'), __('الحالة'), __('إجراءات')]">
+                <x-table-responsive :headers="[__('الاسم'), __('النوع'), __('الرمز'), __('واتساب'), __('الحالة'), __('إجراءات')]">
                     <x-slot:table>
                         @foreach ($banks as $b)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
@@ -145,9 +145,13 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الهاتف (اختياري)') }}</label>
-                        <input name="phone" x-model="form.phone" dir="ltr" placeholder="059..."
+                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('رقم واتساب (اختياري)') }}</label>
+                        <input name="phone" x-model="form.phone" dir="ltr" placeholder="+972595817016"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        <p class="flex items-start gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+                            <span class="material-symbols-outlined !text-base">chat</span>
+                            {{ __('يُرسَل إشعار بالطلبات الجديدة إلى هذا الرقم عبر واتساب.') }}
+                        </p>
                     </div>
 
                     <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
