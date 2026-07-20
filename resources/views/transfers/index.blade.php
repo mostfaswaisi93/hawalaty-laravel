@@ -213,18 +213,11 @@
                                     </optgroup>
                                 </select>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">{{ __('اسم المُرسِل') }}</label>
-                                    <input name="senderName" x-model="senderName" placeholder="{{ __('اختياري') }}"
-                                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">{{ __('هاتف المُرسِل') }}</label>
-                                    <input name="senderPhone" x-model="senderPhone" dir="ltr" placeholder="059..."
-                                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                                </div>
-                            </div>
+                            {{-- "sender name" / "sender phone" were removed from this form: the
+                                 operator does not need to re-key who paid, and neither field is
+                                 used by the WhatsApp order notification. The columns remain on
+                                 `transfers` so historical orders keep their values, and the API
+                                 still accepts both for backwards compatibility. --}}
                             <div class="space-y-2">
                                 <label class="block font-body-sm text-on-surface-variant">{{ __('المبلغ المُحوَّل (₪)') }}</label>
                                 <input type="number" step="0.01" min="0" name="transferredAmount" x-model="transferredAmount" dir="ltr" placeholder="0.00"
@@ -275,8 +268,6 @@
                 changeBankId: '',
                 changeAmount: '',
                 bankId: '',
-                senderName: '',
-                senderPhone: '',
                 transferredAmount: '',
                 submitting: false,
 
@@ -290,8 +281,6 @@
                         this.changeBankId = '';
                         this.changeAmount = '';
                         this.bankId = '';
-                        this.senderName = '';
-                        this.senderPhone = '';
                         this.transferredAmount = this.paymentMethod === 'bank' ? this.total.toFixed(2) : '';
                     });
                 },

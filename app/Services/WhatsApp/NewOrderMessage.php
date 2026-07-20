@@ -55,16 +55,15 @@ class NewOrderMessage
             $lines[] = 'البنك: '.$transfer->bank->name;
         }
 
-        // All three are nullable in both the schema and the validation rules —
-        // emit the label only when there is a value, never the string "null".
-        if (filled($transfer->sender_name)) {
-            $lines[] = 'اسم المُرسِل: '.$transfer->sender_name;
-        }
-
-        if (filled($transfer->sender_phone)) {
-            $lines[] = 'هاتف المُرسِل: '.self::isolate((string) $transfer->sender_phone);
-        }
-
+        // `sender_name` / `sender_phone` are deliberately NOT included: the
+        // recipient is the bank that received the transfer, and the operator
+        // considers those two fields noise in the notification. They are still
+        // captured on the order form, stored, and printed on the receipt.
+        //
+        // `transferred_amount` IS kept — it is the figure the bank reconciles
+        // against, and it can legitimately differ from the order total.
+        // Nullable in both schema and validation, so emit the label only when
+        // there is a value; never render the literal string "null".
         if (filled($transfer->transferred_amount)) {
             $lines[] = 'المبلغ المُحوَّل: '.self::money($transfer->transferred_amount);
         }

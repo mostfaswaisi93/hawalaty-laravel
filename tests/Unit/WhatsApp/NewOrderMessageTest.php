@@ -73,28 +73,36 @@ class NewOrderMessageTest extends TestCase
         $this->assertStringContainsString('الإجمالي', $body);
     }
 
-    public function test_it_omits_optional_sender_fields_when_absent(): void
+    public function test_it_omits_the_transferred_amount_when_absent(): void
     {
         $body = NewOrderMessage::build($this->transfer());
 
-        $this->assertStringNotContainsString('اسم المُرسِل', $body);
-        $this->assertStringNotContainsString('هاتف المُرسِل', $body);
         $this->assertStringNotContainsString('المبلغ المُحوَّل', $body);
 
         // The regression this really guards: rendering the literal word "null".
         $this->assertStringNotContainsString('null', $body);
     }
 
-    public function test_it_includes_optional_sender_fields_when_present(): void
+    public function test_it_never_includes_the_sender_name_or_phone(): void
     {
+        // Deliberately excluded from the notification even when captured on the
+        // order: the bank only needs the order itself. They remain on the form,
+        // in the database and on the printed receipt.
         $body = NewOrderMessage::build($this->transfer([
             'sender_name' => 'خالد شاهين',
             'sender_phone' => '+972598887777',
-            'transferred_amount' => '72.00',
         ]));
 
-        $this->assertStringContainsString('اسم المُرسِل: خالد شاهين', $body);
-        $this->assertStringContainsString('+972598887777', $body);
+        $this->assertStringNotContainsString('اسم المُرسِل', $body);
+        $this->assertStringNotContainsString('هاتف المُرسِل', $body);
+        $this->assertStringNotContainsString('خالد شاهين', $body);
+        $this->assertStringNotContainsString('+972598887777', $body);
+    }
+
+    public function test_it_includes_the_transferred_amount_when_present(): void
+    {
+        $body = NewOrderMessage::build($this->transfer(['transferred_amount' => '72.00']));
+
         $this->assertStringContainsString('المبلغ المُحوَّل', $body);
     }
 
