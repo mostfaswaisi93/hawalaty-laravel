@@ -395,6 +395,18 @@ textarea:focus-visible,
 .page-enter {
     animation: app-fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* Slow ambient drift for the decorative orbs on the admin login panel. Applied
+   via motion-safe: at the call site, so reduced-motion users get a static orb. */
+@keyframes admin-orb {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+        transform: translate3d(2rem, -1.5rem, 0) scale(1.12);
+    }
+}
 @media (prefers-reduced-motion: reduce) {
     .page-enter {
         animation: none;

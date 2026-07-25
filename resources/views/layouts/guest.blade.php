@@ -23,17 +23,19 @@
                 <span class="font-display-lg text-2xl font-bold leading-none text-primary">{{ __('حوالاتي') }}</span>
             </a>
             <div class="flex items-center gap-1">
+                {{-- The locale code alone carries the meaning; the translate glyph
+                     beside it was pure duplication. --}}
                 <a href="{{ route('locale.switch', $otherLocale) }}"
-                    class="flex h-10 items-center gap-1.5 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    aria-label="{{ __('تغيير اللغة') }}">
-                    <span class="material-symbols-outlined">translate</span>
-                    <span class="font-body-sm font-bold">{{ $otherLocale === 'en' ? 'EN' : 'ع' }}</span>
+                    class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                    aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
+                    {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                 </a>
                 <button
                     type="button"
                     @click="dark = !dark"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    aria-label="{{ __('تبديل المظهر') }}">
+                    :aria-label="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'"
+                    :title="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'">
                     <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                 </button>
             </div>
