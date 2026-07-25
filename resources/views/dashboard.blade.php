@@ -52,7 +52,7 @@
             <div class="grid grid-cols-2 gap-4">
                 @if ($member?->hasPermission(\App\Enums\PermissionKey::TransfersCreate))
                     <a href="/transfers" class="tonal-elevation group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-container/10 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-white">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-container/10 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-on-secondary-fixed">
                             <span class="material-symbols-outlined">add</span>
                         </div>
                         <span class="text-body-sm font-bold">{{ __('طلب جديد') }}</span>
@@ -78,7 +78,7 @@
                 @endif
 
                 <a href="/reports" class="tonal-elevation group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-dim/30 text-on-surface-variant transition-colors group-hover:bg-primary-container group-hover:text-white">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-dim/30 text-on-surface-variant transition-colors group-hover:bg-primary-container group-hover:text-on-primary-container">
                         <span class="material-symbols-outlined">assessment</span>
                     </div>
                     <span class="text-body-sm font-bold">{{ __('التقارير') }}</span>

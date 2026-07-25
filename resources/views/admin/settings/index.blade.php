@@ -48,7 +48,7 @@
                             <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
                                 <div class="flex items-center justify-between gap-2">
                                     <code class="text-body-sm font-bold" dir="ltr">{{ $setting->key }}</code>
-                                    <button type="button" @click="openEdit(@js(['key' => $setting->key, 'value' => $setting->value]))" class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
+                                    <button type="button" @click="openEdit(@js(['key' => $setting->key, 'value' => $setting->value]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">{{ $setting->value ?? '—' }}</p>
                             </div>
@@ -64,7 +64,7 @@
             <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل الإعداد') }}' : '{{ __('إضافة إعداد') }}'"></h3>
                 <form method="POST" action="{{ route('admin.settings.upsert') }}" class="space-y-4" @submit="submitting = true">
                     @csrf

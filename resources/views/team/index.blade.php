@@ -108,7 +108,7 @@
                                     </span>
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openEdit(@js(['id' => $m->id, 'name' => $m->name, 'email' => $m->email, 'roleId' => $m->role_id, 'active' => (bool) $m->active]))"
-                                            class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
+                                            class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                             <span class="material-symbols-outlined !text-lg">edit</span>
                                         </button>
                                         <form method="POST" action="{{ route('team.destroy', $m->id) }}" id="delete-team-card-{{ $m->id }}" class="inline-flex">
@@ -116,7 +116,7 @@
                                         </form>
                                         <button type="button" aria-label="{{ __('حذف') }}"
                                             @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا العضو؟') }}'; confirmFormId = 'delete-team-card-{{ $m->id }}'"
-                                            class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
+                                            class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
                                             <span class="material-symbols-outlined !text-lg">delete</span>
                                         </button>
                                     </div>
@@ -135,7 +135,7 @@
                 x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="team-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="team-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل العضو') }}' : '{{ __('إضافة عضو') }}'"></h3>
                 <form :action="mode === 'edit' ? '{{ url('team') }}/' + form.id : '{{ route('team.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf

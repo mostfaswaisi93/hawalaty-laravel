@@ -97,14 +97,17 @@
                                     <p class="truncate font-body-sm font-bold text-on-surface" x-text="line.name"></p>
                                     <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
                                 </div>
-                                <div class="flex items-center gap-1.5">
+                                {{-- 40px targets, not 28px: this is the busiest screen in the app and it is
+                                     used on phones, where decrement doubles as delete once qty hits 1 —
+                                     a mis-tap destroys the line. Wider gap for the same reason. --}}
+                                <div class="flex items-center gap-2">
                                     <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}"
-                                        class="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
+                                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                         <span class="material-symbols-outlined !text-lg" x-text="line.qty > 1 ? 'remove' : 'delete'"></span>
                                     </button>
                                     <span class="w-6 text-center font-numeral-lg font-bold text-on-surface" x-text="line.qty"></span>
                                     <button type="button" @click="inc(line)" aria-label="{{ __('زيادة') }}"
-                                        class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-on-primary">
+                                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-on-primary">
                                         <span class="material-symbols-outlined !text-lg">add</span>
                                     </button>
                                 </div>

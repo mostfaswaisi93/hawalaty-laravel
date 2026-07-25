@@ -324,7 +324,10 @@
                     <h2 class="font-display-lg text-3xl font-bold text-white sm:text-4xl md:text-5xl">{{ __('جاهز لتنمية عملك؟') }}</h2>
                     <p class="mx-auto mt-4 max-w-xl font-body-lg text-white/80">{{ __('انضم إلى الأعمال التي تدير طلباتها وحوالاتها باحترافية. جهّز مساحتك خلال دقائق.') }}</p>
                     <a href="{{ route('signup') }}"
-                        class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-primary shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]">
+                        {{-- text-[#00236f] not text-primary: the band behind it is a FIXED dark gradient in
+                             both themes, but --c-primary flips to pale lavender in dark, which would land
+                             at ~1.5:1 on this white button. Pinned to the same navy the gradient starts at. --}}
+                        class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-[#00236f] shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]">
                         <span>{{ __('أنشئ حسابك المجاني') }}</span>
                         <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                     </a>

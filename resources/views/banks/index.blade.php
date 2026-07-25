@@ -91,7 +91,7 @@
                                     <span class="text-[11px] text-on-surface-variant" dir="ltr">{{ $b->phone ?: '—' }}</span>
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openEdit(@js(['id' => $b->id, 'name' => $b->name, 'type' => $b->type->value, 'code' => $b->code, 'phone' => $b->phone, 'active' => (bool) $b->active]))"
-                                            class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
+                                            class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                             <span class="material-symbols-outlined !text-lg">edit</span>
                                         </button>
                                         @include('banks._delete', ['b' => $b])
@@ -112,7 +112,7 @@
                 role="dialog" aria-modal="true" aria-labelledby="bank-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
 
                 <h3 id="bank-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل وسيلة الدفع') }}' : '{{ __('إضافة وسيلة دفع') }}'"></h3>
 

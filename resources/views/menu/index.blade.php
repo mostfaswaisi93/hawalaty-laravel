@@ -116,7 +116,8 @@
                                             <input type="hidden" name="active" value="{{ $item->active ? 0 : 1 }}">
                                             <button type="submit" role="switch" aria-checked="{{ $item->active ? 'true' : 'false' }}" aria-label="{{ $item->active ? __('إيقاف') : __('تفعيل') }}"
                                                 class="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors {{ $item->active ? 'bg-primary' : 'bg-surface-container-high' }}">
-                                                <span class="absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all {{ $item->active ? 'start-1' : 'end-1' }}"></span>
+                                                {{-- See banks/_toggle.blade.php — tokenised knob so it stays visible on the pale dark-mode track. --}}
+                                                <span class="absolute top-1 h-4 w-4 rounded-full shadow transition-all {{ $item->active ? 'bg-on-primary start-1' : 'bg-on-surface-variant end-1' }}"></span>
                                             </button>
                                         </form>
 
@@ -149,7 +150,7 @@
                 x-init="$watch('catOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="category-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="category-modal-title" class="mb-5 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
                 <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4" @submit="submitting = true">
                     @csrf
@@ -176,7 +177,7 @@
                 x-init="$watch('itemOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="item-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="item-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
                 <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf
@@ -231,7 +232,7 @@
                 x-init="$watch('importOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="import-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="import-modal-title" class="mb-2 font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
                 <p class="mb-5 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
                 <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4" @submit="submitting = true">

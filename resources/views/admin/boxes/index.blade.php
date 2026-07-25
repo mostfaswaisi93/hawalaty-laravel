@@ -61,9 +61,9 @@
                                     <span class="font-bold" dir="ltr">{{ number_format($box->box_balance, 2) }} ₪</span>
                                 </div>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
-                                    <button type="button" @click="openEdit(@js(['id' => $box->id, 'name' => $box->box_name, 'balance' => (float) $box->box_balance]))" class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
+                                    <button type="button" @click="openEdit(@js(['id' => $box->id, 'name' => $box->box_name, 'balance' => (float) $box->box_balance]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
                                     <form method="POST" action="{{ route('admin.boxes.destroy', $box->id) }}" id="del-box-card-{{ $box->id }}">@csrf @method('DELETE')</form>
-                                    <button type="button" aria-label="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الصندوق؟') }}'; confirmFormId = 'del-box-card-{{ $box->id }}'" class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
+                                    <button type="button" aria-label="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الصندوق؟') }}'; confirmFormId = 'del-box-card-{{ $box->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
                                 </div>
                             </div>
                         @endforeach
@@ -78,7 +78,7 @@
             <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل الصندوق') }}' : '{{ __('إضافة صندوق') }}'"></h3>
                 <form :action="mode === 'edit' ? '{{ url('admin/boxes') }}/' + form.id : '{{ route('admin.boxes.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf

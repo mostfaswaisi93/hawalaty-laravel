@@ -14,7 +14,7 @@
 @endphp
 
 @section('content')
-    <div class="page-enter space-y-6">
+    <div class="page-enter space-y-6" x-data="{ confirmOpen: false, confirmMessage: '', confirmFormId: null }">
         <a href="{{ route('admin.licenses.index') }}" class="inline-flex items-center gap-1 font-body-sm text-on-surface-variant transition-colors hover:text-primary">
             <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span>{{ __('عودة إلى التراخيص') }}
         </a>
@@ -26,11 +26,14 @@
             </div>
             <div class="flex items-center gap-2">
                 @if (in_array($license->status->value, ['active', 'trial']))
-                    <form method="POST" action="{{ route('admin.licenses.suspend', $license->id) }}">@csrf
-                        <button type="submit" class="flex items-center gap-2 rounded-xl border border-error/40 px-4 py-2.5 font-body-sm font-bold text-error transition-colors hover:bg-error/10">
-                            <span class="material-symbols-outlined !text-xl">pause_circle</span>{{ __('تعليق') }}
-                        </button>
-                    </form>
+                    {{-- Confirmed, matching admin.licenses.index: suspending locks every user of the
+                         tenant out of the app, so it must never be one unguarded click. --}}
+                    <form method="POST" action="{{ route('admin.licenses.suspend', $license->id) }}" id="suspend-{{ $license->id }}">@csrf</form>
+                    <button type="button"
+                        @click="confirmOpen = true; confirmMessage = '{{ __('تعليق هذا الترخيص؟') }}'; confirmFormId = 'suspend-{{ $license->id }}'; confirmTitle = '{{ __('تأكيد التعليق') }}'; confirmLabel = '{{ __('تعليق') }}'"
+                        class="flex items-center gap-2 rounded-xl border border-error/40 px-4 py-2.5 font-body-sm font-bold text-error transition-colors hover:bg-error/10">
+                        <span class="material-symbols-outlined !text-xl">pause_circle</span>{{ __('تعليق') }}
+                    </button>
                 @else
                     <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}">@csrf
                         <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
@@ -140,5 +143,7 @@
                 </x-table-responsive>
             @endif
         </x-card>
+
+        <x-confirm-modal />
     </div>
 @endsection

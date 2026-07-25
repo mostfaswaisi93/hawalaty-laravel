@@ -160,7 +160,10 @@
 
                     <div x-show="open" x-cloak @keydown.escape.window="open = false"
                         x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        class="absolute end-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl sm:w-96">
+                        {{-- Width is viewport-clamped, not a flat w-80: the bell sits ~190px in from the
+                             header's end edge, so a fixed 320px panel anchored end-0 overflowed the page
+                             on a 375px screen and pushed half the list off-canvas. --}}
+                        class="absolute end-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl sm:w-96 sm:max-w-none">
                         <div class="flex items-center justify-between border-b border-outline-variant/60 p-4">
                             <h3 class="font-headline-md text-headline-md text-on-surface">{{ __('الإشعارات') }}</h3>
                             <button type="button" @click="markAllRead()" x-show="unreadCount > 0" class="font-body-sm font-bold text-primary hover:underline">{{ __('تعليم الكل كمقروء') }}</button>

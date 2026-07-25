@@ -86,7 +86,7 @@
                 x-init="$watch('listOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="list-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="list-modal-title" class="mb-5 font-headline-md text-headline-md">{{ __('قائمة جديدة') }}</h3>
                 <form method="POST" action="{{ route('constants.store') }}" class="space-y-4" @submit="submitting = true">
                     @csrf

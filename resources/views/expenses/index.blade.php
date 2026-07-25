@@ -95,7 +95,7 @@
                                 </div>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
                                     <button type="button" @click="openEdit(@js(['id' => $e->id, 'description' => $e->description, 'amount' => (float) $e->amount, 'bankId' => $e->bank_id, 'date' => $e->date->toDateString()]))"
-                                        class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
+                                        class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                         <span class="material-symbols-outlined !text-lg">edit</span>
                                     </button>
                                     <form method="POST" action="{{ route('expenses.destroy', $e->id) }}" id="delete-expense-card-{{ $e->id }}" class="inline-flex">
@@ -103,7 +103,7 @@
                                     </form>
                                     <button type="button" aria-label="{{ __('حذف') }}"
                                         @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا المصروف؟') }}'; confirmFormId = 'delete-expense-card-{{ $e->id }}'"
-                                        class="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
+                                        class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
                                         <span class="material-symbols-outlined !text-lg">delete</span>
                                     </button>
                                 </div>
@@ -150,7 +150,7 @@
                 x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="expense-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 w-full max-w-md rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
                 <h3 id="expense-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل المصروف') }}' : '{{ __('إضافة مصروف') }}'"></h3>
                 <form :action="mode === 'edit' ? '{{ url('expenses') }}/' + form.id : '{{ route('expenses.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
                     @csrf

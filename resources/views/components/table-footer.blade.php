@@ -26,7 +26,10 @@
             </span>
 
             @if ($last > 1)
-                <div class="flex items-center gap-1">
+                {{-- max-w-full + overflow-x-auto: fully expanded (prev + 1 + … + 5 pages + … + last +
+                     next) the strip needs ~390px, which overflowed the page on a 375px screen and
+                     scrolled the whole document sideways. Now only the strip itself scrolls. --}}
+                <div class="flex max-w-full items-center gap-1 overflow-x-auto">
                     @if ($paginator->onFirstPage())
                         <span class="flex h-9 w-9 items-center justify-center rounded-full text-outline/40"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_left</span></span>
                     @else
