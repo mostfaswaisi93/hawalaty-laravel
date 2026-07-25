@@ -20,7 +20,7 @@
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('شركاء المنصّة ونسبة حصّة كلٍّ منهم.') }}</p>
             </div>
             <button type="button" @click="openAdd()"
-                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('إضافة شريك') }}">
                 <span class="material-symbols-outlined !text-xl">add</span>{{ __('إضافة شريك') }}
             </button>
         </header>
@@ -45,7 +45,7 @@
                                 <td class="whitespace-nowrap px-4 py-3 font-bold" dir="ltr">{{ number_format($partner->percentage, 2) }}%</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
-                                        <button type="button" @click="openEdit(@js(['id' => $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
+                                        <button type="button" @click="openEdit(@js(['id' = title="{{ __('تعديل') }}"> $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
                                         <form method="POST" action="{{ route('admin.partners.destroy', $partner->id) }}" id="del-partner-{{ $partner->id }}">@csrf @method('DELETE')</form>
                                         <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الشريك؟') }}'; confirmFormId = 'del-partner-{{ $partner->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
                                     </div>
@@ -61,7 +61,7 @@
                                     <span class="font-bold text-secondary" dir="ltr">{{ number_format($partner->percentage, 2) }}%</span>
                                 </div>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
-                                    <button type="button" @click="openEdit(@js(['id' => $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
+                                    <button type="button" @click="openEdit(@js(['id' = title="{{ __('تعديل') }}"> $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
                                     <form method="POST" action="{{ route('admin.partners.destroy', $partner->id) }}" id="del-partner-card-{{ $partner->id }}">@csrf @method('DELETE')</form>
                                     <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الشريك؟') }}'; confirmFormId = 'del-partner-card-{{ $partner->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
                                 </div>
@@ -92,7 +92,7 @@
                         <input type="number" step="0.01" min="0" max="100" name="percentage" x-model="form.percentage" required dir="ltr" placeholder="0" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
-                        <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                        <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50" x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : (mode === 'edit' ? '{{ __('حفظ') }}' : '{{ __('إضافة') }}')"></button>
                     </div>
                 </form>

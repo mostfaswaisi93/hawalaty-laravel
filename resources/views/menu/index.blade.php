@@ -43,7 +43,7 @@
                     <span class="material-symbols-outlined !text-xl">upload</span>
                 </button>
                 <button type="button" @click="catOpen = true; submitting = false"
-                    class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                    class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container" title="{{ __('فئة جديدة') }}">
                     <span class="material-symbols-outlined !text-xl">create_new_folder</span>
                     {{ __('فئة جديدة') }}
                 </button>
@@ -59,7 +59,7 @@
             <div class="tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد فئات بعد') }}</p>
-                <button type="button" @click="catOpen = true; submitting = false" class="font-body-sm font-bold text-primary hover:underline">{{ __('أنشئ أول فئة') }}</button>
+                <button type="button" @click="catOpen = true; submitting = false" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أنشئ أول فئة') }}">{{ __('أنشئ أول فئة') }}</button>
             </div>
         @else
             <div class="space-y-5">
@@ -96,7 +96,7 @@
                             <div class="flex flex-col items-center gap-2 py-10 text-center">
                                 <span class="material-symbols-outlined !text-4xl text-outline/50">lunch_dining</span>
                                 <p class="font-body-sm text-on-surface-variant">{{ __('لا أصناف في هذه الفئة بعد') }}</p>
-                                <button type="button" @click="openAddItem(@js($cat->id))" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضِف أول صنف') }}</button>
+                                <button type="button" @click="openAddItem(@js($cat- title="{{ __('أضِف أول صنف') }}">id))" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضِف أول صنف') }}</button>
                             </div>
                         @else
                             <ul class="divide-y divide-outline-variant/50">
@@ -161,7 +161,7 @@
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="catOpen = false"
-                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                             x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : '{{ __('إضافة') }}'"></button>
@@ -216,7 +216,7 @@
 
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="itemOpen = false"
-                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                             x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : (itemMode === 'edit' ? '{{ __('حفظ التغييرات') }}' : '{{ __('إضافة') }}')"></button>
@@ -243,7 +243,7 @@
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none file:me-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:font-body-sm file:font-bold file:text-on-primary" />
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="importOpen = false"
-                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                             x-text="submitting ? '{{ __('جارٍ الاستيراد...') }}' : '{{ __('استيراد') }}'"></button>

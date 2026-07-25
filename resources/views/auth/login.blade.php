@@ -66,7 +66,7 @@
 
                 <button
                     type="submit"
-                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]">
+                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]" title="{{ __('تسجيل الدخول') }}">
                     <span>{{ __('تسجيل الدخول') }}</span>
                     <span class="material-symbols-outlined rtl:-scale-x-100">login</span>
                 </button>
@@ -74,7 +74,7 @@
 
             <div class="mt-8 text-center">
                 <span class="font-body-sm text-on-surface-variant">{{ __('ليس لديك حساب؟') }}</span>
-                <a href="{{ route('signup') }}" class="px-1 font-body-sm font-bold text-secondary hover:underline">
+                <a href="{{ route('signup') }}" class="px-1 font-body-sm font-bold text-secondary hover:underline" title="{{ __('أنشئ حساباً') }}">
                     {{ __('أنشئ حساباً') }}
                 </a>
             </div>

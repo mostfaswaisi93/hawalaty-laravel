@@ -68,7 +68,7 @@
                     <div class="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                         <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
                         <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد أصناف في القائمة بعد') }}</p>
-                        <a href="/menu" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضف أصنافاً إلى قائمتك أولاً') }}</a>
+                        <a href="/menu" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أضف أصنافاً إلى قائمتك أولاً') }}">{{ __('أضف أصنافاً إلى قائمتك أولاً') }}</a>
                     </div>
                 </template>
             </section>

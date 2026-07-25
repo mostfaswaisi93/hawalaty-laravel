@@ -41,7 +41,7 @@
         {{-- Footer action bar, matching every other modal in the app. --}}
         <div class="flex justify-center gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
             <button type="button" @click="confirmOpen = false"
-                class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
             <button type="button" @click="document.getElementById(confirmFormId).requestSubmit(); confirmOpen = false"
                 class="rounded-xl bg-error px-6 py-2.5 font-body-sm font-bold text-on-error shadow-lg transition-all hover:opacity-90 active:scale-95"
                 x-text="$data.confirmLabel || @js(__('حذف'))"></button>

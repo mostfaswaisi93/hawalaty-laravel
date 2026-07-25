@@ -19,7 +19,7 @@
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('إعدادات المنصّة العامة (مفتاح / قيمة).') }}</p>
             </div>
             <button type="button" @click="openAdd()"
-                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('إضافة إعداد') }}">
                 <span class="material-symbols-outlined !text-xl">add</span>{{ __('إضافة إعداد') }}
             </button>
         </header>
@@ -38,7 +38,7 @@
                                 <td class="whitespace-nowrap px-4 py-3"><code class="font-numeral-lg text-body-sm" dir="ltr">{{ $setting->key }}</code></td>
                                 <td class="px-4 py-3 font-body-sm text-on-surface-variant">{{ $setting->value ?? '—' }}</td>
                                 <td class="px-4 py-3">
-                                    <button type="button" @click="openEdit(@js(['key' => $setting->key, 'value' => $setting->value]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
+                                    <button type="button" @click="openEdit(@js(['key' = title="{{ __('تعديل') }}"> $setting->key, 'value' => $setting->value]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
                                 </td>
                             </tr>
                         @endforeach
@@ -48,7 +48,7 @@
                             <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
                                 <div class="flex items-center justify-between gap-2">
                                     <code class="text-body-sm font-bold" dir="ltr">{{ $setting->key }}</code>
-                                    <button type="button" @click="openEdit(@js(['key' => $setting->key, 'value' => $setting->value]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
+                                    <button type="button" @click="openEdit(@js(['key' = title="{{ __('تعديل') }}"> $setting->key, 'value' => $setting->value]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">{{ $setting->value ?? '—' }}</p>
                             </div>
@@ -77,7 +77,7 @@
                         <textarea name="value" x-model="form.value" rows="3" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary"></textarea>
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
-                        <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                        <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50" x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : '{{ __('حفظ') }}'"></button>
                     </div>
                 </form>

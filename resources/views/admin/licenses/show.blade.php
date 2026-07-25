@@ -15,7 +15,7 @@
 
 @section('content')
     <div class="page-enter space-y-6" x-data="{ confirmOpen: false, confirmMessage: '', confirmFormId: null }">
-        <a href="{{ route('admin.licenses.index') }}" class="inline-flex items-center gap-1 font-body-sm text-on-surface-variant transition-colors hover:text-primary">
+        <a href="{{ route('admin.licenses.index') }}" class="inline-flex items-center gap-1 font-body-sm text-on-surface-variant transition-colors hover:text-primary" title="{{ __('عودة إلى التراخيص') }}">
             <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span>{{ __('عودة إلى التراخيص') }}
         </a>
 
@@ -36,7 +36,7 @@
                     </button>
                 @else
                     <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}">@csrf
-                        <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                        <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('تفعيل') }}">
                             <span class="material-symbols-outlined !text-xl">play_circle</span>{{ __('تفعيل') }}
                         </button>
                     </form>
@@ -87,7 +87,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <button type="submit" class="rounded-xl bg-surface-container px-5 py-3 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high">{{ __('حفظ الباقة') }}</button>
+                    <button type="submit" class="rounded-xl bg-surface-container px-5 py-3 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high" title="{{ __('حفظ الباقة') }}">{{ __('حفظ الباقة') }}</button>
                 </form>
             </x-card>
 

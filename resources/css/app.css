@@ -185,7 +185,7 @@
     --c-on-sidebar-muted: 164 176 201;
     --c-sidebar-accent: 182 196 255;
 
-    --app-font: 'Cairo', system-ui, sans-serif;
+    --app-font: 'Tajawal', 'Cairo', system-ui, sans-serif;
 }
 
 .dark {
@@ -245,7 +245,7 @@
 }
 
 html.lang-ar {
-    --app-font: 'Cairo', system-ui, sans-serif;
+    --app-font: 'Tajawal', 'Cairo', system-ui, sans-serif;
 }
 html.lang-en {
     --app-font: 'Inter', system-ui, sans-serif;

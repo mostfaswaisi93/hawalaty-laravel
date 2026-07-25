@@ -16,7 +16,7 @@
             </p>
             <a
                 href="{{ route('home') }}"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container">
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container" title="{{ __('العودة إلى الصفحة الرئيسية') }}">
                 <span>{{ __('العودة إلى الصفحة الرئيسية') }}</span>
             </a>
         </div>

@@ -24,7 +24,7 @@
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('نسخ احتياطية لقاعدة المنصّة أو أي قاعدة مستأجر.') }}</p>
             </div>
             <button type="button" @click="open = true; submitting = false"
-                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('نسخة احتياطية جديدة') }}">
                 <span class="material-symbols-outlined !text-xl">backup</span>{{ __('نسخة احتياطية جديدة') }}
             </button>
         </header>
@@ -48,7 +48,7 @@
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j F Y H:i') }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
-                                        <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-xl">download</span></a>
+                                        <a href="{{ route('admin.backups.download', $backup- title="{{ __('تنزيل') }}">id) }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-xl">download</span></a>
                                         <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-{{ $backup->id }}">@csrf @method('DELETE')</form>
                                         <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-{{ $backup->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
                                     </div>
@@ -66,7 +66,7 @@
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j M Y H:i') }} · {{ $backup->size_mb ? $backup->size_mb.' MB' : '—' }}</p>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
-                                    <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-lg">download</span></a>
+                                    <a href="{{ route('admin.backups.download', $backup- title="{{ __('تنزيل') }}">id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-lg">download</span></a>
                                     <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-card-{{ $backup->id }}">@csrf @method('DELETE')</form>
                                     <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-card-{{ $backup->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
                                 </div>
@@ -97,7 +97,7 @@
                         </select>
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
-                        <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                        <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50" x-text="submitting ? '{{ __('جارٍ الإنشاء...') }}' : '{{ __('إنشاء') }}'"></button>
                     </div>
                 </form>

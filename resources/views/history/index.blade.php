@@ -30,7 +30,7 @@
                     {{ $transfers->total() }} {{ __('طلب — تصفّح وابحث في كل معاملاتك.') }}
                 </p>
             </div>
-            <a href="/transfers" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+            <a href="/transfers" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('طلب جديد') }}">
                 <span class="material-symbols-outlined !text-xl">add</span>
                 {{ __('طلب جديد') }}
             </a>
@@ -85,7 +85,7 @@
                     <span x-text="submitting ? '{{ __('جارٍ التطبيق...') }}' : '{{ __('تطبيق') }}'"></span>
                 </button>
                 @if ($hasFilters)
-                    <a href="{{ route('history.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
+                    <a href="{{ route('history.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('مسح') }}">
                         <span class="material-symbols-outlined !text-xl">close</span>
                         {{ __('مسح') }}
                     </a>
@@ -100,7 +100,7 @@
                     <span class="material-symbols-outlined !text-5xl text-outline/50">{{ $hasFilters ? 'search_off' : 'receipt_long' }}</span>
                     <p class="font-body-lg text-on-surface-variant">{{ $hasFilters ? __('لا توجد طلبات مطابقة للفلاتر') : __('لا توجد طلبات بعد') }}</p>
                     @if ($hasFilters)
-                        <a href="{{ route('history.index') }}" class="font-body-sm font-bold text-primary hover:underline">{{ __('مسح الفلاتر') }}</a>
+                        <a href="{{ route('history.index') }}" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('مسح الفلاتر') }}">{{ __('مسح الفلاتر') }}</a>
                     @endif
                 </div>
             @else
@@ -131,7 +131,7 @@
                                     <span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
-                                    <a href="{{ route('transfers.receipt', $t->id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
+                                    <a href="{{ route('transfers.receipt', $t- title="{{ __('طباعة الإيصال') }}">id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
                                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">
                                         <span class="material-symbols-outlined !text-xl">print</span>
                                     </a>
@@ -182,13 +182,13 @@
                                     <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
                                 </span>
                             @else
-                                <a href="{{ $transfers->previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                <a href="{{ $transfers- title="{{ __('السابق') }}">previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                                     <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
                                 </a>
                             @endif
 
                             @if ($transfers->hasMorePages())
-                                <a href="{{ $transfers->nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                <a href="{{ $transfers- title="{{ __('التالي') }}">nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                                     {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
                                 </a>
                             @else

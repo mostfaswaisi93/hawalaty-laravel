@@ -55,7 +55,7 @@
 
                     <div class="flex justify-end">
                         <button type="submit" :disabled="submitting"
-                            class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                            class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50" title="{{ __('حفظ التغييرات') }}">
                             <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
                                 x-text="submitting ? 'progress_activity' : 'save'">save</span>
                             <span x-text="submitting ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ التغييرات'))">{{ __('حفظ التغييرات') }}</span>

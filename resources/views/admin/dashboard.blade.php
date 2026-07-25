@@ -47,11 +47,11 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('admin.payments.index') }}"
-                    class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                    class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container" title="{{ __('تسجيل دفعة') }}">
                     <span class="material-symbols-outlined !text-xl">payments</span>{{ __('تسجيل دفعة') }}
                 </a>
                 <a href="{{ route('admin.licenses.index') }}"
-                    class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                    class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('ترخيص جديد') }}">
                     <span class="material-symbols-outlined !text-xl">add</span>{{ __('ترخيص جديد') }}
                 </a>
             </div>
@@ -289,7 +289,7 @@
                             </li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('admin.logs.index') }}" class="mt-4 flex items-center justify-center gap-1 font-body-sm font-bold text-primary hover:underline">
+                    <a href="{{ route('admin.logs.index') }}" class="mt-4 flex items-center justify-center gap-1 font-body-sm font-bold text-primary hover:underline" title="{{ __('عرض كل السجلات') }}">
                         {{ __('عرض كل السجلات') }}
                         <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
                     </a>
@@ -327,7 +327,7 @@
                             </li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('admin.backups.index') }}" class="mt-4 flex items-center justify-center gap-1 font-body-sm font-bold text-primary hover:underline">
+                    <a href="{{ route('admin.backups.index') }}" class="mt-4 flex items-center justify-center gap-1 font-body-sm font-bold text-primary hover:underline" title="{{ __('إدارة النسخ الاحتياطية') }}">
                         {{ __('إدارة النسخ الاحتياطية') }}
                         <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
                     </a>

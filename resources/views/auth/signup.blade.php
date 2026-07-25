@@ -91,7 +91,7 @@
 
                 <button
                     type="submit"
-                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]">
+                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]" title="{{ __('إنشاء الحساب') }}">
                     <span>{{ __('إنشاء الحساب') }}</span>
                     <span class="material-symbols-outlined rtl:-scale-x-100">arrow_forward</span>
                 </button>
@@ -99,7 +99,7 @@
 
             <div class="mt-8 text-center">
                 <span class="font-body-sm text-on-surface-variant">{{ __('لديك حساب بالفعل؟') }}</span>
-                <a href="{{ route('login') }}" class="px-1 font-body-sm font-bold text-secondary hover:underline">
+                <a href="{{ route('login') }}" class="px-1 font-body-sm font-bold text-secondary hover:underline" title="{{ __('تسجيل الدخول') }}">
                     {{ __('تسجيل الدخول') }}
                 </a>
             </div>

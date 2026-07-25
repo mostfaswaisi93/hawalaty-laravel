@@ -18,7 +18,7 @@
     @endphp
 
     <div class="page-enter space-y-6">
-        <a href="{{ route('customers.index') }}" class="inline-flex items-center gap-1 font-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary">
+        <a href="{{ route('customers.index') }}" class="inline-flex items-center gap-1 font-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary" title="{{ __('العملاء') }}">
             <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span>
             {{ __('العملاء') }}
         </a>
@@ -66,7 +66,7 @@
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary" dir="ltr">+{{ number_format($t->amount, 2) }} ₪</td>
                                 <td class="whitespace-nowrap px-4 py-3">
-                                    <a href="{{ route('transfers.receipt', $t->id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
+                                    <a href="{{ route('transfers.receipt', $t- title="{{ __('طباعة الإيصال') }}">id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
                                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">
                                         <span class="material-symbols-outlined !text-xl">print</span>
                                     </a>

@@ -12,7 +12,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -33,15 +33,15 @@
     {{-- ─────────────────────────  NAV  ───────────────────────── --}}
     <header x-data="{ open: false }" class="sticky top-0 z-50 border-b border-outline-variant/60 bg-surface/80 backdrop-blur-lg">
         <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-inline-md md:h-20 md:px-inline-lg">
-            <a href="{{ url('/') }}" class="flex items-center gap-3">
+            <a href="{{ url('/') }}" class="flex items-center gap-3" title="{{ __('حوالاتي') }}">
                 <x-logo />
                 <span class="font-display-lg text-2xl font-bold leading-none text-primary">{{ __('حوالاتي') }}</span>
             </a>
 
             <div class="hidden items-center gap-10 md:flex">
-                <a href="#features" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary">{{ __('المزايا') }}</a>
-                <a href="#how" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary">{{ __('كيف يعمل') }}</a>
-                <a href="#pricing" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary">{{ __('الأسعار') }}</a>
+                <a href="#features" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary" title="{{ __('المزايا') }}">{{ __('المزايا') }}</a>
+                <a href="#how" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary" title="{{ __('كيف يعمل') }}">{{ __('كيف يعمل') }}</a>
+                <a href="#pricing" class="font-body-sm text-on-surface-variant transition-colors hover:text-primary" title="{{ __('الأسعار') }}">{{ __('الأسعار') }}</a>
             </div>
 
             <div class="flex items-center gap-2">
@@ -56,10 +56,10 @@
                     aria-label="{{ __('تبديل المظهر') }}" title="{{ __('تبديل المظهر') }}">
                     <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                 </button>
-                <a href="{{ route('login') }}" class="hidden rounded-xl px-4 py-2 font-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary sm:inline-block">
+                <a href="{{ route('login') }}" class="hidden rounded-xl px-4 py-2 font-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary sm:inline-block" title="{{ __('تسجيل الدخول') }}">
                     {{ __('تسجيل الدخول') }}
                 </a>
-                <a href="{{ route('signup') }}" class="hidden rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 sm:inline-block">
+                <a href="{{ route('signup') }}" class="hidden rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 sm:inline-block" title="{{ __('ابدأ مجاناً') }}">
                     {{ __('ابدأ مجاناً') }}
                 </a>
                 <button type="button" @click="open = !open"
@@ -73,12 +73,12 @@
         {{-- mobile menu --}}
         <div x-show="open" x-cloak class="border-t border-outline-variant/60 bg-surface px-inline-md py-4 md:hidden" style="display:none">
             <div class="flex flex-col gap-1">
-                <a href="#features" @click="open = false" class="rounded-lg px-3 py-2.5 font-body-lg text-on-surface-variant hover:bg-surface-container">{{ __('المزايا') }}</a>
-                <a href="#how" @click="open = false" class="rounded-lg px-3 py-2.5 font-body-lg text-on-surface-variant hover:bg-surface-container">{{ __('كيف يعمل') }}</a>
-                <a href="#pricing" @click="open = false" class="rounded-lg px-3 py-2.5 font-body-lg text-on-surface-variant hover:bg-surface-container">{{ __('الأسعار') }}</a>
+                <a href="#features" @click="open = false" class="rounded-lg px-3 py-2.5 font-body-lg text-on-surface-variant hover:bg-surface-container" title="{{ __('المزايا') }}">{{ __('المزايا') }}</a>
+                <a href="#how" @click="open = false" class="rounded-lg px-3 py-2.5 font-body-lg text-on-surface-variant hover:bg-surface-container" title="{{ __('كيف يعمل') }}">{{ __('كيف يعمل') }}</a>
+                <a href="#pricing" @click="open = false" class="rounded-lg px-3 py-2.5 font-body-lg text-on-surface-variant hover:bg-surface-container" title="{{ __('الأسعار') }}">{{ __('الأسعار') }}</a>
                 <hr class="my-2 border-outline-variant/60">
-                <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 font-body-lg font-bold text-primary hover:bg-surface-container">{{ __('تسجيل الدخول') }}</a>
-                <a href="{{ route('signup') }}" class="mt-1 rounded-xl bg-primary px-3 py-2.5 text-center font-bold text-on-primary">{{ __('ابدأ مجاناً') }}</a>
+                <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 font-body-lg font-bold text-primary hover:bg-surface-container" title="{{ __('تسجيل الدخول') }}">{{ __('تسجيل الدخول') }}</a>
+                <a href="{{ route('signup') }}" class="mt-1 rounded-xl bg-primary px-3 py-2.5 text-center font-bold text-on-primary" title="{{ __('ابدأ مجاناً') }}">{{ __('ابدأ مجاناً') }}</a>
             </div>
         </div>
     </header>
@@ -108,12 +108,12 @@
 
                     <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
                         <a href="{{ route('signup') }}"
-                            class="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-headline-md text-headline-md text-on-primary shadow-xl shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] sm:w-auto">
+                            class="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-headline-md text-headline-md text-on-primary shadow-xl shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] sm:w-auto" title="{{ __('أنشئ حسابك المجاني') }}">
                             <span>{{ __('أنشئ حسابك المجاني') }}</span>
                             <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                         </a>
                         <a href="{{ route('login') }}"
-                            class="flex w-full items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-8 py-4 font-headline-md text-headline-md text-on-surface transition-all hover:bg-surface-container active:scale-[0.98] sm:w-auto">
+                            class="flex w-full items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-8 py-4 font-headline-md text-headline-md text-on-surface transition-all hover:bg-surface-container active:scale-[0.98] sm:w-auto" title="{{ __('تسجيل الدخول') }}">
                             <span class="material-symbols-outlined rtl:-scale-x-100 text-primary">login</span>
                             <span>{{ __('تسجيل الدخول') }}</span>
                         </a>
@@ -306,7 +306,7 @@
                             class="mt-8 flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-headline-md font-bold transition-all active:scale-[0.98]
                             {{ $plan['popular']
                                 ? 'bg-secondary-container text-on-secondary-fixed shadow-lg hover:brightness-105'
-                                : 'bg-primary text-on-primary shadow-lg shadow-primary/20 hover:bg-primary-container hover:text-on-primary-container' }}">
+                                : 'bg-primary text-on-primary shadow-lg shadow-primary/20 hover:bg-primary-container hover:text-on-primary-container' }}" title="{{ __('ابدأ الآن') }}">
                             {{ __('ابدأ الآن') }}
                         </a>
                     </div>
@@ -327,7 +327,7 @@
                         {{-- text-[#00236f] not text-primary: the band behind it is a FIXED dark gradient in
                              both themes, but --c-primary flips to pale lavender in dark, which would land
                              at ~1.5:1 on this white button. Pinned to the same navy the gradient starts at. --}}
-                        class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-[#00236f] shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]">
+                        class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-[#00236f] shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]" title="{{ __('أنشئ حسابك المجاني') }}">
                         <span>{{ __('أنشئ حسابك المجاني') }}</span>
                         <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                     </a>

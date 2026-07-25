@@ -43,7 +43,7 @@
                         <p class="font-label-caps text-[10px] uppercase tracking-widest opacity-60">{{ __('إجمالي الطلبات') }}</p>
                         <p class="font-numeral-lg text-lg tracking-widest" dir="ltr">{{ $orderCount }}</p>
                     </div>
-                    <a href="/history" class="rounded-lg bg-white/10 px-6 py-2 text-sm font-bold backdrop-blur-md transition-all hover:bg-white/20">
+                    <a href="/history" class="rounded-lg bg-white/10 px-6 py-2 text-sm font-bold backdrop-blur-md transition-all hover:bg-white/20" title="{{ __('عرض السجل') }}">
                         {{ __('عرض السجل') }}
                     </a>
                 </div>
@@ -127,7 +127,7 @@
                     <h3 class="font-headline-md text-headline-md">{{ __('أحدث الطلبات') }}</h3>
                     <p class="text-body-sm text-outline">{{ __('تتبّع أحدث طلبات المطعم في مكان واحد') }}</p>
                 </div>
-                <a href="/history" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 text-body-sm font-bold transition-colors hover:bg-surface-container-high">
+                <a href="/history" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 text-body-sm font-bold transition-colors hover:bg-surface-container-high" title="{{ __('عرض كل الطلبات') }}">
                     <span class="material-symbols-outlined !text-lg">receipt_long</span>
                     {{ __('عرض كل الطلبات') }}
                 </a>

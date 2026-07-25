@@ -108,7 +108,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -260,7 +260,7 @@
                     </div>
 
                     {{-- mobile: icon that opens a full-screen search overlay --}}
-                    <button type="button" @click="mobileOpen = true; $nextTick(() => $refs.mobileSearchInput?.focus())"
+                    <button type="button" @click="mobileOpen = true; $nextTick(() = title="{{ __('بحث') }}"> $refs.mobileSearchInput?.focus())"
                         class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary sm:hidden"
                         aria-label="{{ __('بحث') }}">
                         <span class="material-symbols-outlined">search</span>
@@ -303,7 +303,7 @@
                         class="absolute end-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl sm:w-96 sm:max-w-none">
                         <div class="flex items-center justify-between border-b border-outline-variant/60 p-4">
                             <h3 class="font-headline-md text-headline-md text-on-surface">{{ __('الإشعارات') }}</h3>
-                            <button type="button" @click="markAllRead()" x-show="unreadCount > 0" class="font-body-sm font-bold text-primary hover:underline">{{ __('تعليم الكل كمقروء') }}</button>
+                            <button type="button" @click="markAllRead()" x-show="unreadCount  title="{{ __('تعليم الكل كمقروء') }}"> 0" class="font-body-sm font-bold text-primary hover:underline">{{ __('تعليم الكل كمقروء') }}</button>
                         </div>
 
                         <div class="max-h-96 overflow-y-auto">

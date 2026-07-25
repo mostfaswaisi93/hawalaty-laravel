@@ -10,7 +10,7 @@
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('قوائم قيم جاهزة تُعيد استخدامها في عملك.') }}</p>
             </div>
             <button type="button" @click="listOpen = true; submitting = false"
-                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('قائمة جديدة') }}">
                 <span class="material-symbols-outlined !text-xl">add</span>
                 {{ __('قائمة جديدة') }}
             </button>
@@ -20,7 +20,7 @@
             <div class="tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">tune</span>
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد قوائم بعد') }}</p>
-                <button type="button" @click="listOpen = true; submitting = false" class="font-body-sm font-bold text-primary hover:underline">{{ __('أنشئ أول قائمة') }}</button>
+                <button type="button" @click="listOpen = true; submitting = false" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أنشئ أول قائمة') }}">{{ __('أنشئ أول قائمة') }}</button>
             </div>
         @else
             <div class="grid gap-5 md:grid-cols-2">
@@ -97,7 +97,7 @@
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="listOpen = false"
-                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                            class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                             x-text="submitting ? '{{ __('جارٍ الحفظ...') }}' : '{{ __('إضافة') }}'"></button>

@@ -15,7 +15,7 @@
                 {{ __('انتهت صلاحية هذه الصفحة بسبب مرور وقت طويل. يرجى إعادة تحميل الصفحة والمحاولة مجدداً.') }}
             </p>
             <a
-                href="{{ url()->previous() }}"
+                href="{{ url()- title="{{ __('إعادة المحاولة') }}">previous() }}"
                 class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container">
                 <span>{{ __('إعادة المحاولة') }}</span>
             </a>

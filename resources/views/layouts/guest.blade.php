@@ -11,14 +11,14 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
     <div class="page-enter flex min-h-screen flex-col bg-surface text-on-surface">
         <header class="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-inline-md shadow-sm md:px-inline-lg">
-            <a href="{{ route('login') }}" class="flex items-center gap-3">
+            <a href="{{ route('login') }}" class="flex items-center gap-3" title="{{ __('حوالاتي') }}">
                 <x-logo />
                 <span class="font-display-lg text-2xl font-bold leading-none text-primary">{{ __('حوالاتي') }}</span>
             </a>
@@ -55,9 +55,9 @@
             </div>
             <div class="flex flex-col items-center gap-3 md:flex-row md:gap-5">
                 <nav class="flex flex-wrap justify-center gap-4">
-                    <a href="/privacy" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">{{ __('سياسة الخصوصية') }}</a>
-                    <a href="/terms" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">{{ __('شروط الخدمة') }}</a>
-                    <a href="/help" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary">{{ __('مركز المساعدة') }}</a>
+                    <a href="/privacy" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary" title="{{ __('سياسة الخصوصية') }}">{{ __('سياسة الخصوصية') }}</a>
+                    <a href="/terms" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary" title="{{ __('شروط الخدمة') }}">{{ __('شروط الخدمة') }}</a>
+                    <a href="/help" class="cursor-pointer font-body-sm text-on-surface-variant transition-colors hover:text-secondary" title="{{ __('مركز المساعدة') }}">{{ __('مركز المساعدة') }}</a>
                 </nav>
                 <a href="https://github.com/mostfaswaisi93" target="_blank" rel="noopener noreferrer"
                     class="flex items-center gap-1.5 rounded-lg px-2 py-1 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"

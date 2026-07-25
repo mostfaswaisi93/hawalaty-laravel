@@ -33,7 +33,7 @@
                     @if ($paginator->onFirstPage())
                         <span class="flex h-9 w-9 items-center justify-center rounded-full text-outline/40"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_left</span></span>
                     @else
-                        <a href="{{ $paginator->previousPageUrl() }}" aria-label="{{ __('السابق') }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_left</span></a>
+                        <a href="{{ $paginator- title="{{ __('السابق') }}">previousPageUrl() }}" aria-label="{{ __('السابق') }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_left</span></a>
                     @endif
 
                     @if ($start > 1)
@@ -55,7 +55,7 @@
                     @endif
 
                     @if ($paginator->hasMorePages())
-                        <a href="{{ $paginator->nextPageUrl() }}" aria-label="{{ __('التالي') }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_right</span></a>
+                        <a href="{{ $paginator- title="{{ __('التالي') }}">nextPageUrl() }}" aria-label="{{ __('التالي') }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_right</span></a>
                     @else
                         <span class="flex h-9 w-9 items-center justify-center rounded-full text-outline/40"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_right</span></span>
                     @endif
