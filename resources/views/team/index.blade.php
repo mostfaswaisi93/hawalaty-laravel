@@ -35,7 +35,7 @@
             </button>
         </header>
 
-        <form method="GET" action="{{ route('team.index') }}" class="relative max-w-md">
+        <form method="GET" action="{{ route('team.index') }}" class="reveal-up relative max-w-md" style="--d:60ms">
             <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو البريد...') }}" aria-label="{{ __('بحث') }}"
                 class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />
@@ -43,7 +43,7 @@
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             @if ($members->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">group</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا يوجد أعضاء') }}</p>
                     <button type="button" @click="openAdd()" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أضف أول عضو') }}">{{ __('أضف أول عضو') }}</button>
@@ -52,7 +52,7 @@
                 <x-table-responsive :headers="[__('العضو'), __('الدور'), __('الحالة'), __('إجراءات')]">
                     <x-slot:table>
                         @foreach ($members as $m)
-                            <tr class="transition-colors hover:bg-surface-container-low/50">
+                            <tr class="reveal-up transition-colors hover:bg-surface-container-low/50" style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <div class="flex items-center gap-3">
                                         <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">{{ mb_substr($m->name, 0, 1) }}</div>
@@ -92,7 +92,8 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($members as $m)
-                            <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                            <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
+                                style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
                                 <div class="flex items-center gap-3">
                                     <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">{{ mb_substr($m->name, 0, 1) }}</div>
                                     <div class="min-w-0 flex-1">

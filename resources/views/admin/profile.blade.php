@@ -31,7 +31,7 @@
 
                     <div class="border-t border-outline-variant pt-5">
                         <p class="mb-4 font-body-sm text-on-surface-variant">
-                            {{ __('لتغيير كلمة المرور، املأ الحقلين أدناه — وإلا اتركهما فارغين.') }}
+                            {{ __('لتغيير كلمة المرور، املأ الحقلين أدناه - وإلا اتركهما فارغين.') }}
                         </p>
 
                         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -79,7 +79,7 @@
                 <dl class="mt-2 space-y-3 border-t border-outline-variant pt-4">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="font-body-sm text-on-surface-variant">{{ __('تاريخ الانضمام') }}</dt>
-                        <dd class="font-body-sm font-bold text-on-surface">{{ $admin->created_at?->translatedFormat('j F Y') ?? '—' }}</dd>
+                        <dd class="font-body-sm font-bold text-on-surface">{{ $admin->created_at?->translatedFormat('j F Y') ?? '-' }}</dd>
                     </div>
                 </dl>
             </x-card>

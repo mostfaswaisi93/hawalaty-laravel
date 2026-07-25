@@ -31,7 +31,7 @@
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد باقات بعد') }}</p>
             </div>
         @else
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($packages as $package)
                     @php $featuresText = implode("\n", $package->features ?? []); @endphp
                     <div class="tonal-elevation flex flex-col rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">

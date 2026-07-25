@@ -89,7 +89,7 @@
         <!-- Weekly activity -->
         {{-- Fixed dark navy (not the bg-inverse-surface token, which flips to
              near-white in dark mode) so this stays visually paired with the
-             hero card above it — which is also a fixed dark gradient —
+             hero card above it - which is also a fixed dark gradient -
              instead of the two swapping contrast against each other. --}}
         <section class="reveal-up tonal-elevation relative overflow-hidden rounded-3xl bg-[rgb(33,49,69)] p-6 text-[rgb(234,241,255)]" style="--d: 140ms">
             <div class="relative z-10 flex h-full flex-col">
@@ -154,7 +154,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->item_name ?: '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->item_name ?: '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->created_at->translatedFormat('j F Y') }}</td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
@@ -170,7 +170,7 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($recentTransfers as $t)
-                            {{-- Cascade is per-card, not a container .stagger — the cards
+                            {{-- Cascade is per-card, not a container .stagger - the cards
                                  container itself belongs to the shared table component. --}}
                             <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
@@ -185,7 +185,7 @@
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>
                                 <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px]">
-                                    <span class="truncate text-[11px] text-on-surface-variant">{{ $t->item_name ?: '—' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
+                                    <span class="truncate text-[11px] text-on-surface-variant">{{ $t->item_name ?: '-' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
                                     <span class="inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
                                         <span class="h-1.5 w-1.5 rounded-full {{ $statusDot($t->status) }}"></span>
                                         {{ $statusLabel($t->status) }}

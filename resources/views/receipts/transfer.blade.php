@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <style>
-        {{-- dompdf: no external stylesheets/fonts — everything must be inline
+        {{-- dompdf: no external stylesheets/fonts - everything must be inline
              and use a font it ships with (DejaVu Sans covers Arabic + Latin
              correctly, verified). Meta rows are STACKED <div> blocks, not a
-             two-column <table> — dompdf's table column-width calculation
+             two-column <table> - dompdf's table column-width calculation
              reliably clips the last few characters of narrow-column cell
              content regardless of page width (verified: identical clipping
              on an 80mm receipt AND a full A4 page), so single-column block
@@ -29,7 +29,7 @@
              when the content sits flush against the container edge (verified:
              the ₪ symbol specifically vanished at the end of these lines,
              confirmed via raw-HTML inspection that Blade emits it correctly
-             — dompdf drops it at render time). A small end-side padding
+             - dompdf drops it at render time). A small end-side padding
              buffer reliably prevents it. --}}
         .item-detail { font-size: 10px; color: #444; text-align: {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}; padding-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 3mm; }
         .total-row td { padding-top: 2mm; font-size: 13px; font-weight: bold; }
@@ -52,7 +52,7 @@
         </div>
         <div class="row">
             <div class="label">{{ __('التاريخ') }}</div>
-            <div class="value">{{ $order->created_at->translatedFormat('j F Y — H:i') }}</div>
+            <div class="value">{{ $order->created_at->translatedFormat('j F Y - H:i') }}</div>
         </div>
         <div class="row">
             <div class="label">{{ __('العميل') }}</div>

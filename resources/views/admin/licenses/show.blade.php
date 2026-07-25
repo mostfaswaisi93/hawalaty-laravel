@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', $license->customer_name.' — '.__('حوالاتي'))
+@section('title', $license->customer_name.' - '.__('حوالاتي'))
 
 @php
     $statusMap = [
@@ -44,7 +44,7 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="stagger grid grid-cols-1 gap-6 lg:grid-cols-3">
             {{-- Overview --}}
             <x-card title="{{ __('بيانات الترخيص') }}" class="lg:col-span-2">
                 <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -54,11 +54,11 @@
                     </div>
                     <div>
                         <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الباقة') }}</dt>
-                        <dd class="mt-1 font-body-lg">{{ $license->package?->name ?? '—' }}</dd>
+                        <dd class="mt-1 font-body-lg">{{ $license->package?->name ?? '-' }}</dd>
                     </div>
                     <div>
                         <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('ينتهي في') }}</dt>
-                        <dd class="mt-1 font-body-lg">{{ $license->expired_at?->translatedFormat('j F Y') ?? '—' }}</dd>
+                        <dd class="mt-1 font-body-lg">{{ $license->expired_at?->translatedFormat('j F Y') ?? '-' }}</dd>
                     </div>
                     <div>
                         <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('رصيد العميل') }}</dt>
@@ -83,7 +83,7 @@
                         <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تغيير الباقة') }}</label>
                         <select name="packageId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             @foreach ($packages as $package)
-                                <option value="{{ $package->id }}" @selected($license->package_id === $package->id)>{{ $package->name }} — {{ number_format($package->price, 2) }} ₪</option>
+                                <option value="{{ $package->id }}" @selected($license->package_id === $package->id)>{{ $package->name }} - {{ number_format($package->price, 2) }} ₪</option>
                             @endforeach
                         </select>
                     </div>
@@ -99,8 +99,8 @@
                     <ul class="divide-y divide-outline-variant/50">
                         @foreach ($recentActivity as $log)
                             <li class="py-3">
-                                <p class="font-body-sm font-bold">{{ $log->entity_label ?? __($log->action?->value ?? '—') }}</p>
-                                <p class="text-[11px] text-on-surface-variant">{{ $log->actor_name ?? '—' }} · {{ $log->created_at?->diffForHumans() }}</p>
+                                <p class="font-body-sm font-bold">{{ $log->entity_label ?? __($log->action?->value ?? '-') }}</p>
+                                <p class="text-[11px] text-on-surface-variant">{{ $log->actor_name ?? '-' }} · {{ $log->created_at?->diffForHumans() }}</p>
                             </li>
                         @endforeach
                     </ul>
@@ -109,7 +109,7 @@
         </div>
 
         {{-- Team roster --}}
-        <x-card title="{{ __('فريق المستأجر') }}" subtitle="{{ __('قراءة مباشرة من قاعدة بيانات المستأجر') }}">
+        <x-card title="{{ __('فريق المستأجر') }}" subtitle="{{ __('قراءة مباشرة من قاعدة بيانات المستأجر') }}" class="reveal-up" style="--d: 200ms">
             @if ($team->isEmpty())
                 <p class="py-6 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد أعضاء فريق') }}</p>
             @else
@@ -119,7 +119,7 @@
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $member->name }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $member->email }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $member->role?->name ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $member->role?->name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $member->active ? 'bg-primary/10 text-primary' : 'bg-outline/10 text-outline' }}">
                                         {{ $member->active ? __('نشط') : __('معطّل') }}
@@ -136,7 +136,7 @@
                                     <span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $member->active ? 'bg-primary/10 text-primary' : 'bg-outline/10 text-outline' }}">{{ $member->active ? __('نشط') : __('معطّل') }}</span>
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant" dir="ltr">{{ $member->email }}</p>
-                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $member->role?->name ?? '—' }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $member->role?->name ?? '-' }}</p>
                             </div>
                         @endforeach
                     </x-slot:cards>

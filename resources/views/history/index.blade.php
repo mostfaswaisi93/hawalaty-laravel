@@ -141,8 +141,8 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($transfers as $t)
-                            {{-- The stagger cascade lives on each card rather than on a wrapper:
-                                 the cards container belongs to <x-table-responsive>. --}}
+                            {{-- Cascade is per-card, not a container .stagger — the cards
+                                 container itself belongs to the shared table component. --}}
                             <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 <div class="flex items-center gap-3">

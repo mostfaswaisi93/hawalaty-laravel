@@ -38,10 +38,13 @@
 
                 {{-- items grid --}}
                 <template x-if="menu.length">
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {{-- The entrance sits on the grid, not on the tiles: x-for rebuilds them on
+                         every search keystroke, so a per-tile cascade would replay as the user
+                         types — and a filled entrance animation outranks .press on :active. --}}
+                    <div class="reveal-up grid grid-cols-2 gap-3 sm:grid-cols-3" style="--d:80ms">
                         <template x-for="item in filteredItems" :key="item.id">
                             <button type="button" @click="addItem(item)"
-                                class="tonal-elevation group relative flex flex-col justify-between gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 text-start transition-all hover:border-primary">
+                                class="press tonal-elevation group relative flex flex-col justify-between gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-4 text-start transition-all hover:border-primary">
                                 <span x-show="qtyOf(item.id) > 0"
                                     class="absolute end-3 top-3 flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 font-numeral-lg text-xs font-bold text-on-primary"
                                     x-text="qtyOf(item.id)" x-cloak></span>
@@ -65,7 +68,7 @@
 
                 {{-- empty menu state --}}
                 <template x-if="!menu.length">
-                    <div class="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
+                    <div class="reveal-scale flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                         <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
                         <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد أصناف في القائمة بعد') }}</p>
                         <a href="/menu" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أضف أصنافاً إلى قائمتك أولاً') }}">{{ __('أضف أصنافاً إلى قائمتك أولاً') }}</a>
@@ -75,7 +78,7 @@
 
             {{-- ══════════════ RIGHT — order summary ══════════════ --}}
             <aside class="space-y-5 lg:sticky lg:top-24">
-                <div class="tonal-elevation overflow-hidden rounded-3xl border border-outline-variant/50 bg-surface-container-lowest">
+                <div class="reveal-up tonal-elevation overflow-hidden rounded-3xl border border-outline-variant/50 bg-surface-container-lowest" style="--d:120ms">
                     <div class="flex items-center justify-between border-b border-outline-variant/50 p-5">
                         <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('الطلب الحالي') }}</h2>
                         <span x-show="itemCount > 0" x-cloak
@@ -85,7 +88,7 @@
                     </div>
 
                     {{-- cart lines --}}
-                    <div class="max-h-72 space-y-2 overflow-y-auto p-4">
+                    <div class="stagger max-h-72 space-y-2 overflow-y-auto p-4">
                         <div x-show="!cart.length" class="flex flex-col items-center gap-2 py-10 text-center text-outline">
                             <span class="material-symbols-outlined !text-4xl">shopping_cart</span>
                             <p class="font-body-sm">{{ __('لم تُضِف أي صنف بعد') }}</p>

@@ -9,7 +9,7 @@
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('المدفوعات') }}</h1>
-                <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('سجّل مدفوعات العملاء — تُجدّد الترخيص وتزيد رصيد الصندوق تلقائياً.') }}</p>
+                <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('سجّل مدفوعات العملاء - تُجدّد الترخيص وتزيد رصيد الصندوق تلقائياً.') }}</p>
             </div>
             <button type="button" @click="open = true; submitting = false" @disabled($boxes->isEmpty() || $licenses->isEmpty())
                 class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
@@ -35,8 +35,8 @@
                     <x-slot:table>
                         @foreach ($payments as $payment)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $payment->license?->customer_name ?? '—' }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $payment->box?->box_name ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $payment->license?->customer_name ?? '-' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $payment->box?->box_name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $payment->created_at?->translatedFormat('j F Y') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary"><span dir="ltr">+{{ number_format($payment->amount, 2) }} ₪</span></td>
                             </tr>
@@ -46,10 +46,10 @@
                         @foreach ($payments as $payment)
                             <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
                                 <div class="flex items-center justify-between">
-                                    <span class="font-body-sm font-bold">{{ $payment->license?->customer_name ?? '—' }}</span>
+                                    <span class="font-body-sm font-bold">{{ $payment->license?->customer_name ?? '-' }}</span>
                                     <span class="font-bold text-primary" dir="ltr">+{{ number_format($payment->amount, 2) }} ₪</span>
                                 </div>
-                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $payment->box?->box_name ?? '—' }} · {{ $payment->created_at?->translatedFormat('j M Y') }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $payment->box?->box_name ?? '-' }} · {{ $payment->created_at?->translatedFormat('j M Y') }}</p>
                             </div>
                         @endforeach
                     </x-slot:cards>

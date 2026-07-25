@@ -11,13 +11,13 @@
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             @if ($devices->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">devices</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد أجهزة مسجّلة') }}</p>
                     <p class="font-body-sm text-outline">{{ __('تظهر الأجهزة هنا عند تسجيل الدخول من تطبيق الجوال.') }}</p>
                 </div>
             @else
-                <ul class="divide-y divide-outline-variant/50">
+                <ul class="stagger divide-y divide-outline-variant/50">
                     @foreach ($devices as $device)
                         <li class="flex items-center gap-4 py-4">
                             <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">

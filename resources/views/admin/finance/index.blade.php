@@ -29,7 +29,7 @@
         </header>
 
         {{-- Summary tiles --}}
-        <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <section class="stagger grid grid-cols-1 gap-4 md:grid-cols-3">
             <x-card>
                 <p class="font-body-sm text-on-surface-variant">{{ __('إجمالي المدفوعات (داخل)') }}</p>
                 <p class="mt-2 font-numeral-lg text-numeral-lg font-bold text-primary"><span dir="ltr">{{ number_format($summary['totalPayments'], 2) }} ₪</span></p>
@@ -50,7 +50,7 @@
                 @if (empty($summary['boxes']))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد صناديق بعد') }}</p>
                 @else
-                    <ul class="divide-y divide-outline-variant/50">
+                    <ul class="stagger divide-y divide-outline-variant/50">
                         @foreach ($summary['boxes'] as $box)
                             <li class="flex items-center justify-between gap-3 py-3">
                                 <div class="flex items-center gap-3">
@@ -69,7 +69,7 @@
                 @if (empty($summary['partners']))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد شركاء بعد') }}</p>
                 @else
-                    <ul class="divide-y divide-outline-variant/50">
+                    <ul class="stagger divide-y divide-outline-variant/50">
                         @foreach ($summary['partners'] as $partner)
                             <li class="flex items-center justify-between gap-3 py-3">
                                 <div class="flex items-center gap-3">
@@ -88,7 +88,7 @@
         </div>
 
         {{-- Recent payments --}}
-        <x-card title="{{ __('آخر المدفوعات') }}">
+        <x-card title="{{ __('آخر المدفوعات') }}" class="reveal-up" style="--d: 120ms">
             @if ($recentPayments->isEmpty())
                 <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد مدفوعات بعد') }}</p>
             @else
@@ -96,8 +96,8 @@
                     <x-slot:table>
                         @foreach ($recentPayments as $payment)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $payment->license?->customer_name ?? '—' }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $payment->box?->box_name ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $payment->license?->customer_name ?? '-' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $payment->box?->box_name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $payment->created_at?->translatedFormat('j F Y') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary"><span dir="ltr">+{{ number_format($payment->amount, 2) }} ₪</span></td>
                             </tr>
@@ -107,10 +107,10 @@
                         @foreach ($recentPayments as $payment)
                             <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
                                 <div class="flex items-center justify-between">
-                                    <p class="font-body-sm font-bold">{{ $payment->license?->customer_name ?? '—' }}</p>
+                                    <p class="font-body-sm font-bold">{{ $payment->license?->customer_name ?? '-' }}</p>
                                     <p class="font-bold text-primary" dir="ltr">+{{ number_format($payment->amount, 2) }} ₪</p>
                                 </div>
-                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $payment->box?->box_name ?? '—' }} · {{ $payment->created_at?->translatedFormat('j M Y') }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $payment->box?->box_name ?? '-' }} · {{ $payment->created_at?->translatedFormat('j M Y') }}</p>
                             </div>
                         @endforeach
                     </x-slot:cards>
@@ -132,7 +132,7 @@
                         <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
-                                <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }} — {{ number_format($box->box_balance, 2) }} ₪</option>
+                                <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }} - {{ number_format($box->box_balance, 2) }} ₪</option>
                             @endforeach
                         </select>
                     </div>
@@ -189,7 +189,7 @@
                         <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
-                                <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }} — {{ number_format($box->box_balance, 2) }} ₪</option>
+                                <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }} - {{ number_format($box->box_balance, 2) }} ₪</option>
                             @endforeach
                         </select>
                     </div>

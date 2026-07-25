@@ -3,7 +3,7 @@
 @section('title', __('لوحة تحكم المنصّة - حوالاتي'))
 
 @php
-    // Neutral enum/action codes are stored in the DB and translated only here —
+    // Neutral enum/action codes are stored in the DB and translated only here -
     // the same display-time mapping used by the tenant activity log.
     $actionLabels = [
         'created' => __('إنشاء'),
@@ -43,7 +43,7 @@
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('لوحة تحكم المنصّة') }}</h1>
-                <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('مرحباً') }} {{ auth('admin')->user()?->name }} — {{ __('نظرة عامة على التراخيص والمحاسبة الداخلية.') }}</p>
+                <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('مرحباً') }} {{ auth('admin')->user()?->name }} - {{ __('نظرة عامة على التراخيص والمحاسبة الداخلية.') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('admin.payments.index') }}"
@@ -109,7 +109,7 @@
             @endforeach
         </section>
 
-        {{-- ── Expiry alerts — the only actionable block on the page ──────── --}}
+        {{-- ── Expiry alerts - the only actionable block on the page ──────── --}}
         @if ($expiringSoon->isNotEmpty())
             <section class="tonal-elevation rounded-3xl border border-secondary/40 bg-secondary-container/10 p-5 md:p-6">
                 <div class="mb-4 flex items-center gap-3">
@@ -118,7 +118,7 @@
                     </div>
                     <div>
                         <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('تراخيص تنتهي قريباً') }}</h2>
-                        <p class="font-body-sm text-on-surface-variant">{{ __('خلال الثلاثين يوماً القادمة — تحتاج تجديداً') }}</p>
+                        <p class="font-body-sm text-on-surface-variant">{{ __('خلال الثلاثين يوماً القادمة - تحتاج تجديداً') }}</p>
                     </div>
                 </div>
                 <ul class="stagger space-y-2">
@@ -130,7 +130,7 @@
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate font-body-sm font-bold text-on-surface">{{ $license->customer_name }}</p>
                                     <p class="truncate text-[11px] text-on-surface-variant">
-                                        <span dir="ltr">{{ $license->license_code }}</span> · {{ $license->package?->name ?? '—' }}
+                                        <span dir="ltr">{{ $license->license_code }}</span> · {{ $license->package?->name ?? '-' }}
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -284,7 +284,7 @@
                                     <p class="truncate font-body-sm font-bold text-on-surface">
                                         {{ $actionLabels[$log->action] ?? $log->action }} · {{ $log->entity_label }}
                                     </p>
-                                    <p class="truncate text-[11px] text-on-surface-variant">{{ $log->admin?->name ?? '—' }} · {{ $log->created_at?->diffForHumans() }}</p>
+                                    <p class="truncate text-[11px] text-on-surface-variant">{{ $log->admin?->name ?? '-' }} · {{ $log->created_at?->diffForHumans() }}</p>
                                 </div>
                             </li>
                         @endforeach
@@ -319,7 +319,7 @@
                                 <span class="material-symbols-outlined flex-shrink-0 text-outline">backup</span>
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate font-body-sm font-bold text-on-surface">{{ $backup->license?->customer_name ?? __('قاعدة بيانات المنصّة') }}</p>
-                                    <p class="truncate text-[11px] text-on-surface-variant">{{ $backup->created_at?->diffForHumans() }} · {{ $backup->size_mb ? $backup->size_mb.' MB' : '—' }}</p>
+                                    <p class="truncate text-[11px] text-on-surface-variant">{{ $backup->created_at?->diffForHumans() }} · {{ $backup->size_mb ? $backup->size_mb.' MB' : '-' }}</p>
                                 </div>
                                 <span class="flex-shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $backup->status->value === 'completed' ? 'bg-success-container/40 text-success dark:bg-success-container/15' : ($backup->status->value === 'failed' ? 'bg-error/10 text-error' : 'bg-secondary/10 text-secondary') }}">
                                     {{ $backupStatusLabels[$backup->status->value] ?? $backup->status->value }}

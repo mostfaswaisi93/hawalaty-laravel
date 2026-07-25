@@ -7,8 +7,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('حوالاتي') }} — {{ __('منصّة إدارة الطلبات والحوالات للمطاعم والأعمال') }}</title>
-    <meta name="description" content="{{ __('منصّة عربية متكاملة لإدارة الطلبات، البنوك والمحافظ، القوائم، المصروفات والتقارير — بسرعة وأمان.') }}">
+    <title>{{ __('حوالاتي') }} - {{ __('منصّة إدارة الطلبات والحوالات للمطاعم والأعمال') }}</title>
+    <meta name="description" content="{{ __('منصّة عربية متكاملة لإدارة الطلبات، البنوك والمحافظ، القوائم، المصروفات والتقارير - بسرعة وأمان.') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,7 +103,7 @@
                     </h1>
 
                     <p class="mx-auto mt-7 max-w-2xl font-body-lg leading-relaxed text-on-surface-variant lg:mx-0">
-                        {{ __('منصّة متكاملة لإدارة الطلبات، البنوك والمحافظ، القوائم، المصروفات والتقارير — بواجهة أنيقة، صلاحيات دقيقة، وتقارير فورية تنمّي عملك.') }}
+                        {{ __('منصّة متكاملة لإدارة الطلبات، البنوك والمحافظ، القوائم، المصروفات والتقارير - بواجهة أنيقة، صلاحيات دقيقة، وتقارير فورية تنمّي عملك.') }}
                     </p>
 
                     <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
@@ -119,7 +119,7 @@
                         </a>
                     </div>
 
-                    <p class="mt-6 font-body-sm text-outline">{{ __('تجربة مجانية ١٤ يوماً — بدون بطاقة ائتمان.') }}</p>
+                    <p class="mt-6 font-body-sm text-outline">{{ __('تجربة مجانية ١٤ يوماً - بدون بطاقة ائتمان.') }}</p>
                 </div>
 
                 {{-- floating dashboard preview --}}
@@ -149,7 +149,7 @@
                         </div>
 
                         <div class="mt-6 space-y-3">
-                            {{-- Mock customer names in this demo widget stay as-is across locales — proper names aren't translated (same convention as real order data elsewhere in the app). --}}
+                            {{-- Mock customer names in this demo widget stay as-is across locales - proper names aren't translated (same convention as real order data elsewhere in the app). --}}
                             @foreach ([['أحمد أبو ياسين', __('مكتملة'), '+85.00', 'bg-green-500'], ['سميرة خليل', __('قيد الانتظار'), '+42.00', 'bg-secondary-container']] as [$name, $status, $amount, $dot])
                                 <div class="flex items-center gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3">
                                     <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -196,7 +196,7 @@
             <div class="reveal mx-auto max-w-2xl text-center">
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('كل ما تحتاجه') }}</p>
                 <h2 class="mt-4 font-display-lg text-3xl font-bold text-on-surface sm:text-4xl lg:text-5xl">{{ __('مزايا مصمّمة لإدارة عملك بالكامل') }}</h2>
-                <p class="mt-4 font-body-lg text-on-surface-variant">{{ __('من أول طلب حتى آخر تقرير — كل أدواتك في مساحة عمل واحدة أنيقة ومعزولة.') }}</p>
+                <p class="mt-4 font-body-lg text-on-surface-variant">{{ __('من أول طلب حتى آخر تقرير - كل أدواتك في مساحة عمل واحدة أنيقة ومعزولة.') }}</p>
             </div>
 
             <div class="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
@@ -347,7 +347,7 @@
                         <span class="font-display-lg text-2xl font-bold text-primary">{{ __('حوالاتي') }}</span>
                     </div>
                     <p class="mt-4 max-w-xs font-body-sm leading-relaxed text-on-surface-variant">
-                        {{ __('منصّة عربية متكاملة لإدارة الطلبات والحوالات للمطاعم والأعمال — بسرعة وأمان.') }}
+                        {{ __('منصّة عربية متكاملة لإدارة الطلبات والحوالات للمطاعم والأعمال - بسرعة وأمان.') }}
                     </p>
                 </div>
 
