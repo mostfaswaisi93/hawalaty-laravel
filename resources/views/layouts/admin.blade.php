@@ -127,10 +127,10 @@
             {{-- The mark doubles as the home link, so it gets the same hover
                  affordance and tooltip as every other icon in the rail. --}}
             <a href="{{ route('admin.dashboard') }}"
-                @mouseenter="showTip($el, @js(__('لوحة التحكم')))" @mouseleave="hideTip()"
-                @focus="showTip($el, @js(__('لوحة التحكم')))" @blur="hideTip()"
+                @mouseenter="showTip($el, @js(__('حوالاتي')))" @mouseleave="hideTip()"
+                @focus="showTip($el, @js(__('حوالاتي')))" @blur="hideTip()"
                 class="flex-shrink-0 rounded-xl transition-transform duration-200 hover:scale-105 active:scale-95"
-                aria-label="{{ __('لوحة التحكم') }}">
+                aria-label="{{ __('حوالاتي') }}">
                 <x-logo />
             </a>
             <div class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
@@ -294,30 +294,55 @@
                     </button>
 
                     <div x-show="open" x-cloak style="display:none"
-                        class="absolute end-0 top-12 z-50 w-60 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                        class="absolute end-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
                         role="menu">
-                        <div class="border-b border-outline-variant/60 p-4">
-                            <p class="truncate font-body-sm font-bold text-on-surface">{{ $admin?->name }}</p>
-                            <p class="truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $admin?->email }}</p>
+                        {{-- Identity header: avatar + name + role, on a tinted panel so it
+                             reads as context rather than a fourth menu row. --}}
+                        <div class="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low p-4">
+                            <span class="grid h-11 w-11 flex-shrink-0 place-items-center rounded-full bg-primary-container font-display-lg text-lg font-bold text-on-primary-container">
+                                {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate font-body-sm text-body-sm font-bold text-on-surface" dir="auto">{{ $admin?->name }}</span>
+                                <span class="block truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $admin?->email }}</span>
+                            </span>
                         </div>
 
-                        <a href="{{ route('admin.profile.index') }}" role="menuitem"
-                            class="flex items-center gap-3 px-4 py-3 font-body-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary">
-                            <span class="material-symbols-outlined !text-xl">person</span>{{ __('الملف الشخصي') }}
-                        </a>
+                        {{-- Items are inset and individually rounded so the hover state is a
+                             contained pill rather than a full-bleed band. The icon sits in its
+                             own chip, and a chevron fades in on hover to signal navigation. --}}
+                        <div class="p-2">
+                            <a href="{{ route('admin.profile.index') }}" role="menuitem"
+                                class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
+                                <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                                    <span class="material-symbols-outlined !text-xl">person</span>
+                                </span>
+                                <span class="flex-1">{{ __('الملف الشخصي') }}</span>
+                                <span class="material-symbols-outlined !text-lg opacity-0 transition-opacity group-hover:opacity-100 rtl:-scale-x-100">chevron_right</span>
+                            </a>
 
-                        <a href="{{ route('admin.settings.index') }}" role="menuitem"
-                            class="flex items-center gap-3 px-4 py-3 font-body-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary">
-                            <span class="material-symbols-outlined !text-xl">settings</span>{{ __('الإعدادات') }}
-                        </a>
+                            <a href="{{ route('admin.settings.index') }}" role="menuitem"
+                                class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
+                                <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                                    <span class="material-symbols-outlined !text-xl">settings</span>
+                                </span>
+                                <span class="flex-1">{{ __('الإعدادات') }}</span>
+                                <span class="material-symbols-outlined !text-lg opacity-0 transition-opacity group-hover:opacity-100 rtl:-scale-x-100">chevron_right</span>
+                            </a>
 
-                        {{-- Reuses the layout-level confirm modal; the form itself lives
-                             in the sidebar footer, referenced here by id. --}}
-                        <button type="button" role="menuitem"
-                            @click="open = false; confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'admin-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
-                            class="flex w-full items-center gap-3 border-t border-outline-variant/60 px-4 py-3 font-body-sm text-error transition-colors hover:bg-error/10">
-                            <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">logout</span>{{ __('تسجيل الخروج') }}
-                        </button>
+                            <div class="my-1 border-t border-outline-variant/60"></div>
+
+                            {{-- Reuses the layout-level confirm modal; the form itself lives
+                                 in the sidebar footer, referenced here by id. --}}
+                            <button type="button" role="menuitem"
+                                @click="open = false; confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'admin-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
+                                class="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-body-sm text-body-sm font-bold text-error transition-colors hover:bg-error/10">
+                                <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-error/10 text-error transition-colors group-hover:bg-error group-hover:text-on-error">
+                                    <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">logout</span>
+                                </span>
+                                <span class="flex-1 text-start">{{ __('تسجيل الخروج') }}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

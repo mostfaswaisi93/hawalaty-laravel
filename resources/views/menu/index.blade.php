@@ -150,16 +150,16 @@
                 x-init="$watch('catOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="category-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 id="category-modal-title" class="mb-5 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
-                <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4" @submit="submitting = true">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+                <h3 id="category-modal-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
+                <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
                         <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم الفئة') }}</label>
                         <input name="name" value="{{ $categoryHasErrors ? old('name') : '' }}" required placeholder="{{ __('مثال: المشاوي') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
-                    <div class="flex justify-end gap-3 pt-2">
+                    <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="catOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
@@ -177,9 +177,9 @@
                 x-init="$watch('itemOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="item-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
-                <h3 id="item-modal-title" class="mb-5 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
-                <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4" @submit="submitting = true">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+                <h3 id="item-modal-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
+                <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <template x-if="itemMode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
                     <input type="hidden" name="id" :value="itemForm.id">
@@ -214,7 +214,7 @@
                         <input type="checkbox" x-model="itemForm.active" class="h-5 w-5 rounded accent-primary" />
                     </label>
 
-                    <div class="flex justify-end gap-3 pt-2">
+                    <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="itemOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
@@ -232,14 +232,14 @@
                 x-init="$watch('importOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="import-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
                 <h3 id="import-modal-title" class="mb-2 font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
                 <p class="mb-5 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
-                <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4" @submit="submitting = true">
+                <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <input type="file" name="file" accept=".csv,text/csv" required
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none file:me-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:font-body-sm file:font-bold file:text-on-primary" />
-                    <div class="flex justify-end gap-3 pt-2">
+                    <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="importOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"

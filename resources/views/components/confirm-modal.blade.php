@@ -24,7 +24,7 @@
         x-init="$watch('confirmOpen', v => v && $nextTick(() => $el.querySelector('button')?.focus()))"
         role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-        class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">
+        class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
         <div class="mb-4 flex justify-center">
             <div class="flex h-14 w-14 items-center justify-center rounded-full bg-error-container text-error">
                 <span class="material-symbols-outlined !text-3xl">warning</span>

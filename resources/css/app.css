@@ -302,6 +302,15 @@ body {
     [role='button'][aria-disabled='true'] {
         cursor: not-allowed;
     }
+
+    /*
+     * The native drag handle let a textarea be pulled to any size, which broke
+     * the layout of the modals they sit in. Height comes from the `rows`
+     * attribute at each call site instead.
+     */
+    textarea {
+        resize: none;
+    }
 }
 
 a,
