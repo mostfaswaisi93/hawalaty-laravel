@@ -131,7 +131,7 @@
                                     <span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
-                                    <a href="{{ route('transfers.receipt', $t- title="{{ __('طباعة الإيصال') }}">id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
+                                    <a href="{{ route('transfers.receipt', $t->id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
                                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">
                                         <span class="material-symbols-outlined !text-xl">print</span>
                                     </a>
@@ -182,13 +182,13 @@
                                     <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
                                 </span>
                             @else
-                                <a href="{{ $transfers- title="{{ __('السابق') }}">previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                <a href="{{ $transfers->previousPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                                     <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_back</span> {{ __('السابق') }}
                                 </a>
                             @endif
 
                             @if ($transfers->hasMorePages())
-                                <a href="{{ $transfers- title="{{ __('التالي') }}">nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
+                                <a href="{{ $transfers->nextPageUrl() }}" class="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container">
                                     {{ __('التالي') }} <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
                                 </a>
                             @else

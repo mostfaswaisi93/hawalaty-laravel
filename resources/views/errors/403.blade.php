@@ -15,7 +15,7 @@
                 {{ __('ليس لديك الصلاحية اللازمة للقيام بهذا الإجراء. تواصل مع مدير حسابك إذا كنت تعتقد أن هذا غير صحيح.') }}
             </p>
             <a
-                href="{{ url()- title="{{ __('العودة للصفحة السابقة') }}">previous() }}"
+                href="{{ url()->previous() }}"
                 class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container">
                 <span>{{ __('العودة للصفحة السابقة') }}</span>
             </a>

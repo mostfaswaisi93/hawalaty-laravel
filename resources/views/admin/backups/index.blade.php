@@ -48,7 +48,7 @@
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j F Y H:i') }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
-                                        <a href="{{ route('admin.backups.download', $backup- title="{{ __('تنزيل') }}">id) }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-xl">download</span></a>
+                                        <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-xl">download</span></a>
                                         <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-{{ $backup->id }}">@csrf @method('DELETE')</form>
                                         <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-{{ $backup->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
                                     </div>
@@ -66,7 +66,7 @@
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j M Y H:i') }} · {{ $backup->size_mb ? $backup->size_mb.' MB' : '—' }}</p>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
-                                    <a href="{{ route('admin.backups.download', $backup- title="{{ __('تنزيل') }}">id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-lg">download</span></a>
+                                    <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-lg">download</span></a>
                                     <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-card-{{ $backup->id }}">@csrf @method('DELETE')</form>
                                     <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-card-{{ $backup->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
                                 </div>

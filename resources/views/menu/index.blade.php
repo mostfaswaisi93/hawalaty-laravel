@@ -96,7 +96,7 @@
                             <div class="flex flex-col items-center gap-2 py-10 text-center">
                                 <span class="material-symbols-outlined !text-4xl text-outline/50">lunch_dining</span>
                                 <p class="font-body-sm text-on-surface-variant">{{ __('لا أصناف في هذه الفئة بعد') }}</p>
-                                <button type="button" @click="openAddItem(@js($cat- title="{{ __('أضِف أول صنف') }}">id))" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضِف أول صنف') }}</button>
+                                <button type="button" @click="openAddItem(@js($cat->id))" class="font-body-sm font-bold text-primary hover:underline">{{ __('أضِف أول صنف') }}</button>
                             </div>
                         @else
                             <ul class="divide-y divide-outline-variant/50">

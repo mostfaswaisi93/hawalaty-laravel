@@ -15,7 +15,7 @@
                 {{ __('لقد تجاوزت الحد المسموح به من المحاولات. يرجى الانتظار قليلاً ثم إعادة المحاولة.') }}
             </p>
             <a
-                href="{{ url()- title="{{ __('إعادة المحاولة') }}">previous() }}"
+                href="{{ url()->previous() }}"
                 class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container">
                 <span>{{ __('إعادة المحاولة') }}</span>
             </a>
