@@ -41,7 +41,7 @@
                 </div>
 
                 <div class="border-t border-outline-variant/50 pt-5">
-                    <p class="mb-4 font-body-sm text-on-surface-variant">{{ __('لتغيير كلمة المرور، املأ الحقلين أدناه — وإلا اتركهما فارغين.') }}</p>
+                    <p class="mb-4 font-body-sm text-on-surface-variant">{{ __('لتغيير كلمة المرور، املأ الحقلين أدناه - وإلا اتركهما فارغين.') }}</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div class="space-y-1.5">
                             <label for="password" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('كلمة مرور جديدة') }}</label>
@@ -74,9 +74,9 @@
                         $rows = [
                             ['storefront', 'اسم النشاط', $license->customer_name],
                             ['qr_code_2', 'رمز الترخيص', $license->license_code],
-                            ['workspace_premium', 'الباقة', $license->package?->name ?? '—'],
+                            ['workspace_premium', 'الباقة', $license->package?->name ?? '-'],
                             ['verified', 'حالة الترخيص', $statusLabels[$license->status->value] ?? $license->status->value],
-                            ['event', 'ينتهي في', $license->expired_at?->translatedFormat('j F Y') ?? '—'],
+                            ['event', 'ينتهي في', $license->expired_at?->translatedFormat('j F Y') ?? '-'],
                             ['account_balance_wallet', 'الرصيد', number_format($license->customer_balance, 2) . ' ₪'],
                         ];
                     @endphp

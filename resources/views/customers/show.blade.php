@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $customer->name . ' — ' . __('حوالاتي'))
+@section('title', $customer->name . ' - ' . __('حوالاتي'))
 
 @section('content')
     @php
@@ -57,7 +57,7 @@
                     <x-slot:table>
                         @foreach ($customer->transfers as $t)
                             <tr class="reveal-up transition-colors hover:bg-surface-container-low/50" style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
-                                <td class="max-w-xs truncate px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->item_name ?: '—' }}</td>
+                                <td class="max-w-xs truncate px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->item_name ?: '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->created_at->translatedFormat('j F Y') }}</td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
@@ -82,7 +82,7 @@
                                     <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">{{ $statusLabel($t->status) }}</span>
                                     <p class="font-bold text-primary" dir="ltr">+{{ number_format($t->amount, 2) }} ₪</p>
                                 </div>
-                                <p class="mt-2 truncate text-body-sm text-on-surface-variant">{{ $t->item_name ?: '—' }}</p>
+                                <p class="mt-2 truncate text-body-sm text-on-surface-variant">{{ $t->item_name ?: '-' }}</p>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">{{ $t->created_at->translatedFormat('j F Y') }}</p>
                             </div>
                         @endforeach

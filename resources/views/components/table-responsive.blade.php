@@ -1,6 +1,6 @@
 {{--
     Dual-rendering pattern used throughout the Angular app (see
-    layout.html/dashboard.html and BACKEND_PROMPT.md) — a real `<table>` on
+    layout.html/dashboard.html and BACKEND_PROMPT.md) - a real `<table>` on
     md+ screens, a stacked card list below md. Both are genuinely rendered
     (not one hidden via JS), so no client-side reflow is needed; only the
     matching `hidden md:block` / `md:hidden` utility pair decides which one
@@ -26,7 +26,7 @@
         </x-table-responsive>
 
     Callers loop over their collection twice (once per breakpoint's markup)
-    — the same thing the Angular templates do with two separate `@for`
+    - the same thing the Angular templates do with two separate `@for`
     blocks, one inside each container.
 --}}
 @props(['headers' => []])

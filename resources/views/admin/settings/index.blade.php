@@ -36,7 +36,7 @@
                         @foreach ($settings as $setting)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3"><code class="font-numeral-lg text-body-sm" dir="ltr">{{ $setting->key }}</code></td>
-                                <td class="px-4 py-3 font-body-sm text-on-surface-variant">{{ $setting->value ?? '—' }}</td>
+                                <td class="px-4 py-3 font-body-sm text-on-surface-variant">{{ $setting->value ?? '-' }}</td>
                                 <td class="px-4 py-3">
                                     <button type="button" @click="openEdit(@js(['key' => $setting->key, 'value' => $setting->value]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
                                 </td>
@@ -50,7 +50,7 @@
                                     <code class="text-body-sm font-bold" dir="ltr">{{ $setting->key }}</code>
                                     <button type="button" @click="openEdit(@js(['key' => $setting->key, 'value' => $setting->value]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
                                 </div>
-                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $setting->value ?? '—' }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $setting->value ?? '-' }}</p>
                             </div>
                         @endforeach
                     </x-slot:cards>

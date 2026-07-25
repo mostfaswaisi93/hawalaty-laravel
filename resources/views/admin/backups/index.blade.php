@@ -43,7 +43,7 @@
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $backup->license?->customer_name ?? __('قاعدة المنصّة') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $backup->trigger->value === 'manual' ? __('يدوي') : __('مجدول') }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $backup->size_mb ? $backup->size_mb.' MB' : '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $backup->size_mb ? $backup->size_mb.' MB' : '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $meta['class'] }}">{{ $meta['label'] }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j F Y H:i') }}</td>
                                 <td class="px-4 py-3">
@@ -64,7 +64,7 @@
                                     <span class="font-body-sm font-bold">{{ $backup->license?->customer_name ?? __('قاعدة المنصّة') }}</span>
                                     <span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $meta['class'] }}">{{ $meta['label'] }}</span>
                                 </div>
-                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j M Y H:i') }} · {{ $backup->size_mb ? $backup->size_mb.' MB' : '—' }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j M Y H:i') }} · {{ $backup->size_mb ? $backup->size_mb.' MB' : '-' }}</p>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
                                     <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-lg">download</span></a>
                                     <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-card-{{ $backup->id }}">@csrf @method('DELETE')</form>

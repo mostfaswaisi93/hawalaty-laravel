@@ -8,7 +8,7 @@
             'owner' => __('مالك'),
             'manager' => __('مدير'),
             'staff' => __('موظف'),
-            default => $role?->name ?? '—',
+            default => $role?->name ?? '-',
         };
     @endphp
 

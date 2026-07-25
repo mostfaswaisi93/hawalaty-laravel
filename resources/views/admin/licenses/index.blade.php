@@ -67,9 +67,9 @@
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $license->customer_name }}</td>
                                 <td class="whitespace-nowrap px-4 py-3"><code class="rounded bg-surface-container px-2 py-1 font-numeral-lg text-body-sm" dir="ltr">{{ $license->license_code }}</code></td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $license->package?->name ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $license->package?->name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $meta['class'] }}">{{ $meta['label'] }}</span></td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $license->expired_at?->translatedFormat('j F Y') ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $license->expired_at?->translatedFormat('j F Y') ?? '-' }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
                                         <a href="{{ route('admin.licenses.show', $license->id) }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('عرض') }}">
@@ -102,7 +102,7 @@
                                     <p class="font-body-sm font-bold">{{ $license->customer_name }}</p>
                                     <span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $meta['class'] }}">{{ $meta['label'] }}</span>
                                 </div>
-                                <p class="mt-1 text-[11px] text-on-surface-variant"><code dir="ltr">{{ $license->license_code }}</code> · {{ $license->package?->name ?? '—' }}</p>
+                                <p class="mt-1 text-[11px] text-on-surface-variant"><code dir="ltr">{{ $license->license_code }}</code> · {{ $license->package?->name ?? '-' }}</p>
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
                                     <a href="{{ route('admin.licenses.show', $license->id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('عرض') }}">
                                         <span class="material-symbols-outlined !text-lg">visibility</span>

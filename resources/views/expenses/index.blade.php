@@ -58,7 +58,7 @@
                                         <span class="font-body-sm font-bold">{{ $e->description }}</span>
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $e->bank?->name ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $e->bank?->name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $e->date->translatedFormat('j F Y') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-error"><span dir="ltr">-{{ number_format($e->amount, 2) }} ₪</span></td>
                                 <td class="px-4 py-3">
@@ -90,7 +90,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-body-sm font-bold">{{ $e->description }}</p>
-                                        <p class="text-[11px] text-on-surface-variant">{{ $e->bank?->name ?? '—' }} · {{ $e->date->translatedFormat('j M') }}</p>
+                                        <p class="text-[11px] text-on-surface-variant">{{ $e->bank?->name ?? '-' }} · {{ $e->date->translatedFormat('j M') }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-error"><span dir="ltr">-{{ number_format($e->amount, 2) }} ₪</span></p>
                                 </div>

@@ -10,7 +10,7 @@
  * space-separated RGB channels (`rgb(var(--c-x) / <alpha-value>)`) so a
  * `.dark` class swap could repaint the whole palette at once. Tailwind v4
  * has no JS config file / <alpha-value> placeholder, but `@theme` color
- * tokens accept any valid CSS color — including `rgb(var(--c-x))` — and v4
+ * tokens accept any valid CSS color - including `rgb(var(--c-x))` - and v4
  * automatically supports opacity modifiers (`bg-primary/50`) on those via
  * `color-mix()`, so the same two-layer approach (raw channels in :root/.dark,
  * theme tokens referencing them) carries over unchanged.
@@ -99,7 +99,7 @@
     --color-brand: rgb(var(--c-brand));
     --color-on-brand: rgb(var(--c-on-brand));
 
-    /* Not part of the ported MD3 palette — added so "completed"/"active"
+    /* Not part of the ported MD3 palette - added so "completed"/"active"
        status pills stop hand-rolling `bg-green-100 text-green-700
        dark:bg-green-500/15 dark:text-green-300` identically in 8 places. */
     --color-success: rgb(var(--c-success));
@@ -171,7 +171,7 @@
 
     /* success = Tailwind green-700, success-container = green-100 (used at
        full opacity here, and at 15% via dark:bg-success-container/15 to
-       reproduce dark:bg-green-500/15 exactly — see .dark below). */
+       reproduce dark:bg-green-500/15 exactly - see .dark below). */
     --c-success: 21 128 61;
     --c-success-container: 220 252 231;
 
@@ -254,7 +254,7 @@ html.lang-en {
 /*
  * body is min-height, NOT height. With `height: 100%` the body box is capped at
  * one viewport, so a `position: sticky` child (the landing page's nav is a
- * direct child of body) only sticks until that box scrolls away — it then
+ * direct child of body) only sticks until that box scrolls away - it then
  * detaches and scrolls off. min-height keeps the full-height background while
  * letting the box grow to the content, which is what sticky needs as its
  * containing block. The app layouts were unaffected because their sticky header
@@ -264,7 +264,7 @@ html {
     height: 100%;
     /* Eases every anchor jump, scrollIntoView() and programmatic scroll instead
        of snapping. Nested scrollers (the sidebar nav, table wrappers) need
-       their own `scroll-smooth` — this property does not inherit into them. */
+       their own `scroll-smooth` - this property does not inherit into them. */
     scroll-behavior: smooth;
     /* Keeps a sticky-header-height gap when jumping to an in-page anchor, so
        the target is never hidden underneath it. */
@@ -339,7 +339,7 @@ body {
  * here (the fix Tailwind's own v4 upgrade guide prescribes) rather than
  * sprinkling `cursor-pointer` across every call site.
  *
- * In @layer base so the utility layer still wins — `disabled:cursor-not-allowed`
+ * In @layer base so the utility layer still wins - `disabled:cursor-not-allowed`
  * on the modal submit buttons keeps working, and the :disabled guard below
  * means a disabled control never reads as clickable even without it.
  */
@@ -400,7 +400,7 @@ textarea:focus-visible,
 /*
  * Deliberately animates margin-top rather than transform. Any non-none
  * transform makes the element a containing block for `position: fixed`
- * descendants, and this class wraps the content of every page — so with a
+ * descendants, and this class wraps the content of every page - so with a
  * transform here, all 18 modals resolved `inset-0` against the page column
  * instead of the viewport and opened off-centre with a partial backdrop
  * (measured: a 1144x325 overlay at 24,96 on a 1280x800 viewport). margin-top
@@ -426,7 +426,7 @@ textarea:focus-visible,
  *
  * CRITICAL: every entrance keyframe ends at `transform: none`, never
  * `translateY(0)`. A retained non-none transform makes the element a
- * containing block for `position: fixed` descendants — that is exactly what
+ * containing block for `position: fixed` descendants - that is exactly what
  * broke all 18 modals before (see the .page-enter note above). Ending at
  * `none` interpolates identically (CSS treats none as the identity matrix)
  * but leaves nothing behind, so these are safe on any wrapper.

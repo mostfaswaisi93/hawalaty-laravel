@@ -1,7 +1,7 @@
 {{--
     One route serves both audiences: this page carries no authenticated data, and
     the guest footer links it, so it must render for signed-out visitors too. The
-    layout follows the session — the app shell (with its sidebar) for a signed-in
+    layout follows the session - the app shell (with its sidebar) for a signed-in
     tenant, the guest shell otherwise.
 --}}
 @extends(auth('tenant')->check() ? 'layouts.app' : 'layouts.guest')

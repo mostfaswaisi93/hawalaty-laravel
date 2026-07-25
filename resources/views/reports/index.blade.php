@@ -109,7 +109,7 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($transfers->sortByDesc('created_at') as $t)
-                            {{-- Cascade is per-card, not a container .stagger — the cards
+                            {{-- Cascade is per-card, not a container .stagger - the cards
                                  container itself belongs to the shared table component. --}}
                             <div class="reveal-up flex items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">

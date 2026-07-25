@@ -31,7 +31,7 @@
         ],
     ];
 
-    // Drives the header breadcrumb — resolved from the same nav table so the
+    // Drives the header breadcrumb - resolved from the same nav table so the
     // two can never drift apart.
     $currentSection = null;
     $currentGroup = null;
@@ -51,7 +51,7 @@
 {{--
     `collapsed` drives the desktop icon-only rail and is persisted so it
     survives navigation. Every collapse-dependent class is gated behind `lg:`
-    — on mobile the sidebar is an overlay that must always show full labels,
+    - on mobile the sidebar is an overlay that must always show full labels,
     so the collapsed state is deliberately inert below that breakpoint.
 
     `tipText`/`tipY` back a SINGLE shared, position-fixed tooltip. Per-item
@@ -69,7 +69,7 @@
         confirmOpen: false, confirmMessage: '', confirmFormId: null, confirmTitle: '', confirmLabel: '',
         tipText: '', tipTop: 0, tipLeft: 0, tipPlacement: 'side',
         // Sidebar rail: sits beside the item, vertically centred on it. Shown in
-        // BOTH states — essential when collapsed (no label at all), still useful
+        // BOTH states - essential when collapsed (no label at all), still useful
         // when expanded because long labels are `truncate`d. Desktop only, since
         // below lg the sidebar is a full-width overlay.
         showTip(el, text) {
@@ -83,7 +83,7 @@
         // same styled bubble as the sidebar instead of the native `title`
         // attribute, which is slow to appear and cannot be themed.
         showTipBelow(el, text) {
-            // Mouse affordance only — on touch, mouseenter fires on tap and the
+            // Mouse affordance only - on touch, mouseenter fires on tap and the
             // bubble would linger with nothing to dismiss it.
             if (!window.matchMedia('(pointer: fine)').matches) return;
             const r = el.getBoundingClientRect();
@@ -365,7 +365,7 @@
     <x-confirm-modal />
 
     {{-- The one shared sidebar tooltip. Fixed, so no ancestor's overflow can
-         clip it, and rendered LAST in the body so it also wins on DOM order —
+         clip it, and rendered LAST in the body so it also wins on DOM order -
          page cards sit inside `.page-enter`, whose fill-mode:both animation
          leaves a transform in place and therefore its own stacking context,
          which was painting over the tooltip when it lived higher up. --}}

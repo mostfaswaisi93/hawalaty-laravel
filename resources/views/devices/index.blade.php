@@ -6,7 +6,7 @@
     <div class="page-enter space-y-6" x-data="{ confirmOpen: false, confirmMessage: '', confirmFormId: null }">
         <header>
             <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('أجهزتي') }}</h1>
-            <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('الأجهزة التي سجّلت الدخول منها إلى حسابك — يمكنك إلغاء أيّ منها.') }}</p>
+            <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('الأجهزة التي سجّلت الدخول منها إلى حسابك - يمكنك إلغاء أيّ منها.') }}</p>
         </header>
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
@@ -31,7 +31,7 @@
                                     @endif
                                 </div>
                                 <p class="truncate text-[12px] text-outline">
-                                    {{ $device->browser ?: '—' }}
+                                    {{ $device->browser ?: '-' }}
                                     @if ($device->last_active_at)
                                         · {{ __('آخر نشاط') }} {{ $device->last_active_at->diffForHumans() }}
                                     @endif

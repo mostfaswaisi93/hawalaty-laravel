@@ -1,5 +1,5 @@
 {{--
-    Shared destructive-action confirmation modal — replaces the browser's
+    Shared destructive-action confirmation modal - replaces the browser's
     unstyled native confirm() dialog used everywhere for delete actions.
 
     Requires the enclosing Alpine scope to expose three properties:
@@ -15,7 +15,7 @@
     For a non-delete destructive action (e.g. suspending a license), also set
     `confirmTitle` and `confirmLabel` in the same @click to override the delete
     wording. Both are read through `$data` rather than referenced directly so the
-    16 plain delete call sites don't have to declare them — an absent property
+    16 plain delete call sites don't have to declare them - an absent property
     reads as undefined instead of throwing a ReferenceError.
 --}}
 <div x-show="confirmOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
@@ -26,7 +26,7 @@
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
         class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
         {{-- Body: the icon carries the warning, so this dialog has no separate
-             header band — the title sits with the message it belongs to. --}}
+             header band - the title sits with the message it belongs to. --}}
         <div class="px-6 pb-6 pt-8">
             <div class="mb-4 flex justify-center">
                 <div class="flex h-14 w-14 items-center justify-center rounded-full bg-error-container text-error">
