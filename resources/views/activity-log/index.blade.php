@@ -46,7 +46,7 @@
                     <span x-text="submitting ? '{{ __('جارٍ التطبيق...') }}' : '{{ __('تطبيق') }}'"></span>
                 </button>
                 @if ($hasFilters)
-                    <a href="{{ route('activity-log.index') }}" aria-label="{{ __('مسح الفلاتر') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
+                    <a href="{{ route('activity-log.index') }}" aria-label="{{ __('مسح الفلاتر') }}" title="{{ __('مسح الفلاتر') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">
                         <span class="material-symbols-outlined !text-xl">close</span>
                     </a>
                 @endif

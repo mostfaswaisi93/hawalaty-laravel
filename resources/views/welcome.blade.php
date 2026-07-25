@@ -47,13 +47,13 @@
             <div class="flex items-center gap-2">
                 <a href="{{ route('locale.switch', $otherLocale) }}"
                     class="flex h-10 items-center gap-1.5 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    aria-label="{{ __('تغيير اللغة') }}">
+                    aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
                     <span class="material-symbols-outlined">translate</span>
                     <span class="font-body-sm font-bold">{{ $otherLocale === 'en' ? 'EN' : 'ع' }}</span>
                 </a>
                 <button type="button" @click="dark = !dark"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    aria-label="{{ __('تبديل المظهر') }}">
+                    aria-label="{{ __('تبديل المظهر') }}" title="{{ __('تبديل المظهر') }}">
                     <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                 </button>
                 <a href="{{ route('login') }}" class="hidden rounded-xl px-4 py-2 font-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary sm:inline-block">
@@ -64,7 +64,7 @@
                 </a>
                 <button type="button" @click="open = !open"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high md:hidden"
-                    aria-label="{{ __('القائمة') }}">
+                    aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
                     <span class="material-symbols-outlined" x-text="open ? 'close' : 'menu'"></span>
                 </button>
             </div>

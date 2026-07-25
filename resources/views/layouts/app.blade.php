@@ -128,7 +128,7 @@
                 @mouseenter="showTip($el, @js(__('حوالاتي')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('حوالاتي')))" @blur="hideTip()"
                 class="flex-shrink-0 rounded-xl transition-transform duration-200 hover:scale-105 active:scale-95"
-                aria-label="{{ __('حوالاتي') }}">
+                aria-label="{{ __('حوالاتي') }}" title="{{ __('حوالاتي') }}">
                 <x-logo />
             </a>
             <div class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
@@ -140,7 +140,7 @@
                 @focus="showTip($el, @js(__('طي القائمة')))" @blur="hideTip()"
                 class="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-hover text-on-sidebar-muted shadow-sm transition-all duration-200 hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar hover:shadow-md active:scale-90 lg:flex"
                 :class="collapsed && 'lg:hidden'"
-                aria-label="{{ __('طي القائمة') }}" :aria-expanded="(!collapsed).toString()">
+                aria-label="{{ __('طي القائمة') }}" title="{{ __('طي القائمة') }}" :aria-expanded="(!collapsed).toString()">
                 <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">left_panel_close</span>
             </button>
         </div>
@@ -150,7 +150,7 @@
                 @mouseenter="showTip($el, @js(__('توسيع القائمة')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('توسيع القائمة')))" @blur="hideTip()"
                 class="flex h-10 w-10 items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-hover text-on-sidebar-muted shadow-sm transition-all duration-200 hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar hover:shadow-md active:scale-90"
-                aria-label="{{ __('توسيع القائمة') }}">
+                aria-label="{{ __('توسيع القائمة') }}" title="{{ __('توسيع القائمة') }}">
                 <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">left_panel_open</span>
             </button>
         </div>
@@ -184,7 +184,7 @@
                     @mouseenter="showTip($el, @js(__('طلب جديد')))" @mouseleave="hideTip()"
                     class="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container px-4 py-3 font-bold text-on-secondary-fixed shadow-lg transition-transform active:scale-95"
                     :class="collapsed && 'lg:px-0'"
-                    aria-label="{{ __('طلب جديد') }}">
+                    aria-label="{{ __('طلب جديد') }}" title="{{ __('طلب جديد') }}">
                     <span class="material-symbols-outlined flex-shrink-0">add</span>
                     <span :class="collapsed && 'lg:hidden'">{{ __('طلب جديد') }}</span>
                 </a>
@@ -216,7 +216,7 @@
                 @focus="showTip($el, @js(__('تسجيل الخروج')))" @blur="hideTip()"
                 class="mt-1 flex w-full items-center gap-3 rounded-xl px-2 py-2.5 font-body-sm font-bold text-on-sidebar-muted transition-colors hover:bg-error/20 hover:text-error"
                 :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'"
-                aria-label="{{ __('تسجيل الخروج') }}">
+                aria-label="{{ __('تسجيل الخروج') }}" title="{{ __('تسجيل الخروج') }}">
                 <span class="material-symbols-outlined flex-shrink-0 rtl:-scale-x-100">logout</span>
                 <span :class="collapsed && 'lg:hidden'">{{ __('تسجيل الخروج') }}</span>
             </button>
@@ -274,7 +274,7 @@
                                 aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}"
                                 class="w-full border-none bg-transparent font-body-lg text-body-lg outline-none focus:ring-0" />
                             <span x-show="loading" x-cloak class="material-symbols-outlined flex-shrink-0 animate-spin !text-lg text-outline">progress_activity</span>
-                            <button type="button" @click="closeMobile()" aria-label="{{ __('إغلاق') }}"
+                            <button type="button" @click="closeMobile()" aria-label="{{ __('إغلاق') }}" title="{{ __('إغلاق') }}"
                                 class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high">
                                 <span class="material-symbols-outlined">close</span>
                             </button>
@@ -289,7 +289,7 @@
             <div class="flex items-center gap-4 md:gap-6">
                 {{-- notifications --}}
                 <div class="relative" x-data="notificationBell({{ auth('tenant')->user()->unreadNotifications()->count() }})" @click.outside="open = false">
-                    <button type="button" @click="toggle()" class="relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('الإشعارات') }}">
+                    <button type="button" @click="toggle()" class="relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('الإشعارات') }}" title="{{ __('الإشعارات') }}">
                         <span class="material-symbols-outlined">notifications</span>
                         <span x-show="unreadCount > 0" x-cloak x-text="unreadCount > 9 ? '9+' : unreadCount"
                             class="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 font-numeral-lg text-[10px] font-bold text-on-error"></span>
@@ -341,7 +341,7 @@
                         @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
                         @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
                         class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                        aria-label="{{ __('تغيير اللغة') }}">
+                        aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
                         {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                     </a>
                     <button type="button" @click="dark = !dark"
@@ -356,7 +356,7 @@
                         <button type="button" @click="open = !open"
                             @mouseenter="showTipBelow($el, @js(__('حسابي')))" @mouseleave="hideTip()"
                             class="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-surface-container-high"
-                            :aria-expanded="open.toString()" aria-haspopup="menu" aria-label="{{ __('حسابي') }}">
+                            :aria-expanded="open.toString()" aria-haspopup="menu" aria-label="{{ __('حسابي') }}" title="{{ __('حسابي') }}">
                             <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">
                                 {{ $member ? mb_substr($member->name, 0, 1) : '?' }}
                             </span>

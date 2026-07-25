@@ -50,7 +50,7 @@
                                     <div class="flex items-center gap-1">
                                         <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-xl">download</span></a>
                                         <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-{{ $backup->id }}">@csrf @method('DELETE')</form>
-                                        <button type="button" aria-label="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-{{ $backup->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
+                                        <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-{{ $backup->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
                                     </div>
                                 </td>
                             </tr>
@@ -68,7 +68,7 @@
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
                                     <a href="{{ route('admin.backups.download', $backup->id) }}" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تنزيل') }}"><span class="material-symbols-outlined !text-lg">download</span></a>
                                     <form method="POST" action="{{ route('admin.backups.destroy', $backup->id) }}" id="del-backup-card-{{ $backup->id }}">@csrf @method('DELETE')</form>
-                                    <button type="button" aria-label="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-card-{{ $backup->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
+                                    <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذه النسخة الاحتياطية؟') }}'; confirmFormId = 'del-backup-card-{{ $backup->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
                                 </div>
                             </div>
                         @endforeach

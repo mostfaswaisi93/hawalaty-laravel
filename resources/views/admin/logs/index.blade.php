@@ -16,7 +16,7 @@
                     <option value="{{ $admin->id }}" @selected(($adminId ?? '') === $admin->id)>{{ $admin->name }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high" aria-label="{{ __('تصفية') }}">
+            <button type="submit" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
                 <span class="material-symbols-outlined">filter_alt</span>
             </button>
         </form>

@@ -84,7 +84,7 @@
                                 <form method="POST" action="{{ route('menu.categories.destroy', $cat->id) }}" id="delete-category-{{ $cat->id }}" class="inline-flex">
                                     @csrf @method('DELETE')
                                 </form>
-                                <button type="button" aria-label="{{ __('حذف الفئة') }}"
+                                <button type="button" aria-label="{{ __('حذف الفئة') }}" title="{{ __('حذف الفئة') }}"
                                     @click="confirmOpen = true; confirmMessage = '{{ __('حذف الفئة وكل أصنافها؟') }}'; confirmFormId = 'delete-category-{{ $cat->id }}'"
                                     class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                     <span class="material-symbols-outlined !text-xl">delete</span>
@@ -129,7 +129,7 @@
                                         <form method="POST" action="{{ route('menu.items.destroy', $item->id) }}" id="delete-item-{{ $item->id }}" class="inline-flex">
                                             @csrf @method('DELETE')
                                         </form>
-                                        <button type="button" aria-label="{{ __('حذف') }}"
+                                        <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}"
                                             @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الصنف؟') }}'; confirmFormId = 'delete-item-{{ $item->id }}'"
                                             class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                             <span class="material-symbols-outlined !text-xl">delete</span>

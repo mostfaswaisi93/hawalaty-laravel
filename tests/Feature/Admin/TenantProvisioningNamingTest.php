@@ -45,29 +45,27 @@ class TenantProvisioningNamingTest extends TestCase
         }
     }
 
-    public function test_database_identifiers_are_ascii_regardless_of_the_business_name(): void
+    public function test_an_ascii_license_code_clears_the_identifier_whitelist(): void
     {
-        // Captures the DDL the provisioner *would* run. The statement itself
-        // then fails (no MySQL under the sqlite suite) and that is fine — what
-        // matters is the identifier that was about to be interpolated.
-        $statements = [];
-        DB::listen(function ($query) use (&$statements) {
-            $statements[] = $query->sql;
-        });
-
+        // Paired with the rejection test below, this pins the security property:
+        // an ASCII code gets PAST the whitelist (so it fails later, on the DB
+        // connection, not on validation), while a non-ASCII one never does.
+        // Asserting the emitted SQL is not possible here — the mysql connection
+        // fails before any statement reaches a query listener.
+        // QueryException extends RuntimeException, so the two cannot be told
+        // apart by type — the message is what distinguishes them.
         try {
             $this->invokeHidden('provisionPhysicalDatabase', ['AR12CD34']);
-        } catch (Throwable) {
-            // Expected without a live MySQL server.
+            $this->fail('Expected a database connection failure without a live MySQL server.');
+        } catch (Throwable $e) {
+            $this->assertStringNotContainsString(
+                'safety whitelist',
+                $e->getMessage(),
+                'The whitelist wrongly rejected a valid ASCII license code.'
+            );
+            // Execution reached the DDL, and the identifier it built is ASCII.
+            $this->assertStringContainsString('`license_ar12cd34`', $e->getMessage());
         }
-
-        $create = collect($statements)->first(fn ($sql) => str_starts_with($sql, 'CREATE DATABASE'));
-
-        $this->assertNotNull($create, 'Expected a CREATE DATABASE statement to be attempted.');
-        $this->assertStringContainsString('`license_ar12cd34`', $create);
-        // The decisive assertion: nothing outside [a-z0-9_] reaches the identifier.
-        preg_match('/`([^`]+)`/', $create, $m);
-        $this->assertMatchesRegularExpression('/^[a-z0-9_]+$/', $m[1]);
     }
 
     public function test_a_non_ascii_license_code_is_rejected_before_any_ddl_runs(): void

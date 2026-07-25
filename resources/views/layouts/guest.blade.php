@@ -61,7 +61,7 @@
                 </nav>
                 <a href="https://github.com/mostfaswaisi93" target="_blank" rel="noopener noreferrer"
                     class="flex items-center gap-1.5 rounded-lg px-2 py-1 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    aria-label="{{ __('حساب GitHub للمطوّر') }}">
+                    aria-label="{{ __('حساب GitHub للمطوّر') }}" title="{{ __('حساب GitHub للمطوّر') }}">
                     <span class="flex items-center gap-1.5 font-normal text-outline">
                         {{ __('صُنع بحب') }}
                         <span class="material-symbols-outlined !text-base text-error" style="font-variation-settings: 'FILL' 1" aria-hidden="true">favorite</span>

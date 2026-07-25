@@ -39,7 +39,7 @@
                             <form method="POST" action="{{ route('constants.destroy', $list->id) }}" id="delete-list-{{ $list->id }}" class="inline-flex">
                                 @csrf @method('DELETE')
                             </form>
-                            <button type="button" aria-label="{{ __('حذف القائمة') }}"
+                            <button type="button" aria-label="{{ __('حذف القائمة') }}" title="{{ __('حذف القائمة') }}"
                                 @click="confirmOpen = true; confirmMessage = '{{ __('حذف القائمة وكل عناصرها؟') }}'; confirmFormId = 'delete-list-{{ $list->id }}'"
                                 class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                 <span class="material-symbols-outlined !text-xl">delete</span>
@@ -56,7 +56,7 @@
                                             {{ $item->value }}
                                             <form method="POST" action="{{ route('constants.items.destroy', [$list->id, $item->id]) }}" class="inline-flex">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" aria-label="{{ __('حذف') }}" class="flex h-5 w-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-error/15 hover:text-error">
+                                                <button type="submit" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" class="flex h-5 w-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-error/15 hover:text-error">
                                                     <span class="material-symbols-outlined !text-base">close</span>
                                                 </button>
                                             </form>
@@ -70,7 +70,7 @@
                             @csrf
                             <input name="value" required placeholder="{{ __('أضِف عنصراً...') }}"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-sm outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                            <button type="submit" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container" aria-label="{{ __('إضافة عنصر') }}">
+                            <button type="submit" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container" aria-label="{{ __('إضافة عنصر') }}" title="{{ __('إضافة عنصر') }}">
                                 <span class="material-symbols-outlined">add</span>
                             </button>
                         </form>

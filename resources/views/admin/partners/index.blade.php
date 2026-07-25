@@ -47,7 +47,7 @@
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openEdit(@js(['id' => $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
                                         <form method="POST" action="{{ route('admin.partners.destroy', $partner->id) }}" id="del-partner-{{ $partner->id }}">@csrf @method('DELETE')</form>
-                                        <button type="button" aria-label="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الشريك؟') }}'; confirmFormId = 'del-partner-{{ $partner->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
+                                        <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الشريك؟') }}'; confirmFormId = 'del-partner-{{ $partner->id }}'" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-xl">delete</span></button>
                                     </div>
                                 </td>
                             </tr>
@@ -63,7 +63,7 @@
                                 <div class="mt-3 flex items-center justify-end gap-1 border-t border-outline-variant/50 pt-3">
                                     <button type="button" @click="openEdit(@js(['id' => $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-lg">edit</span></button>
                                     <form method="POST" action="{{ route('admin.partners.destroy', $partner->id) }}" id="del-partner-card-{{ $partner->id }}">@csrf @method('DELETE')</form>
-                                    <button type="button" aria-label="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الشريك؟') }}'; confirmFormId = 'del-partner-card-{{ $partner->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
+                                    <button type="button" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" @click="confirmOpen = true; confirmMessage = '{{ __('حذف هذا الشريك؟') }}'; confirmFormId = 'del-partner-card-{{ $partner->id }}'" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"><span class="material-symbols-outlined !text-lg">delete</span></button>
                                 </div>
                             </div>
                         @endforeach

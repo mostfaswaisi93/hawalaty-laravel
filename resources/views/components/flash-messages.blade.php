@@ -37,7 +37,7 @@
         <p class="font-body-sm text-body-sm font-bold">{{ $flash }}</p>
         <button type="button" @click="show = false"
             class="-me-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full opacity-60 transition-opacity hover:opacity-100"
-            aria-label="{{ __('إغلاق') }}">
+            aria-label="{{ __('إغلاق') }}" title="{{ __('إغلاق') }}">
             <span class="material-symbols-outlined !text-lg">close</span>
         </button>
     </div>

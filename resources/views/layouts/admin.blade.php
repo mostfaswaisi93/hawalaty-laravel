@@ -130,7 +130,7 @@
                 @mouseenter="showTip($el, @js(__('حوالاتي')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('حوالاتي')))" @blur="hideTip()"
                 class="flex-shrink-0 rounded-xl transition-transform duration-200 hover:scale-105 active:scale-95"
-                aria-label="{{ __('حوالاتي') }}">
+                aria-label="{{ __('حوالاتي') }}" title="{{ __('حوالاتي') }}">
                 <x-logo />
             </a>
             <div class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
@@ -218,7 +218,7 @@
                 @focus="showTip($el, @js(__('تسجيل الخروج')))" @blur="hideTip()"
                 class="mt-1 flex w-full items-center gap-3 rounded-xl px-2 py-2.5 font-body-sm font-bold text-on-sidebar-muted transition-colors hover:bg-error/20 hover:text-error"
                 :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'"
-                aria-label="{{ __('تسجيل الخروج') }}">
+                aria-label="{{ __('تسجيل الخروج') }}" title="{{ __('تسجيل الخروج') }}">
                 <span class="material-symbols-outlined flex-shrink-0 rtl:-scale-x-100">logout</span>
                 <span :class="collapsed && 'lg:hidden'">{{ __('تسجيل الخروج') }}</span>
             </button>
@@ -257,7 +257,7 @@
                     @mouseenter="showTipBelow($el, @js(__('لوحة التحكم')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('لوحة التحكم')))" @blur="hideTip()"
                     class="hidden h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary sm:flex"
-                    aria-label="{{ __('لوحة التحكم') }}">
+                    aria-label="{{ __('لوحة التحكم') }}" title="{{ __('لوحة التحكم') }}">
                     <span class="material-symbols-outlined">space_dashboard</span>
                 </a>
 
@@ -267,7 +267,7 @@
                     @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
                     class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    aria-label="{{ __('تغيير اللغة') }}">
+                    aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
                     {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                 </a>
 
@@ -286,7 +286,7 @@
                         @mouseenter="showTipBelow($el, @js(__('حساب المشرف')))" @mouseleave="hideTip()"
                         class="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-surface-container-high"
                         :aria-expanded="open.toString()" aria-haspopup="menu"
-                        aria-label="{{ __('حساب المشرف') }}">
+                        aria-label="{{ __('حساب المشرف') }}" title="{{ __('حساب المشرف') }}">
                         <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">
                             {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                         </span>

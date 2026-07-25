@@ -47,7 +47,7 @@
                         <option value="{{ $package->id }}" @selected(($packageId ?? '') === $package->id)>{{ $package->name }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high" aria-label="{{ __('تصفية') }}">
+                <button type="submit" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
                     <span class="material-symbols-outlined">filter_alt</span>
                 </button>
             </div>
@@ -77,14 +77,14 @@
                                         </a>
                                         @if (in_array($license->status->value, ['active', 'trial']))
                                             <form method="POST" action="{{ route('admin.licenses.suspend', $license->id) }}" id="suspend-{{ $license->id }}">@csrf</form>
-                                            <button type="button" aria-label="{{ __('تعليق') }}"
+                                            <button type="button" aria-label="{{ __('تعليق') }}" title="{{ __('تعليق') }}"
                                                 @click="confirmOpen = true; confirmMessage = '{{ __('تعليق هذا الترخيص؟') }}'; confirmFormId = 'suspend-{{ $license->id }}'; confirmTitle = '{{ __('تأكيد التعليق') }}'; confirmLabel = '{{ __('تعليق') }}'"
                                                 class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                                 <span class="material-symbols-outlined !text-xl">pause_circle</span>
                                             </button>
                                         @else
                                             <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex">@csrf
-                                                <button type="submit" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary" aria-label="{{ __('تفعيل') }}">
+                                                <button type="submit" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
                                                     <span class="material-symbols-outlined !text-xl">play_circle</span>
                                                 </button>
                                             </form>
@@ -109,14 +109,14 @@
                                     </a>
                                     @if (in_array($license->status->value, ['active', 'trial']))
                                         <form method="POST" action="{{ route('admin.licenses.suspend', $license->id) }}" id="suspend-card-{{ $license->id }}">@csrf</form>
-                                        <button type="button" aria-label="{{ __('تعليق') }}"
+                                        <button type="button" aria-label="{{ __('تعليق') }}" title="{{ __('تعليق') }}"
                                             @click="confirmOpen = true; confirmMessage = '{{ __('تعليق هذا الترخيص؟') }}'; confirmFormId = 'suspend-card-{{ $license->id }}'; confirmTitle = '{{ __('تأكيد التعليق') }}'; confirmLabel = '{{ __('تعليق') }}'"
                                             class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error">
                                             <span class="material-symbols-outlined !text-lg">pause_circle</span>
                                         </button>
                                     @else
                                         <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex">@csrf
-                                            <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/10 hover:text-primary" aria-label="{{ __('تفعيل') }}">
+                                            <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/10 hover:text-primary" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
                                                 <span class="material-symbols-outlined !text-lg">play_circle</span>
                                             </button>
                                         </form>
