@@ -8,28 +8,98 @@
     // the brief over the current Angular snapshot per this task's
     // instructions). `permission: null` means always visible, exactly like
     // Dashboard/History/Reports/Settings/Help in the Angular version.
-    $navItems = [
-        ['href' => route('dashboard'), 'icon' => 'dashboard', 'label' => 'لوحة التحكم', 'match' => 'dashboard', 'permission' => null],
-        ['href' => '/transfers', 'icon' => 'send', 'label' => 'طلب جديد', 'match' => 'transfers*', 'permission' => \App\Enums\PermissionKey::TransfersCreate],
-        ['href' => '/history', 'icon' => 'history', 'label' => 'السجل', 'match' => 'history*', 'permission' => null],
-        ['href' => '/customers', 'icon' => 'contacts', 'label' => 'العملاء', 'match' => 'customers*', 'permission' => null],
-        ['href' => '/banks', 'icon' => 'account_balance', 'label' => 'البنوك والمحافظ', 'match' => 'banks*', 'permission' => \App\Enums\PermissionKey::BanksManage],
-        ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => 'قائمة الطعام', 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage],
-        ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
-        ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
-        ['href' => '/constants', 'icon' => 'tune', 'label' => 'الثوابت', 'match' => 'constants*', 'permission' => \App\Enums\PermissionKey::ConstantsManage],
-        ['href' => '/team', 'icon' => 'group', 'label' => 'الفريق', 'match' => 'team*', 'permission' => \App\Enums\PermissionKey::TeamManage],
-        ['href' => '/devices', 'icon' => 'devices', 'label' => 'الأجهزة', 'match' => 'devices*', 'permission' => \App\Enums\PermissionKey::DevicesManage],
-        ['href' => '/activity-log', 'icon' => 'fact_check', 'label' => 'سجل النشاطات', 'match' => 'activity-log*', 'permission' => null],
-        ['href' => '/settings', 'icon' => 'settings', 'label' => 'الإعدادات', 'match' => 'settings*', 'permission' => null],
-        ['href' => '/help', 'icon' => 'help', 'label' => 'المساعدة', 'match' => 'help*', 'permission' => null],
+    // Grouped for the same reason as the admin rail: 14 flat entries are hard to
+    // scan. Groups whose every item is permission-filtered away are dropped
+    // entirely, so a Staff member never sees an empty heading.
+    $navGroups = [
+        [
+            'label' => 'عام',
+            'items' => [
+                ['href' => route('dashboard'), 'icon' => 'dashboard', 'label' => 'لوحة التحكم', 'match' => 'dashboard', 'permission' => null],
+                ['href' => '/transfers', 'icon' => 'send', 'label' => 'طلب جديد', 'match' => 'transfers*', 'permission' => \App\Enums\PermissionKey::TransfersCreate],
+                ['href' => '/history', 'icon' => 'history', 'label' => 'السجل', 'match' => 'history*', 'permission' => null],
+                ['href' => '/customers', 'icon' => 'contacts', 'label' => 'العملاء', 'match' => 'customers*', 'permission' => null],
+            ],
+        ],
+        [
+            'label' => 'الإدارة',
+            'items' => [
+                ['href' => '/banks', 'icon' => 'account_balance', 'label' => 'البنوك والمحافظ', 'match' => 'banks*', 'permission' => \App\Enums\PermissionKey::BanksManage],
+                ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => 'قائمة الطعام', 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage],
+                ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
+                ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
+            ],
+        ],
+        [
+            'label' => 'النظام',
+            'items' => [
+                ['href' => '/constants', 'icon' => 'tune', 'label' => 'الثوابت', 'match' => 'constants*', 'permission' => \App\Enums\PermissionKey::ConstantsManage],
+                ['href' => '/team', 'icon' => 'group', 'label' => 'الفريق', 'match' => 'team*', 'permission' => \App\Enums\PermissionKey::TeamManage],
+                ['href' => '/devices', 'icon' => 'devices', 'label' => 'الأجهزة', 'match' => 'devices*', 'permission' => \App\Enums\PermissionKey::DevicesManage],
+                ['href' => '/activity-log', 'icon' => 'fact_check', 'label' => 'سجل النشاطات', 'match' => 'activity-log*', 'permission' => null],
+                ['href' => '/settings', 'icon' => 'settings', 'label' => 'الإعدادات', 'match' => 'settings*', 'permission' => null],
+                ['href' => '/help', 'icon' => 'help', 'label' => 'المساعدة', 'match' => 'help*', 'permission' => null],
+            ],
+        ],
     ];
 
-    $visibleNav = array_filter($navItems, fn ($item) => ! $item['permission'] || $member?->hasPermission($item['permission']));
+    $visibleGroups = [];
+    foreach ($navGroups as $group) {
+        $items = array_values(array_filter(
+            $group['items'],
+            fn ($item) => ! $item['permission'] || $member?->hasPermission($item['permission']),
+        ));
+
+        if ($items !== []) {
+            $visibleGroups[] = ['label' => $group['label'], 'items' => $items];
+        }
+    }
+
+    // Drives the header breadcrumb, resolved from the same table as the nav.
+    $currentSection = null;
+    $currentGroup = null;
+    foreach ($visibleGroups as $group) {
+        foreach ($group['items'] as $item) {
+            if (request()->is($item['match'])) {
+                $currentSection = $item;
+                $currentGroup = $group['label'];
+                break 2;
+            }
+        }
+    }
+
+    $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar';
 @endphp
-@php $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar'; @endphp
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}" x-data="{ dark: localStorage.getItem('theme') === 'dark', sidebarOpen: false, confirmOpen: false, confirmMessage: '', confirmFormId: null, confirmTitle: '', confirmLabel: '' }" x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)" :class="{ dark: dark }">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}"     x-data="{
+        dark: localStorage.getItem('theme') === 'dark',
+        sidebarOpen: false,
+        collapsed: localStorage.getItem('tenantSidebarCollapsed') === '1',
+        confirmOpen: false, confirmMessage: '', confirmFormId: null, confirmTitle: '', confirmLabel: '',
+        tipText: '', tipTop: 0, tipLeft: 0, tipPlacement: 'side',
+        showTip(el, text) {
+            if (!window.matchMedia('(min-width: 1024px)').matches) return;
+            const r = el.getBoundingClientRect();
+            this.tipTop = r.top + r.height / 2;
+            this.tipPlacement = 'side';
+            this.tipText = text;
+        },
+        showTipBelow(el, text) {
+            if (!window.matchMedia('(pointer: fine)').matches) return;
+            const r = el.getBoundingClientRect();
+            this.tipTop = r.bottom + 10;
+            this.tipLeft = r.left + r.width / 2;
+            this.tipPlacement = 'below';
+            this.tipText = text;
+        },
+        hideTip() { this.tipText = ''; },
+    }"
+    x-init="
+        $watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') });
+        document.documentElement.classList.toggle('dark', dark);
+        $watch('collapsed', v => { localStorage.setItem('tenantSidebarCollapsed', v ? '1' : '0'); tipText = '' });
+    "
+    :class="{ dark: dark }">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -47,61 +117,113 @@
     <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-black/30 lg:hidden" @click="sidebarOpen = false" style="display:none"></div>
 
     <aside
-        class="fixed start-0 top-0 z-50 flex h-screen w-64 flex-col border-e border-outline-variant bg-surface-container-low px-inline-md py-stack-md shadow-sm transition-transform duration-300 lg:!translate-x-0"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'">
-        <div class="mb-10 flex items-center gap-3 px-4">
-            <x-logo />
-            <div class="min-w-0">
-                <span class="block font-display-lg text-2xl font-bold leading-tight text-primary">{{ __('حوالاتي') }}</span>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">{{ __('تحويلاتي') }}</p>
+        class="fixed start-0 top-0 z-50 flex h-screen w-64 flex-col border-e border-sidebar-border bg-sidebar py-stack-md shadow-xl transition-[transform,width] duration-300 lg:!translate-x-0"
+        :class="[
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
+            collapsed ? 'lg:w-[5.5rem]' : 'lg:w-64',
+        ]">
+
+        <div class="mb-6 flex items-center gap-3 px-inline-md" :class="collapsed && 'lg:justify-center lg:px-2'">
+            <a href="{{ route('dashboard') }}"
+                @mouseenter="showTip($el, @js(__('حوالاتي')))" @mouseleave="hideTip()"
+                @focus="showTip($el, @js(__('حوالاتي')))" @blur="hideTip()"
+                class="flex-shrink-0 rounded-xl transition-transform duration-200 hover:scale-105 active:scale-95"
+                aria-label="{{ __('حوالاتي') }}">
+                <x-logo />
+            </a>
+            <div class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
+                <span class="block font-display-lg text-2xl font-bold leading-tight text-on-sidebar">{{ __('حوالاتي') }}</span>
+                <p class="font-body-sm text-body-sm text-on-sidebar-muted">{{ __('تحويلاتي') }}</p>
             </div>
+            <button type="button" @click="collapsed = !collapsed"
+                @mouseenter="showTip($el, @js(__('طي القائمة')))" @mouseleave="hideTip()"
+                @focus="showTip($el, @js(__('طي القائمة')))" @blur="hideTip()"
+                class="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-hover text-on-sidebar-muted shadow-sm transition-all duration-200 hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar hover:shadow-md active:scale-90 lg:flex"
+                :class="collapsed && 'lg:hidden'"
+                aria-label="{{ __('طي القائمة') }}" :aria-expanded="(!collapsed).toString()">
+                <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">left_panel_close</span>
+            </button>
         </div>
 
-        <nav class="flex-1 space-y-2 overflow-y-auto">
-            @foreach ($visibleNav as $item)
-                @php $isActive = request()->is($item['match']); @endphp
-                <a
-                    href="{{ $item['href'] }}"
-                    class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-primary bg-surface-container-high font-bold text-primary' : 'border-transparent text-on-surface-variant hover:bg-surface-container-highest' }}">
-                    <span class="material-symbols-outlined {{ $item['icon'] === 'send' ? 'rtl:-scale-x-100' : '' }}" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
-                    <span>{{ __($item['label']) }}</span>
-                </a>
+        <div class="mb-2 hidden justify-center px-2" :class="collapsed ? 'lg:flex' : 'lg:hidden'">
+            <button type="button" @click="collapsed = !collapsed"
+                @mouseenter="showTip($el, @js(__('توسيع القائمة')))" @mouseleave="hideTip()"
+                @focus="showTip($el, @js(__('توسيع القائمة')))" @blur="hideTip()"
+                class="flex h-10 w-10 items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-hover text-on-sidebar-muted shadow-sm transition-all duration-200 hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar hover:shadow-md active:scale-90"
+                aria-label="{{ __('توسيع القائمة') }}">
+                <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">left_panel_open</span>
+            </button>
+        </div>
+
+        <nav class="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-inline-md" :class="collapsed && 'lg:px-2'">
+            @foreach ($visibleGroups as $group)
+                <p class="px-4 pb-1 pt-4 font-label-caps text-label-caps uppercase tracking-wider text-on-sidebar-muted"
+                    :class="collapsed && 'lg:hidden'">{{ __($group['label']) }}</p>
+                <div class="mx-3 hidden border-t border-sidebar-border" :class="collapsed ? 'lg:mt-3 lg:block' : 'lg:hidden'"></div>
+
+                @foreach ($group['items'] as $item)
+                    @php $isActive = request()->is($item['match']); @endphp
+                    <a
+                        href="{{ $item['href'] }}"
+                        @if ($isActive) aria-current="page" @endif
+                        @mouseenter="showTip($el, @js(__($item['label'])))" @mouseleave="hideTip()"
+                        @focus="showTip($el, @js(__($item['label'])))" @blur="hideTip()"
+                        class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-sidebar-accent bg-sidebar-active font-bold text-white' : 'border-transparent text-on-sidebar-muted hover:bg-sidebar-hover hover:text-on-sidebar' }}"
+                        :class="collapsed && 'lg:justify-center lg:gap-0 lg:border-s-0 lg:border-e-4 lg:px-0'">
+                        <span class="material-symbols-outlined flex-shrink-0 {{ $item['icon'] === 'send' ? 'rtl:-scale-x-100' : '' }}" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
+                        <span class="truncate" :class="collapsed && 'lg:hidden'">{{ __($item['label']) }}</span>
+                    </a>
+                @endforeach
             @endforeach
         </nav>
 
-        <div class="mt-auto border-t border-outline-variant pt-6">
+        <div class="mt-auto border-t border-sidebar-border px-inline-md pt-4" :class="collapsed && 'lg:px-2'">
             @if ($member?->hasPermission(\App\Enums\PermissionKey::TransfersCreate))
                 <a
                     href="/transfers"
-                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container px-4 py-3 font-bold text-on-secondary-fixed shadow-lg transition-transform active:scale-95">
-                    <span class="material-symbols-outlined">add</span>
-                    <span>{{ __('طلب جديد') }}</span>
+                    @mouseenter="showTip($el, @js(__('طلب جديد')))" @mouseleave="hideTip()"
+                    class="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container px-4 py-3 font-bold text-on-secondary-fixed shadow-lg transition-transform active:scale-95"
+                    :class="collapsed && 'lg:px-0'"
+                    aria-label="{{ __('طلب جديد') }}">
+                    <span class="material-symbols-outlined flex-shrink-0">add</span>
+                    <span :class="collapsed && 'lg:hidden'">{{ __('طلب جديد') }}</span>
                 </a>
             @endif
 
-            <div class="mt-6 flex items-center gap-3 px-2">
-                <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">
+            {{-- Identity on its own row so a long name has the full rail to
+                 truncate into, rather than sharing it with the logout button. --}}
+            <a href="/settings"
+                @mouseenter="showTip($el, @js($member?->name ?? ''))" @mouseleave="hideTip()"
+                class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-sidebar-hover"
+                :class="collapsed && 'lg:justify-center lg:p-1'"
+                title="{{ __('الإعدادات') }}">
+                <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-sidebar-accent/15 font-bold text-sidebar-accent ring-1 ring-sidebar-accent/30">
                     {{ $member ? mb_substr($member->name, 0, 1) : '?' }}
-                </div>
-                <div class="min-w-0 flex-1 overflow-hidden">
-                    <p class="truncate text-sm font-bold">{{ $member?->name }}</p>
-                    <p class="truncate text-xs text-on-surface-variant">{{ $member?->email }}</p>
-                </div>
-                {{-- Confirmed: an accidental click here drops unsaved work and forces
-                     the operator to re-enter the license code to get back in. --}}
-                <form method="POST" action="{{ route('logout') }}" id="tenant-logout-form">@csrf</form>
-                <button
-                    type="button"
-                    @click="confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'tenant-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
-                    class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
-                    aria-label="{{ __('تسجيل الخروج') }}">
-                    <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
-                </button>
-            </div>
+                </span>
+                <span class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
+                    <span class="block truncate font-body-sm text-body-sm font-bold text-on-sidebar" dir="auto">{{ $member?->name }}</span>
+                    <span class="block truncate font-body-sm text-[11px] text-on-sidebar-muted" dir="ltr">{{ $member?->email }}</span>
+                </span>
+            </a>
+
+            {{-- Confirmed: an accidental click here drops unsaved work and forces
+                 the operator to re-enter the license code to get back in. --}}
+            <form method="POST" action="{{ route('logout') }}" id="tenant-logout-form">@csrf</form>
+            <button
+                type="button"
+                @click="confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'tenant-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
+                @mouseenter="showTip($el, @js(__('تسجيل الخروج')))" @mouseleave="hideTip()"
+                @focus="showTip($el, @js(__('تسجيل الخروج')))" @blur="hideTip()"
+                class="mt-1 flex w-full items-center gap-3 rounded-xl px-2 py-2.5 font-body-sm font-bold text-on-sidebar-muted transition-colors hover:bg-error/20 hover:text-error"
+                :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'"
+                aria-label="{{ __('تسجيل الخروج') }}">
+                <span class="material-symbols-outlined flex-shrink-0 rtl:-scale-x-100">logout</span>
+                <span :class="collapsed && 'lg:hidden'">{{ __('تسجيل الخروج') }}</span>
+            </button>
         </div>
     </aside>
 
-    <div class="flex min-h-screen flex-col lg:ms-64">
+    <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface px-inline-lg">
             <div class="flex flex-1 items-center gap-3">
                 <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}">
@@ -218,9 +340,7 @@
             @yield('content')
         </main>
 
-        <footer class="mt-auto border-t border-outline-variant/40 p-6 text-center text-body-sm text-outline">
-            <p>{{ __('© 2026 حوالاتي. جميع الحقوق محفوظة. مرخّص من قبل البنك المركزي.') }}</p>
-        </footer>
+        <x-app-footer />
     </div>
 
     {{-- Layout-level so the sidebar's logout can reach it from any page; pages

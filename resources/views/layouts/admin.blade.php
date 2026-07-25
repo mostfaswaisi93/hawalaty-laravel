@@ -198,7 +198,7 @@
                 class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-sidebar-hover"
                 :class="collapsed && 'lg:justify-center lg:p-1'"
                 title="{{ __('الملف الشخصي') }}">
-                <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-sidebar-accent font-bold text-sidebar">
+                <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-sidebar-accent/15 font-bold text-sidebar-accent ring-1 ring-sidebar-accent/30">
                     {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                 </span>
                 {{-- dir=auto so a Latin name ellipsises at its own end rather than
@@ -353,9 +353,7 @@
             @yield('content')
         </main>
 
-        <footer class="mt-auto border-t border-outline-variant/40 p-6 text-center text-body-sm text-outline">
-            <p>{{ __('© 2026 حوالاتي - لوحة تحكم المنصّة.') }}</p>
-        </footer>
+        <x-app-footer />
     </div>
 
     {{-- Layout-level so the sidebar's logout can reach it from any page. Pages
