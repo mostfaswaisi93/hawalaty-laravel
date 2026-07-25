@@ -103,7 +103,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', __('لوحة التحكم — حوالاتي'))</title>
+    <title>@yield('title', __('لوحة التحكم - حوالاتي'))</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -354,7 +354,7 @@
         </main>
 
         <footer class="mt-auto border-t border-outline-variant/40 p-6 text-center text-body-sm text-outline">
-            <p>{{ __('© 2026 حوالاتي — لوحة تحكم المنصّة.') }}</p>
+            <p>{{ __('© 2026 حوالاتي - لوحة تحكم المنصّة.') }}</p>
         </footer>
     </div>
 

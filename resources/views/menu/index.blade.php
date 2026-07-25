@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('قائمة الطعام — حوالاتي'))
+@section('title', __('قائمة الطعام - حوالاتي'))
 
 @section('content')
     {{--

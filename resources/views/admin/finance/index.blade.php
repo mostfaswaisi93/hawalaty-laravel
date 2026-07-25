@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('المالية — حوالاتي'))
+@section('title', __('المالية - حوالاتي'))
 
 @section('content')
     @php $totalBoxBalance = collect($summary['boxes'])->sum('balance'); @endphp

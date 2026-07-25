@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', __('محاولات كثيرة — حوالاتي'))
+@section('title', __('محاولات كثيرة - حوالاتي'))
 
 @section('content')
     <section class="mx-auto flex w-full items-center justify-center px-inline-md py-16 lg:col-span-2">

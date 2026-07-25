@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', __('الصفحة غير موجودة — حوالاتي'))
+@section('title', __('الصفحة غير موجودة - حوالاتي'))
 
 @section('content')
     <section class="mx-auto flex w-full items-center justify-center px-inline-md py-16 lg:col-span-2">

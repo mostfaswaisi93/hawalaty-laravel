@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('الإعدادات — حوالاتي'))
+@section('title', __('الإعدادات - حوالاتي'))
 
 @section('content')
     @php

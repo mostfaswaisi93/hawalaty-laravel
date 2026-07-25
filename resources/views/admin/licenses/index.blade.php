@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('التراخيص — حوالاتي'))
+@section('title', __('التراخيص - حوالاتي'))
 
 @php
     $statusMap = [

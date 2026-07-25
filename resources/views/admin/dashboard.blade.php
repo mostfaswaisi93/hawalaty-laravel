@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('لوحة تحكم المنصّة — حوالاتي'))
+@section('title', __('لوحة تحكم المنصّة - حوالاتي'))
 
 @php
     // Neutral enum/action codes are stored in the DB and translated only here —

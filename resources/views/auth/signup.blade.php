@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', __('إنشاء حساب — حوالاتي'))
+@section('title', __('إنشاء حساب - حوالاتي'))
 
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">

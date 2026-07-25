@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', __('تسجيل الدخول — حوالاتي'))
+@section('title', __('تسجيل الدخول - حوالاتي'))
 
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">

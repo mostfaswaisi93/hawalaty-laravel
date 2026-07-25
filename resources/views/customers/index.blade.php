@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('العملاء — حوالاتي'))
+@section('title', __('العملاء - حوالاتي'))
 
 @section('content')
     <div class="page-enter space-y-6">

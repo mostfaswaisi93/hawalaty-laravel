@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('الملف الشخصي — حوالاتي'))
+@section('title', __('الملف الشخصي - حوالاتي'))
 
 @section('content')
     <div class="page-enter space-y-6" x-data="{ submitting: false }">

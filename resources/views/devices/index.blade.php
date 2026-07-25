@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('الأجهزة — حوالاتي'))
+@section('title', __('الأجهزة - حوالاتي'))
 
 @section('content')
     <div class="page-enter space-y-6" x-data="{ confirmOpen: false, confirmMessage: '', confirmFormId: null }">

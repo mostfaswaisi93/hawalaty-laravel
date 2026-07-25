@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('الثوابت — حوالاتي'))
+@section('title', __('الثوابت - حوالاتي'))
 
 @section('content')
     <div class="page-enter space-y-6" x-data="{ listOpen: {{ $errors->has('title') ? 'true' : 'false' }}, submitting: false, confirmOpen: false, confirmMessage: '', confirmFormId: null }">

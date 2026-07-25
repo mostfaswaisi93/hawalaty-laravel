@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('البنوك والمحافظ — حوالاتي'))
+@section('title', __('البنوك والمحافظ - حوالاتي'))
 
 @section('content')
     <div class="page-enter space-y-6"

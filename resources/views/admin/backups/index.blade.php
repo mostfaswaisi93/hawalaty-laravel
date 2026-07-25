@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('النسخ الاحتياطي — حوالاتي'))
+@section('title', __('النسخ الاحتياطي - حوالاتي'))
 
 @php
     $backupStatus = [
