@@ -116,7 +116,7 @@
     <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-black/30 lg:hidden" @click="sidebarOpen = false" style="display:none"></div>
 
     <aside
-        class="fixed start-0 top-0 z-50 flex h-screen w-64 flex-col border-e border-outline-variant bg-surface-container-low py-stack-md shadow-sm transition-[transform,width] duration-300 lg:!translate-x-0"
+        class="fixed start-0 top-0 z-50 flex h-screen w-64 flex-col border-e border-sidebar-border bg-sidebar py-stack-md shadow-xl transition-[transform,width] duration-300 lg:!translate-x-0"
         :class="[
             sidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
             collapsed ? 'lg:w-[5.5rem]' : 'lg:w-64',
@@ -134,15 +134,15 @@
                 <x-logo />
             </a>
             <div class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
-                <span class="block font-display-lg text-2xl font-bold leading-tight text-primary">{{ __('حوالاتي') }}</span>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">{{ __('المشرف العام') }}</p>
+                <span class="block font-display-lg text-2xl font-bold leading-tight text-on-sidebar">{{ __('حوالاتي') }}</span>
+                <p class="font-body-sm text-body-sm text-on-sidebar-muted">{{ __('المشرف العام') }}</p>
             </div>
             {{-- Given a container, border and fill-on-hover so it reads as a real
                  control rather than a stray glyph next to the brand. --}}
             <button type="button" @click="collapsed = !collapsed"
                 @mouseenter="showTip($el, @js(__('طي القائمة')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('طي القائمة')))" @blur="hideTip()"
-                class="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container text-on-surface-variant shadow-sm transition-all duration-200 hover:border-primary hover:bg-primary hover:text-on-primary hover:shadow-md active:scale-90 lg:flex"
+                class="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-hover text-on-sidebar-muted shadow-sm transition-all duration-200 hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar hover:shadow-md active:scale-90 lg:flex"
                 :class="collapsed && 'lg:hidden'"
                 aria-label="{{ __('طي القائمة') }}" title="{{ __('طي القائمة') }}" :aria-expanded="(!collapsed).toString()">
                 <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">left_panel_close</span>
@@ -155,7 +155,7 @@
             <button type="button" @click="collapsed = !collapsed"
                 @mouseenter="showTip($el, @js(__('توسيع القائمة')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('توسيع القائمة')))" @blur="hideTip()"
-                class="flex h-10 w-10 items-center justify-center rounded-xl border border-outline-variant bg-surface-container text-on-surface-variant shadow-sm transition-all duration-200 hover:border-primary hover:bg-primary hover:text-on-primary hover:shadow-md active:scale-90"
+                class="flex h-10 w-10 items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-hover text-on-sidebar-muted shadow-sm transition-all duration-200 hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar hover:shadow-md active:scale-90"
                 aria-label="{{ __('توسيع القائمة') }}" title="{{ __('توسيع القائمة') }}">
                 <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">left_panel_open</span>
             </button>
@@ -165,12 +165,12 @@
              x axis to `auto` and show a stray horizontal scrollbar. --}}
         <nav class="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-inline-md" :class="collapsed && 'lg:px-2'">
             @foreach ($navGroups as $group)
-                <p class="px-4 pb-1 pt-4 font-label-caps text-label-caps uppercase tracking-wider text-outline"
+                <p class="px-4 pb-1 pt-4 font-label-caps text-label-caps uppercase tracking-wider text-on-sidebar-muted"
                     :class="collapsed && 'lg:hidden'">{{ __($group['label']) }}</p>
 
                 {{-- Collapsed: a hairline stands in for the hidden group heading so
                      the three blocks stay visually separated in the icon rail. --}}
-                <div class="mx-3 hidden border-t border-outline-variant/60" :class="collapsed ? 'lg:mt-3 lg:block' : 'lg:hidden'"></div>
+                <div class="mx-3 hidden border-t border-sidebar-border" :class="collapsed ? 'lg:mt-3 lg:block' : 'lg:hidden'"></div>
 
                 @foreach ($group['items'] as $item)
                     @php $isActive = request()->is($item['match']); @endphp
@@ -179,7 +179,7 @@
                         @if ($isActive) aria-current="page" @endif
                         @mouseenter="showTip($el, @js(__($item['label'])))" @mouseleave="hideTip()"
                         @focus="showTip($el, @js(__($item['label'])))" @blur="hideTip()"
-                        class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-primary bg-surface-container-high font-bold text-primary' : 'border-transparent text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface' }}"
+                        class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-sidebar-accent bg-sidebar-active font-bold text-white' : 'border-transparent text-on-sidebar-muted hover:bg-sidebar-hover hover:text-on-sidebar' }}"
                         :class="collapsed && 'lg:justify-center lg:gap-0 lg:border-s-0 lg:border-e-4 lg:px-0'">
                         <span class="material-symbols-outlined flex-shrink-0" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
                         <span class="truncate" :class="collapsed && 'lg:hidden'">{{ __($item['label']) }}</span>
@@ -191,21 +191,21 @@
         {{-- Identity and sign-out are stacked rather than crammed into one row:
              sharing the row with the logout button left the name ~110px and it
              truncated to "...tform Admin". On its own row it gets the full rail. --}}
-        <div class="mt-auto border-t border-outline-variant px-inline-md pt-4" :class="collapsed && 'lg:px-2'">
+        <div class="mt-auto border-t border-sidebar-border px-inline-md pt-4" :class="collapsed && 'lg:px-2'">
             <a href="{{ route('admin.profile.index') }}"
                 @mouseenter="showTip($el, @js($admin?->name ?? ''))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js($admin?->name ?? ''))" @blur="hideTip()"
-                class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-surface-container-high"
+                class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-sidebar-hover"
                 :class="collapsed && 'lg:justify-center lg:p-1'"
                 title="{{ __('الملف الشخصي') }}">
-                <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">
+                <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-sidebar-accent font-bold text-sidebar">
                     {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                 </span>
                 {{-- dir=auto so a Latin name ellipsises at its own end rather than
                      having the RTL container push the "…" to the visual start. --}}
                 <span class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
-                    <span class="block truncate font-body-sm text-body-sm font-bold text-on-surface" dir="auto">{{ $admin?->name }}</span>
-                    <span class="block truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $admin?->email }}</span>
+                    <span class="block truncate font-body-sm text-body-sm font-bold text-on-sidebar" dir="auto">{{ $admin?->name }}</span>
+                    <span class="block truncate font-body-sm text-[11px] text-on-sidebar-muted" dir="ltr">{{ $admin?->email }}</span>
                 </span>
             </a>
 
@@ -216,7 +216,7 @@
                 @click="confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'admin-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
                 @mouseenter="showTip($el, @js(__('تسجيل الخروج')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('تسجيل الخروج')))" @blur="hideTip()"
-                class="mt-1 flex w-full items-center gap-3 rounded-xl px-2 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error"
+                class="mt-1 flex w-full items-center gap-3 rounded-xl px-2 py-2.5 font-body-sm font-bold text-on-sidebar-muted transition-colors hover:bg-error/20 hover:text-error"
                 :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'"
                 aria-label="{{ __('تسجيل الخروج') }}">
                 <span class="material-symbols-outlined flex-shrink-0 rtl:-scale-x-100">logout</span>
@@ -298,23 +298,23 @@
                         role="menu">
                         {{-- Identity header: avatar + name + role, on a tinted panel so it
                              reads as context rather than a fourth menu row. --}}
-                        <div class="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low p-4">
-                            <span class="grid h-11 w-11 flex-shrink-0 place-items-center rounded-full bg-primary-container font-display-lg text-lg font-bold text-on-primary-container">
+                        <div class="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low p-3">
+                            <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-body-lg text-base font-bold text-on-primary-container">
                                 {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                             </span>
                             <span class="min-w-0 flex-1">
-                                <span class="block truncate font-body-sm text-body-sm font-bold text-on-surface" dir="auto">{{ $admin?->name }}</span>
-                                <span class="block truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $admin?->email }}</span>
+                                <span class="block truncate font-body-sm text-body-sm font-bold text-on-sidebar" dir="auto">{{ $admin?->name }}</span>
+                                <span class="block truncate font-body-sm text-[11px] text-on-sidebar-muted" dir="ltr">{{ $admin?->email }}</span>
                             </span>
                         </div>
 
                         {{-- Items are inset and individually rounded so the hover state is a
                              contained pill rather than a full-bleed band. The icon sits in its
                              own chip, and a chevron fades in on hover to signal navigation. --}}
-                        <div class="p-2">
+                        <div class="p-1.5">
                             <a href="{{ route('admin.profile.index') }}" role="menuitem"
-                                class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
-                                <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                                class="group flex items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
+                                <span class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
                                     <span class="material-symbols-outlined !text-xl">person</span>
                                 </span>
                                 <span class="flex-1">{{ __('الملف الشخصي') }}</span>
@@ -322,8 +322,8 @@
                             </a>
 
                             <a href="{{ route('admin.settings.index') }}" role="menuitem"
-                                class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
-                                <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                                class="group flex items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
+                                <span class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
                                     <span class="material-symbols-outlined !text-xl">settings</span>
                                 </span>
                                 <span class="flex-1">{{ __('الإعدادات') }}</span>
@@ -336,8 +336,8 @@
                                  in the sidebar footer, referenced here by id. --}}
                             <button type="button" role="menuitem"
                                 @click="open = false; confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'admin-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
-                                class="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-body-sm text-body-sm font-bold text-error transition-colors hover:bg-error/10">
-                                <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg bg-error/10 text-error transition-colors group-hover:bg-error group-hover:text-on-error">
+                                class="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-error transition-colors hover:bg-error/10">
+                                <span class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-error/10 text-error transition-colors group-hover:bg-error group-hover:text-on-error">
                                     <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">logout</span>
                                 </span>
                                 <span class="flex-1 text-start">{{ __('تسجيل الخروج') }}</span>

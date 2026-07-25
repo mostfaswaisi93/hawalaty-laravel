@@ -104,6 +104,17 @@
        dark:bg-green-500/15 dark:text-green-300` identically in 8 places. */
     --color-success: rgb(var(--c-success));
     --color-success-container: rgb(var(--c-success-container));
+
+    /* The admin rail is intentionally semi-dark in BOTH themes, so it cannot
+       reuse the surface tokens (those invert). Its own namespace keeps the
+       contrast pairings explicit and lets dark mode deepen it a step. */
+    --color-sidebar: rgb(var(--c-sidebar));
+    --color-sidebar-hover: rgb(var(--c-sidebar-hover));
+    --color-sidebar-active: rgb(var(--c-sidebar-active));
+    --color-sidebar-border: rgb(var(--c-sidebar-border));
+    --color-on-sidebar: rgb(var(--c-on-sidebar));
+    --color-on-sidebar-muted: rgb(var(--c-on-sidebar-muted));
+    --color-sidebar-accent: rgb(var(--c-sidebar-accent));
 }
 
 :root {
@@ -164,6 +175,16 @@
     --c-success: 21 128 61;
     --c-success-container: 220 252 231;
 
+    /* Semi-dark navy rail, tuned to sit in the same family as --c-primary
+       (0 35 111) without competing with the light content area beside it. */
+    --c-sidebar: 19 27 45;
+    --c-sidebar-hover: 32 43 68;
+    --c-sidebar-active: 30 58 138;
+    --c-sidebar-border: 42 54 78;
+    --c-on-sidebar: 219 226 242;
+    --c-on-sidebar-muted: 148 161 189;
+    --c-sidebar-accent: 182 196 255;
+
     --app-font: 'Cairo', system-ui, sans-serif;
 }
 
@@ -211,6 +232,16 @@
        dark:bg-green-500/15 exactly). */
     --c-success: 134 239 172;
     --c-success-container: 34 197 94;
+
+    /* A step deeper than light mode so the rail still separates from the
+       already-dark content surface (--c-surface: 10 14 23). */
+    --c-sidebar: 15 20 32;
+    --c-sidebar-hover: 28 36 52;
+    --c-sidebar-active: 30 58 138;
+    --c-sidebar-border: 36 45 62;
+    --c-on-sidebar: 222 228 242;
+    --c-on-sidebar-muted: 141 152 178;
+    --c-sidebar-accent: 182 196 255;
 }
 
 html.lang-ar {
