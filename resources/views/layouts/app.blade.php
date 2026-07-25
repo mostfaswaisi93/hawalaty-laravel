@@ -169,7 +169,7 @@
                         @mouseenter="showTip($el, @js(__($item['label'])))" @mouseleave="hideTip()"
                         @focus="showTip($el, @js(__($item['label'])))" @blur="hideTip()"
                         class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-sidebar-accent bg-sidebar-active font-bold text-white' : 'border-transparent text-on-sidebar-muted hover:bg-sidebar-hover hover:text-on-sidebar' }}"
-                        :class="collapsed && 'lg:justify-center lg:gap-0 lg:border-s-0 lg:border-e-4 lg:px-0'">
+                        :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'">
                         <span class="material-symbols-outlined flex-shrink-0 {{ $item['icon'] === 'send' ? 'rtl:-scale-x-100' : '' }}" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
                         <span class="truncate" :class="collapsed && 'lg:hidden'">{{ __($item['label']) }}</span>
                     </a>
@@ -224,11 +224,25 @@
     </aside>
 
     <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
-        <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface px-inline-lg">
+        <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface/85 px-inline-lg backdrop-blur">
             <div class="flex flex-1 items-center gap-3">
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}">
+                <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
+
+                {{-- Breadcrumb: group › page, resolved from the same nav table as
+                     the sidebar so the two can never drift apart. --}}
+                @if ($currentSection)
+                    <nav class="hidden min-w-0 items-center gap-2 md:flex" aria-label="{{ __('مسار التنقل') }}">
+                        <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <span class="material-symbols-outlined !text-xl {{ $currentSection['icon'] === 'send' ? 'rtl:-scale-x-100' : '' }}">{{ $currentSection['icon'] }}</span>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block font-label-caps text-label-caps uppercase tracking-wider text-outline">{{ __($currentGroup) }}</span>
+                            <span class="block truncate font-headline-md text-body-lg font-bold text-on-surface">{{ __($currentSection['label']) }}</span>
+                        </span>
+                    </nav>
+                @endif
                 <div class="relative" x-data="globalSearch()" @click.outside="open = false">
                     {{-- desktop: inline pill with an anchored dropdown --}}
                     <div class="hidden w-full max-w-md items-center gap-2 rounded-full bg-surface-container px-4 py-1.5 transition-shadow sm:flex">
@@ -320,17 +334,82 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-1 border-s border-outline-variant ps-4 md:ps-6">
-                    <a href="{{ route('locale.switch', $otherLocale) }}" class="flex h-10 items-center gap-1.5 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تغيير اللغة') }}">
-                        <span class="material-symbols-outlined">translate</span>
-                        <span class="font-body-sm font-bold">{{ $otherLocale === 'en' ? 'EN' : 'ع' }}</span>
+                <div class="flex items-center gap-1 border-s border-outline-variant ps-3 md:ps-4">
+                    {{-- The locale code alone carries the meaning; the translate glyph
+                         beside it was pure duplication. --}}
+                    <a href="{{ route('locale.switch', $otherLocale) }}"
+                        @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
+                        @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
+                        class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                        aria-label="{{ __('تغيير اللغة') }}">
+                        {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                     </a>
-                    <button type="button" @click="dark = !dark" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تبديل المظهر') }}">
+                    <button type="button" @click="dark = !dark"
+                        @mouseenter="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @mouseleave="hideTip()"
+                        class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                        :aria-label="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'">
                         <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                     </button>
-                    <a href="/help" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('المساعدة') }}">
-                        <span class="material-symbols-outlined">help</span>
-                    </a>
+
+                    {{-- Account menu. Nested x-data so `open` is scoped to this widget. --}}
+                    <div class="relative ms-1" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                        <button type="button" @click="open = !open"
+                            @mouseenter="showTipBelow($el, @js(__('حسابي')))" @mouseleave="hideTip()"
+                            class="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-surface-container-high"
+                            :aria-expanded="open.toString()" aria-haspopup="menu" aria-label="{{ __('حسابي') }}">
+                            <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">
+                                {{ $member ? mb_substr($member->name, 0, 1) : '?' }}
+                            </span>
+                            <span class="material-symbols-outlined !text-lg text-on-surface-variant transition-transform" :class="open && 'rotate-180'">expand_more</span>
+                        </button>
+
+                        <div x-show="open" x-cloak style="display:none"
+                            class="absolute end-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                            role="menu">
+                            <div class="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low p-3">
+                                <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-body-lg text-base font-bold text-on-primary-container">
+                                    {{ $member ? mb_substr($member->name, 0, 1) : '?' }}
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate font-body-sm text-body-sm font-bold text-on-surface" dir="auto">{{ $member?->name }}</span>
+                                    <span class="block truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $member?->email }}</span>
+                                </span>
+                            </div>
+
+                            <div class="p-1.5">
+                                <a href="/settings" role="menuitem"
+                                    class="group flex items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
+                                    <span class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                                        <span class="material-symbols-outlined !text-xl">person</span>
+                                    </span>
+                                    <span class="flex-1">{{ __('الإعدادات') }}</span>
+                                    <span class="material-symbols-outlined !text-lg opacity-0 transition-opacity group-hover:opacity-100 rtl:-scale-x-100">chevron_right</span>
+                                </a>
+
+                                <a href="/help" role="menuitem"
+                                    class="group flex items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
+                                    <span class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-surface-container text-on-surface-variant transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                                        <span class="material-symbols-outlined !text-xl">help</span>
+                                    </span>
+                                    <span class="flex-1">{{ __('المساعدة') }}</span>
+                                    <span class="material-symbols-outlined !text-lg opacity-0 transition-opacity group-hover:opacity-100 rtl:-scale-x-100">chevron_right</span>
+                                </a>
+
+                                <div class="my-1 border-t border-outline-variant/60"></div>
+
+                                {{-- Reuses the layout-level confirm modal; the form lives in
+                                     the sidebar footer, referenced here by id. --}}
+                                <button type="button" role="menuitem"
+                                    @click="open = false; confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'tenant-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
+                                    class="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-error transition-colors hover:bg-error/10">
+                                    <span class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-error/10 text-error transition-colors group-hover:bg-error group-hover:text-on-error">
+                                        <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">logout</span>
+                                    </span>
+                                    <span class="flex-1 text-start">{{ __('تسجيل الخروج') }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>

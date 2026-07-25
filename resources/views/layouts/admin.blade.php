@@ -180,7 +180,7 @@
                         @mouseenter="showTip($el, @js(__($item['label'])))" @mouseleave="hideTip()"
                         @focus="showTip($el, @js(__($item['label'])))" @blur="hideTip()"
                         class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-sidebar-accent bg-sidebar-active font-bold text-white' : 'border-transparent text-on-sidebar-muted hover:bg-sidebar-hover hover:text-on-sidebar' }}"
-                        :class="collapsed && 'lg:justify-center lg:gap-0 lg:border-s-0 lg:border-e-4 lg:px-0'">
+                        :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'">
                         <span class="material-symbols-outlined flex-shrink-0" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
                         <span class="truncate" :class="collapsed && 'lg:hidden'">{{ __($item['label']) }}</span>
                     </a>
