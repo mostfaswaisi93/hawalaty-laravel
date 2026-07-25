@@ -9,12 +9,11 @@
         The panel is fixed-dark in both themes (like the sidebar rail), so its
         text uses literal white rather than the surface tokens, which invert.
     --}}
-    <section class="relative order-2 hidden overflow-hidden bg-gradient-to-br from-[#00236f] via-[#132a6b] to-[#1e3a8a] lg:flex lg:flex-col lg:justify-between lg:p-12">
-        {{-- Ambient depth: two slow-drifting blurred orbs + a faint grid. --}}
+    <section class="relative order-2 hidden overflow-hidden bg-primary-container lg:flex lg:flex-col lg:justify-between lg:p-12">
+        {{-- Ambient depth: two slow-drifting blurred orbs over the flat brand
+             navy. No gradient - the orbs alone carry the depth. --}}
         <div class="pointer-events-none absolute -start-24 -top-24 h-96 w-96 rounded-full bg-secondary-container/25 blur-3xl motion-safe:animate-[admin-orb_14s_ease-in-out_infinite]"></div>
         <div class="pointer-events-none absolute -bottom-32 -end-24 h-[28rem] w-[28rem] rounded-full bg-primary-fixed-dim/20 blur-3xl motion-safe:animate-[admin-orb_18s_ease-in-out_infinite_reverse]"></div>
-        <div class="pointer-events-none absolute inset-0 opacity-[0.07]"
-            style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 44px 44px;"></div>
 
         <div class="relative">
             <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 font-body-sm text-body-sm font-bold text-white backdrop-blur">
@@ -24,7 +23,7 @@
 
             <h2 class="mt-8 font-display-lg text-4xl font-bold leading-tight text-white xl:text-5xl">
                 {{ __('تحكّم كامل') }}<br>
-                <span class="bg-gradient-to-l from-secondary-fixed-dim to-white bg-clip-text text-transparent rtl:bg-gradient-to-r">
+                <span class="text-secondary-fixed-dim">
                     {{ __('في منصّتك') }}
                 </span>
             </h2>
@@ -117,9 +116,7 @@
                 <button
                     type="submit"
                     :disabled="submitting"
-                    class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
-                    {{-- Sheen sweep on hover; purely decorative. --}}
-                    <span class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"></span>
+                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
                     <span x-text="submitting ? @js(__('جارٍ الدخول...')) : @js(__('تسجيل الدخول'))">{{ __('تسجيل الدخول') }}</span>
                     <span class="material-symbols-outlined rtl:-scale-x-100" :class="submitting && 'animate-spin'"
                         x-text="submitting ? 'progress_activity' : 'login'">login</span>

@@ -100,7 +100,7 @@
 
                     <h1 class="mt-8 font-display-lg text-4xl font-bold leading-[1.1] tracking-tight text-on-surface sm:text-5xl md:text-6xl lg:text-[64px]">
                         {{ __('أدر مطعمك وحوالاتك') }}
-                        <span class="bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent">{{ __('من مكان واحد') }}</span>
+                        <span class="text-primary">{{ __('من مكان واحد') }}</span>
                     </h1>
 
                     <p class="mx-auto mt-7 max-w-2xl font-body-lg leading-relaxed text-on-surface-variant lg:mx-0">
@@ -125,7 +125,7 @@
 
                 {{-- floating dashboard preview --}}
                 <div class="reveal is-visible relative mx-auto w-full max-w-lg lg:mx-0 lg:max-w-none" aria-hidden="true">
-                    <div class="pointer-events-none absolute -inset-4 -z-10 hidden rounded-[2.5rem] bg-gradient-to-br from-primary-container/30 to-secondary-container/20 blur-2xl lg:block"></div>
+                    <div class="pointer-events-none absolute -inset-4 -z-10 hidden rounded-[2.5rem] bg-primary-container/25 blur-2xl lg:block"></div>
                     <div class="floaty glass-card w-full rounded-3xl p-7 sm:p-8">
                         <div class="flex items-start justify-between">
                             <div>
@@ -319,17 +319,18 @@
 
         {{-- ─────────────────────────  CTA BAND  ───────────────────────── --}}
         <section class="mx-auto max-w-7xl px-inline-md py-24 md:px-inline-lg md:py-32">
-            <div class="reveal relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#00236f] to-[#1e3a8a] px-8 py-16 text-center shadow-2xl sm:py-20 md:px-16 md:py-24">
+            <div class="reveal relative overflow-hidden rounded-[2rem] bg-primary-container px-8 py-16 text-center shadow-2xl sm:py-20 md:px-16 md:py-24">
                 <div class="pointer-events-none absolute -top-1/3 start-[-5%] h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
                 <div class="pointer-events-none absolute -bottom-1/2 end-[-5%] h-80 w-80 rounded-full bg-secondary-container/20 blur-3xl"></div>
                 <div class="relative">
                     <h2 class="font-display-lg text-3xl font-bold text-white sm:text-4xl md:text-5xl">{{ __('جاهز لتنمية عملك؟') }}</h2>
                     <p class="mx-auto mt-4 max-w-xl font-body-lg text-white/80">{{ __('انضم إلى الأعمال التي تدير طلباتها وحوالاتها باحترافية. جهّز مساحتك خلال دقائق.') }}</p>
                     <a href="{{ route('signup') }}"
-                        {{-- text-[#00236f] not text-primary: the band behind it is a FIXED dark gradient in
-                             both themes, but --c-primary flips to pale lavender in dark, which would land
-                             at ~1.5:1 on this white button. Pinned to the same navy the gradient starts at. --}}
-                        class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-[#00236f] shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]" title="{{ __('أنشئ حسابك المجاني') }}">
+                        {{-- Literal navy, not text-primary: the band behind it is FIXED dark in both
+                             themes, but --c-primary flips to pale lavender in dark, which would land
+                             at ~1.5:1 on this white button. Pinned to the band's own navy (#1e3a8a,
+                             the --c-primary-container value), which sits at ~11:1 on white. --}}
+                        class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-[#1e3a8a] shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]" title="{{ __('أنشئ حسابك المجاني') }}">
                         <span>{{ __('أنشئ حسابك المجاني') }}</span>
                         <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                     </a>

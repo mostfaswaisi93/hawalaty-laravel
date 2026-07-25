@@ -29,7 +29,7 @@
     <div class="page-enter space-y-8">
         <!-- Hero: revenue + quick actions -->
         <section class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div class="reveal-up group relative flex min-h-[240px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] to-[#1e3a8a] p-8 text-white shadow-xl lg:col-span-2">
+            <div class="reveal-up group relative flex min-h-[240px] flex-col justify-between overflow-hidden rounded-3xl bg-primary-container p-8 text-white shadow-xl lg:col-span-2">
                 <div class="relative z-10 flex items-start justify-between">
                     <div>
                         <p class="mb-2 font-body-sm text-body-sm text-white/80">{{ __('إجمالي الإيرادات') }}</p>

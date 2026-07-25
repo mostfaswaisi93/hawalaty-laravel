@@ -1,8 +1,10 @@
 {{--
     success/error are transient confirmations, so they float as a dismissible
-    toast pinned to the top-centre of the viewport and auto-close. Validation
-    errors deliberately stay inline: they refer to specific fields the user has
-    to go back and fix, so they must not disappear on a timer.
+    toast pinned to the bottom-centre of the viewport and auto-close. Bottom
+    rather than top so the toast never overlaps a page's own header/banner,
+    which is where the eye already is right after a save. Validation errors
+    deliberately stay inline: they refer to specific fields the user has to go
+    back and fix, so they must not disappear on a timer.
 
     `fixed` here is safe because this component renders from the layout, outside
     the `.page-enter` wrapper - see the note on .page-enter in app.css about
@@ -20,12 +22,12 @@
         x-cloak
         style="display:none"
         x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 -translate-y-4"
+        x-transition:enter-start="opacity-0 translate-y-4"
         x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 -translate-y-4"
-        class="fixed inset-x-0 top-6 z-[110] mx-auto flex w-fit max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border px-5 py-3 shadow-2xl backdrop-blur
+        x-transition:leave-end="opacity-0 translate-y-4"
+        class="fixed inset-x-0 bottom-6 z-[110] mx-auto flex w-fit max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border px-5 py-3 shadow-2xl backdrop-blur
             {{ $isSuccess
                 ? 'border-success/30 bg-success-container/95 text-success dark:bg-surface-container-high/95'
                 : 'border-error/30 bg-error-container/95 text-on-error-container dark:bg-surface-container-high/95' }}"

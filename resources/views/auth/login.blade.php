@@ -87,13 +87,11 @@
         Left-aligned and asymmetric on purpose: the previous centred stack read as a
         splash screen rather than as product framing beside the form.
     --}}
-    <section class="relative hidden overflow-hidden bg-gradient-to-br from-[#00236f] via-[#152c72] to-[#1e3a8a] p-inline-lg lg:flex lg:flex-col lg:justify-between">
-        {{-- Ambient depth: drifting orbs behind a faint grid. motion-safe so
-             reduced-motion users get a static field. --}}
+    <section class="relative hidden overflow-hidden bg-primary-container p-inline-lg lg:flex lg:flex-col lg:justify-between">
+        {{-- Ambient depth: drifting orbs over the flat brand navy. motion-safe
+             so reduced-motion users get a static field. --}}
         <div class="pointer-events-none absolute -start-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-secondary-container/25 blur-3xl motion-safe:animate-[admin-orb_16s_ease-in-out_infinite]"></div>
         <div class="pointer-events-none absolute -bottom-32 -end-24 h-[30rem] w-[30rem] rounded-full bg-primary-fixed-dim/20 blur-3xl motion-safe:animate-[admin-orb_20s_ease-in-out_infinite_reverse]"></div>
-        <div class="pointer-events-none absolute inset-0 opacity-[0.07]"
-            style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 46px 46px;"></div>
 
         <div class="relative z-10">
             <div class="reveal-up mb-10 flex items-center gap-4">
@@ -106,7 +104,7 @@
 
             <h2 class="reveal-up max-w-md font-display-lg text-[38px] font-bold leading-[1.15] text-white" style="--d:80ms">
                 {{ __('شريكك الموثوق في') }}<br>
-                <span class="bg-gradient-to-l from-secondary-fixed-dim to-white bg-clip-text text-transparent rtl:bg-gradient-to-r">
+                <span class="text-secondary-fixed-dim">
                     {{ __('عالم التحويلات المالية') }}
                 </span>
             </h2>

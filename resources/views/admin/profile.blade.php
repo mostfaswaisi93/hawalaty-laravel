@@ -26,31 +26,40 @@
         }">
 
         {{-- ── Identity banner ─────────────────────────────────────────────
-             Fixed-dark gradient in both themes, so its text is literal white
-             rather than surface tokens (which invert). --}}
-        <section class="reveal-up relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] via-[#152c72] to-[#1e3a8a] shadow-xl">
-            <div class="pointer-events-none absolute -start-16 -top-20 h-72 w-72 rounded-full bg-secondary-container/25 blur-3xl motion-safe:animate-[admin-orb_16s_ease-in-out_infinite]"></div>
-            <div class="pointer-events-none absolute -bottom-24 -end-10 h-80 w-80 rounded-full bg-primary-fixed-dim/20 blur-3xl motion-safe:animate-[admin-orb_20s_ease-in-out_infinite_reverse]"></div>
-            <div class="pointer-events-none absolute inset-0 opacity-[0.07]"
-                style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 44px 44px;"></div>
+             Fixed-dark in both themes, so its text is literal white rather than
+             surface tokens (which invert).
 
-            <div class="relative flex flex-col items-center gap-5 p-6 text-center sm:flex-row sm:items-end sm:p-8 sm:text-start">
-                <span class="grid h-24 w-24 flex-shrink-0 place-items-center rounded-3xl bg-white/15 font-display-lg text-4xl font-bold text-white shadow-lg ring-4 ring-white/20 backdrop-blur">
+             Flat `bg-primary-container` rather than a gradient: the two blurred
+             orbs are what give the block depth, so it does not need one. The
+             token is deliberately identical in :root and .dark, so this stays
+             the same deep navy in both themes and the literal `text-white`
+             below is always correct.
+
+             Alignment note: the name/email carry their bidi on an inner <span>,
+             not on the block. Putting `dir` on the block itself made a Latin
+             name left-align while the badges below it stayed start-aligned,
+             so the three lines disagreed with each other. --}}
+        <section class="reveal-up relative overflow-hidden rounded-3xl bg-primary-container shadow-xl ring-1 ring-white/10">
+            <div class="pointer-events-none absolute -start-20 -top-24 h-72 w-72 rounded-full bg-secondary-container/30 blur-3xl motion-safe:animate-[admin-orb_16s_ease-in-out_infinite]"></div>
+            <div class="pointer-events-none absolute -bottom-28 -end-16 h-80 w-80 rounded-full bg-primary-fixed-dim/25 blur-3xl motion-safe:animate-[admin-orb_20s_ease-in-out_infinite_reverse]"></div>
+
+            <div class="relative flex flex-col items-center gap-5 p-6 text-center sm:flex-row sm:items-center sm:gap-6 sm:p-8 sm:text-start">
+                <span class="grid h-20 w-20 flex-shrink-0 place-items-center rounded-2xl bg-white/20 font-display-lg text-3xl text-white shadow-lg ring-1 ring-white/30 backdrop-blur-sm sm:h-24 sm:w-24 sm:rounded-3xl sm:text-4xl">
                     {{ mb_substr($admin->name, 0, 1) }}
                 </span>
 
                 <div class="min-w-0 flex-1">
-                    <h1 class="truncate font-display-lg text-display-lg font-bold text-white" dir="auto">{{ $admin->name }}</h1>
-                    <p class="mt-1 truncate font-body-lg text-white/70" dir="ltr">{{ $admin->email }}</p>
+                    <h1 class="truncate font-display-lg text-display-lg text-white"><span dir="auto">{{ $admin->name }}</span></h1>
+                    <p class="mt-1 truncate font-body-lg text-white/65"><span dir="ltr">{{ $admin->email }}</span></p>
 
                     <div class="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-body-sm text-[12px] font-bold text-white backdrop-blur">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 font-body-sm text-[12px] font-bold text-[#1e2a5e]">
                             <span class="material-symbols-outlined !text-base">shield_person</span>
                             {{ __('المشرف العام') }}
                         </span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-body-sm text-[12px] text-white/80 backdrop-blur">
+                        <span class="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 font-body-sm text-[12px] font-medium text-white/85 backdrop-blur">
                             <span class="material-symbols-outlined !text-base">calendar_month</span>
-                            {{ __('عضو منذ') }} {{ $admin->created_at?->translatedFormat('F Y') ?? '—' }}
+                            {{ __('عضو منذ') }} {{ $admin->created_at?->translatedFormat('F Y') ?? '-' }}
                         </span>
                     </div>
                 </div>
@@ -176,9 +185,8 @@
                     {{ __('لن تُحفظ التغييرات حتى تضغط حفظ.') }}
                 </p>
                 <button type="submit" :disabled="submitting || mismatch"
-                    class="press group relative flex items-center gap-2 overflow-hidden rounded-xl bg-primary px-6 py-3 font-body-sm font-bold text-on-primary shadow-lg shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                    class="press flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-bold text-on-primary shadow-lg shadow-primary/25 transition-all hover:bg-primary-container hover:text-on-primary-container hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
                     title="{{ __('حفظ التغييرات') }}">
-                    <span class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"></span>
                     <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
                         x-text="submitting ? 'progress_activity' : 'save'">save</span>
                     <span x-text="submitting ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ التغييرات'))">{{ __('حفظ التغييرات') }}</span>

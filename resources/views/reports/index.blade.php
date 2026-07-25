@@ -82,7 +82,7 @@
                             <div class="flex w-full items-end" style="height: 160px">
                                 {{-- Delay is capped: a wide date range would otherwise trail
                                      the last columns well past a second. --}}
-                                <div class="grow-bar w-full rounded-t-lg bg-gradient-to-t from-primary to-primary-container transition-all" style="height: {{ max(4, ($sum / $maxDaily) * 100) }}%; --d: {{ min(180 + $loop->index * 35, 560) }}ms" title="{{ number_format($sum, 2) }} ₪"></div>
+                                <div class="grow-bar w-full rounded-t-lg bg-primary transition-all" style="height: {{ max(4, ($sum / $maxDaily) * 100) }}%; --d: {{ min(180 + $loop->index * 35, 560) }}ms" title="{{ number_format($sum, 2) }} ₪"></div>
                             </div>
                             <span class="font-label-caps text-[10px] text-on-surface-variant">{{ $dayLabels[\Illuminate\Support\Carbon::parse($date)->dayOfWeek] }}</span>
                         </div>

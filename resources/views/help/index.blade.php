@@ -74,7 +74,7 @@
         </section>
 
         {{-- contact --}}
-        <section class="reveal-up tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-gradient-to-br from-primary/5 to-secondary-container/5 p-8 text-center" style="--d:200ms">
+        <section class="reveal-up tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-primary/5 p-8 text-center" style="--d:200ms">
             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">
                 <span class="material-symbols-outlined !text-3xl">support_agent</span>
             </div>

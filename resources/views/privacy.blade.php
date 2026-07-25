@@ -146,7 +146,7 @@
             @endforeach
 
             {{-- contact --}}
-            <article class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-gradient-to-br from-primary/5 to-secondary-container/5 p-5 md:p-6">
+            <article class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-primary/5 p-5 md:p-6">
                 <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
                     <div class="flex items-start gap-4">
                         <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">

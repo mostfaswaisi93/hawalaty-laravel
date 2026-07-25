@@ -30,16 +30,30 @@
     --text-body-lg--line-height: 1.6;
     --text-numeral-lg: 24px;
     --text-numeral-lg--line-height: 1;
-    --text-display-lg: 32px;
-    --text-display-lg--line-height: 1.2;
+    /*
+        Page titles carry their own weight/tracking rather than leaving it to
+        each view: every `text-display-lg` h1 in the app previously rendered at
+        Tajawal's regular 400, which reads faint at this size and made page
+        headings hard to pick out. Setting it on the token keeps all 31 page
+        titles identical instead of depending on whether a view remembered to
+        add `font-bold`.
+    */
+    --text-display-lg: 34px;
+    --text-display-lg--line-height: 1.15;
+    --text-display-lg--font-weight: 800;
+    --text-display-lg--letter-spacing: -0.02em;
     --text-body-sm: 14px;
     --text-body-sm--line-height: 1.5;
     --text-label-caps: 12px;
     --text-label-caps--line-height: 1;
     --text-headline-md: 20px;
     --text-headline-md--line-height: 1.4;
-    --text-display-lg-mobile: 24px;
+    --text-headline-md--font-weight: 700;
+    --text-headline-md--letter-spacing: -0.01em;
+    --text-display-lg-mobile: 26px;
     --text-display-lg-mobile--line-height: 1.2;
+    --text-display-lg-mobile--font-weight: 800;
+    --text-display-lg-mobile--letter-spacing: -0.02em;
 
     --spacing-inline-md: 16px;
     --spacing-inline-lg: 24px;
