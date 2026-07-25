@@ -137,8 +137,10 @@
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 class="mb-1 font-headline-md text-headline-md">{{ __('إنشاء ترخيص جديد') }}</h3>
-                <p class="mb-5 font-body-sm text-on-surface-variant">{{ __('سيُنشئ النظام قاعدة بيانات مستقلّة وحساب مالك للعميل.') }}</p>
+                <div class="border-b border-outline-variant/60 px-6 py-4">
+                    <h3 class="font-headline-md text-headline-md">{{ __('إنشاء ترخيص جديد') }}</h3>
+                    <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('سيُنشئ النظام قاعدة بيانات مستقلّة وحساب مالك للعميل.') }}</p>
+                </div>
                 <form method="POST" action="{{ route('admin.licenses.store') }}" class="grid grid-cols-1 gap-4 p-6 md:grid-cols-2" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5 md:col-span-2">
