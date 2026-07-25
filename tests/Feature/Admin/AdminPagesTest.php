@@ -43,7 +43,45 @@ class AdminPagesTest extends TestCase
             'backups' => ['/admin/backups'],
             'logs' => ['/admin/logs'],
             'settings' => ['/admin/settings'],
+            'profile' => ['/admin/profile'],
         ];
+    }
+
+    public function test_admin_can_update_their_own_profile(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin, 'admin')
+            ->put('/admin/profile', ['name' => 'Renamed Admin', 'email' => 'renamed@hawalaty.test'])
+            ->assertRedirect('/admin/profile');
+
+        $admin->refresh();
+        $this->assertSame('Renamed Admin', $admin->name);
+        $this->assertSame('renamed@hawalaty.test', $admin->email);
+    }
+
+    public function test_a_blank_password_leaves_the_current_one_untouched(): void
+    {
+        $admin = $this->admin();
+        $original = $admin->password;
+
+        $this->actingAs($admin, 'admin')
+            ->put('/admin/profile', ['name' => $admin->name, 'email' => $admin->email, 'password' => ''])
+            ->assertRedirect('/admin/profile');
+
+        $this->assertSame($original, $admin->refresh()->password);
+    }
+
+    public function test_profile_rejects_an_email_already_taken_by_another_admin(): void
+    {
+        $other = Admin::factory()->create(['email' => 'taken@hawalaty.test']);
+        $admin = $this->admin();
+
+        $this->actingAs($admin, 'admin')
+            ->put('/admin/profile', ['name' => $admin->name, 'email' => $other->email])
+            ->assertSessionHasErrors('email');
+
+        $this->assertNotSame($other->email, $admin->refresh()->email);
     }
 
     #[DataProvider('pages')]

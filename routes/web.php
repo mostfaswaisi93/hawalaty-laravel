@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\Admin\LicenseController as AdminLicenseController;
 use App\Http\Controllers\Web\Admin\PackageController as AdminPackageController;
 use App\Http\Controllers\Web\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Web\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Web\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Web\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
@@ -227,5 +228,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Platform key/value settings
         Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [AdminSettingController::class, 'upsert'])->name('settings.upsert');
+
+        // The admin's own account — separate from settings above, which is
+        // platform-wide key/value config rather than anything personal.
+        Route::get('profile', [AdminProfileController::class, 'index'])->name('profile.index');
+        Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
     });
 });

@@ -277,6 +277,33 @@ body {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25), 0px 16px 32px -8px rgba(0, 0, 0, 0.45);
 }
 
+/*
+ * Tailwind v4's Preflight deliberately dropped v3's `cursor: pointer` on
+ * buttons to match the raw browser default, which left all ~130 <button>
+ * elements in this app showing an arrow instead of a hand. Restored globally
+ * here (the fix Tailwind's own v4 upgrade guide prescribes) rather than
+ * sprinkling `cursor-pointer` across every call site.
+ *
+ * In @layer base so the utility layer still wins — `disabled:cursor-not-allowed`
+ * on the modal submit buttons keeps working, and the :disabled guard below
+ * means a disabled control never reads as clickable even without it.
+ */
+@layer base {
+    button:not(:disabled),
+    [role='button']:not(:disabled),
+    [role='switch']:not(:disabled),
+    summary,
+    label:has(> input[type='checkbox']),
+    label:has(> input[type='radio']) {
+        cursor: pointer;
+    }
+
+    button:disabled,
+    [role='button'][aria-disabled='true'] {
+        cursor: not-allowed;
+    }
+}
+
 a,
 button,
 input,
