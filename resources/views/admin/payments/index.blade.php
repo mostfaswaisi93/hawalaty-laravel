@@ -18,15 +18,15 @@
         </header>
 
         @if ($boxes->isEmpty() || $licenses->isEmpty())
-            <div class="flex items-center gap-3 rounded-2xl border border-secondary-container/40 bg-secondary-container/10 p-4 text-secondary">
+            <div class="reveal-up flex items-center gap-3 rounded-2xl border border-secondary-container/40 bg-secondary-container/10 p-4 text-secondary" style="--d: 80ms">
                 <span class="material-symbols-outlined">info</span>
                 <p class="font-body-sm">{{ __('يلزم وجود صندوق واحد وترخيص واحد على الأقل لتسجيل الدفعات.') }}</p>
             </div>
         @endif
 
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+        <section class="tonal-elevation reveal-up rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 160ms">
             @if ($payments->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center" style="--d: 300ms">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">payments</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد مدفوعات بعد') }}</p>
                 </div>

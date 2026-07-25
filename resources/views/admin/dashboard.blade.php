@@ -58,7 +58,7 @@
         </header>
 
         {{-- ── Money headline ────────────────────────────────────────────── --}}
-        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @php
                 $moneyCards = [
                     ['label' => __('إجمالي المدفوعات'), 'value' => $totalPayments, 'icon' => 'trending_up', 'tone' => 'text-primary', 'ring' => 'bg-primary/10'],
@@ -83,7 +83,7 @@
         </section>
 
         {{-- ── License KPIs (each links to the filtered list) ─────────────── --}}
-        <section class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <section class="stagger grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             @php
                 $kpis = [
                     ['label' => __('إجمالي التراخيص'), 'value' => $totalLicenses, 'icon' => 'key', 'tone' => 'text-primary bg-primary/10', 'status' => null],
@@ -95,7 +95,7 @@
             @endphp
             @foreach ($kpis as $kpi)
                 <a href="{{ route('admin.licenses.index', $kpi['status'] ? ['status' => $kpi['status']] : []) }}"
-                    class="tonal-elevation group rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 transition-colors hover:border-primary">
+                    class="tonal-elevation press group rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 transition-colors hover:border-primary">
                     <div class="flex items-center gap-3">
                         <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full {{ $kpi['tone'] }}">
                             <span class="material-symbols-outlined">{{ $kpi['icon'] }}</span>
@@ -121,12 +121,12 @@
                         <p class="font-body-sm text-on-surface-variant">{{ __('خلال الثلاثين يوماً القادمة — تحتاج تجديداً') }}</p>
                     </div>
                 </div>
-                <ul class="space-y-2">
+                <ul class="stagger space-y-2">
                     @foreach ($expiringSoon as $license)
                         @php $daysLeft = (int) ceil(now()->diffInDays($license->expired_at, false)); @endphp
                         <li>
                             <a href="{{ route('admin.licenses.show', $license->id) }}"
-                                class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-4 transition-colors hover:border-secondary">
+                                class="press flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-4 transition-colors hover:border-secondary">
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate font-body-sm font-bold text-on-surface">{{ $license->customer_name }}</p>
                                     <p class="truncate text-[11px] text-on-surface-variant">
@@ -177,15 +177,15 @@
                         <div class="flex h-44 w-full items-end justify-center gap-1.5">
                             {{-- Paired bars share one scale so the two series stay comparable. --}}
                             <div class="group relative flex h-full flex-1 items-end justify-center">
-                                <div class="w-full max-w-8 rounded-t-lg bg-primary transition-all"
-                                    style="height: {{ $month['payments'] > 0 ? max(4, round($month['payments'] / $trendMax * 100)) : 2 }}%"></div>
+                                <div class="grow-bar w-full max-w-8 rounded-t-lg bg-primary transition-all"
+                                    style="height: {{ $month['payments'] > 0 ? max(4, round($month['payments'] / $trendMax * 100)) : 2 }}%; --d: {{ $loop->index * 80 }}ms"></div>
                                 <span class="pointer-events-none absolute -top-7 whitespace-nowrap rounded-lg bg-inverse-surface px-2 py-1 text-[11px] font-bold text-inverse-on-surface opacity-0 transition-opacity group-hover:opacity-100" dir="ltr">
                                     {{ number_format($month['payments'], 0) }} ₪
                                 </span>
                             </div>
                             <div class="group relative flex h-full flex-1 items-end justify-center">
-                                <div class="w-full max-w-8 rounded-t-lg bg-error transition-all"
-                                    style="height: {{ $month['expenses'] > 0 ? max(4, round($month['expenses'] / $trendMax * 100)) : 2 }}%"></div>
+                                <div class="grow-bar w-full max-w-8 rounded-t-lg bg-error transition-all"
+                                    style="height: {{ $month['expenses'] > 0 ? max(4, round($month['expenses'] / $trendMax * 100)) : 2 }}%; --d: {{ $loop->index * 80 + 40 }}ms"></div>
                                 <span class="pointer-events-none absolute -top-7 whitespace-nowrap rounded-lg bg-inverse-surface px-2 py-1 text-[11px] font-bold text-inverse-on-surface opacity-0 transition-opacity group-hover:opacity-100" dir="ltr">
                                     {{ number_format($month['expenses'], 0) }} ₪
                                 </span>
@@ -211,7 +211,7 @@
                                     <span class="flex-shrink-0 font-numeral-lg text-body-sm font-bold text-on-surface-variant">{{ $package['count'] }}</span>
                                 </div>
                                 <div class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
-                                    <div class="h-full rounded-full bg-primary transition-all" style="width: {{ $package['share'] }}%"></div>
+                                    <div class="grow-meter h-full rounded-full bg-primary transition-all" style="width: {{ $package['share'] }}%; --d: {{ $loop->index * 90 }}ms"></div>
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">
                                     <span dir="ltr">{{ number_format($package['price'], 2) }} ₪</span> · {{ $package['share'] }}%
@@ -226,7 +226,7 @@
                 @if (empty($boxes))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد صناديق بعد') }}</p>
                 @else
-                    <ul class="divide-y divide-outline-variant/50">
+                    <ul class="stagger divide-y divide-outline-variant/50">
                         @foreach ($boxes as $box)
                             <li class="flex items-center justify-between gap-3 py-3">
                                 <div class="flex min-w-0 items-center gap-3">
@@ -248,7 +248,7 @@
                 @if (empty($partners))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد شركاء بعد') }}</p>
                 @else
-                    <ul class="divide-y divide-outline-variant/50">
+                    <ul class="stagger divide-y divide-outline-variant/50">
                         @foreach ($partners as $partner)
                             <li class="flex items-center justify-between gap-3 py-3">
                                 <div class="flex min-w-0 items-center gap-3">
@@ -269,12 +269,12 @@
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <x-card title="{{ __('آخر النشاطات') }}" subtitle="{{ __('أحدث إجراءات المشرفين') }}">
                 @if ($recentActivity->isEmpty())
-                    <div class="flex flex-col items-center gap-2 py-12 text-center">
+                    <div class="reveal-scale flex flex-col items-center gap-2 py-12 text-center">
                         <span class="material-symbols-outlined !text-4xl text-outline/50">fact_check</span>
                         <p class="font-body-sm text-on-surface-variant">{{ __('لا توجد نشاطات بعد') }}</p>
                     </div>
                 @else
-                    <ul class="divide-y divide-outline-variant/50">
+                    <ul class="stagger divide-y divide-outline-variant/50">
                         @foreach ($recentActivity as $log)
                             <li class="flex items-center gap-3 py-3">
                                 <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full {{ $actionTones[$log->action] ?? 'bg-surface-container-high text-on-surface-variant' }}">
@@ -298,7 +298,7 @@
 
             <x-card title="{{ __('آخر النسخ الاحتياطية') }}" subtitle="{{ __('نسبة النجاح') }}: {{ $backupStats['successRate'] }}%">
                 @if ($recentBackups->isEmpty())
-                    <div class="flex flex-col items-center gap-2 py-12 text-center">
+                    <div class="reveal-scale flex flex-col items-center gap-2 py-12 text-center">
                         <span class="material-symbols-outlined !text-4xl text-outline/50">backup</span>
                         <p class="font-body-sm text-on-surface-variant">{{ __('لا توجد نسخ احتياطية بعد') }}</p>
                     </div>
@@ -313,7 +313,7 @@
                             <span class="font-body-sm text-on-surface-variant">{{ __('فاشلة') }}: <span class="font-bold text-on-surface">{{ $backupStats['failed'] }}</span></span>
                         </div>
                     </div>
-                    <ul class="divide-y divide-outline-variant/50">
+                    <ul class="stagger divide-y divide-outline-variant/50">
                         @foreach ($recentBackups as $backup)
                             <li class="flex items-center gap-3 py-3">
                                 <span class="material-symbols-outlined flex-shrink-0 text-outline">backup</span>

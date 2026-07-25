@@ -26,7 +26,7 @@
         </header>
 
         @if ($packages->isEmpty())
-            <div class="tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest py-16 text-center">
+            <div class="tonal-elevation reveal-scale flex flex-col items-center gap-3 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest py-16 text-center" style="--d: 120ms">
                 <span class="material-symbols-outlined !text-5xl text-outline/50">inventory_2</span>
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد باقات بعد') }}</p>
             </div>

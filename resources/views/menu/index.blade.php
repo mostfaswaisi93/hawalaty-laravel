@@ -56,13 +56,13 @@
         </header>
 
         @if ($categories->isEmpty())
-            <div class="tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
+            <div class="reveal-scale tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد فئات بعد') }}</p>
                 <button type="button" @click="catOpen = true; submitting = false" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أنشئ أول فئة') }}">{{ __('أنشئ أول فئة') }}</button>
             </div>
         @else
-            <div class="space-y-5">
+            <div class="stagger space-y-5">
                 @foreach ($categories as $cat)
                     <section class="tonal-elevation overflow-hidden rounded-3xl border border-outline-variant/50 bg-surface-container-lowest">
                         <div class="flex items-center justify-between gap-3 border-b border-outline-variant/50 p-5">

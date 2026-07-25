@@ -303,8 +303,11 @@
                                 {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                             </span>
                             <span class="min-w-0 flex-1">
-                                <span class="block truncate font-body-sm text-body-sm font-bold text-on-sidebar" dir="auto">{{ $admin?->name }}</span>
-                                <span class="block truncate font-body-sm text-[11px] text-on-sidebar-muted" dir="ltr">{{ $admin?->email }}</span>
+                                {{-- Surface tokens, NOT the sidebar ones: this dropdown hangs off
+                                     the header on a light surface, so the dark-rail palette would
+                                     render it at ~1.2:1 in light mode. --}}
+                                <span class="block truncate font-body-sm text-body-sm font-bold text-on-surface" dir="auto">{{ $admin?->name }}</span>
+                                <span class="block truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $admin?->email }}</span>
                             </span>
                         </div>
 

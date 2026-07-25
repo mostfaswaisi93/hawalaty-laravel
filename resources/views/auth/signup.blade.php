@@ -5,14 +5,14 @@
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">
         <div class="w-full max-w-md">
-            <div class="mb-8">
+            <div class="reveal-up mb-8">
                 <h1 class="mb-2 font-display-lg text-display-lg text-primary">{{ __('أنشئ حساب عملك') }}</h1>
                 <p class="font-body-lg text-on-surface-variant">{{ __('جهّز مساحة عمل حوالاتي الخاصة بك خلال دقائق') }}</p>
             </div>
 
             <x-flash-messages />
 
-            <form method="POST" action="{{ route('signup') }}" class="space-y-5">
+            <form method="POST" action="{{ route('signup') }}" class="stagger space-y-5">
                 @csrf
 
                 <div class="space-y-4 rounded-xl border border-outline-variant/50 p-4">
@@ -112,7 +112,7 @@
             <div class="absolute -bottom-1/4 end-[-10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl"></div>
         </div>
 
-        <div class="relative z-10 max-w-lg text-center">
+        <div class="stagger relative z-10 max-w-lg text-center">
             <div class="mb-8 flex justify-center">
                 <div class="flex h-24 w-24 items-center justify-center rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-md">
                     <span class="material-symbols-outlined text-5xl text-white" data-weight="fill">storefront</span>

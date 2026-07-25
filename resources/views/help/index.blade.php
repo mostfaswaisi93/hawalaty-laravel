@@ -5,7 +5,7 @@
 @section('content')
     <div class="page-enter mx-auto max-w-4xl space-y-8">
         <header class="text-center">
-            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+            <div class="reveal-scale mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary" style="--d:120ms">
                 <span class="material-symbols-outlined !text-4xl">help</span>
             </div>
             <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('كيف يمكننا مساعدتك؟') }}</h1>
@@ -15,7 +15,7 @@
         {{-- quick links --}}
         <section>
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('روابط سريعة') }}</h2>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ([
                     ['/transfers', 'add_shopping_cart', __('طلب جديد'), __('أنشئ طلباً واحسب المجموع تلقائياً')],
                     ['/history', 'receipt_long', __('السجل'), __('تصفّح وابحث في كل طلباتك')],
@@ -24,7 +24,7 @@
                     ['/reports', 'assessment', __('التقارير'), __('تابع إيراداتك ونشاطك')],
                     ['/team', 'group', __('الفريق'), __('ادعُ موظفين وامنح صلاحيات')],
                 ] as [$href, $icon, $title, $desc])
-                    <a href="{{ $href }}" class="tonal-elevation group flex items-start gap-4 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 transition-all hover:border-primary">
+                    <a href="{{ $href }}" class="tonal-elevation press group flex items-start gap-4 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 transition-all hover:border-primary">
                         <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
                             <span class="material-symbols-outlined">{{ $icon }}</span>
                         </div>
@@ -40,7 +40,7 @@
         {{-- FAQ --}}
         <section x-data="{ open: 0 }">
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('الأسئلة الشائعة') }}</h2>
-            <div class="space-y-3">
+            <div class="stagger space-y-3">
                 @foreach ([
                     [__('كيف أنشئ طلباً جديداً؟'), __('من «طلب جديد»، اختر الأصناف من القائمة لتُضاف إلى السلة، حدّد اسم العميل وطريقة الدفع (نقدي أو تحويل بنكي)، ثم اضغط «إنشاء الطلب». يُحسب الإجمالي تلقائياً من الأصناف.')],
                     [__('كيف أضيف بنكاً أو محفظة؟'), __('من «البنوك والمحافظ» اضغط «إضافة»، أدخل الاسم والنوع (بنك/محفظة) والرمز واختيارياً الهاتف. يمكنك تفعيل أو إيقاف أي وسيلة دفع في أي وقت من مفتاح الحالة.')],
@@ -66,7 +66,7 @@
         </section>
 
         {{-- contact --}}
-        <section class="tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-gradient-to-br from-primary/5 to-secondary-container/5 p-8 text-center">
+        <section class="reveal-up tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-gradient-to-br from-primary/5 to-secondary-container/5 p-8 text-center" style="--d:200ms">
             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">
                 <span class="material-symbols-outlined !text-3xl">support_agent</span>
             </div>

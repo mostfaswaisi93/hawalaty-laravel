@@ -5,14 +5,14 @@
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">
         <div class="w-full max-w-md">
-            <div class="mb-8">
+            <div class="reveal-up mb-8">
                 <h1 class="mb-2 font-display-lg text-display-lg text-primary">{{ __('مرحباً بعودتك') }}</h1>
                 <p class="font-body-lg text-on-surface-variant">{{ __('سجّل الدخول لإدارة حوالاتك') }}</p>
             </div>
 
             <x-flash-messages />
 
-            <form method="POST" action="{{ route('login') }}" class="space-y-5">
+            <form method="POST" action="{{ route('login') }}" class="stagger space-y-5">
                 @csrf
 
                 <x-form-field
@@ -87,7 +87,7 @@
             <div class="absolute -bottom-1/4 end-[-10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl"></div>
         </div>
 
-        <div class="relative z-10 max-w-lg text-center">
+        <div class="stagger relative z-10 max-w-lg text-center">
             <div class="mb-8 flex justify-center">
                 <x-logo size="lg" />
             </div>

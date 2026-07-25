@@ -9,7 +9,7 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('تعرّف على عملائك الدائمين وسجل طلباتهم.') }}</p>
         </header>
 
-        <form method="GET" action="{{ route('customers.index') }}" class="relative max-w-md">
+        <form method="GET" action="{{ route('customers.index') }}" class="reveal-up relative max-w-md" style="--d:60ms">
             <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الهاتف...') }}" aria-label="{{ __('بحث') }}"
                 class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />
@@ -17,7 +17,7 @@
 
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             @if ($customers->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">group</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا يوجد عملاء بعد') }}</p>
                     <p class="font-body-sm text-outline">{{ __('يُضاف العميل تلقائياً عند إنشاء أول طلب باسمه.') }}</p>
@@ -26,7 +26,8 @@
                 <x-table-responsive :headers="[__('العميل'), __('الهاتف'), __('عدد الطلبات'), __('إجمالي الإنفاق'), __('آخر طلب')]">
                     <x-slot:table>
                         @foreach ($customers as $c)
-                            <tr class="cursor-pointer transition-colors hover:bg-surface-container-low/50 focus:bg-surface-container-low/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+                            <tr class="reveal-up cursor-pointer transition-colors hover:bg-surface-container-low/50 focus:bg-surface-container-low/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+                                style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms"
                                 tabindex="0" role="link" aria-label="{{ $c->name }}"
                                 onclick="location.href='{{ route('customers.show', $c->id) }}'"
                                 @keydown.enter="location.href='{{ route('customers.show', $c->id) }}'">
@@ -45,7 +46,8 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($customers as $c)
-                            <a href="{{ route('customers.show', $c->id) }}" class="tonal-elevation block rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                            <a href="{{ route('customers.show', $c->id) }}" class="reveal-up tonal-elevation block rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
+                                style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
                                 <div class="flex items-center gap-3">
                                     <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">{{ mb_substr($c->name, 0, 1) }}</div>
                                     <div class="min-w-0 flex-1">

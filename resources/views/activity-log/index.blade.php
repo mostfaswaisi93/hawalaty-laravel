@@ -22,7 +22,7 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('كل الإجراءات التي تمّت في مساحة عملك.') }}</p>
         </header>
 
-        <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3">
+        <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3" style="--d: 40ms">
             <div class="space-y-1.5 sm:col-span-1">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
@@ -53,14 +53,14 @@
             </div>
         </form>
 
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+        <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 140ms">
             @if ($logs->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">{{ $hasFilters ? 'search_off' : 'fact_check' }}</span>
                     <p class="font-body-lg text-on-surface-variant">{{ $hasFilters ? __('لا نتائج مطابقة') : __('لا نشاط مسجّل بعد') }}</p>
                 </div>
             @else
-                <ul class="divide-y divide-outline-variant/50">
+                <ul class="stagger divide-y divide-outline-variant/50">
                     @foreach ($logs as $log)
                         <li class="flex items-start gap-4 py-4">
                             <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant">

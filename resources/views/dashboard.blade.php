@@ -29,7 +29,7 @@
     <div class="page-enter space-y-8">
         <!-- Hero: revenue + quick actions -->
         <section class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div class="group relative flex min-h-[240px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] to-[#1e3a8a] p-8 text-white shadow-xl lg:col-span-2">
+            <div class="reveal-up group relative flex min-h-[240px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-[#00236f] to-[#1e3a8a] p-8 text-white shadow-xl lg:col-span-2">
                 <div class="relative z-10 flex items-start justify-between">
                     <div>
                         <p class="mb-2 font-body-sm text-body-sm text-white/80">{{ __('إجمالي الإيرادات') }}</p>
@@ -49,9 +49,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="stagger grid grid-cols-2 gap-4">
                 @if ($member?->hasPermission(\App\Enums\PermissionKey::TransfersCreate))
-                    <a href="/transfers" class="tonal-elevation group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
+                    <a href="/transfers" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-container/10 text-secondary transition-colors group-hover:bg-secondary-container group-hover:text-on-secondary-fixed">
                             <span class="material-symbols-outlined">add</span>
                         </div>
@@ -60,7 +60,7 @@
                 @endif
 
                 @if ($member?->hasPermission(\App\Enums\PermissionKey::MenuManage))
-                    <a href="/menu" class="tonal-elevation group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
+                    <a href="/menu" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
                             <span class="material-symbols-outlined">restaurant_menu</span>
                         </div>
@@ -69,7 +69,7 @@
                 @endif
 
                 @if ($member?->hasPermission(\App\Enums\PermissionKey::ExpensesManage))
-                    <a href="/expenses" class="tonal-elevation group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
+                    <a href="/expenses" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-tertiary/10 text-tertiary transition-colors group-hover:bg-tertiary group-hover:text-on-tertiary">
                             <span class="material-symbols-outlined">payments</span>
                         </div>
@@ -77,7 +77,7 @@
                     </a>
                 @endif
 
-                <a href="/reports" class="tonal-elevation group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
+                <a href="/reports" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
                     <div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-dim/30 text-on-surface-variant transition-colors group-hover:bg-primary-container group-hover:text-on-primary-container">
                         <span class="material-symbols-outlined">assessment</span>
                     </div>
@@ -91,7 +91,7 @@
              near-white in dark mode) so this stays visually paired with the
              hero card above it — which is also a fixed dark gradient —
              instead of the two swapping contrast against each other. --}}
-        <section class="tonal-elevation relative overflow-hidden rounded-3xl bg-[rgb(33,49,69)] p-6 text-[rgb(234,241,255)]">
+        <section class="reveal-up tonal-elevation relative overflow-hidden rounded-3xl bg-[rgb(33,49,69)] p-6 text-[rgb(234,241,255)]" style="--d: 140ms">
             <div class="relative z-10 flex h-full flex-col">
                 <div class="mb-8 flex items-center justify-between">
                     <h3 class="font-headline-md text-headline-md">{{ __('نشاط الأسبوع') }}</h3>
@@ -105,8 +105,8 @@
                             <div class="flex h-full w-full flex-col items-center justify-end gap-1">
                                 <span class="font-numeral-lg text-[10px] opacity-70" dir="ltr">{{ $day['count'] }}</span>
                                 <div
-                                    class="w-full rounded-t-lg transition-all duration-500 {{ $day['count'] === $maxDaily ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}"
-                                    style="height: {{ max(4, ($day['count'] / $maxDaily) * 100) }}%"></div>
+                                    class="grow-bar w-full rounded-t-lg transition-all duration-500 {{ $day['count'] === $maxDaily ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}"
+                                    style="height: {{ max(4, ($day['count'] / $maxDaily) * 100) }}%; --d: {{ 220 + $loop->index * 60 }}ms"></div>
                             </div>
                         @endforeach
                     </div>
@@ -121,7 +121,7 @@
         </section>
 
         <!-- Recent orders -->
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-8">
+        <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-8" style="--d: 220ms">
             <div class="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                 <div>
                     <h3 class="font-headline-md text-headline-md">{{ __('أحدث الطلبات') }}</h3>
@@ -134,7 +134,7 @@
             </div>
 
             @if ($recentTransfers->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">receipt_long</span>
                     <p class="text-on-surface-variant">{{ __('لا توجد طلبات بعد') }}</p>
                 </div>
@@ -170,7 +170,10 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($recentTransfers as $t)
-                            <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                            {{-- Cascade is per-card, not a container .stagger — the cards
+                                 container itself belongs to the shared table component. --}}
+                            <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
+                                style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                                         <span class="material-symbols-outlined !text-xl">{{ $t->payment_method->value === 'cash' ? 'payments' : 'account_balance' }}</span>

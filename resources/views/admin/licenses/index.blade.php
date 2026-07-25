@@ -31,7 +31,7 @@
         </header>
 
         {{-- Filters --}}
-        <form method="GET" action="{{ route('admin.licenses.index') }}" class="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <form method="GET" action="{{ route('admin.licenses.index') }}" class="reveal-up grid grid-cols-1 gap-3 md:grid-cols-4" style="--d: 80ms">
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الرمز...') }}"
                 class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary md:col-span-2" />
             <select name="status" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
@@ -53,9 +53,9 @@
             </div>
         </form>
 
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+        <section class="tonal-elevation reveal-up rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 160ms">
             @if ($licenses->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center" style="--d: 300ms">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">key_off</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد تراخيص') }}</p>
                 </div>

@@ -29,9 +29,9 @@
             </button>
         </header>
 
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+        <section class="tonal-elevation reveal-up rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 80ms">
             @if ($backups->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-16 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center" style="--d: 240ms">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">backup</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد نسخ احتياطية بعد') }}</p>
                 </div>

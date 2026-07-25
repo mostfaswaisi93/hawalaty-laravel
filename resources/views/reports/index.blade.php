@@ -21,7 +21,7 @@
 
         {{-- date range --}}
         <form method="GET" action="{{ route('reports.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
-            class="tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end">
+            class="reveal-up tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end" style="--d: 40ms">
             <div class="flex-1 space-y-1.5">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
                 <input type="date" name="from" value="{{ $from }}" dir="ltr"
@@ -44,7 +44,7 @@
         </form>
 
         {{-- summary cards --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-3">
             @foreach ([
                 ['receipt_long', 'primary', __('عدد الطلبات'), number_format($count), ''],
                 ['payments', 'secondary', __('إجمالي الإيرادات'), number_format($total, 2), '₪'],
@@ -63,10 +63,10 @@
         </div>
 
         {{-- daily revenue chart --}}
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
+        <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6" style="--d: 140ms">
             <h2 class="mb-6 font-headline-md text-headline-md text-on-surface">{{ __('الإيراد اليومي') }}</h2>
             @if ($daily->isEmpty())
-                <div class="flex flex-col items-center gap-2 py-12 text-center text-outline">
+                <div class="reveal-scale flex flex-col items-center gap-2 py-12 text-center text-outline">
                     <span class="material-symbols-outlined !text-4xl">bar_chart</span>
                     <p class="font-body-sm">{{ __('لا نشاط في هذه الفترة') }}</p>
                 </div>
@@ -80,7 +80,9 @@
                         <div class="flex min-w-10 flex-1 flex-col items-center gap-2">
                             <span class="font-numeral-lg text-[10px] text-on-surface-variant" dir="ltr">{{ number_format($sum, 0) }}</span>
                             <div class="flex w-full items-end" style="height: 160px">
-                                <div class="w-full rounded-t-lg bg-gradient-to-t from-primary to-primary-container transition-all" style="height: {{ max(4, ($sum / $maxDaily) * 100) }}%" title="{{ number_format($sum, 2) }} ₪"></div>
+                                {{-- Delay is capped: a wide date range would otherwise trail
+                                     the last columns well past a second. --}}
+                                <div class="grow-bar w-full rounded-t-lg bg-gradient-to-t from-primary to-primary-container transition-all" style="height: {{ max(4, ($sum / $maxDaily) * 100) }}%; --d: {{ min(180 + $loop->index * 35, 560) }}ms" title="{{ number_format($sum, 2) }} ₪"></div>
                             </div>
                             <span class="font-label-caps text-[10px] text-on-surface-variant">{{ $dayLabels[\Illuminate\Support\Carbon::parse($date)->dayOfWeek] }}</span>
                         </div>
@@ -92,7 +94,7 @@
 
         {{-- transfers in range --}}
         @if ($transfers->isNotEmpty())
-            <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+            <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 220ms">
                 <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">{{ __('طلبات الفترة') }} ({{ number_format($count) }})</h2>
                 <x-table-responsive :headers="[__('العميل'), __('التاريخ'), __('الحالة'), __('المبلغ')]">
                     <x-slot:table>
@@ -107,7 +109,10 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($transfers->sortByDesc('created_at') as $t)
-                            <div class="flex items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                            {{-- The stagger cascade lives on each card rather than on a wrapper:
+                                 the cards container belongs to <x-table-responsive>. --}}
+                            <div class="reveal-up flex items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
+                                style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 <div class="min-w-0">
                                     <p class="truncate font-body-sm font-bold">{{ $t->customer }}</p>
                                     <p class="text-[11px] text-on-surface-variant">{{ $t->created_at->translatedFormat('j M') }} · {{ $statusLabel($t->status) }}</p>

@@ -143,8 +143,8 @@
                         </div>
 
                         <div class="mt-5 flex h-28 items-end gap-2">
-                            @foreach ([40, 65, 35, 90, 55, 75, 60] as $h)
-                                <div class="w-full rounded-t-lg {{ $h === 90 ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}" style="height: {{ $h }}%"></div>
+                            @foreach ([40, 65, 35, 90, 55, 75, 60] as $i => $h)
+                                <div class="grow-bar w-full rounded-t-lg {{ $h === 90 ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}" style="height: {{ $h }}%; --d: {{ 160 + $i * 60 }}ms"></div>
                             @endforeach
                         </div>
 
@@ -178,8 +178,8 @@
                     ['language', __('عربي/إنجليزي'), __('واجهة ثنائية اللغة')],
                     ['admin_panel_settings', __('أدوار وصلاحيات'), __('تحكّم دقيق بالفريق')],
                     ['insights', __('فورية'), __('تقارير لحظية')],
-                ] as [$icon, $big, $label])
-                    <div class="reveal tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-6 text-center">
+                ] as $i => [$icon, $big, $label])
+                    <div class="reveal tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-outline-variant/40 bg-surface-container-lowest px-4 py-6 text-center" style="transition-delay: {{ $i * 90 }}ms">
                         <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">
                             <span class="material-symbols-outlined !text-2xl" data-weight="fill">{{ $icon }}</span>
                         </span>
@@ -207,13 +207,13 @@
                     ['assessment', 'secondary', __('تقارير احترافية'), __('تقارير فورية عن الإيرادات والنشاط اليومي والأسبوعي، وتصدير PDF بنقرة واحدة.')],
                     ['group', 'primary', __('الفريق والصلاحيات'), __('ادعُ فريقك بأدوار جاهزة (مالك/مدير/موظف) وصلاحيات دقيقة لكل إجراء.')],
                     ['contacts', 'tertiary', __('عملاء دائمون'), __('تعرّف تلقائياً على عملائك المتكررين وتابع سجل طلباتهم وإجمالي إنفاقهم.')],
-                ] as [$icon, $accent, $title, $desc])
+                ] as $i => [$icon, $accent, $title, $desc])
                     @php $accentClasses = match ($accent) {
                         'secondary' => 'bg-secondary-container/15 text-secondary',
                         'tertiary' => 'bg-tertiary/10 text-tertiary',
                         default => 'bg-primary/10 text-primary',
                     }; @endphp
-                    <div class="reveal tonal-elevation group rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-7">
+                    <div class="reveal tonal-elevation group rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-7" style="transition-delay: {{ $i * 80 }}ms">
                         <div class="flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 {{ $accentClasses }}">
                             <span class="material-symbols-outlined !text-3xl">{{ $icon }}</span>
                         </div>
@@ -274,11 +274,12 @@
                     ];
                 @endphp
 
-                @foreach ($plans as $plan)
+                @foreach ($plans as $i => $plan)
                     <div class="reveal relative flex flex-col rounded-3xl p-8 transition-all
                         {{ $plan['popular']
                             ? 'border-2 border-secondary-container bg-surface-container-lowest shadow-2xl shadow-secondary-container/20 lg:-translate-y-4 lg:p-10'
-                            : 'tonal-elevation border border-outline-variant/50 bg-surface-container-lowest' }}">
+                            : 'tonal-elevation border border-outline-variant/50 bg-surface-container-lowest' }}"
+                        style="transition-delay: {{ $i * 110 }}ms">
 
                         @if ($plan['popular'])
                             <span class="absolute -top-3.5 start-1/2 -translate-x-1/2 rounded-full bg-secondary-container px-4 py-1 font-label-caps text-label-caps font-bold uppercase tracking-wider text-on-secondary-fixed shadow-lg">

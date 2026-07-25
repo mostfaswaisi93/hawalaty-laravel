@@ -38,7 +38,7 @@
 
         {{-- ══════════════ filters ══════════════ --}}
         <form method="GET" action="{{ route('history.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
-            class="tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5">
+            class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5" style="--d: 40ms">
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
@@ -94,9 +94,9 @@
         </form>
 
         {{-- ══════════════ results ══════════════ --}}
-        <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+        <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 140ms">
             @if ($transfers->isEmpty())
-                <div class="flex flex-col items-center gap-3 py-20 text-center">
+                <div class="reveal-scale flex flex-col items-center gap-3 py-20 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">{{ $hasFilters ? 'search_off' : 'receipt_long' }}</span>
                     <p class="font-body-lg text-on-surface-variant">{{ $hasFilters ? __('لا توجد طلبات مطابقة للفلاتر') : __('لا توجد طلبات بعد') }}</p>
                     @if ($hasFilters)
@@ -141,7 +141,10 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($transfers as $t)
-                            <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                            {{-- The stagger cascade lives on each card rather than on a wrapper:
+                                 the cards container belongs to <x-table-responsive>. --}}
+                            <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
+                                style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                                         <span class="material-symbols-outlined !text-xl">{{ $t->payment_method->value === 'cash' ? 'payments' : 'account_balance' }}</span>
