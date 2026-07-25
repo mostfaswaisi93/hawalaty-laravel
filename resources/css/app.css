@@ -333,14 +333,23 @@ textarea:focus-visible,
     outline: none;
 }
 
+/*
+ * Deliberately animates margin-top rather than transform. Any non-none
+ * transform makes the element a containing block for `position: fixed`
+ * descendants, and this class wraps the content of every page — so with a
+ * transform here, all 18 modals resolved `inset-0` against the page column
+ * instead of the viewport and opened off-centre with a partial backdrop
+ * (measured: a 1144x325 overlay at 24,96 on a 1280x800 viewport). margin-top
+ * produces the same 8px rise with no containing block and no stacking context.
+ */
 @keyframes app-fade-up {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        margin-top: 8px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        margin-top: 0;
     }
 }
 .page-enter {

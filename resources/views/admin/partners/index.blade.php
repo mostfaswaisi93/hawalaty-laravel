@@ -75,7 +75,7 @@
         </section>
 
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
-            <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
+            <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-surface-container-lowest p-6 shadow-2xl">

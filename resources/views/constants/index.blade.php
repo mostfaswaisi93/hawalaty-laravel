@@ -81,7 +81,7 @@
 
         {{-- new list modal --}}
         <div x-show="listOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
-            <div class="fixed inset-0 bg-black/40" @click="listOpen = false" x-show="listOpen" x-transition.opacity></div>
+            <div class="fixed inset-0 bg-black/40" x-show="listOpen" x-transition.opacity></div>
             <div x-show="listOpen" @keydown.escape.window="listOpen = false"
                 x-init="$watch('listOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="list-modal-title"

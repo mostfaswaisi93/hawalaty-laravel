@@ -26,7 +26,7 @@
     x-cloak
     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
     style="display: none;">
-    <div class="fixed inset-0 bg-black/40" @click="open = false" x-show="open" x-transition.opacity></div>
+    <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
 
     <div
         x-show="open"

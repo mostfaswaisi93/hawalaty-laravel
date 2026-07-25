@@ -145,7 +145,7 @@
 
         {{-- ══════════════ category modal ══════════════ --}}
         <div x-show="catOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
-            <div class="fixed inset-0 bg-black/40" @click="catOpen = false" x-show="catOpen" x-transition.opacity></div>
+            <div class="fixed inset-0 bg-black/40" x-show="catOpen" x-transition.opacity></div>
             <div x-show="catOpen" @keydown.escape.window="catOpen = false"
                 x-init="$watch('catOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="category-modal-title"
@@ -172,7 +172,7 @@
 
         {{-- ══════════════ item modal (add / edit) ══════════════ --}}
         <div x-show="itemOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
-            <div class="fixed inset-0 bg-black/40" @click="itemOpen = false" x-show="itemOpen" x-transition.opacity></div>
+            <div class="fixed inset-0 bg-black/40" x-show="itemOpen" x-transition.opacity></div>
             <div x-show="itemOpen" @keydown.escape.window="itemOpen = false"
                 x-init="$watch('itemOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="item-modal-title"
@@ -227,7 +227,7 @@
 
         {{-- ══════════════ import CSV modal ══════════════ --}}
         <div x-show="importOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
-            <div class="fixed inset-0 bg-black/40" @click="importOpen = false" x-show="importOpen" x-transition.opacity></div>
+            <div class="fixed inset-0 bg-black/40" x-show="importOpen" x-transition.opacity></div>
             <div x-show="importOpen" @keydown.escape.window="importOpen = false"
                 x-init="$watch('importOpen', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 role="dialog" aria-modal="true" aria-labelledby="import-modal-title"

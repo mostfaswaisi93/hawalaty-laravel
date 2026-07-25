@@ -19,7 +19,7 @@
     reads as undefined instead of throwing a ReferenceError.
 --}}
 <div x-show="confirmOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
-    <div class="fixed inset-0 bg-black/40" @click="confirmOpen = false" x-show="confirmOpen" x-transition.opacity></div>
+    <div class="fixed inset-0 bg-black/40" x-show="confirmOpen" x-transition.opacity></div>
     <div x-show="confirmOpen" @keydown.escape.window="confirmOpen = false"
         x-init="$watch('confirmOpen', v => v && $nextTick(() => $el.querySelector('button')?.focus()))"
         role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title"
