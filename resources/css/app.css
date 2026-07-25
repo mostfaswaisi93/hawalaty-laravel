@@ -513,6 +513,26 @@ textarea:focus-visible,
 .stagger > *:nth-child(11) { animation-delay: 440ms; }
 .stagger > *:nth-child(n + 12) { animation-delay: 480ms; }
 
+/* `stagger-rows` is the hook the shared table component puts on every <tbody>.
+   It predates this motion system and had no rule behind it, so table rows had
+   no entrance anywhere in the app; aliasing it to the stagger behaviour lights
+   them all up without touching the component. */
+.stagger-rows > * {
+    animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-rows > *:nth-child(1) { animation-delay: 40ms; }
+.stagger-rows > *:nth-child(2) { animation-delay: 80ms; }
+.stagger-rows > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-rows > *:nth-child(4) { animation-delay: 160ms; }
+.stagger-rows > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-rows > *:nth-child(6) { animation-delay: 240ms; }
+.stagger-rows > *:nth-child(7) { animation-delay: 280ms; }
+.stagger-rows > *:nth-child(8) { animation-delay: 320ms; }
+.stagger-rows > *:nth-child(9) { animation-delay: 360ms; }
+.stagger-rows > *:nth-child(10) { animation-delay: 400ms; }
+.stagger-rows > *:nth-child(11) { animation-delay: 440ms; }
+.stagger-rows > *:nth-child(n + 12) { animation-delay: 480ms; }
+
 .grow-bar {
     transform-origin: bottom;
     animation: grow-bar 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -542,18 +562,27 @@ textarea:focus-visible,
     border-radius: 0.75rem;
 }
 
-/* Pressable affordance for cards/tiles that act as buttons. */
+/* Pressable affordance for cards/tiles that act as buttons.
+ *
+ * !important is load-bearing here, not laziness: the entrance animations use
+ * fill-mode `both`, so after finishing they keep applying their final
+ * `transform: none`. Declarations originating from an animation outrank normal
+ * author declarations in the cascade, so without !important an element carrying
+ * BOTH an entrance and .press would silently lose its press feedback forever.
+ * That combination is common (a staggered grid of clickable tiles).
+ */
 .press {
     transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
 }
 .press:active {
-    transform: scale(0.97);
+    transform: scale(0.97) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
     .reveal-up,
     .reveal-scale,
     .stagger > *,
+    .stagger-rows > *,
     .grow-bar,
     .grow-meter {
         animation: none;
@@ -562,7 +591,7 @@ textarea:focus-visible,
         animation: none;
     }
     .press:active {
-        transform: none;
+        transform: none !important;
     }
 }
 

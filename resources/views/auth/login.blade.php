@@ -81,29 +81,59 @@
         </div>
     </section>
 
-    <section class="relative hidden items-center justify-center overflow-hidden bg-primary-container p-inline-lg lg:flex">
-        <div class="pointer-events-none absolute inset-0 opacity-30">
-            <div class="absolute -top-1/4 start-[-10%] h-96 w-96 rounded-full bg-primary blur-3xl"></div>
-            <div class="absolute -bottom-1/4 end-[-10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl"></div>
-        </div>
+    {{--
+        Brand panel. Fixed-dark in both themes (like the sidebar rail), so its text
+        uses literal white/white-alpha rather than the surface tokens, which invert.
+        Left-aligned and asymmetric on purpose: the previous centred stack read as a
+        splash screen rather than as product framing beside the form.
+    --}}
+    <section class="relative hidden overflow-hidden bg-gradient-to-br from-[#00236f] via-[#152c72] to-[#1e3a8a] p-inline-lg lg:flex lg:flex-col lg:justify-between">
+        {{-- Ambient depth: drifting orbs behind a faint grid. motion-safe so
+             reduced-motion users get a static field. --}}
+        <div class="pointer-events-none absolute -start-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-secondary-container/25 blur-3xl motion-safe:animate-[admin-orb_16s_ease-in-out_infinite]"></div>
+        <div class="pointer-events-none absolute -bottom-32 -end-24 h-[30rem] w-[30rem] rounded-full bg-primary-fixed-dim/20 blur-3xl motion-safe:animate-[admin-orb_20s_ease-in-out_infinite_reverse]"></div>
+        <div class="pointer-events-none absolute inset-0 opacity-[0.07]"
+            style="background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px); background-size: 46px 46px;"></div>
 
-        <div class="stagger relative z-10 max-w-lg text-center">
-            <div class="mb-8 flex justify-center">
-                <x-logo size="lg" />
+        <div class="relative z-10">
+            <div class="reveal-up mb-10 flex items-center gap-4">
+                <x-logo />
+                <div>
+                    <span class="block font-display-lg text-2xl font-bold leading-tight text-white">{{ __('حوالاتي') }}</span>
+                    <span class="font-body-sm text-white/60">{{ __('تحويلاتي') }}</span>
+                </div>
             </div>
-            <h2 class="mb-4 font-display-lg text-[36px] leading-tight text-white">{{ __('شريكك الموثوق في عالم التحويلات المالية') }}</h2>
-            <p class="font-body-lg leading-relaxed text-white/80">
+
+            <h2 class="reveal-up max-w-md font-display-lg text-[38px] font-bold leading-[1.15] text-white" style="--d:80ms">
+                {{ __('شريكك الموثوق في') }}<br>
+                <span class="bg-gradient-to-l from-secondary-fixed-dim to-white bg-clip-text text-transparent rtl:bg-gradient-to-r">
+                    {{ __('عالم التحويلات المالية') }}
+                </span>
+            </h2>
+
+            <p class="reveal-up mt-5 max-w-md font-body-lg leading-relaxed text-white/70" style="--d:140ms">
                 {{ __('نوفّر لك أفضل التقنيات العالمية لضمان سرعة وأمان أموالك، وتحكّم كامل في معاملاتك الدولية والمحلية بنقرة واحدة.') }}
             </p>
-
-            <ul class="mt-10 inline-block space-y-3 text-start">
-                @foreach ([__('تتبّع الحوالات في الوقت الفعلي'), __('دعم متعدد البنوك والعملات'), __('تقارير احترافية ثنائية اللغة')] as $feature)
-                    <li class="flex items-center gap-3 text-white/90">
-                        <span class="material-symbols-outlined text-secondary-container" data-weight="fill">check_circle</span>
-                        <span class="font-body-lg">{{ $feature }}</span>
-                    </li>
-                @endforeach
-            </ul>
         </div>
+
+        {{-- Feature cards as glass tiles that lift on hover, rather than a flat
+             tick-list — gives the panel a second focal point lower down. --}}
+        <ul class="stagger relative z-10 mt-12 space-y-3">
+            @foreach ([
+                ['icon' => 'bolt', 'title' => __('تتبّع الحوالات في الوقت الفعلي'), 'note' => __('حالة كل معاملة لحظة بلحظة')],
+                ['icon' => 'account_balance', 'title' => __('دعم متعدد البنوك والعملات'), 'note' => __('بنوك ومحافظ إلكترونية في مكان واحد')],
+                ['icon' => 'insights', 'title' => __('تقارير احترافية ثنائية اللغة'), 'note' => __('تصدير PDF وCSV جاهز للمحاسبة')],
+            ] as $feature)
+                <li class="flex items-center gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur transition-transform duration-300 hover:-translate-y-1">
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">
+                        <span class="material-symbols-outlined">{{ $feature['icon'] }}</span>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block font-body-lg font-bold text-white">{{ $feature['title'] }}</span>
+                        <span class="block font-body-sm text-[13px] text-white/60">{{ $feature['note'] }}</span>
+                    </span>
+                </li>
+            @endforeach
+        </ul>
     </section>
 @endsection

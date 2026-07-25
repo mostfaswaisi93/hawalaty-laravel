@@ -1,9 +1,17 @@
-@extends('layouts.app')
+{{--
+    One route serves both audiences: this page carries no authenticated data, and
+    the guest footer links it, so it must render for signed-out visitors too. The
+    layout follows the session — the app shell (with its sidebar) for a signed-in
+    tenant, the guest shell otherwise.
+--}}
+@extends(auth('tenant')->check() ? 'layouts.app' : 'layouts.guest')
 
 @section('title', __('مركز المساعدة - حوالاتي'))
 
 @section('content')
-    <div class="page-enter mx-auto max-w-4xl space-y-8">
+    {{-- lg:col-span-2 is required under layouts.guest, whose <main> is a
+         two-column grid; it is inert inside layouts.app. --}}
+    <div class="page-enter mx-auto w-full max-w-4xl space-y-8 px-inline-md py-8 md:px-inline-lg lg:col-span-2">
         <header class="text-center">
             <div class="reveal-scale mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary" style="--d:120ms">
                 <span class="material-symbols-outlined !text-4xl">help</span>

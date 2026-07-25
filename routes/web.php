@@ -49,6 +49,17 @@ Route::get('locale/{locale}', function (string $locale) {
     return back();
 })->name('locale.switch');
 
+// Public content pages. These are linked from the guest footer, which renders on
+// login, signup and every error page, so they must be reachable without a
+// session — previously they were linked but had no route at all and 404'd.
+Route::view('privacy', 'privacy')->name('privacy');
+Route::view('terms', 'terms')->name('terms');
+
+// Help is public too, for the same reason: the guest footer links it. The view
+// carries no authenticated data and picks its own layout depending on whether a
+// tenant is signed in, so one route serves both audiences.
+Route::view('help', 'help.index')->name('help.index');
+
 /*
 |--------------------------------------------------------------------------
 | Tenant space — a license's own team members
@@ -157,9 +168,6 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     // Settings (self-service profile + password)
     Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('settings/profile', [SettingsController::class, 'update'])->name('settings.profile.update');
-
-    // Help
-    Route::view('help', 'help.index')->name('help.index');
 });
 
 /*
