@@ -1,16 +1,5 @@
 @import 'tailwindcss';
 
-/*
- * Tailwind v4 roots automatic source detection at THIS file's directory
- * (resources/css), so resources/views is never picked up on its own — the
- * Blade sources must be declared explicitly. Without this line the build is
- * order-dependent: a `npm run build` on a cold view cache emitted ~74kB
- * instead of ~92kB and silently shipped a stylesheet missing every class
- * that only appears in a Blade template. The storage/framework/views entry
- * below is kept as a backstop for classes assembled at runtime, but it must
- * not be the only source.
- */
-@source '../views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
