@@ -260,7 +260,7 @@
                     </div>
 
                     {{-- mobile: icon that opens a full-screen search overlay --}}
-                    <button type="button" @click="mobileOpen = true; $nextTick(() = title="{{ __('بحث') }}"> $refs.mobileSearchInput?.focus())"
+                    <button type="button" @click="mobileOpen = true; $nextTick(() => $refs.mobileSearchInput?.focus())"
                         class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary sm:hidden"
                         aria-label="{{ __('بحث') }}">
                         <span class="material-symbols-outlined">search</span>
