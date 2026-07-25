@@ -45,11 +45,12 @@
             </div>
 
             <div class="flex items-center gap-2">
+                {{-- The locale code alone carries the meaning; the translate glyph
+                     beside it was pure duplication. --}}
                 <a href="{{ route('locale.switch', $otherLocale) }}"
-                    class="flex h-10 items-center gap-1.5 rounded-full px-3 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                    class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
                     aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
-                    <span class="material-symbols-outlined">translate</span>
-                    <span class="font-body-sm font-bold">{{ $otherLocale === 'en' ? 'EN' : 'ع' }}</span>
+                    {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                 </a>
                 <button type="button" @click="dark = !dark"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"

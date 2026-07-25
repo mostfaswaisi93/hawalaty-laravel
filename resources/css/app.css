@@ -262,9 +262,22 @@ html.lang-en {
  */
 html {
     height: 100%;
+    /* Eases every anchor jump, scrollIntoView() and programmatic scroll instead
+       of snapping. Nested scrollers (the sidebar nav, table wrappers) need
+       their own `scroll-smooth` — this property does not inherit into them. */
+    scroll-behavior: smooth;
+    /* Keeps a sticky-header-height gap when jumping to an in-page anchor, so
+       the target is never hidden underneath it. */
+    scroll-padding-top: 5rem;
 }
 body {
     min-height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
 }
 body {
     margin: 0;

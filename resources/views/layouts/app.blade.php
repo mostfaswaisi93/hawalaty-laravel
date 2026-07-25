@@ -155,7 +155,7 @@
             </button>
         </div>
 
-        <nav class="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-inline-md" :class="collapsed && 'lg:px-2'">
+        <nav class="flex-1 scroll-smooth space-y-1 overflow-y-auto overflow-x-hidden px-inline-md" :class="collapsed && 'lg:px-2'">
             @foreach ($visibleGroups as $group)
                 <p class="px-4 pb-1 pt-4 font-label-caps text-label-caps uppercase tracking-wider text-on-sidebar-muted"
                     :class="collapsed && 'lg:hidden'">{{ __($group['label']) }}</p>
