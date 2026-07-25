@@ -27,14 +27,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // 401, because Authenticate::unauthenticated() calls redirectTo()
         // (which threw trying to resolve `route('login')`) before the
         // AuthenticationException even got a chance to be JSON-rendered by
-        // shouldRenderJsonWhen() below — so it was set to always return
+        // shouldRenderJsonWhen() below - so it was set to always return
         // null ("never redirect").
         //
         // Now that routes/web.php has real session-authenticated pages
         // (tenant + admin), that blanket null broke THEM instead: a guest
         // hitting a protected web page got a bare 204 No Content rather
         // than being redirected to the right login screen (see
-        // Illuminate\Foundation\Exceptions\Handler::unauthenticated — a null
+        // Illuminate\Foundation\Exceptions\Handler::unauthenticated - a null
         // redirectTo() on a non-JSON request short-circuits to
         // response()->noContent(401) rather than actually redirecting).
         // Made guard-aware instead: API requests still get null (→ plain
@@ -53,7 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // /login and /admin/login so an already-logged-in user re-visiting
         // them gets bounced onward instead of seeing the form again. Its
         // un-configured default falls back to `Route::has('dashboard') ?
-        // route('dashboard') : ...` — which always resolves to the TENANT
+        // route('dashboard') : ...` - which always resolves to the TENANT
         // dashboard route by name, even for an already-authenticated Super
         // Admin hitting /admin/login (there's no route literally named
         // `dashboard` in admin space, it's `admin.dashboard`). Guard-aware
@@ -62,7 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('admin/*') ? route('admin.dashboard') : route('dashboard'),
         );
 
-        // See BACKEND_PROMPT.md section 8.1 — apply to tenant-space route
+        // See BACKEND_PROMPT.md section 8.1 - apply to tenant-space route
         // groups only, always ahead of `auth:sanctum`, e.g.
         // Route::middleware(['tenant.header', 'auth:sanctum'])->group(...).
         // Never applied to /admin/* (Super Admin) routes.
@@ -73,19 +73,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant.header' => ResolveTenantConnection::class,
             // Session-cookie equivalent of tenant.header, for the Blade web
-            // app — see App\Http\Middleware\ResolveTenantConnectionFromSession's
+            // app - see App\Http\Middleware\ResolveTenantConnectionFromSession's
             // doc comment. Apply to tenant-space WEB route groups only,
             // always ahead of `auth:tenant`, e.g.
             // Route::middleware(['tenant.session', 'auth:tenant'])->group(...).
             'tenant.session' => ResolveTenantConnectionFromSession::class,
-            // Gates /api/v1/admin/* routes — always paired with
+            // Gates /api/v1/admin/* routes - always paired with
             // auth:sanctum, NEVER with tenant.header. See
             // App\Http\Middleware\EnsureAdmin's doc comment.
             'admin' => EnsureAdmin::class,
         ]);
 
         // Laravel 11's `api` middleware group does NOT include throttle:api
-        // by default (its $apiLimiter is unset unless this is called) —
+        // by default (its $apiLimiter is unset unless this is called) -
         // verified by reading Illuminate\Foundation\Configuration\Middleware
         // directly rather than assumed, per BACKEND_PROMPT.md section 7's
         // rate-limiting requirement. Pairs with the 'api' RateLimiter
@@ -96,7 +96,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middlewarePriority, NOT the order they're listed in the route
         // definition. The default priority list contains the
         // AuthenticatesRequests *interface* (which Authenticate/auth:sanctum
-        // implements), not the concrete Authenticate class — passing the
+        // implements), not the concrete Authenticate class - passing the
         // concrete class here would silently fail to match (addToMiddleware-
         // PriorityBefore() falls through to appending at the very end when
         // it can't find `before` in the list) and leave the bug in place, so
@@ -119,7 +119,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // our route-level ['tenant.session', 'auth:tenant'] pair in the
         // collapsed middleware list. Illuminate\Routing\SortedMiddleware
         // only reorders priority-listed middleware relative to OTHER
-        // priority-listed middleware — it moved auth:tenant (priority-listed
+        // priority-listed middleware - it moved auth:tenant (priority-listed
         // via the interface) to just before SubstituteBindings, which put it
         // ahead of tenant.session (not priority-listed at all) despite the
         // route declaring tenant.session first. Adding

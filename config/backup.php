@@ -9,7 +9,7 @@ return [
     |
     | Used by App\Services\Admin\BackupService to shell out to a real
     | mysqldump process (replacing the abandoned spatie/laravel-backup
-    | dependency — see BACKEND_PROMPT.md's note on this). Default matches
+    | dependency - see BACKEND_PROMPT.md's note on this). Default matches
     | this project's Laragon install; override via MYSQLDUMP_BINARY in .env
     | on any other machine.
     |

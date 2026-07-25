@@ -17,7 +17,7 @@ class StoreConstantListRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // "tenant." prefix required — Rule::unique() otherwise
+            // "tenant." prefix required - Rule::unique() otherwise
             // resolves against the app's DEFAULT connection (platform),
             // not the dynamic `tenant` connection. See
             // StoreExpenseRequest for the full reasoning (same bug class).

@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Sanctum's token table, one independent copy per tenant database — see
+     * Sanctum's token table, one independent copy per tenant database - see
      * BACKEND_PROMPT.md section 8.1 and App\Models\TenantPersonalAccessToken.
      *
-     * CRITICAL: ulidMorphs('tokenable'), NOT morphs('tokenable') — every
+     * CRITICAL: ulidMorphs('tokenable'), NOT morphs('tokenable') - every
      * tokenable model in tenant space (TeamMember) uses HasUlids string
      * primary keys; plain morphs() would create an incompatible bigint
      * tokenable_id column that truncates ULIDs and breaks every token
      * insert. The token row's own primary key stays a normal auto-increment
-     * id — Sanctum's PersonalAccessToken model is not ULID-keyed itself,
+     * id - Sanctum's PersonalAccessToken model is not ULID-keyed itself,
      * only the tokenable relation is (mirrors the platform DB's copy of
      * this same migration).
      */

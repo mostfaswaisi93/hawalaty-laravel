@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**
- * A partner's withdrawal from a platform box — see BACKEND_PROMPT.md
+ * A partner's withdrawal from a platform box - see BACKEND_PROMPT.md
  * section 11's "get the balance math right" requirement. Money leaving a
  * box always SUBTRACTS from `Box.box_balance` (paired convention: payments
  * ADD, see PaymentService; expenses SUBTRACT, see ExpenseService).

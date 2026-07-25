@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * CustomerService::findOrCreate() does a plain check-then-insert with no
- * locking — under concurrent orders for the same new customer name, two
+ * locking - under concurrent orders for the same new customer name, two
  * requests can both see "not found" and each insert their own row,
  * permanently splitting that customer's order_count/total_spent. A unique
  * constraint turns the losing concurrent insert into a catchable exception

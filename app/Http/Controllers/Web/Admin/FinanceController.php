@@ -15,7 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
- * The platform's internal accounting dashboard — reuses
+ * The platform's internal accounting dashboard - reuses
  * FinanceSummaryService for the read side, and WithdrawalService/ExpenseService
  * for the two "money out of a box" actions that have no dedicated nav page.
  */

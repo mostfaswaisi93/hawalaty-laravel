@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Append-only: created_at only, no updated_at — this log is never
+     * Append-only: created_at only, no updated_at - this log is never
      * edited or deleted. See App\Models\Tenant\AuditLog (const UPDATED_AT = null).
      * Distinct from the platform's own `activity_logs` table (super-admin
      * actions on licenses), which lives only in the platform DB.

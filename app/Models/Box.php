@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A platform financial box/account — internal accounting for the platform
+ * A platform financial box/account - internal accounting for the platform
  * itself, not any tenant. See BACKEND_PROMPT.md section 3.
  */
 #[Fillable(['box_name', 'box_balance'])]

@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * Handles both /api/v1/transfers and /api/v1/history — BACKEND_PROMPT.md
+ * Handles both /api/v1/transfers and /api/v1/history - BACKEND_PROMPT.md
  * section 7 describes History as "same as transfers with wider filters +
  * pagination", so both routes are wired to index().
  */

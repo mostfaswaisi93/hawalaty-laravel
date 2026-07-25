@@ -4,7 +4,7 @@
     // Mirrors D:\Angular\Hawalaty\src\app\layout\layout.ts's `nav` array,
     // extended with the Devices / Activity Log / Help entries this task's
     // brief calls out explicitly (the current Angular sidebar doesn't
-    // surface those three as nav items, only as their own routes — matching
+    // surface those three as nav items, only as their own routes - matching
     // the brief over the current Angular snapshot per this task's
     // instructions). `permission: null` means always visible, exactly like
     // Dashboard/History/Reports/Settings/Help in the Angular version.

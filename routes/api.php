@@ -33,7 +33,7 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/signup', [AuthController::class, 'signup']);
     Route::middleware(['tenant.header', 'auth:sanctum'])->post('auth/logout', [AuthController::class, 'logout']);
 
-    // Tenant-space domain routes — every route here requires the
+    // Tenant-space domain routes - every route here requires the
     // X-License-Code header (tenant.header) resolved BEFORE auth:sanctum
     // checks the bearer token against the correct tenant database, see
     // BACKEND_PROMPT.md section 8.1. `throttle:api` is inherited from the
@@ -100,10 +100,10 @@ Route::prefix('v1')->group(function () {
         Route::get('sync/pull', [SyncController::class, 'pull']);
     });
 
-    // Admin/platform routes — see BACKEND_PROMPT.md sections 3 and 8. These
+    // Admin/platform routes - see BACKEND_PROMPT.md sections 3 and 8. These
     // NEVER pass through tenant.header and always stay on the platform's
     // default `mysql` connection (LicenseController::show is the one
-    // deliberate, explicit exception — it resolves a tenant connection
+    // deliberate, explicit exception - it resolves a tenant connection
     // read-only for a single peek and restores it immediately after, see
     // App\Services\Admin\LicenseService::show()).
     Route::prefix('admin')->group(function () {

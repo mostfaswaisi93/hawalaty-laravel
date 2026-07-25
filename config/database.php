@@ -64,7 +64,7 @@ return [
             ]) : [],
         ],
 
-        // Dynamic per-tenant connection — see BACKEND_PROMPT.md section 8.1 and
+        // Dynamic per-tenant connection - see BACKEND_PROMPT.md section 8.1 and
         // App\Services\TenantConnectionResolver. The values below are only a
         // template/fallback so the `tenant` connection name exists and Laravel
         // does not error before the first request-time override; every real

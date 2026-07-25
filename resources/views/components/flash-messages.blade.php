@@ -5,7 +5,7 @@
     to go back and fix, so they must not disappear on a timer.
 
     `fixed` here is safe because this component renders from the layout, outside
-    the `.page-enter` wrapper — see the note on .page-enter in app.css about
+    the `.page-enter` wrapper - see the note on .page-enter in app.css about
     transformed ancestors capturing fixed positioning.
 --}}
 @if (session('success') || session('error'))

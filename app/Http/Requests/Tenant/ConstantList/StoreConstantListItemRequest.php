@@ -9,7 +9,7 @@ class StoreConstantListItemRequest extends FormRequest
     public function authorize(): bool
     {
         // Gated explicitly via $this->authorize('update', $constantList) in
-        // ConstantListController::storeItem() — adding an item to a list is
+        // ConstantListController::storeItem() - adding an item to a list is
         // treated as managing that list.
         return true;
     }

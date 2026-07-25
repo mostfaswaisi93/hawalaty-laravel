@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // The real "User"/login model of tenant space — see
+        // The real "User"/login model of tenant space - see
         // App\Models\Tenant\TeamMember and BACKEND_PROMPT.md section 5.
         Schema::create('team_members', function (Blueprint $table) {
             $table->ulid('id')->primary();

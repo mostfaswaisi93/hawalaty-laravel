@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * The orders/transfers table — the heart of the system.
+     * The orders/transfers table - the heart of the system.
      * See BACKEND_PROMPT.md section 4 and D:\Angular\Hawalaty\src\app\data\transfers.ts.
      */
     public function up(): void

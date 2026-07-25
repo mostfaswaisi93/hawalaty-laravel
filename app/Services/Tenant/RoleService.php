@@ -19,7 +19,7 @@ class RoleService
 
     /**
      * Custom (tenant-created) role: `is_system` is always false and `key`
-     * is always null — only the 3 built-in roles cloned at provisioning
+     * is always null - only the 3 built-in roles cloned at provisioning
      * time ever get a key/is_system=true.
      */
     public function create(array $data): Role
@@ -40,7 +40,7 @@ class RoleService
     }
 
     /**
-     * Blocks mutating `is_system` roles — RolePolicy::update() already
+     * Blocks mutating `is_system` roles - RolePolicy::update() already
      * checks this too (defense in depth, per this task's instructions).
      */
     public function update(Role $role, array $data): Role

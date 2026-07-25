@@ -43,7 +43,7 @@ class LicenseController extends Controller
 
     /**
      * License details + a live read-only peek at its tenant's team roster
-     * and recent activity — see LicenseService::show()'s doc comment for how
+     * and recent activity - see LicenseService::show()'s doc comment for how
      * the tenant connection is resolved and released.
      */
     public function show(string $license): JsonResponse

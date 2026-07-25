@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
  * cascade-deleted (silently destroying expense records), and
  * transfers.bank_id / change_bank_id previously nulled out (silently
  * erasing which bank a historical transfer used). Both are replaced with
- * restrictOnDelete() — the application layer (BankService::delete) checks
+ * restrictOnDelete() - the application layer (BankService::delete) checks
  * for related records first and returns a friendly validation error; this
  * constraint is the last-resort safety net if that check is ever bypassed.
  * Banks should be deactivated (the existing `active` toggle), not deleted,

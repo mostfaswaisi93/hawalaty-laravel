@@ -10,7 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
- * "My devices" — self-scoped list + revoke (sign-out). Sidebar permission=null.
+ * "My devices" - self-scoped list + revoke (sign-out). Sidebar permission=null.
  * The web session guard has no Sanctum access token, so null is passed for
  * currentToken (every row's is_current is therefore false).
  */

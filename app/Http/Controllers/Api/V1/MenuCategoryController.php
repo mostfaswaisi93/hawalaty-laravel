@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * index/store/destroy only — no update, matching
+ * index/store/destroy only - no update, matching
  * ConstantsService.addMenuCategory()/removeMenuCategory() in the Angular
  * app.
  */

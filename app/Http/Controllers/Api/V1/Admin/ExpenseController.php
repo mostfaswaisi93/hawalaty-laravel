@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * Platform's own operating expenses — distinct from
+ * Platform's own operating expenses - distinct from
  * App\Http\Controllers\Api\V1\ExpenseController, which handles a tenant's
  * own expenses on the dynamic `tenant` connection.
  */

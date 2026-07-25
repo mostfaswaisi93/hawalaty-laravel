@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * A tenant's OWN business expenses — NOT the platform's own operating
+ * A tenant's OWN business expenses - NOT the platform's own operating
  * expenses (App\Models\Expense lives in the platform DB). Namespaced under
  * App\Models\Tenant to avoid a class-name collision with that model, and by
  * extension every tenant-space domain model lives under this same

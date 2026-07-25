@@ -44,7 +44,7 @@ class BackupController extends Controller
             $backup->status->value === 'completed' ? 'success' : 'error',
             $backup->status->value === 'completed'
                 ? __('تم إنشاء النسخة الاحتياطية بنجاح.')
-                : __('فشل إنشاء النسخة الاحتياطية — راجِع السجلات.'),
+                : __('فشل إنشاء النسخة الاحتياطية - راجِع السجلات.'),
         );
     }
 

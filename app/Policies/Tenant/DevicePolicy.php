@@ -15,7 +15,7 @@ class DevicePolicy
 
     /**
      * A team member may always sign THEIR OWN device out, even without
-     * devices.manage — mirrors "you can always sign yourself out" from the
+     * devices.manage - mirrors "you can always sign yourself out" from the
      * superseded prototype's DevicePolicy.
      */
     public function delete(TeamMember $user, Device $device): bool

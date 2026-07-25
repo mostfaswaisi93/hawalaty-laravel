@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Read-only customer/recipient directory (sidebar permission=null — any
+ * Read-only customer/recipient directory (sidebar permission=null - any
  * authenticated member, matching History/Reports/Activity Log).
  */
 class CustomerController extends Controller

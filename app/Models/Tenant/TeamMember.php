@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * The real "User"/login model of tenant space — see BACKEND_PROMPT.md
+ * The real "User"/login model of tenant space - see BACKEND_PROMPT.md
  * sections 4-5 and D:\Angular\Hawalaty\src\app\data\team-members.ts.
  */
 #[Fillable(['name', 'email', 'password', 'role_id', 'active'])]
@@ -49,7 +49,7 @@ class TeamMember extends Authenticatable
     /**
      * Named hasPermission() rather than can() because TeamMember extends
      * Illuminate\Foundation\Auth\User, which already defines can() via the
-     * Authorizable trait for Gate/Policy checks — a same-named method here
+     * Authorizable trait for Gate/Policy checks - a same-named method here
      * would silently shadow it (a mistake made and caught in the earlier
      * prototype at D:\Angular\Hawalaty_Laravel).
      */

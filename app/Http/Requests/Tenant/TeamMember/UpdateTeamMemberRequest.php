@@ -24,9 +24,9 @@ class UpdateTeamMemberRequest extends FormRequest
                 Rule::unique('tenant.team_members', 'email')->ignore($this->route('teamMember')),
             ],
             // Optional-if-present: an empty/omitted password means "keep
-            // the current one" — TeamService strips it when blank.
+            // the current one" - TeamService strips it when blank.
             'password' => ['nullable', 'string', 'min:6'],
-            // "tenant." prefix required — see StoreExpenseRequest.
+            // "tenant." prefix required - see StoreExpenseRequest.
             'roleId' => ['sometimes', 'required', 'string', 'exists:tenant.roles,id'],
             'active' => ['sometimes', 'boolean'],
         ];

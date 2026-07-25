@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 /**
- * Offline sync engine — implements BACKEND_PROMPT.md section 10,
+ * Offline sync engine - implements BACKEND_PROMPT.md section 10,
  * DELIBERATELY NARROWED for this first version to `transfer` and `expense`
  * CREATE-ONLY events, matching the exact narrowing the earlier
  * (single-shared-DB) prototype made. Updates/deletes and other entity
  * types (banks, expense edits, menu items, etc.) are a deliberate future
- * extension, not an oversight — see SyncPushRequest's rules().
+ * extension, not an oversight - see SyncPushRequest's rules().
  */
 class SyncService
 {
@@ -94,7 +94,7 @@ class SyncService
 
     /**
      * Validates the payload with StoreTransferRequest's own rules() (rather
-     * than duplicating a rules array), then delegates to TransferService —
+     * than duplicating a rules array), then delegates to TransferService -
      * the actual creation logic (amount computed server-side, etc.) is NOT
      * duplicated here, unlike the superseded prototype.
      */

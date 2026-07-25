@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Real connection details for one license's tenant database — see
+ * Real connection details for one license's tenant database - see
  * BACKEND_PROMPT.md section 3. `password` is encrypted at rest via Laravel's
  * native `encrypted` cast; it is never plain text in the `database_connections`
  * table, only decrypted in memory when Eloquent hydrates the attribute.

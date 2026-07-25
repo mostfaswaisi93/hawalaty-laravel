@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The platform's OWN operating expenses (hosting, domain, SSL...) — see
+ * The platform's OWN operating expenses (hosting, domain, SSL...) - see
  * App\Models\Expense's doc comment. Money leaving a box always SUBTRACTS
  * from `Box.box_balance` (paired convention: payments ADD, see
  * PaymentService; withdrawals SUBTRACT, see WithdrawalService).

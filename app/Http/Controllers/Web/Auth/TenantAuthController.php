@@ -20,7 +20,7 @@ use Illuminate\View\View;
 use Throwable;
 
 /**
- * Session/cookie login for tenant space (a license's team members) — the
+ * Session/cookie login for tenant space (a license's team members) - the
  * web-page counterpart of App\Http\Controllers\Api\V1\Auth\AuthController.
  * See BACKEND_PROMPT.md sections 5 and 8.1, and this task's report for the
  * session-specific chicken-and-egg fix
@@ -37,8 +37,8 @@ class TenantAuthController extends Controller
 
     /**
      * No `tenant.session` middleware runs ahead of this route (there's no
-     * session license_code yet on a guest's first visit), so — exactly like
-     * the API login endpoint — TenantConnectionResolver is called directly
+     * session license_code yet on a guest's first visit), so - exactly like
+     * the API login endpoint - TenantConnectionResolver is called directly
      * here with the license code straight from the submitted form, before
      * anything touches the `tenant` connection.
      */
@@ -57,7 +57,7 @@ class TenantAuthController extends Controller
         try {
             // `active` is included as a credential (not checked after the
             // fact) so an inactive team member fails the SAME generic
-            // "invalid credentials" path as a wrong password — never a
+            // "invalid credentials" path as a wrong password - never a
             // different message that would leak the account exists but is
             // disabled.
             $attempted = Auth::guard('tenant')->attempt([
@@ -135,7 +135,7 @@ class TenantAuthController extends Controller
 
     /**
      * One generic error for every login failure reason (bad license code,
-     * unknown email, wrong password, inactive account) — never reveals
+     * unknown email, wrong password, inactive account) - never reveals
      * which part was wrong. Password is deliberately excluded from the
      * flashed input.
      */

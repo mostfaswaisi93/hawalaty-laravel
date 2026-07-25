@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Resolves a license code to its tenant database and points Laravel's
- * dynamic `tenant` connection at it — see BACKEND_PROMPT.md section 8.1.
+ * dynamic `tenant` connection at it - see BACKEND_PROMPT.md section 8.1.
  *
  * This is the single chokepoint every tenant-aware request (or the login
  * controller, which has no token yet and calls this directly with the
@@ -20,7 +20,7 @@ class TenantConnectionResolver
 {
     /**
      * Resolve the given license code, point the `tenant` connection at its
-     * database, and return the License model (callers need it — e.g. the
+     * database, and return the License model (callers need it - e.g. the
      * login controller needs the license id, ResolveTenantConnection binds
      * it into the container for later use).
      *

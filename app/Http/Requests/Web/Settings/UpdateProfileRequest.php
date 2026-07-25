@@ -10,7 +10,7 @@ use Illuminate\Validation\Rules\Password;
  * Self-service profile + password update for the logged-in tenant member.
  * Deliberately excludes roleId/active (a member must never be able to change
  * their own role or reactivate themselves via this form). The unique email
- * rule ignores the current member's own id — the "tenant." prefix keeps the
+ * rule ignores the current member's own id - the "tenant." prefix keeps the
  * check on the tenant connection, not the platform DB.
  */
 class UpdateProfileRequest extends FormRequest

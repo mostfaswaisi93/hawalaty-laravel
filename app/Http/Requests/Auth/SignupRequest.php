@@ -13,7 +13,7 @@ class SignupRequest extends FormRequest
     }
 
     /**
-     * `phone` is intentionally accepted but not persisted anywhere — the
+     * `phone` is intentionally accepted but not persisted anywhere - the
      * `licenses` table (BACKEND_PROMPT.md section 3) has no column for it.
      * See the provisioning task report for this gap; not silently adding an
      * unplanned migration for it here.

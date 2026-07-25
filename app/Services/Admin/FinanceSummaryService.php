@@ -8,7 +8,7 @@ use App\Models\Partner;
 use App\Models\Payment;
 
 /**
- * Turns the platform's own accounting tables into an actual dashboard — see
+ * Turns the platform's own accounting tables into an actual dashboard - see
  * BACKEND_PROMPT.md section 11, "ملخّص مالي للمنصّة". Deliberately not a
  * Controller method: this is real aggregation business logic, not a
  * passthrough Resource mapping.

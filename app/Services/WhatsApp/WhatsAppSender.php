@@ -87,7 +87,7 @@ class WhatsAppSender
     }
 
     /**
-     * Primitives only — no Eloquent, no tenant connection.
+     * Primitives only - no Eloquent, no tenant connection.
      */
     public function send(string $rawPhone, string $body): WhatsAppResult
     {
@@ -148,14 +148,14 @@ class WhatsAppSender
                         'language' => ['code' => config('whatsapp.template.language')],
                         'components' => [[
                             'type' => 'body',
-                            // Exactly one positional parameter — a count mismatch
+                            // Exactly one positional parameter - a count mismatch
                             // against the approved template returns error 132000.
                             'parameters' => [['type' => 'text', 'text' => $body]],
                         ]],
                     ],
                 ]);
         } catch (Throwable $e) {
-            // A connect/read timeout raises ConnectionException — there is no
+            // A connect/read timeout raises ConnectionException - there is no
             // HTTP status to inspect on this path.
             Log::error('WhatsApp send failed to reach the provider.', [
                 'phone' => PhoneNumber::mask($to),
@@ -198,12 +198,12 @@ class WhatsAppSender
 
     /**
      * The default driver, and the demo path. This is the one place the number is
-     * logged unmasked — seeing the exact destination and the exact body is the
+     * logged unmasked - seeing the exact destination and the exact body is the
      * entire purpose of the driver. Watch it with `php artisan pail`.
      */
     private function sendViaLog(string $to, string $body): WhatsAppResult
     {
-        Log::info('WhatsApp message (log driver — not actually sent).', [
+        Log::info('WhatsApp message (log driver - not actually sent).', [
             'to' => $to,
             'body' => $body,
         ]);

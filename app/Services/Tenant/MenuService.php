@@ -12,7 +12,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Categories + items live in one Service — they're tightly coupled (an item
+ * Categories + items live in one Service - they're tightly coupled (an item
  * always belongs to a category, and MenuItemResource denormalizes the
  * category name onto the item), matching the task instructions' explicit
  * pairing.
@@ -27,12 +27,12 @@ class MenuService
     }
 
     /**
-     * index/store/destroy only — no update, matching
+     * index/store/destroy only - no update, matching
      * ConstantsService.addMenuCategory()/removeMenuCategory() in the
      * Angular app, which never renames a category, only adds/removes.
      *
      * lockForUpdate() inside a transaction so two concurrent creates can't
-     * both read the same MAX(position) and insert with an identical value —
+     * both read the same MAX(position) and insert with an identical value -
      * the second transaction's locked read waits for the first to commit.
      */
     public function createCategory(array $data): MenuCategory
@@ -156,7 +156,7 @@ class MenuService
     /**
      * Expects a `category,name,price,active` header row. Categories are
      * matched by exact name and created on the fly (appended after the
-     * current highest position); items are matched by (category, name) —
+     * current highest position); items are matched by (category, name) -
      * an existing match is updated in place, everything else is created.
      * One DB::transaction so a bad file never leaves a half-applied import.
      *

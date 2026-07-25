@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin\Expense;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * For the platform's OWN operating expenses (App\Models\Expense) — distinct
+ * For the platform's OWN operating expenses (App\Models\Expense) - distinct
  * from App\Http\Requests\Tenant\Expense\StoreExpenseRequest, which validates
  * a tenant's own expenses on the dynamic `tenant` connection.
  */

@@ -11,10 +11,10 @@ use Illuminate\Validation\Rule;
  * the cash-scenario fields (hasChange/changeMethod/changeBankId/
  * changeAmount) or bank-scenario fields (bankId/senderName/senderPhone/
  * transferredAmount) depending on paymentMethod. `amount` is intentionally
- * NOT accepted here — TransferService computes it server-side from the line
+ * NOT accepted here - TransferService computes it server-side from the line
  * items. `items.*.price`/`items.*.name` are validated as present here for a
  * well-formed request, but TransferService::create() ignores both and
- * re-derives them from the canonical MenuItem row per `itemId` — a
+ * re-derives them from the canonical MenuItem row per `itemId` - a
  * client-submitted price/name is never trusted, only the item's identity.
  */
 class StoreTransferRequest extends FormRequest
@@ -34,7 +34,7 @@ class StoreTransferRequest extends FormRequest
 
             'items' => ['required', 'array', 'min:1'],
             // "tenant." prefix required on every exists:/unique: rule in
-            // this codebase — see StoreExpenseRequest for the full
+            // this codebase - see StoreExpenseRequest for the full
             // reasoning (bare table names resolve against the platform
             // connection, not the dynamic `tenant` one).
             'items.*.itemId' => ['required', 'string', 'exists:tenant.menu_items,id'],

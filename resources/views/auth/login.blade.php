@@ -117,7 +117,7 @@
         </div>
 
         {{-- Feature cards as glass tiles that lift on hover, rather than a flat
-             tick-list — gives the panel a second focal point lower down. --}}
+             tick-list - gives the panel a second focal point lower down. --}}
         <ul class="stagger relative z-10 mt-12 space-y-3">
             @foreach ([
                 ['icon' => 'bolt', 'title' => __('تتبّع الحوالات في الوقت الفعلي'), 'note' => __('حالة كل معاملة لحظة بلحظة')],

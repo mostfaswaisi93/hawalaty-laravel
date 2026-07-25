@@ -8,7 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
- * The Super Admin's own account page — distinct from admin/settings, which
+ * The Super Admin's own account page - distinct from admin/settings, which
  * holds platform-wide key/value configuration rather than anything personal.
  * Mirrors the tenant-side App\Http\Controllers\Web\SettingsController.
  */
@@ -23,7 +23,7 @@ class ProfileController extends Controller
     {
         $admin = auth('admin')->user();
 
-        // An empty password field means "keep the current one" — filtering
+        // An empty password field means "keep the current one" - filtering
         // before fill() stops a blank from being hashed into the column.
         $data = array_filter(
             $request->safe()->only(['name', 'email', 'password']),

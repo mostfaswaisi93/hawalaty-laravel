@@ -7,7 +7,7 @@ use App\Services\Tenant\DashboardService;
 use Illuminate\View\View;
 
 /**
- * Server-rendered counterpart of Api\V1\DashboardController — same
+ * Server-rendered counterpart of Api\V1\DashboardController - same
  * DashboardService, just handed to a Blade view instead of wrapped in
  * JSON resources. See resources/views/dashboard.blade.php.
  */

@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 /**
  * Fired when a new order is created (TransferService::create), so team
  * members on shift see it without refreshing the dashboard. Database
- * channel only — sent synchronously (no ShouldQueue), matching the rest of
+ * channel only - sent synchronously (no ShouldQueue), matching the rest of
  * this app's synchronous architecture; no queue worker is assumed running.
  */
 class NewOrderNotification extends Notification

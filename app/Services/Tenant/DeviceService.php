@@ -12,7 +12,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 /**
  * Devices are scoped to the CURRENTLY AUTHENTICATED team member, not the
- * whole tenant — Device is `team_member_id`-scoped, and the Angular
+ * whole tenant - Device is `team_member_id`-scoped, and the Angular
  * `/devices` page (core/devices.service.ts) only ever renders "my devices".
  */
 class DeviceService
@@ -23,7 +23,7 @@ class DeviceService
             ->latest('last_active_at')
             ->get()
             ->each(function (Device $device) use ($currentToken) {
-                // Transient, non-persisted attribute — see DeviceResource's
+                // Transient, non-persisted attribute - see DeviceResource's
                 // docblock. Computed per-request, never stored as a column.
                 $device->is_current = $device->isCurrent($currentToken);
             });

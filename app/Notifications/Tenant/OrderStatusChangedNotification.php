@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 
 /**
  * Fired when an order's status changes to completed or failed
- * (TransferService::updateStatus) — never for pending, since that's the
+ * (TransferService::updateStatus) - never for pending, since that's the
  * default at creation, not a meaningful transition. Database channel only,
  * sent synchronously.
  */

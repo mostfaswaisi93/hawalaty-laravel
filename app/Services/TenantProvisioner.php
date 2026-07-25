@@ -23,7 +23,7 @@ use Throwable;
  * Given signup/admin-provisioning input, creates a fully working new tenant
  * end-to-end: license row, physical MySQL database + dedicated user, tenant
  * schema (via MigrateTenant), and the default roles/permissions/owner
- * account — see BACKEND_PROMPT.md sections 6 and 9.
+ * account - see BACKEND_PROMPT.md sections 6 and 9.
  *
  * The platform-side rows (License, DatabaseConnection, ActivityLog) are
  * each written inside their own DB::transaction(); the physical database
@@ -118,7 +118,7 @@ class TenantProvisioner
 
     /**
      * Actually creates a real physical MySQL database + dedicated user on
-     * the platform's own MySQL server (`mysql` connection) — see
+     * the platform's own MySQL server (`mysql` connection) - see
      * BACKEND_PROMPT.md section 6, "default/automatic mode". Database name
      * and username are derived from the license code (already a
      * server-generated random alnum string, never user input), lowercased;
@@ -185,7 +185,7 @@ class TenantProvisioner
      * Best-effort teardown of everything provisioned so far when a later
      * step fails: drop the physical database/user (each wrapped so one
      * failure doesn't block the other), then delete the platform rows
-     * already committed. Never throws — the original exception from
+     * already committed. Never throws - the original exception from
      * provision() is what the caller should see.
      */
     protected function cleanup(?string $dbName, ?string $dbUser, ?DatabaseConnection $connection, ?License $license): void

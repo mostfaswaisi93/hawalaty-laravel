@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * The offline-sync engine's event log. Deliberately does NOT use HasUlids:
  * the primary key is `server_sequence`, an auto-incrementing integer that
- * doubles as the strictly-ordered pull cursor — see that migration's doc
+ * doubles as the strictly-ordered pull cursor - see that migration's doc
  * comment and BACKEND_PROMPT.md sections 9-10.
  */
 #[Fillable(['device_id', 'client_uuid', 'entity_type', 'entity_id', 'operation', 'payload'])]

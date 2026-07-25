@@ -71,7 +71,7 @@ class ExpenseServiceTest extends TenantTestCase
         $bank = Bank::factory()->create(['name' => 'بنك محذوف']);
         $expense = Expense::factory()->create(['bank_id' => $bank->id]);
 
-        // Bypasses BankService::delete()'s history guard on purpose — this
+        // Bypasses BankService::delete()'s history guard on purpose - this
         // test targets the withTrashed() relation, not the guard.
         $bank->delete();
 

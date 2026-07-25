@@ -14,7 +14,7 @@ class TenantSignupRequest extends FormRequest
 
     /**
      * `confirmPassword` and `terms` exist only for this web form (see
-     * resources/views/auth/signup.blade.php) — the JSON API's SignupRequest
+     * resources/views/auth/signup.blade.php) - the JSON API's SignupRequest
      * (App\Http\Requests\Auth\SignupRequest) has neither. Only the fields
      * App\Services\TenantProvisioner::provision() actually reads
      * (businessName, ownerName, ownerEmail, phone, password, packageId) are

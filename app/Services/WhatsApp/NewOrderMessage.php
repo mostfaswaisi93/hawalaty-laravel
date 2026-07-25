@@ -12,7 +12,7 @@ use App\Models\Tenant\TransferLineItem;
  * only runs on the `web` middleware group and APP_LOCALE is `en`, so an order
  * created through the REST API or the offline-sync endpoint would otherwise
  * render this message in English and send it to an Arabic-speaking bank
- * operator — a failure invisible to any browser-based test.
+ * operator - a failure invisible to any browser-based test.
  *
  * Every Latin/numeric run is wrapped in Unicode isolates (LRI U+2066 … PDI
  * U+2069). WhatsApp lays the body out as a single RTL paragraph; without the
@@ -31,7 +31,7 @@ class NewOrderMessage
             'طلب جديد',
             '',
             'رقم الطلب: '.self::isolate('#'.strtoupper(substr((string) $transfer->id, -8))),
-            'التاريخ: '.self::isolate(($transfer->created_at ?? now())->locale('ar')->translatedFormat('j F Y — H:i')),
+            'التاريخ: '.self::isolate(($transfer->created_at ?? now())->locale('ar')->translatedFormat('j F Y - H:i')),
             'العميل: '.$transfer->customer,
             '',
         ];
@@ -60,7 +60,7 @@ class NewOrderMessage
         // considers those two fields noise in the notification. They are still
         // captured on the order form, stored, and printed on the receipt.
         //
-        // `transferred_amount` IS kept — it is the figure the bank reconciles
+        // `transferred_amount` IS kept - it is the figure the bank reconciles
         // against, and it can legitimately differ from the order total.
         // Nullable in both schema and validation, so emit the label only when
         // there is a value; never render the literal string "null".
@@ -83,7 +83,7 @@ class NewOrderMessage
             return $transfer->lineItems
                 ->map(fn (TransferLineItem $line) => '• '.$line->name
                     .' ×'.self::isolate((string) $line->quantity)
-                    .' — '.self::money($line->quantity * (float) $line->price))
+                    .' - '.self::money($line->quantity * (float) $line->price))
                 ->all();
         }
 

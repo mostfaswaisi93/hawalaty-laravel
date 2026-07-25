@@ -27,7 +27,7 @@ class SettingController extends Controller
     }
 
     /**
-     * Handles both "add" and "edit" — Setting::updateOrCreate keys on the
+     * Handles both "add" and "edit" - Setting::updateOrCreate keys on the
      * `key`, so posting an existing key updates its value and a new key
      * inserts a row.
      */

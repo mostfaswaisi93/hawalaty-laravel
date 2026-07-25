@@ -20,7 +20,7 @@ class StoreTeamMemberRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             // "tenant." prefix required on every exists:/unique: rule in
-            // this codebase — see Expense\StoreExpenseRequest for the full
+            // this codebase - see Expense\StoreExpenseRequest for the full
             // reasoning.
             'email' => ['required', 'email', 'max:255', Rule::unique('tenant.team_members', 'email')],
             'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()],

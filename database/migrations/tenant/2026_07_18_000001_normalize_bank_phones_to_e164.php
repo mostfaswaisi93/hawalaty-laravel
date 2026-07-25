@@ -5,12 +5,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Data-only migration — no schema change.
+ * Data-only migration - no schema change.
  *
  * `banks.phone` is the WhatsApp number new-order notifications go to, and is now
  * stored in E.164 and validated against it on write. Existing rows hold local
  * formats like "0599000001", which would fail that new rule the next time an
- * operator edits the bank — producing an inexplicable error on a field they did
+ * operator edits the bank - producing an inexplicable error on a field they did
  * not touch. This backfills them through the SAME PhoneNumber::toE164() the form
  * uses, so the two can never diverge.
  *
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
  * `php artisan migrate` does NOT run database/migrations/tenant.
  *
  * Uses the query builder rather than the Bank model so soft-deleted rows are
- * included too — a retired bank still appears on historical orders.
+ * included too - a retired bank still appears on historical orders.
  */
 return new class extends Migration
 {

@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * `is_system` roles are already blocked at the authorization layer
- * (RolePolicy::update()) and again defensively in RoleService — this
+ * (RolePolicy::update()) and again defensively in RoleService - this
  * request only validates shape, not that rule.
  */
 class UpdateRoleRequest extends FormRequest

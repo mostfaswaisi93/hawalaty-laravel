@@ -11,7 +11,7 @@ use Tests\TenantTestCase;
  * Proof-of-concept: confirms actingAs($member, 'tenant') plus the
  * manually-configured `tenant` connection from TenantTestCase is enough to
  * exercise tenant web routes end-to-end, without needing
- * session('license_code') — ResolveTenantConnectionFromSession only
+ * session('license_code') - ResolveTenantConnectionFromSession only
  * re-resolves the connection when that session key is present (see the
  * middleware's docblock), so it simply passes through here and leaves
  * whatever TenantTestCase already configured in place.
@@ -21,7 +21,7 @@ class HttpLayerSmokeTest extends TenantTestCase
     public function test_a_member_without_the_permission_is_forbidden(): void
     {
         // None of the 3 standard roles lack transfers.create (even Staff has
-        // only that one) — a bare custom role with zero permissions attached
+        // only that one) - a bare custom role with zero permissions attached
         // is the only way to exercise the "no permission" path.
         $powerlessRole = Role::factory()->create();
         $member = TeamMember::factory()->create(['role_id' => $powerlessRole->id]);

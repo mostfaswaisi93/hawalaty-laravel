@@ -44,23 +44,23 @@ return [
             'provider' => 'users',
         ],
 
-        // Super Admin portal — session/cookie login for the Blade web app
+        // Super Admin portal - session/cookie login for the Blade web app
         // (resources/views/auth/admin-login.blade.php,
         // App\Http\Controllers\Web\Auth\AdminAuthController). Kept distinct
         // from the default `web` guard (even though both currently share the
         // `users`/Admin provider) so route middleware can say `auth:admin`
         // explicitly rather than relying on Laravel's implicit default guard
-        // — see this task's report for the reasoning.
+        // - see this task's report for the reasoning.
         'admin' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
 
-        // Tenant space — session/cookie login for a license's team members
+        // Tenant space - session/cookie login for a license's team members
         // (App\Http\Controllers\Web\Auth\TenantAuthController). ALWAYS
         // paired with the `tenant.session` middleware ahead of it
         // (`['tenant.session', 'auth:tenant']`) so the `team_members`
-        // provider below queries the correct tenant database — see
+        // provider below queries the correct tenant database - see
         // App\Http\Middleware\ResolveTenantConnectionFromSession and
         // BACKEND_PROMPT.md section 8.1.
         'tenant' => [
@@ -101,7 +101,7 @@ return [
         // always returns 'tenant' (see the model), so this provider's
         // queries automatically hit whichever tenant database
         // ResolveTenantConnectionFromSession most recently pointed the
-        // dynamic `tenant` connection at — never the platform database.
+        // dynamic `tenant` connection at - never the platform database.
         'team_members' => [
             'driver' => 'eloquent',
             'model' => TeamMember::class,

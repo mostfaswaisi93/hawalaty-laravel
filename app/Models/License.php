@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * A customer's license to run their own tenant database — see
+ * A customer's license to run their own tenant database - see
  * BACKEND_PROMPT.md sections 3, 5 and 8.1. The actual connection details for
  * the tenant database live on the related DatabaseConnection model, not here.
  */

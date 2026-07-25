@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * The platform's OWN operating expenses (hosting, domain, SSL...) — see
+ * The platform's OWN operating expenses (hosting, domain, SSL...) - see
  * BACKEND_PROMPT.md section 3. This is NOT any tenant's expenses; a
  * tenant-side `Expense` model lives in a separate per-license database and
  * will be added by a later task with its own connection context.

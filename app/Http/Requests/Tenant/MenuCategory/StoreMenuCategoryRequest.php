@@ -20,7 +20,7 @@ class StoreMenuCategoryRequest extends FormRequest
             // Physical DB-per-tenant isolation means this table only ever
             // contains this tenant's own rows (unlike the superseded
             // prototype, which needed an explicit tenant_id scope closure
-            // here) — BUT the "tenant." connection prefix is still
+            // here) - BUT the "tenant." connection prefix is still
             // required: Rule::unique() otherwise resolves against the
             // app's DEFAULT connection (platform), not the dynamic
             // `tenant` connection ResolveTenantConnection configured for

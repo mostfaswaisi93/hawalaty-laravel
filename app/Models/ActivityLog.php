@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Platform-level audit trail of admin actions (license created, plan
- * changed, payment recorded...) — see BACKEND_PROMPT.md section 3. Fully
+ * changed, payment recorded...) - see BACKEND_PROMPT.md section 3. Fully
  * separate from `audit_log`, which lives inside each tenant's own database.
  */
 #[Fillable(['admin_id', 'action', 'entity_type', 'entity_label'])]

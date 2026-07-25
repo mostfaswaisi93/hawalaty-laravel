@@ -56,7 +56,7 @@ class AuthController extends Controller
 
             // AuditLogger resolves its actor from the `tenant` guard, which
             // this manual Hash::check() flow never populates (no
-            // Auth::attempt() call) — set it explicitly so the login event
+            // Auth::attempt() call) - set it explicitly so the login event
             // attributes to the real member instead of falling back to
             // "System".
             Auth::guard('tenant')->setUser($member);
@@ -69,7 +69,7 @@ class AuthController extends Controller
                 'exception' => $e,
             ]);
 
-            // Generic message either way — never leak whether the email exists.
+            // Generic message either way - never leak whether the email exists.
             return response()->json(['message' => 'Invalid credentials.'], 422);
         }
     }

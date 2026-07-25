@@ -11,7 +11,7 @@ use App\Models\Tenant\Transfer;
  * There is no separate "orders.manage" key in the 7-key permission catalog
  * (BACKEND_PROMPT.md section 5 / D:\Angular\Hawalaty\src\app\data\roles.ts),
  * so update/delete are gated on the same `transfers.create` permission as
- * create() — whoever can ring up an order can also correct or remove one.
+ * create() - whoever can ring up an order can also correct or remove one.
  */
 class TransferPolicy
 {

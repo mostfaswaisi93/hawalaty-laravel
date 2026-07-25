@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Plain email+password login for platform staff — no license code involved,
+ * Plain email+password login for platform staff - no license code involved,
  * unlike tenant login (App\Http\Requests\Auth\LoginRequest), since Admin
  * always lives on the default `mysql` connection. See BACKEND_PROMPT.md's
  * task prompt, "Admin authentication".

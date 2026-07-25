@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * A backup run, either for a specific tenant's database (`license_id` set)
- * or for the platform database itself (`license_id` null) — see
+ * or for the platform database itself (`license_id` null) - see
  * BACKEND_PROMPT.md sections 3 and 6. All backups, across every tenant, are
  * managed from this one central table so the Super Admin panel has a
  * unified view.

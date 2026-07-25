@@ -14,7 +14,7 @@ use Illuminate\Support\Js;
 use Illuminate\View\View;
 
 /**
- * Server-rendered "New Order" builder — same TransferService and
+ * Server-rendered "New Order" builder - same TransferService and
  * StoreTransferRequest as Api\V1\TransferController::store(), just fed by
  * a normal POST from resources/views/transfers/index.blade.php's Alpine
  * cart instead of a JSON body. See that view for the array-input naming
@@ -46,7 +46,7 @@ class TransferController extends Controller
 
         // Handed to Alpine as a JSON blob (x-data="orderBuilder(...)") so the
         // menu browser/search/category filter runs entirely client-side
-        // without extra requests — see BACKEND_PROMPT-style brief for this
+        // without extra requests - see BACKEND_PROMPT-style brief for this
         // task.
         $menuJson = Js::from(
             $categories->map(fn (MenuCategory $category) => [

@@ -1,6 +1,6 @@
 {{--
     Shared result-group markup for the global search (header pill on
-    desktop, full-screen overlay on mobile) — both read the same
+    desktop, full-screen overlay on mobile) - both read the same
     `globalSearch()` Alpine state (results/searched/hasResults), so this
     partial avoids duplicating the four x-for groups in two places.
 --}}

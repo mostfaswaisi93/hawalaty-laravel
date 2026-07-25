@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Server-rendered order history — a wider, filterable, paginated view over
+ * Server-rendered order history - a wider, filterable, paginated view over
  * the same TransferService::list() that backs the API. Any logged-in team
  * member may view it (no permission gate, matching the sidebar nav).
  */

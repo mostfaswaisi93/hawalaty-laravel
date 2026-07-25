@@ -22,10 +22,10 @@ return [
     'enabled' => env('WHATSAPP_ENABLED', true),
 
     // log | cloud | null. An unknown value falls back to `log` rather than
-    // throwing — a typo in .env must never 500 the order screen.
+    // throwing - a typo in .env must never 500 the order screen.
     'driver' => env('WHATSAPP_DRIVER', 'log'),
 
-    // No defaults for credentials — a secret must never be baked into config.
+    // No defaults for credentials - a secret must never be baked into config.
     'token' => env('WHATSAPP_TOKEN'),
     'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
     'base_url' => env('WHATSAPP_BASE_URL', 'https://graph.facebook.com'),
@@ -36,7 +36,7 @@ return [
     | window (error 131047). A bank's number never initiates a conversation, so
     | the `cloud` driver ALWAYS sends an approved template. Create a template
     | with this name in Meta Business Manager whose body contains exactly ONE
-    | positional parameter {{1}} — the whole rendered order text is passed as
+    | positional parameter {{1}} - the whole rendered order text is passed as
     | that parameter. A parameter-count mismatch returns error 132000.
     */
     'template' => [

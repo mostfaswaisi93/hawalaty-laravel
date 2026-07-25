@@ -42,7 +42,7 @@ class LicenseService
 
     /**
      * Reuses TenantProvisioner::provision() end-to-end (license row +
-     * physical database + tenant migrations + roles/owner seed) — see
+     * physical database + tenant migrations + roles/owner seed) - see
      * BACKEND_PROMPT.md section 6. Not duplicated here.
      */
     public function create(array $data, ?Admin $actor): License
@@ -51,17 +51,17 @@ class LicenseService
     }
 
     /**
-     * Peeks at ONE tenant's team roster and recent audit activity —
+     * Peeks at ONE tenant's team roster and recent audit activity -
      * explicitly resolving the dynamic `tenant` connection READ-ONLY for
      * this single call, then restoring whatever it pointed at before (or
      * clearing it) so the platform process never keeps the connection
-     * pointed at a tenant database beyond this request — see
+     * pointed at a tenant database beyond this request - see
      * BACKEND_PROMPT.md section 8's explicit instruction on this for
      * `/admin/*` routes.
      *
      * Deliberately does NOT reuse App\Services\TenantConnectionResolver
      * here: that helper refuses to resolve a suspended/expired license (by
-     * design — it's the gate tenant LOGIN must respect). An admin viewing
+     * design - it's the gate tenant LOGIN must respect). An admin viewing
      * license details is a different, unconditional read: exactly the
      * suspended/expired licenses are the ones an admin most needs to
      * inspect (e.g. to check the team roster before deciding whether to

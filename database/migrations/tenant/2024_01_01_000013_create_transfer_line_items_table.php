@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignUlid('transfer_id')->constrained('transfers')->cascadeOnDelete();
             // Nullable because the menu item may later be deleted.
             $table->foreignUlid('menu_item_id')->nullable()->constrained('menu_items')->nullOnDelete();
-            // Frozen snapshot at sale time — does not change if the menu
+            // Frozen snapshot at sale time - does not change if the menu
             // item's name changes afterwards.
             $table->string('name');
             $table->unsignedInteger('quantity');

@@ -27,7 +27,7 @@ class BankService
         // Eloquent's create() does not reflect column defaults applied by
         // the database (e.g. `active` boolean default(true) in the
         // migration) back onto the returned model unless explicitly set
-        // here or the model is refreshed — set it explicitly so the
+        // here or the model is refreshed - set it explicitly so the
         // immediate API response (and BankResource's `active` field)
         // isn't null when the client omits it.
         $bank = Bank::create([...$data, 'active' => $data['active'] ?? true]);
@@ -48,7 +48,7 @@ class BankService
 
     /**
      * @throws ValidationException if the bank has any expense or transfer
-     *         history — deleting it would silently destroy or orphan
+     *         history - deleting it would silently destroy or orphan
      *         financial records. Direct the caller to deactivate it
      *         instead (the `active` toggle already exists for this).
      */

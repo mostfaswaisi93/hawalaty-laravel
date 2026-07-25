@@ -30,8 +30,8 @@ use Throwable;
  * fills it with realistic Arabic data so the dashboard's revenue tile,
  * weekly-activity chart and recent-orders table all look real.
  *
- * It reuses App\Services\TenantProvisioner — the exact same service the
- * signup flow uses — so it creates a real License + physical MySQL database
+ * It reuses App\Services\TenantProvisioner - the exact same service the
+ * signup flow uses - so it creates a real License + physical MySQL database
  * + user, runs the tenant migrations, and seeds the baseline
  * permissions/roles/owner, then adds the demo domain rows on top.
  *
@@ -59,7 +59,7 @@ class DemoTenantSeeder extends Seeder
             $license = $this->provisionTenant();
 
             if (! $license) {
-                return; // provisioning failed — a hint was already printed
+                return; // provisioning failed - a hint was already printed
             }
         } else {
             $this->command->info("Demo tenant «".self::BUSINESS_NAME."» already exists (license {$license->license_code}).");
@@ -69,7 +69,7 @@ class DemoTenantSeeder extends Seeder
         app()->instance('currentLicense', $license);
 
         if (Bank::count() > 0) {
-            $this->command->info('Demo tenant domain data already present — skipping.');
+            $this->command->info('Demo tenant domain data already present - skipping.');
         } else {
             DB::connection('tenant')->transaction(function () {
                 $banks = $this->seedBanks();
@@ -90,7 +90,7 @@ class DemoTenantSeeder extends Seeder
         $package = Package::where('name', 'Pro')->first() ?? Package::orderBy('price')->first();
 
         if (! $package) {
-            $this->command->warn('No package found — run PackageSeeder first. Skipping demo tenant.');
+            $this->command->warn('No package found - run PackageSeeder first. Skipping demo tenant.');
 
             return null;
         }

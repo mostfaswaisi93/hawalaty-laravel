@@ -76,12 +76,12 @@ class TeamService
     /**
      * BLOCKS: a team member removing their own currently-authenticated
      * account, and removing the tenant's last remaining ACTIVE team member
-     * who holds the `owner`-keyed system role — mirrors Angular's Team
+     * who holds the `owner`-keyed system role - mirrors Angular's Team
      * component (removeMember()) guard rails, see
      * src/app/features/team/team.ts.
      *
      * The owner-count check only applies when the member being deleted is
-     * themselves active — deleting an already-inactive owner never reduces
+     * themselves active - deleting an already-inactive owner never reduces
      * how many owners can actually log in. The count/delete is wrapped in a
      * transaction with lockForUpdate() so two concurrent deletes of two
      * different owners can't both read "2 active owners remain" and both

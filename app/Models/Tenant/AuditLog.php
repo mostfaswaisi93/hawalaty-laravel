@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Append-only log — no `updated_at` column exists at all, so UPDATED_AT is
+ * Append-only log - no `updated_at` column exists at all, so UPDATED_AT is
  * disabled entirely rather than pointed at a nonexistent column. Distinct
  * from the platform's own `activity_logs` table.
  */

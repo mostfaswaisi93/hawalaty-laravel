@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
 /**
- * Deliberately narrow — the Angular app never edits order line items after
+ * Deliberately narrow - the Angular app never edits order line items after
  * creation anywhere in the current UI, only the status (e.g. marking a
  * pending order completed/failed), so only `status` is accepted here.
  */

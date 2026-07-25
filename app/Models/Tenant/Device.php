@@ -31,7 +31,7 @@ class Device extends Model
     }
 
     /**
-     * sanctum_token_id is NOT a ULID FK — personal_access_tokens keeps its
+     * sanctum_token_id is NOT a ULID FK - personal_access_tokens keeps its
      * own auto-increment primary key (see that migration's doc comment).
      */
     public function sanctumToken(): BelongsTo

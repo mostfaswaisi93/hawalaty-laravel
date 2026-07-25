@@ -24,7 +24,7 @@ class StoreMenuItemRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             // Physical DB-per-tenant isolation guarantees there's only one
             // tenant's categories reachable per request, so no extra
-            // tenant_id scoping is needed on top of exists:... — BUT the
+            // tenant_id scoping is needed on top of exists:... - BUT the
             // "tenant." connection prefix is still required: a bare
             // exists:menu_categories,id resolves against the app's
             // DEFAULT connection (platform, where this table doesn't even

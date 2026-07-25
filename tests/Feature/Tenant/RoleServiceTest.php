@@ -13,7 +13,7 @@ use Tests\TenantTestCase;
 /**
  * Locks in RoleService's is_system/key stripping on create, the
  * system-role-is-immutable rule on update/delete, and the
- * cannot-orphan-team-members guard on delete — plus TeamMember::hasPermission()
+ * cannot-orphan-team-members guard on delete - plus TeamMember::hasPermission()
  * against the real seeded owner/manager/staff permission sets, since that's
  * what every one of these guards ultimately protects.
  */

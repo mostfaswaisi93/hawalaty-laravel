@@ -7,7 +7,7 @@ use Illuminate\Validation\Rules\Password;
 
 /**
  * Same shape as App\Http\Requests\Auth\SignupRequest (both ultimately feed
- * App\Services\TenantProvisioner::provision()) — an admin creating a license
+ * App\Services\TenantProvisioner::provision()) - an admin creating a license
  * on a customer's behalf is functionally the same provisioning operation as
  * self-service signup, just triggered from the Super Admin panel instead of
  * a public endpoint.

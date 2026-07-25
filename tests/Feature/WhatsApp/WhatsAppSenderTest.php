@@ -189,7 +189,7 @@ class WhatsAppSenderTest extends TestCase
 
             return $request->url() === 'https://graph.facebook.com/v21.0/123456/messages'
                 && $request->hasHeader('Authorization', 'Bearer test-token')
-                // Digits only — Meta rejects a leading '+' in `to`.
+                // Digits only - Meta rejects a leading '+' in `to`.
                 && $body['to'] === '972595817016'
                 // Free-form text would be rejected with error 131047, because a
                 // bank's number never opens a 24h customer-initiated window.
@@ -230,7 +230,7 @@ class WhatsAppSenderTest extends TestCase
     {
         config(['whatsapp.driver' => 'cloud', 'whatsapp.token' => 't', 'whatsapp.phone_number_id' => '1']);
 
-        // A timeout raises ConnectionException — there is no HTTP status on this
+        // A timeout raises ConnectionException - there is no HTTP status on this
         // path, which is exactly why it is the one most often missed.
         Http::fake(fn () => throw new ConnectionException('cURL error 28: timeout'));
 
@@ -251,7 +251,7 @@ class WhatsAppSenderTest extends TestCase
         $this->assertFalse($sender->sendNewOrder($transfer)->sent);
 
         // Second attempt must reach the provider again, not be suppressed as a
-        // duplicate — a failure must not poison the key.
+        // duplicate - a failure must not poison the key.
         $second = $sender->sendNewOrder($transfer);
 
         $this->assertNotSame('duplicate', $second->errorCode);

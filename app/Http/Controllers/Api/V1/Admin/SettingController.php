@@ -19,7 +19,7 @@ class SettingController extends Controller
     }
 
     /**
-     * PUT /admin/settings/{key} — upserts by key, e.g. no separate create
+     * PUT /admin/settings/{key} - upserts by key, e.g. no separate create
      * endpoint is needed since a key/value store has no other identity.
      */
     public function update(UpdateSettingRequest $request, string $key): JsonResponse

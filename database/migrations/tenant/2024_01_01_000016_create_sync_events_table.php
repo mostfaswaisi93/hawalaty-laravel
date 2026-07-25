@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * The offline-sync engine's event log — see BACKEND_PROMPT.md sections 9
+     * The offline-sync engine's event log - see BACKEND_PROMPT.md sections 9
      * and 10. `server_sequence` is deliberately NOT a ULID like every other
      * table here: it's an auto-incrementing integer that doubles as the
      * strictly-ordered cursor devices pass to the delta-pull endpoint, which

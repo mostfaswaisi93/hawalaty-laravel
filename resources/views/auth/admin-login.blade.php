@@ -29,7 +29,7 @@
                 </span>
             </h2>
             <p class="mt-4 max-w-md font-body-lg leading-relaxed text-white/70">
-                {{ __('التراخيص، الباقات، المحاسبة والنسخ الاحتياطي — كل ما تحتاجه لتشغيل المنصّة من مكان واحد.') }}
+                {{ __('التراخيص، الباقات، المحاسبة والنسخ الاحتياطي - كل ما تحتاجه لتشغيل المنصّة من مكان واحد.') }}
             </p>
         </div>
 
@@ -107,7 +107,7 @@
                 </div>
 
                 {{-- AdminLoginRequest already validates `remember` and the controller
-                     already passes it to Auth::attempt() — the field was simply never
+                     already passes it to Auth::attempt() - the field was simply never
                      rendered, so the feature was unreachable. --}}
                 <label class="flex w-fit cursor-pointer items-center gap-2">
                     <input type="checkbox" name="remember" value="1" class="h-5 w-5 rounded accent-primary" />

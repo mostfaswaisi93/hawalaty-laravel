@@ -14,7 +14,7 @@ return new class extends Migration
             $table->enum('type', ['bank', 'wallet']);
             $table->string('code');
             $table->boolean('active')->default(true);
-            // WhatsApp number for order notifications — see BACKEND_PROMPT.md section 9.
+            // WhatsApp number for order notifications - see BACKEND_PROMPT.md section 9.
             $table->string('phone')->nullable();
             $table->timestamps();
         });

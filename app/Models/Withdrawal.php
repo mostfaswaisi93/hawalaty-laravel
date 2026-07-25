@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A partner's withdrawal from a platform box — see BACKEND_PROMPT.md
+ * A partner's withdrawal from a platform box - see BACKEND_PROMPT.md
  * section 3.
  */
 #[Fillable(['box_id', 'amount', 'partner_id'])]

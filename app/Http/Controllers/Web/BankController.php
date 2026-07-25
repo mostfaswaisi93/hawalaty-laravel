@@ -16,7 +16,7 @@ use Illuminate\View\View;
 /**
  * Server-rendered banks & wallets management. Gated on BanksManage. Uses
  * string ids + manual find (not route-model binding) so every tenant-table
- * lookup happens inside the controller — after ResolveTenantConnection has
+ * lookup happens inside the controller - after ResolveTenantConnection has
  * pointed the `tenant` connection at this license's database.
  */
 class BankController extends Controller

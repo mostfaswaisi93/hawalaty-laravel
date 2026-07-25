@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 /**
  * Backs the header search pill (layouts/app.blade.php). Each result group
- * mirrors the permission that gates its own index page — orders/customers
+ * mirrors the permission that gates its own index page - orders/customers
  * are open to every team member (see History/CustomerController), banks and
  * menu items only show up for members who can manage them.
  */

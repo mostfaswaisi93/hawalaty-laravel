@@ -14,7 +14,7 @@ use Tests\TestCase;
 /**
  * No RefreshDatabase, and every model here is UNSAVED with its relations set
  * explicitly. The tenant schema (database/migrations/tenant) cannot run against
- * the sqlite test database — several of those migrations use MySQL-only DDL —
+ * the sqlite test database - several of those migrations use MySQL-only DDL -
  * so nothing in this feature may touch the `tenant` connection in a test.
  */
 class NewOrderMessageTest extends TestCase
@@ -32,7 +32,7 @@ class NewOrderMessageTest extends TestCase
         ], $attributes));
 
         // HasUlids only fires on `creating`, and an unsaved model has a null
-        // created_at — both would otherwise blow up the renderer.
+        // created_at - both would otherwise blow up the renderer.
         $transfer->id = '01HQZX9K2M4N6P8R0A1B2C3D4E';
         $transfer->created_at = now();
 

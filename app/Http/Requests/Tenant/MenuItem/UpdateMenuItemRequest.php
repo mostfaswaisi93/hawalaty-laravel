@@ -17,7 +17,7 @@ class UpdateMenuItemRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            // "tenant." prefix required — see Bank\StoreBankRequest... (see
+            // "tenant." prefix required - see Bank\StoreBankRequest... (see
             // MenuItem\StoreMenuItemRequest for the full reasoning).
             'menuCategoryId' => ['sometimes', 'required', 'string', 'exists:tenant.menu_categories,id'],
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],

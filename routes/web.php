@@ -51,7 +51,7 @@ Route::get('locale/{locale}', function (string $locale) {
 
 // Public content pages. These are linked from the guest footer, which renders on
 // login, signup and every error page, so they must be reachable without a
-// session — previously they were linked but had no route at all and 404'd.
+// session - previously they were linked but had no route at all and 404'd.
 Route::view('privacy', 'privacy')->name('privacy');
 Route::view('terms', 'terms')->name('terms');
 
@@ -62,11 +62,11 @@ Route::view('help', 'help.index')->name('help.index');
 
 /*
 |--------------------------------------------------------------------------
-| Tenant space — a license's own team members
+| Tenant space - a license's own team members
 |--------------------------------------------------------------------------
 */
 
-// `tenant.session` ahead of `guest:tenant` here too — same reasoning as the
+// `tenant.session` ahead of `guest:tenant` here too - same reasoning as the
 // logout route below: `guest:tenant` (RedirectIfAuthenticated) also has to
 // resolve "is there already a logged-in tenant user in this session?",
 // which queries `team_members` on the `tenant` connection. A visitor whose
@@ -85,11 +85,11 @@ Route::get('license-inactive', function () {
 })->name('license.inactive');
 
 // `tenant.session` MUST run ahead of `auth:tenant` on EVERY route that uses
-// the `tenant` guard — not just the "page content" routes. Empirically
+// the `tenant` guard - not just the "page content" routes. Empirically
 // caught during this task's verification: `auth:tenant`'s own job of
 // re-hydrating the logged-in TeamMember from the session id queries the
 // `team_members` provider, which lives on the dynamic `tenant` connection
-// (see TeamMember::getConnectionName()) — so even the logout route 500s
+// (see TeamMember::getConnectionName()) - so even the logout route 500s
 // with a bogus/unconfigured `tenant` connection ("Access denied for user
 // ''@'localhost'") without this middleware ahead of it, despite logout
 // itself never touching tenant data. See
@@ -125,7 +125,7 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::put('banks/{bank}', [BankController::class, 'update'])->name('banks.update');
     Route::delete('banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
 
-    // Menu — categories + items
+    // Menu - categories + items
     Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
     Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
     Route::post('menu/import', [MenuController::class, 'import'])->name('menu.import');
@@ -145,7 +145,7 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
-    // Constants — lists + items
+    // Constants - lists + items
     Route::get('constants', [ConstantController::class, 'index'])->name('constants.index');
     Route::post('constants', [ConstantController::class, 'store'])->name('constants.store');
     Route::delete('constants/{list}', [ConstantController::class, 'destroy'])->name('constants.destroy');
@@ -189,7 +189,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth:admin')->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Licenses — provision, inspect, suspend/activate, change package
+        // Licenses - provision, inspect, suspend/activate, change package
         Route::get('licenses', [AdminLicenseController::class, 'index'])->name('licenses.index');
         Route::post('licenses', [AdminLicenseController::class, 'store'])->name('licenses.store');
         Route::get('licenses/{license}', [AdminLicenseController::class, 'show'])->name('licenses.show');
@@ -237,7 +237,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [AdminSettingController::class, 'upsert'])->name('settings.upsert');
 
-        // The admin's own account — separate from settings above, which is
+        // The admin's own account - separate from settings above, which is
         // platform-wide key/value config rather than anything personal.
         Route::get('profile', [AdminProfileController::class, 'index'])->name('profile.index');
         Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');

@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * GET /api/v1/activity-log — read-only. `audit_log` is append-only,
+ * GET /api/v1/activity-log - read-only. `audit_log` is append-only,
  * populated automatically elsewhere (App\Services\Tenant\AuditLogger,
- * called from each domain Service) — this controller never writes to it
+ * called from each domain Service) - this controller never writes to it
  * directly, so no dedicated Service class exists for it.
  */
 class ActivityLogController extends Controller

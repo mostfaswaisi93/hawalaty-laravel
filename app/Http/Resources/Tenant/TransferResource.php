@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Controllers must eager-load `lineItems`, `bank`, and `changeBank` before
  * returning this resource (or a collection of it) to avoid N+1 queries.
  *
- * `date` has no dedicated column — it maps to `created_at`, formatted as a
+ * `date` has no dedicated column - it maps to `created_at`, formatted as a
  * plain ISO date to match the mock data shape ("2026-07-01").
  *
  * @mixin \App\Models\Tenant\Transfer

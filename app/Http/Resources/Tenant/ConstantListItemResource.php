@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * App\Models\Tenant\ConstantListItem has no direct Angular `interface`
- * counterpart — the current frontend's `CustomConstantList.items` is a flat
+ * counterpart - the current frontend's `CustomConstantList.items` is a flat
  * `string[]` (src/app/core/constants.service.ts) with no per-item id. Since
  * DELETE /api/v1/constant-lists/{list}/items/{item} requires an id to
  * target a specific item, this resource deliberately exposes `id` alongside

@@ -5,7 +5,7 @@ namespace App\Http\Requests\Tenant\Report;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * GET /api/v1/reports?from=&to= — both required, `to` must be >= `from`.
+ * GET /api/v1/reports?from=&to= - both required, `to` must be >= `from`.
  */
 class ReportRequest extends FormRequest
 {

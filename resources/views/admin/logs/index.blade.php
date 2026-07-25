@@ -32,7 +32,7 @@
                     <x-slot:table>
                         @foreach ($logs as $log)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $log->admin?->name ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $log->admin?->name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3"><span class="rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-bold text-on-surface-variant">{{ __($log->action) }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $log->entity_type }} · {{ $log->entity_label }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $log->created_at?->translatedFormat('j F Y H:i') }}</td>
@@ -43,7 +43,7 @@
                         @foreach ($logs as $log)
                             <div class="tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="font-body-sm font-bold">{{ $log->admin?->name ?? '—' }}</span>
+                                    <span class="font-body-sm font-bold">{{ $log->admin?->name ?? '-' }}</span>
                                     <span class="rounded-full bg-surface-container px-2.5 py-1 text-[11px] font-bold text-on-surface-variant">{{ __($log->action) }}</span>
                                 </div>
                                 <p class="mt-1 text-[11px] text-on-surface-variant">{{ $log->entity_type }} · {{ $log->entity_label }}</p>

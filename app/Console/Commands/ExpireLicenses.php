@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 /**
- * `php artisan licenses:expire-overdue` — see BACKEND_PROMPT.md section 11,
+ * `php artisan licenses:expire-overdue` - see BACKEND_PROMPT.md section 11,
  * "انتهاء تلقائي مجدوَل". Registered daily in routes/console.php.
  */
 class ExpireLicenses extends Command

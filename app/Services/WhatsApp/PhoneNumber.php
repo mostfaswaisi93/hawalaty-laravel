@@ -5,12 +5,12 @@ namespace App\Services\WhatsApp;
 /**
  * Normalises operator-entered phone numbers to E.164 (+<country><subscriber>).
  *
- * Pure static helpers — no container, no database — so this is safe to call
+ * Pure static helpers - no container, no database - so this is safe to call
  * from a FormRequest, a migration, and the sender alike.
  *
  * The awkward case this exists for: a user pastes their country code in front
  * of the local number without dropping the local trunk zero, giving
- * "+9720595817016" (13 digits — not valid E.164 for 972/970, which are country
+ * "+9720595817016" (13 digits - not valid E.164 for 972/970, which are country
  * code + 9 digits). Step 6 collapses that leftover zero.
  */
 class PhoneNumber
@@ -77,7 +77,7 @@ class PhoneNumber
     }
 
     /**
-     * Last four digits only — for logs, so a failure is diagnosable without
+     * Last four digits only - for logs, so a failure is diagnosable without
      * writing a customer's full number to disk.
      */
     public static function mask(?string $raw): string

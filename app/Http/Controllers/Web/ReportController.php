@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
- * Read-only reports (sidebar permission=null — any authenticated member).
+ * Read-only reports (sidebar permission=null - any authenticated member).
  * Defaults to the current month when no range is submitted; otherwise the
  * same from/to rules as Tenant\Report\ReportRequest (relaxed to nullable so
  * the default can apply) and delegates to ReportService::generate().
@@ -51,7 +51,7 @@ class ReportController extends Controller
                 'after_or_equal:from',
                 // A truly unbounded range (e.g. from a hand-crafted URL) would
                 // otherwise pull every transfer the tenant has ever recorded
-                // into one PDF/HTML render — cap it to a year, generous for
+                // into one PDF/HTML render - cap it to a year, generous for
                 // any normal reporting window.
                 function ($attribute, $value, $fail) use ($request) {
                     $from = $request->input('from');

@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * GET /api/v1/admin/activity-log — read-only, paginated, filterable by
+ * GET /api/v1/admin/activity-log - read-only, paginated, filterable by
  * adminId. Populated automatically elsewhere (TenantProvisioner,
- * LicenseService, ...) — no dedicated write Service, mirrors the tenant-side
+ * LicenseService, ...) - no dedicated write Service, mirrors the tenant-side
  * App\Http\Controllers\Api\V1\ActivityLogController's rationale.
  */
 class ActivityLogController extends Controller

@@ -8,7 +8,7 @@ use App\Models\Tenant\TeamMember;
 
 /**
  * No tenant_id / cross-tenant checks here (unlike the superseded prototype's
- * BankPolicy) — physical DB-per-tenant isolation already guarantees only
+ * BankPolicy) - physical DB-per-tenant isolation already guarantees only
  * this tenant's own Bank rows are ever reachable, see BACKEND_PROMPT.md
  * section 7. Reading is unrestricted for any authenticated team member.
  */

@@ -11,10 +11,10 @@ use App\Models\Tenant\TeamMember;
 /**
  * Small stateless helper that writes a single append-only `audit_log` row
  * inside the current tenant database. Unlike the superseded prototype's
- * version (App\Services\AuditLogger there), no `tenant_id` is stamped —
+ * version (App\Services\AuditLogger there), no `tenant_id` is stamped -
  * physical DB-per-tenant isolation already scopes every row, see
  * BACKEND_PROMPT.md section 4. Called explicitly from each domain Service
- * after a successful write, rather than via Eloquent model-event hooks —
+ * after a successful write, rather than via Eloquent model-event hooks -
  * keeps all business logic (including "what counts as auditable") in the
  * Service layer per this task's architecture requirement.
  */
@@ -28,7 +28,7 @@ class AuditLogger
     ): void {
         // The web app authenticates via the session-based `tenant` guard;
         // Sanctum only covers API/mobile clients. Checking `tenant` first
-        // means the real actor is captured for every Blade-driven action —
+        // means the real actor is captured for every Blade-driven action -
         // `sanctum` remains the fallback so API-originated writes still
         // attribute correctly, with "System" reserved for truly unauthenticated
         // contexts (console commands, queued jobs).

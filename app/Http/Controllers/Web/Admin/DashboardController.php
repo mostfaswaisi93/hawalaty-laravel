@@ -70,7 +70,7 @@ class DashboardController extends Controller
      * Revenue vs. expenses for the last TREND_MONTHS months, always returning
      * one entry per month (zero-filled) so the chart never has gaps.
      *
-     * Two GROUP BY queries rather than a per-month loop — same reasoning as the
+     * Two GROUP BY queries rather than a per-month loop - same reasoning as the
      * tenant dashboard's weekly-activity aggregate.
      *
      * @return array<int, array{label: string, payments: float, expenses: float}>
@@ -85,7 +85,7 @@ class DashboardController extends Controller
             ->groupBy('ym')
             ->pluck('total', 'ym');
 
-        // Expenses are dated by their own `date` column, not created_at — an
+        // Expenses are dated by their own `date` column, not created_at - an
         // expense can be back-dated when recorded.
         $expenses = Expense::query()
             ->where('date', '>=', $start)
@@ -112,8 +112,8 @@ class DashboardController extends Controller
     /**
      * A `YYYY-MM` bucket expression for the active driver. Grouping stays in
      * SQL (so this is one query per series rather than a per-month loop), but
-     * MySQL's DATE_FORMAT does not exist in sqlite — which the test suite uses,
-     * per phpunit.xml — so the equivalent strftime is emitted there instead.
+     * MySQL's DATE_FORMAT does not exist in sqlite - which the test suite uses,
+     * per phpunit.xml - so the equivalent strftime is emitted there instead.
      *
      * $column is only ever an internal constant from this class, never request
      * input, so interpolating it into raw SQL is safe.
@@ -126,7 +126,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Active/trial licenses lapsing within EXPIRY_WINDOW_DAYS — the one thing
+     * Active/trial licenses lapsing within EXPIRY_WINDOW_DAYS - the one thing
      * on this page that needs the admin to actually do something.
      */
     private function expiringSoon()

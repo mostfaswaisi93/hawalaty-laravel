@@ -5,7 +5,7 @@ namespace App\Models;
 use Laravel\Sanctum\PersonalAccessToken;
 
 /**
- * Sanctum's personal_access_tokens model, made connection-aware — see
+ * Sanctum's personal_access_tokens model, made connection-aware - see
  * BACKEND_PROMPT.md section 8.1 and the reasoning in the task report.
  *
  * Sanctum only supports ONE globally-registered personal access token

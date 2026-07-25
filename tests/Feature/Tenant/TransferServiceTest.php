@@ -14,7 +14,7 @@ use Tests\TenantTestCase;
 /**
  * Proof-of-concept + regression coverage for TenantTestCase: verifies the
  * real-MySQL tenant harness actually works (migrations applied, transaction
- * rollback isolates tests) and locks in the price/name-tampering fix —
+ * rollback isolates tests) and locks in the price/name-tampering fix -
  * amount and line-item name/price are always computed server-side from the
  * canonical MenuItem, never trusted from the request payload.
  */

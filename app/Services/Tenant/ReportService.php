@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 /**
  * `count`/`total`/`average` are always computed server-side from the same
- * filtered set (never trusts a client-sent aggregate) — via SQL aggregates
+ * filtered set (never trusts a client-sent aggregate) - via SQL aggregates
  * rather than pulling every row into a Collection just to count/sum it.
  * Neither reports.index nor reports.pdf reference lineItems/bank/changeBank
  * on a transfer, so those relations are deliberately not eager-loaded here.

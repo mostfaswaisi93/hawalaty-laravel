@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * Platform staff who manage licenses and the system itself — see
+ * Platform staff who manage licenses and the system itself - see
  * BACKEND_PROMPT.md section 3. Not related to any tenant's own team members.
  */
 #[Fillable(['name', 'email', 'password'])]

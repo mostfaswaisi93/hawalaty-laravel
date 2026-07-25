@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * A tenant's OWN business expenses — distinct from the platform's own
+     * A tenant's OWN business expenses - distinct from the platform's own
      * operating expenses (App\Models\Expense, platform `expenses` table).
      * See App\Models\Tenant\Expense.
      */

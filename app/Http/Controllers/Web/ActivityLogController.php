@@ -9,7 +9,7 @@ use Illuminate\View\View;
 
 /**
  * Read-only activity log (append-only tenant `audit_log`). Sidebar
- * permission=null — any authenticated member. Mirrors the API
+ * permission=null - any authenticated member. Mirrors the API
  * ActivityLogController's search + category filtering; no writes.
  */
 class ActivityLogController extends Controller

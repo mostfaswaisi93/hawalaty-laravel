@@ -9,13 +9,13 @@ use Illuminate\Database\QueryException;
 /**
  * Backs the customer/recipient directory. transfers.customer stays a plain
  * text snapshot (unchanged, backward-compatible); customer_id is an
- * additive link resolved here. Matching is by exact trimmed name — simple
+ * additive link resolved here. Matching is by exact trimmed name - simple
  * on purpose for v1, no phone-based dedupe or merge tooling yet.
  */
 class CustomerService
 {
     /**
-     * Paginated (matching History/ActivityLog) — this directory grows
+     * Paginated (matching History/ActivityLog) - this directory grows
      * monotonically with tenant usage, since every order creates or reuses
      * a customer, so an unbounded get() would eventually load every
      * customer the tenant has ever had on one request.
@@ -52,7 +52,7 @@ class CustomerService
      *
      * The initial lookup + create is not atomic, so two concurrent orders
      * for the same new customer name can both miss the lookup and race to
-     * create — customers.name has a unique constraint specifically to turn
+     * create - customers.name has a unique constraint specifically to turn
      * the losing side of that race into a catchable exception rather than a
      * silent duplicate customer; on that exception we just re-fetch the row
      * the winner created and fall through to the same backfill logic below.

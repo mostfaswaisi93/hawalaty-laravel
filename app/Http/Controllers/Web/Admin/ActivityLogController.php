@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 /**
  * Read-only platform audit trail. Populated automatically by the admin
- * services (LicenseService, TenantProvisioner, ...) — there is no write path
+ * services (LicenseService, TenantProvisioner, ...) - there is no write path
  * here.
  */
 class ActivityLogController extends Controller

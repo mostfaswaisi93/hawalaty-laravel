@@ -97,7 +97,7 @@ class AdminPagesTest extends TestCase
 
     /**
      * The page-renders case above only proves the dashboard survives an EMPTY
-     * database. This one gives every aggregate on it something to chew on —
+     * database. This one gives every aggregate on it something to chew on -
      * the month-bucket GROUP BY in particular, which originally shipped a
      * MySQL-only DATE_FORMAT and 500'd the moment it ran against sqlite.
      */

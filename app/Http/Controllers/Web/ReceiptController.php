@@ -9,7 +9,7 @@ use Illuminate\Http\Response;
 
 /**
  * Printable PDF receipt for a single order. Any authenticated tenant member
- * may print any order's receipt (no PermissionKey gate — matches history's
+ * may print any order's receipt (no PermissionKey gate - matches history's
  * read access), since front-of-house staff need to hand receipts to
  * customers regardless of their management permissions.
  */

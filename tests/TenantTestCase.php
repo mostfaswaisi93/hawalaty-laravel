@@ -14,7 +14,7 @@ use PDO;
  * Base class for tests that exercise tenant-space models/services (Transfer,
  * Bank, Customer, TeamMember, MenuItem, ...). These all live on the dynamic
  * `tenant` connection (see App\Services\TenantConnectionResolver), which is
- * always a real MySQL database — several tenant migrations use MySQL-only
+ * always a real MySQL database - several tenant migrations use MySQL-only
  * DDL (enum columns, foreign keys with named actions), so they cannot run
  * against the sqlite `testing` connection the rest of the suite uses (see
  * tests/Feature/WhatsApp/WhatsAppSenderTest.php's class docblock for the
@@ -22,7 +22,7 @@ use PDO;
  *
  * Points the `tenant` connection at a dedicated, disposable MySQL database
  * (never a real tenant's), migrates it once per test run, and wraps every
- * test in its own transaction that is rolled back afterward — the same
+ * test in its own transaction that is rolled back afterward - the same
  * isolation RefreshDatabase gives the sqlite-backed tests, just done by hand
  * because migrate:fresh needs to target a non-default connection.
  */

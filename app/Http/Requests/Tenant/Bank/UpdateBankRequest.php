@@ -18,7 +18,7 @@ class UpdateBankRequest extends FormRequest
     }
 
     /**
-     * See StoreBankRequest::prepareForValidation() — same rules. The has()
+     * See StoreBankRequest::prepareForValidation() - same rules. The has()
      * guard preserves partial-update semantics: an API caller who omits `phone`
      * must not have it touched.
      */

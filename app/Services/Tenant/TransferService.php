@@ -27,7 +27,7 @@ class TransferService
     ) {}
 
     /**
-     * Backs both /transfers and /history (see BACKEND_PROMPT.md section 7 —
+     * Backs both /transfers and /history (see BACKEND_PROMPT.md section 7 -
      * History is "same as transfers with wider filters + pagination").
      */
     public function list(array $filters): LengthAwarePaginator
@@ -71,14 +71,14 @@ class TransferService
     /**
      * Creates the Transfer + its TransferLineItems in one DB::transaction().
      * `amount` is always computed server-side as the sum of quantity ×
-     * price across line items — a client-sent total is never trusted.
+     * price across line items - a client-sent total is never trusted.
      *
      * The per-line `name`/`price` are likewise never trusted from the
      * client: StoreTransferRequest only validates that each `itemId` exists,
      * not that the submitted price matches it, so a caller holding only
      * TransfersCreate could otherwise report an arbitrary price for a real
      * menu item and skew revenue. Every line is priced from the canonical
-     * MenuItem row instead — the client's `price`/`name` are ignored.
+     * MenuItem row instead - the client's `price`/`name` are ignored.
      */
     public function create(array $data): Transfer
     {
@@ -138,7 +138,7 @@ class TransferService
         //
         // The catch is mandatory. The transfer is already committed by this
         // point, so an escaping exception would 500 the operator on an order
-        // that persisted — and on the offline-sync path SyncService::push()'s
+        // that persisted - and on the offline-sync path SyncService::push()'s
         // catch(Throwable) would mark the event failed and force the client to
         // re-push it. It would NOT roll the order back: the DB::transaction()
         // above runs on the default (platform) connection while Transfer and
@@ -164,7 +164,7 @@ class TransferService
         AuditLogger::record(AuditAction::Updated, AuditEntityType::Order, $transfer->id, AuditCategory::Transfers);
 
         // Only a completed/failed transition is a meaningful update to
-        // announce — pending is just the default state at creation.
+        // announce - pending is just the default state at creation.
         if (in_array($transfer->status, [TransferStatus::Completed, TransferStatus::Failed], true)) {
             Notification::send($this->teammatesToNotify(), new OrderStatusChangedNotification($transfer));
         }

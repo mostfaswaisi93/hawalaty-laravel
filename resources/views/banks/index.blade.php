@@ -58,7 +58,7 @@
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->code }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->phone ?: '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->phone ?: '-' }}</td>
                                 <td class="px-4 py-3">
                                     @include('banks._toggle', ['b' => $b])
                                 </td>
@@ -89,7 +89,7 @@
                                     @include('banks._toggle', ['b' => $b])
                                 </div>
                                 <div class="mt-3 flex items-center justify-between gap-2 border-t border-outline-variant/50 pt-3">
-                                    <span class="text-[11px] text-on-surface-variant" dir="ltr">{{ $b->phone ?: '—' }}</span>
+                                    <span class="text-[11px] text-on-surface-variant" dir="ltr">{{ $b->phone ?: '-' }}</span>
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openEdit(@js(['id' => $b->id, 'name' => $b->name, 'type' => $b->type->value, 'code' => $b->code, 'phone' => $b->phone, 'active' => (bool) $b->active]))"
                                             class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">

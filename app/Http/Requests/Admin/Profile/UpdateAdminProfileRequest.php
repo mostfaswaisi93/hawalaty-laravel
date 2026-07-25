@@ -10,7 +10,7 @@ use Illuminate\Validation\Rules\Password;
  * Self-service profile + password update for the logged-in Super Admin.
  * Mirrors the tenant-side App\Http\Requests\Web\Settings\UpdateProfileRequest,
  * but the unique check runs against the platform `admins` table (no "tenant."
- * prefix — admins never live in a tenant database).
+ * prefix - admins never live in a tenant database).
  */
 class UpdateAdminProfileRequest extends FormRequest
 {

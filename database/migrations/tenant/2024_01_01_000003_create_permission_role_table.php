@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Pure pivot table — no surrogate id column needed, the composite
+        // Pure pivot table - no surrogate id column needed, the composite
         // primary key already uniquely identifies each row.
         Schema::create('permission_role', function (Blueprint $table) {
             $table->foreignUlid('role_id')->constrained('roles')->cascadeOnDelete();

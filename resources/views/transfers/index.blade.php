@@ -15,7 +15,7 @@
             class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.7fr_1fr]">
             @csrf
 
-            {{-- ══════════════ LEFT — menu browser ══════════════ --}}
+            {{-- ══════════════ LEFT - menu browser ══════════════ --}}
             <section class="space-y-5">
                 {{-- search --}}
                 <div class="relative">
@@ -40,7 +40,7 @@
                 <template x-if="menu.length">
                     {{-- The entrance sits on the grid, not on the tiles: x-for rebuilds them on
                          every search keystroke, so a per-tile cascade would replay as the user
-                         types — and a filled entrance animation outranks .press on :active. --}}
+                         types - and a filled entrance animation outranks .press on :active. --}}
                     <div class="reveal-up grid grid-cols-2 gap-3 sm:grid-cols-3" style="--d:80ms">
                         <template x-for="item in filteredItems" :key="item.id">
                             <button type="button" @click="addItem(item)"
@@ -76,7 +76,7 @@
                 </template>
             </section>
 
-            {{-- ══════════════ RIGHT — order summary ══════════════ --}}
+            {{-- ══════════════ RIGHT - order summary ══════════════ --}}
             <aside class="space-y-5 lg:sticky lg:top-24">
                 <div class="reveal-up tonal-elevation overflow-hidden rounded-3xl border border-outline-variant/50 bg-surface-container-lowest" style="--d:120ms">
                     <div class="flex items-center justify-between border-b border-outline-variant/50 p-5">
@@ -101,7 +101,7 @@
                                     <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
                                 </div>
                                 {{-- 40px targets, not 28px: this is the busiest screen in the app and it is
-                                     used on phones, where decrement doubles as delete once qty hits 1 —
+                                     used on phones, where decrement doubles as delete once qty hits 1 -
                                      a mis-tap destroys the line. Wider gap for the same reason. --}}
                                 <div class="flex items-center gap-2">
                                     <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}" title="{{ __('إنقاص') }}"
