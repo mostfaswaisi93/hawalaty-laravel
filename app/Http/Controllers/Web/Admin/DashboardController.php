@@ -81,7 +81,7 @@ class DashboardController extends Controller
 
         $payments = Payment::query()
             ->where('created_at', '>=', $start)
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as ym, SUM(amount) as total")
+            ->selectRaw($this->monthExpression('created_at').' as ym, SUM(amount) as total')
             ->groupBy('ym')
             ->pluck('total', 'ym');
 
@@ -89,7 +89,7 @@ class DashboardController extends Controller
         // expense can be back-dated when recorded.
         $expenses = Expense::query()
             ->where('date', '>=', $start)
-            ->selectRaw("DATE_FORMAT(date, '%Y-%m') as ym, SUM(amount) as total")
+            ->selectRaw($this->monthExpression('date').' as ym, SUM(amount) as total')
             ->groupBy('ym')
             ->pluck('total', 'ym');
 
@@ -107,6 +107,22 @@ class DashboardController extends Controller
         }
 
         return $series;
+    }
+
+    /**
+     * A `YYYY-MM` bucket expression for the active driver. Grouping stays in
+     * SQL (so this is one query per series rather than a per-month loop), but
+     * MySQL's DATE_FORMAT does not exist in sqlite — which the test suite uses,
+     * per phpunit.xml — so the equivalent strftime is emitted there instead.
+     *
+     * $column is only ever an internal constant from this class, never request
+     * input, so interpolating it into raw SQL is safe.
+     */
+    private function monthExpression(string $column): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', {$column})"
+            : "DATE_FORMAT({$column}, '%Y-%m')";
     }
 
     /**

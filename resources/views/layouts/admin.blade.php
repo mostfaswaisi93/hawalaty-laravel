@@ -44,6 +44,7 @@
         dark: localStorage.getItem('theme') === 'dark',
         sidebarOpen: false,
         collapsed: localStorage.getItem('adminSidebarCollapsed') === '1',
+        confirmOpen: false, confirmMessage: '', confirmFormId: null, confirmTitle: '', confirmLabel: '',
     }"
     x-init="
         $watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') });
@@ -144,21 +145,21 @@
                     <p class="truncate font-body-sm text-body-sm font-bold">{{ $admin?->name }}</p>
                     <p class="truncate font-body-sm text-[11px] text-on-surface-variant">{{ $admin?->email }}</p>
                 </div>
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="group relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error"
-                        aria-label="{{ __('تسجيل الخروج') }}">
-                        <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
-                        <span
-                            class="pointer-events-none absolute start-full bottom-1/2 z-[60] ms-3 hidden translate-y-1/2 whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface opacity-0 shadow-xl transition-opacity duration-150 group-hover:opacity-100"
-                            :class="collapsed ? 'lg:block' : ''"
-                            role="tooltip">
-                            {{ __('تسجيل الخروج') }}
-                        </span>
-                    </button>
-                </form>
+                {{-- Confirmed: a stray click here ends the admin session outright. --}}
+                <form method="POST" action="{{ route('admin.logout') }}" id="admin-logout-form">@csrf</form>
+                <button
+                    type="button"
+                    @click="confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'admin-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
+                    class="group relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error"
+                    aria-label="{{ __('تسجيل الخروج') }}">
+                    <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
+                    <span
+                        class="pointer-events-none absolute start-full bottom-1/2 z-[60] ms-3 hidden translate-y-1/2 whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface opacity-0 shadow-xl transition-opacity duration-150 group-hover:opacity-100"
+                        :class="collapsed ? 'lg:block' : ''"
+                        role="tooltip">
+                        {{ __('تسجيل الخروج') }}
+                    </span>
+                </button>
             </div>
         </div>
     </aside>
@@ -189,5 +190,10 @@
             <p>{{ __('© 2026 حوالاتي — لوحة تحكم المنصّة.') }}</p>
         </footer>
     </div>
+
+    {{-- Layout-level so the sidebar's logout can reach it from any page. Pages
+         with their own delete confirmations declare a nested x-data that
+         shadows these roots, so the two never collide. --}}
+    <x-confirm-modal />
 </body>
 </html>

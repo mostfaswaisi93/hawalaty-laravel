@@ -5,9 +5,11 @@ namespace Tests\Feature\Admin;
 use App\Enums\LicenseStatus;
 use App\Models\Admin;
 use App\Models\Box;
+use App\Models\Expense;
 use App\Models\License;
 use App\Models\Package;
 use App\Models\Partner;
+use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -53,6 +55,41 @@ class AdminPagesTest extends TestCase
     public function test_guest_is_redirected_to_admin_login(): void
     {
         $this->get('/admin/dashboard')->assertRedirect('/admin/login');
+    }
+
+    /**
+     * The page-renders case above only proves the dashboard survives an EMPTY
+     * database. This one gives every aggregate on it something to chew on —
+     * the month-bucket GROUP BY in particular, which originally shipped a
+     * MySQL-only DATE_FORMAT and 500'd the moment it ran against sqlite.
+     */
+    public function test_dashboard_renders_with_real_data(): void
+    {
+        $package = Package::create(['name' => 'Basic', 'price' => 25, 'device_limit' => 2, 'features' => []]);
+        $box = Box::create(['box_name' => 'Main', 'box_balance' => 500]);
+        Partner::create(['name' => 'Ali', 'percentage' => 40]);
+
+        $license = License::create([
+            'license_code' => 'TRENDCOD',
+            'customer_name' => 'Acme',
+            'package_id' => $package->id,
+            'status' => LicenseStatus::Active,
+            // Inside the 30-day window, so the expiring-soon block renders too.
+            'expired_at' => now()->addDays(10),
+            'customer_balance' => 0,
+        ]);
+
+        Payment::create(['license_id' => $license->id, 'box_id' => $box->id, 'amount' => 120]);
+        Expense::create(['box_id' => $box->id, 'description' => 'Hosting', 'amount' => 40, 'date' => now()->toDateString()]);
+
+        $this->actingAs($this->admin(), 'admin')->get('/admin/dashboard')
+            ->assertOk()
+            ->assertViewHas('netProfit', 80.0)
+            ->assertViewHas('totalBoxBalance', 500.0)
+            ->assertViewHas('trend', fn ($trend) => count($trend) === 6)
+            ->assertViewHas('expiringSoon', fn ($rows) => $rows->count() === 1)
+            ->assertViewHas('packageDistribution', fn ($rows) => $rows[0]['count'] === 1 && $rows[0]['share'] === 100.0)
+            ->assertViewHas('partners', fn ($rows) => $rows[0]['computedShare'] === 200.0);
     }
 
     public function test_can_create_a_package(): void

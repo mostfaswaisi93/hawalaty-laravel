@@ -29,7 +29,7 @@
 @endphp
 @php $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar'; @endphp
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}" x-data="{ dark: localStorage.getItem('theme') === 'dark', sidebarOpen: false }" x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)" :class="{ dark: dark }">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}" x-data="{ dark: localStorage.getItem('theme') === 'dark', sidebarOpen: false, confirmOpen: false, confirmMessage: '', confirmFormId: null, confirmTitle: '', confirmLabel: '' }" x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)" :class="{ dark: dark }">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -87,15 +87,16 @@
                     <p class="truncate text-sm font-bold">{{ $member?->name }}</p>
                     <p class="truncate text-xs text-on-surface-variant">{{ $member?->email }}</p>
                 </div>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
-                        aria-label="{{ __('تسجيل الخروج') }}">
-                        <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
-                    </button>
-                </form>
+                {{-- Confirmed: an accidental click here drops unsaved work and forces
+                     the operator to re-enter the license code to get back in. --}}
+                <form method="POST" action="{{ route('logout') }}" id="tenant-logout-form">@csrf</form>
+                <button
+                    type="button"
+                    @click="confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'tenant-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
+                    class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-error"
+                    aria-label="{{ __('تسجيل الخروج') }}">
+                    <span class="material-symbols-outlined rtl:-scale-x-100">logout</span>
+                </button>
             </div>
         </div>
     </aside>
@@ -221,5 +222,9 @@
             <p>{{ __('© 2026 حوالاتي. جميع الحقوق محفوظة. مرخّص من قبل البنك المركزي.') }}</p>
         </footer>
     </div>
+
+    {{-- Layout-level so the sidebar's logout can reach it from any page; pages
+         that need their own delete confirmations still include their own. --}}
+    <x-confirm-modal />
 </body>
 </html>
