@@ -19,6 +19,7 @@
                 ['href' => '/admin/partners', 'icon' => 'handshake', 'label' => 'الشركاء', 'match' => 'admin/partners*'],
                 ['href' => '/admin/payments', 'icon' => 'payments', 'label' => 'المدفوعات', 'match' => 'admin/payments*'],
                 ['href' => '/admin/finance', 'icon' => 'assessment', 'label' => 'المالية', 'match' => 'admin/finance*'],
+                ['href' => '/admin/settlements', 'icon' => 'balance', 'label' => 'المقاصة', 'match' => 'admin/settlements*'],
             ],
         ],
         [

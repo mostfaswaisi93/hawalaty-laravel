@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Web\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Web\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Web\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Web\Admin\SettlementController as AdminSettlementController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
 use App\Http\Controllers\Web\BankController;
@@ -223,6 +224,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('finance', [AdminFinanceController::class, 'index'])->name('finance');
         Route::post('finance/withdrawals', [AdminFinanceController::class, 'storeWithdrawal'])->name('finance.withdrawals.store');
         Route::post('finance/expenses', [AdminFinanceController::class, 'storeExpense'])->name('finance.expenses.store');
+
+        // Partner clearing (المقاصة). No update route by design: a run is
+        // recomputed, not edited - a draft is deleted and re-created instead,
+        // and a confirmed run is an accounting document that never changes.
+        Route::get('settlements', [AdminSettlementController::class, 'index'])->name('settlements.index');
+        Route::post('settlements', [AdminSettlementController::class, 'store'])->name('settlements.store');
+        Route::get('settlements/{settlement}', [AdminSettlementController::class, 'show'])->name('settlements.show');
+        Route::post('settlements/{settlement}/confirm', [AdminSettlementController::class, 'confirm'])->name('settlements.confirm');
+        Route::delete('settlements/{settlement}', [AdminSettlementController::class, 'destroy'])->name('settlements.destroy');
 
         // Backups
         Route::get('backups', [AdminBackupController::class, 'index'])->name('backups.index');

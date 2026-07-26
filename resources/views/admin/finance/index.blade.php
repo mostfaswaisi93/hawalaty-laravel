@@ -64,8 +64,21 @@
                 @endif
             </x-card>
 
-            {{-- Partners --}}
-            <x-card title="{{ __('الشركاء') }}" subtitle="{{ __('الحصة المحسوبة من إجمالي أرصدة الصناديق') }}">
+            {{-- Partners.
+                 This figure is a share of the cash sitting in the boxes RIGHT
+                 NOW - it is not what a partner is owed, because box balance is
+                 already net of every withdrawal. The settlement position lives
+                 on the clearing page; the note below keeps the two from being
+                 read as the same number. --}}
+            <x-card title="{{ __('الشركاء') }}" subtitle="{{ __('حصة تقديرية من النقد الحالي في الصناديق') }}">
+                <x-slot:actions>
+                    <a href="{{ route('admin.settlements.index') }}"
+                        class="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-body-sm text-body-sm font-bold text-primary transition-colors hover:bg-surface-container-high"
+                        title="{{ __('المقاصة') }}">
+                        <span class="material-symbols-outlined !text-lg">balance</span>{{ __('المقاصة') }}
+                    </a>
+                </x-slot:actions>
+
                 @if (empty($summary['partners']))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد شركاء بعد') }}</p>
                 @else
@@ -83,6 +96,10 @@
                             </li>
                         @endforeach
                     </ul>
+
+                    <p class="mt-4 border-t border-outline-variant/50 pt-3 font-body-sm text-body-sm text-outline">
+                        {{ __('للمستحق الفعلي بعد خصم المسحوبات، افتح صفحة المقاصة.') }}
+                    </p>
                 @endif
             </x-card>
         </div>

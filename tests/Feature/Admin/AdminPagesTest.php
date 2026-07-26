@@ -40,6 +40,7 @@ class AdminPagesTest extends TestCase
             'partners' => ['/admin/partners'],
             'payments' => ['/admin/payments'],
             'finance' => ['/admin/finance'],
+            'settlements' => ['/admin/settlements'],
             'backups' => ['/admin/backups'],
             'logs' => ['/admin/logs'],
             'settings' => ['/admin/settings'],
