@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Requests\Admin\License\ChangePackageRequest;
 use App\Http\Requests\Admin\License\StoreLicenseRequest;
 use App\Models\License;

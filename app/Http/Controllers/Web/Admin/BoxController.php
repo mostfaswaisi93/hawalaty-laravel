@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Requests\Admin\Box\StoreBoxRequest;
 use App\Http\Requests\Admin\Box\UpdateBoxRequest;
 use App\Models\Box;

@@ -29,7 +29,7 @@
                     <x-settlement-status :status="$settlement->status" />
                 </div>
                 <p class="mt-1 font-body-lg text-on-surface-variant">
-                    <span dir="ltr">{{ $settlement->period_from->translatedFormat('d M Y') }} — {{ $settlement->period_to->translatedFormat('d M Y') }}</span>
+                    <span dir="ltr">{{ $settlement->period_from->translatedFormat('d M Y') }} - {{ $settlement->period_to->translatedFormat('d M Y') }}</span>
                 </p>
             </div>
 

@@ -30,6 +30,21 @@ class DeviceService
     }
 
     /**
+     * Every device on the license, whoever it belongs to. Used by the devices
+     * page for members holding DevicesManage, since the allowance being
+     * license-wide makes "who is using the slots" the relevant question.
+     */
+    public function listForTenant(?PersonalAccessToken $currentToken): Collection
+    {
+        return Device::with('teamMember')
+            ->latest('last_active_at')
+            ->get()
+            ->each(function (Device $device) use ($currentToken) {
+                $device->is_current = $device->isCurrent($currentToken);
+            });
+    }
+
+    /**
      * "Sign a device out" = revoke its actual Sanctum token AND delete the
      * Device row (not just one or the other).
      */

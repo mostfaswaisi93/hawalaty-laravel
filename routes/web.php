@@ -59,7 +59,15 @@ Route::view('terms', 'terms')->name('terms');
 // Help is public too, for the same reason: the guest footer links it. The view
 // carries no authenticated data and picks its own layout depending on whether a
 // tenant is signed in, so one route serves both audiences.
-Route::view('help', 'help.index')->name('help.index');
+// `tenant.session` is REQUIRED even though this route is public: the view picks
+// its layout with `auth('tenant')->check()`, and that guard resolves the logged
+// -in TeamMember from the `tenant` connection. Without this middleware the
+// connection is never configured, so a SIGNED-IN tenant clicking "المساعدة"
+// got a 500 ("Database: " empty) while a guest saw the page fine. The
+// middleware passes straight through when the session carries no license_code,
+// so the page stays reachable for guests - see
+// App\Http\Middleware\ResolveTenantConnectionFromSession.
+Route::view('help', 'help.index')->middleware('tenant.session')->name('help.index');
 
 /*
 |--------------------------------------------------------------------------

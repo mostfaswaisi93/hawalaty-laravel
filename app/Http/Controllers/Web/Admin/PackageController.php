@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Models\Package;
 use App\Services\Admin\PackageService;
 use Illuminate\Http\RedirectResponse;

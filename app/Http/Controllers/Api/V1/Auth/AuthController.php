@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
+use App\Exceptions\DeviceLimitReachedException;
 use App\Exceptions\InvalidLicenseException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -12,6 +13,7 @@ use App\Http\Requests\Auth\SignupRequest;
 use App\Models\License;
 use App\Models\Tenant\TeamMember;
 use App\Services\Tenant\AuditLogger;
+use App\Services\Tenant\DeviceRegistrar;
 use App\Services\TenantConnectionResolver;
 use App\Services\TenantProvisioner;
 use Illuminate\Http\JsonResponse;
@@ -62,7 +64,12 @@ class AuthController extends Controller
             Auth::guard('tenant')->setUser($member);
             AuditLogger::record(AuditAction::LoggedIn, AuditEntityType::TeamMember, $member->name, AuditCategory::Auth);
 
-            return response()->json($this->tokenResponse($member, $license));
+            return response()->json($this->tokenResponse($member, $license, $request));
+        } catch (DeviceLimitReachedException $e) {
+            // Rethrown out of tokenResponse(). 403, not 422: the credentials
+            // were correct, the plan is what refused - and the client needs to
+            // tell those two apart to show the right screen.
+            return response()->json(['message' => $e->getMessage(), 'deviceLimit' => $e->limit], 403);
         } catch (Throwable $e) {
             Log::error('Login failed unexpectedly.', [
                 'licenseCode' => $data['licenseCode'],
@@ -101,10 +108,24 @@ class AuthController extends Controller
     /**
      * @return array{token: string, licenseCode: string, user: array{id: string, name: string, email: string, roleId: ?string, permissions: array<int, string>}}
      */
-    private function tokenResponse(TeamMember $member, License $license): array
+    private function tokenResponse(TeamMember $member, License $license, ?Request $request = null): array
     {
+        $token = $member->createToken('api');
+
+        // Registering the device is what makes /devices show anything at all
+        // and what enforces the package's device_limit. If the allowance is
+        // full the just-issued token is deleted again, so a refused login
+        // cannot leave a usable credential behind.
+        try {
+            app(DeviceRegistrar::class)->register($member, $token->accessToken, $request ?? request(), $license);
+        } catch (DeviceLimitReachedException $e) {
+            $token->accessToken->delete();
+
+            throw $e;
+        }
+
         return [
-            'token' => $member->createToken('api')->plainTextToken,
+            'token' => $token->plainTextToken,
             'licenseCode' => $license->license_code,
             'user' => [
                 'id' => $member->id,

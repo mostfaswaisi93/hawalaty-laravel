@@ -104,7 +104,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', __('لوحة التحكم - حوالاتي'))</title>
+    {{-- The suffix is the `site_name` platform setting (/admin/settings), so an
+         operator can brand the portal tab without a deploy. --}}
+    <title>@yield('title', __('لوحة التحكم')) · {{ app(\App\Settings\PlatformSettings::class)->get('site_name') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

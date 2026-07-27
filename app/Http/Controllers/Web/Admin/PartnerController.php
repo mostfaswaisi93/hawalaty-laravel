@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Web\Admin\Concerns\HasPerPage;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Requests\Admin\Partner\StorePartnerRequest;
 use App\Http\Requests\Admin\Partner\UpdatePartnerRequest;
 use App\Models\Partner;

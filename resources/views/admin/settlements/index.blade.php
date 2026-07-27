@@ -42,7 +42,7 @@
                 <div>
                     <p class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الفترة المفتوحة') }}</p>
                     <p class="mt-0.5 font-body-lg font-bold text-on-surface">
-                        <span dir="ltr">{{ $p['periodFrom']->translatedFormat('d M Y') }} — {{ $p['periodTo']->translatedFormat('d M Y') }}</span>
+                        <span dir="ltr">{{ $p['periodFrom']->translatedFormat('d M Y') }} - {{ $p['periodTo']->translatedFormat('d M Y') }}</span>
                     </p>
                 </div>
             </div>
@@ -185,7 +185,7 @@
                             <tr class="hover:bg-surface-container-low">
                                 <td class="px-4 py-3 font-body-sm font-bold text-on-surface"><span dir="ltr">{{ $row->reference }}</span></td>
                                 <td class="px-4 py-3 font-body-sm text-on-surface-variant">
-                                    <span dir="ltr">{{ $row->period_from->translatedFormat('d M Y') }} — {{ $row->period_to->translatedFormat('d M Y') }}</span>
+                                    <span dir="ltr">{{ $row->period_from->translatedFormat('d M Y') }} - {{ $row->period_to->translatedFormat('d M Y') }}</span>
                                 </td>
                                 <td class="px-4 py-3 font-body-sm text-on-surface"><span dir="ltr">{{ number_format($row->distributable_profit, 2) }} ₪</span></td>
                                 <td class="px-4 py-3 font-body-sm text-on-surface"><span dir="ltr">{{ number_format($row->total_net, 2) }} ₪</span></td>
@@ -211,7 +211,7 @@
                                     <x-settlement-status :status="$row->status" />
                                 </div>
                                 <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">
-                                    <span dir="ltr">{{ $row->period_from->translatedFormat('d M Y') }} — {{ $row->period_to->translatedFormat('d M Y') }}</span>
+                                    <span dir="ltr">{{ $row->period_from->translatedFormat('d M Y') }} - {{ $row->period_to->translatedFormat('d M Y') }}</span>
                                 </p>
                                 <dl class="mt-3 grid grid-cols-2 gap-3 font-body-sm text-body-sm">
                                     <div>
