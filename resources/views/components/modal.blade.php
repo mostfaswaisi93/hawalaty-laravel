@@ -36,8 +36,13 @@
         x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100"
         class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+        {{-- This component exposes close() rather than a state flag, so it is the
+             one modal whose X could not be wired from the dialog's own Escape
+             handler (that handler sits on the outer wrapper here). --}}
+        <x-modal-close on-close="close()" />
+
         @if ($title)
-            <h3 id="modal-{{ $name }}-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">{{ $title }}</h3>
+            <h3 id="modal-{{ $name }}-title" class="border-b border-outline-variant/60 pe-14 ps-6 py-4 font-headline-md text-headline-md">{{ $title }}</h3>
         @endif
 
         {{-- The slot supplies its own footer; body padding lives here so callers

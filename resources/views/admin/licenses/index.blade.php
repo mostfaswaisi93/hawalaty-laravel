@@ -137,7 +137,8 @@
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <div class="border-b border-outline-variant/60 px-6 py-4">
+                <x-modal-close on-close="open = false" />
+                <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
                     <h3 class="font-headline-md text-headline-md">{{ __('إنشاء ترخيص جديد') }}</h3>
                     <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('سيُنشئ النظام قاعدة بيانات مستقلّة وحساب مالك للعميل.') }}</p>
                 </div>

@@ -162,7 +162,8 @@
                 role="dialog" aria-modal="true" aria-labelledby="team-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 id="team-modal-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل العضو') }}' : '{{ __('إضافة عضو') }}'"></h3>
+                <x-modal-close on-close="open = false" />
+                <h3 id="team-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل العضو') }}' : '{{ __('إضافة عضو') }}'"></h3>
                 <form :action="mode === 'edit' ? '{{ url('team') }}/' + form.id : '{{ route('team.store') }}'" method="POST" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
@@ -224,7 +225,8 @@
             <div x-show="payOpen" @keydown.escape.window="payOpen = false" role="dialog" aria-modal="true" aria-labelledby="pay-salary-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 id="pay-salary-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">
+                <x-modal-close on-close="payOpen = false" />
+                <h3 id="pay-salary-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md">
                     {{ __('صرف راتب') }} <span class="text-on-surface-variant" x-text="target.name"></span>
                 </h3>
                 <form method="POST" :action="'/team/' + target.id + '/salary/pay'" class="space-y-4 p-6" @submit="submitting = true">
@@ -291,7 +293,8 @@
             <div x-show="rateOpen" @keydown.escape.window="rateOpen = false" role="dialog" aria-modal="true" aria-labelledby="set-rate-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 w-full max-w-md overflow-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 id="set-rate-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">
+                <x-modal-close on-close="rateOpen = false" />
+                <h3 id="set-rate-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md">
                     {{ __('تحديد الراتب') }} <span class="text-on-surface-variant" x-text="target.name"></span>
                 </h3>
                 <form method="POST" :action="'/team/' + target.id + '/salary'" class="space-y-4 p-6" @submit="submitting = true">

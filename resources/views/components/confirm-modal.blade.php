@@ -25,6 +25,7 @@
         role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
         class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+                <x-modal-close on-close="confirmOpen = false" />
         {{-- Body: the icon carries the warning, so this dialog has no separate
              header band - the title sits with the message it belongs to. --}}
         <div class="px-6 pb-6 pt-8">

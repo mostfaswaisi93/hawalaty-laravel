@@ -187,7 +187,8 @@
             <div x-show="customOpen" @keydown.escape.window="customOpen = false" role="dialog" aria-modal="true" aria-labelledby="custom-setting-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 id="custom-setting-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md"
+                <x-modal-close on-close="customOpen = false" />
+                <h3 id="custom-setting-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md"
                     x-text="customMode === 'edit' ? @js(__('تعديل المفتاح')) : @js(__('إضافة مفتاح'))"></h3>
                 <form method="POST" action="{{ route('admin.settings.upsert') }}" class="space-y-4 p-6">
                     @csrf

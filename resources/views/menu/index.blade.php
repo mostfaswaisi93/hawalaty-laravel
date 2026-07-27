@@ -151,7 +151,8 @@
                 role="dialog" aria-modal="true" aria-labelledby="category-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 id="category-modal-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
+                <x-modal-close on-close="catOpen = false" />
+                <h3 id="category-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md">{{ __('فئة جديدة') }}</h3>
                 <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
@@ -178,7 +179,8 @@
                 role="dialog" aria-modal="true" aria-labelledby="item-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <h3 id="item-modal-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
+                <x-modal-close on-close="itemOpen = false" />
+                <h3 id="item-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? '{{ __('تعديل الصنف') }}' : '{{ __('صنف جديد') }}'"></h3>
                 <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <template x-if="itemMode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
@@ -233,7 +235,8 @@
                 role="dialog" aria-modal="true" aria-labelledby="import-modal-title"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
-                <div class="border-b border-outline-variant/60 px-6 py-4">
+                <x-modal-close on-close="importOpen = false" />
+                <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
                     <h3 id="import-modal-title" class="font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
                     <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
                 </div>

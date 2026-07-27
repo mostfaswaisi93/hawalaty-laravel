@@ -116,8 +116,9 @@
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+                <x-modal-close on-close="open = false" />
 
-                <h3 id="bank-modal-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل وسيلة الدفع') }}' : '{{ __('إضافة وسيلة دفع') }}'"></h3>
+                <h3 id="bank-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md" x-text="mode === 'edit' ? '{{ __('تعديل وسيلة الدفع') }}' : '{{ __('إضافة وسيلة دفع') }}'"></h3>
 
                 <form :action="mode === 'edit' ? '{{ url('banks') }}/' + form.id : '{{ route('banks.store') }}'" method="POST" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
