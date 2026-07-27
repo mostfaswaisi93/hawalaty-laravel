@@ -18,13 +18,14 @@
     <div class="page-enter space-y-6"
         x-data="{
             catOpen: {{ $categoryHasErrors ? 'true' : 'false' }},
+            catIcon: '{{ old('icon', '') }}',
             itemOpen: {{ $itemHasErrors ? 'true' : 'false' }},
             importOpen: {{ $importHasErrors ? 'true' : 'false' }},
             submitting: false,
             confirmOpen: false, confirmMessage: '', confirmFormId: null,
             itemMode: '{{ old('id') ? 'edit' : 'add' }}',
-            itemForm: { id: '{{ old('id', '') }}', name: '{{ $itemHasErrors ? old('name', '') : '' }}', menuCategoryId: '{{ old('menuCategoryId', '') }}', price: '{{ old('price', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
-            openAddItem(catId) { this.itemMode = 'add'; this.submitting = false; this.itemForm = { id: '', name: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
+            itemForm: { id: '{{ old('id', '') }}', name: '{{ $itemHasErrors ? old('name', '') : '' }}', icon: '{{ old('icon', '') }}', menuCategoryId: '{{ old('menuCategoryId', '') }}', price: '{{ old('price', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
+            openAddItem(catId) { this.itemMode = 'add'; this.submitting = false; this.itemForm = { id: '', name: '', icon: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
             openEditItem(item) { this.itemMode = 'edit'; this.submitting = false; this.itemForm = { ...item }; this.itemOpen = true; },
         }">
 
@@ -192,6 +193,8 @@
                         <input name="name" x-model="itemForm.name" required placeholder="{{ __('مثال: شاورما لحمة') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
+
+                    <x-icon-picker model="itemForm.icon" />
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
