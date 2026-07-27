@@ -25,7 +25,12 @@
         ];
     @endphp
 
-    <div class="page-enter mx-auto max-w-6xl space-y-6">
+    {{-- No `mx-auto max-w-*` here: every other page in the app is full width
+         inside the layout's own `max-w-[1680px] p-inline-lg` <main>, so capping
+         this one made the content jump inward by ~250px a side when navigating
+         to it. The two-column grid below is what keeps the form from stretching,
+         not an arbitrary container width. --}}
+    <div class="page-enter space-y-6">
         <header>
             <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('الإعدادات') }}</h1>
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('أدر بياناتك الشخصية وكلمة مرورك.') }}</p>

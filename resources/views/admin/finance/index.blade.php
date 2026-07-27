@@ -109,7 +109,7 @@
             @if ($recentPayments->isEmpty())
                 <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد مدفوعات بعد') }}</p>
             @else
-                <x-table-responsive :headers="[__('الترخيص'), __('الصندوق'), __('التاريخ'), __('المبلغ')]">
+                <x-table-responsive :headers="[__('الترخيص'), __('الصندوق'), __('التاريخ'), ['label' => __('المبلغ'), 'align' => 'end']]">
                     <x-slot:table>
                         @foreach ($recentPayments as $payment)
                             <tr class="transition-colors hover:bg-surface-container-low/50">

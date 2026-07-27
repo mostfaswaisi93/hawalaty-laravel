@@ -29,6 +29,16 @@
     - the same thing the Angular templates do with two separate `@for`
     blocks, one inside each container.
 --}}
+{{--
+    A header may be a plain string (start-aligned, the default) OR an array
+    `['label' => '...', 'align' => 'end'|'center'|'start']`.
+
+    Money columns are conventionally end-aligned so the digits line up and a
+    column can be scanned vertically. The cells already did that with `text-end`
+    while the header stayed `text-start`, so the label floated away from its own
+    column. Alignment now travels with the column definition instead of being
+    set on the cells alone.
+--}}
 @props(['headers' => []])
 
 <div>
@@ -38,8 +48,17 @@
                 <thead class="bg-surface-container-low">
                     <tr>
                         @foreach ($headers as $header)
-                            <th class="px-4 py-3 text-start font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
-                                {{ $header }}
+                            @php
+                                $label = is_array($header) ? ($header['label'] ?? '') : $header;
+                                $align = is_array($header) ? ($header['align'] ?? 'start') : 'start';
+                            @endphp
+                            <th @class([
+                                'px-4 py-3 font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant',
+                                'text-start' => $align === 'start',
+                                'text-end' => $align === 'end',
+                                'text-center' => $align === 'center',
+                            ])>
+                                {{ $label }}
                             </th>
                         @endforeach
                     </tr>

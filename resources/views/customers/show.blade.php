@@ -55,7 +55,7 @@
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد طلبات بعد') }}</p>
                 </div>
             @else
-                <x-table-responsive :headers="[__('الصنف'), __('التاريخ'), __('الحالة'), __('المبلغ'), '']">
+                <x-table-responsive :headers="[__('الصنف'), __('التاريخ'), __('الحالة'), ['label' => __('المبلغ'), 'align' => 'end'], '']">
                     <x-slot:table>
                         @foreach ($transfers as $t)
                             <tr class="reveal-up transition-colors hover:bg-surface-container-low/50" style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">

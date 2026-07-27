@@ -104,7 +104,7 @@
                     @endif
                 </div>
             @else
-                <x-table-responsive :headers="[__('العميل'), __('الصنف'), __('التاريخ'), __('الحالة'), __('طريقة الدفع'), __('المبلغ'), '']">
+                <x-table-responsive :headers="[__('العميل'), __('الصنف'), __('التاريخ'), __('الحالة'), __('طريقة الدفع'), ['label' => __('المبلغ'), 'align' => 'end'], '']">
                     <x-slot:table>
                         @foreach ($transfers as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">

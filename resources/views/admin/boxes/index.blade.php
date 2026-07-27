@@ -32,7 +32,7 @@
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد صناديق بعد') }}</p>
                 </div>
             @else
-                <x-table-responsive :headers="[__('الاسم'), __('الرصيد'), __('إجراءات')]">
+                <x-table-responsive :headers="[__('الاسم'), ['label' => __('الرصيد'), 'align' => 'end'], __('إجراءات')]">
                     <x-slot:table>
                         @foreach ($boxes as $box)
                             <tr class="transition-colors hover:bg-surface-container-low/50">

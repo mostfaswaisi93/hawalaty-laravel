@@ -104,7 +104,7 @@
         @if ($transfers->isNotEmpty())
             <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 220ms">
                 <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">{{ __('طلبات الفترة') }} ({{ number_format($count) }})</h2>
-                <x-table-responsive :headers="[__('العميل'), __('التاريخ'), __('الحالة'), __('المبلغ')]">
+                <x-table-responsive :headers="[__('العميل'), __('التاريخ'), __('الحالة'), ['label' => __('المبلغ'), 'align' => 'end']]">
                     <x-slot:table>
                         @foreach ($transfers as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
