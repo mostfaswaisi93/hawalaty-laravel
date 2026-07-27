@@ -62,6 +62,14 @@
             @endforeach
         </div>
 
+        {{-- year at a glance --}}
+        <x-activity-heatmap
+            class="reveal-up"
+            style="--d: 110ms"
+            :days="$heatmap"
+            :from="$heatmapFrom"
+            :to="$heatmapTo" />
+
         {{-- daily revenue chart --}}
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6" style="--d: 140ms">
             <h2 class="mb-6 font-headline-md text-headline-md text-on-surface">{{ __('الإيراد اليومي') }}</h2>

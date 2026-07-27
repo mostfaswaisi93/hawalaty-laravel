@@ -1,5 +1,24 @@
 @import 'tailwindcss';
 
+/*
+ * Binds `dark:` to the `.dark` CLASS instead of the OS preference.
+ *
+ * This app switches theme with a moon button that toggles `.dark` on <html>
+ * (see the layouts' x-init). Tailwind v4's DEFAULT `dark` variant is
+ * `@media (prefers-color-scheme: dark)` - a completely independent signal - so
+ * without this line every `dark:` utility ignored the toggle entirely:
+ *
+ *   - light OS + app switched to dark  -> the `dark:` utilities never fired
+ *   - dark OS  + app left on light     -> they fired over the LIGHT palette
+ *
+ * Most of the UI still themed correctly because the palette is driven by the
+ * `--c-*` channel variables redefined under `.dark`, which is why this went
+ * unnoticed; only the utilities written as `dark:` were affected. Verified with
+ * an isolated probe using `dark:text-green-400` (a static palette colour, so a
+ * variable swap cannot mask the result).
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -317,6 +336,33 @@ body {
 }
 .material-symbols-outlined[data-weight='fill'] {
     font-variation-settings: 'FILL' 1;
+}
+
+/* Activity heatmap intensity, GitHub-contributions style.
+ *
+ * Derived from the theme tokens via color-mix rather than hard-coded greens, so
+ * the whole ramp inverts with the palette: in light mode it darkens from a pale
+ * surface toward the navy primary; in dark mode --c-primary is a pale lavender
+ * on a near-black surface, so the same ramp brightens instead. Either way
+ * "more activity" stays the higher-contrast end.
+ *
+ * Level 0 gets a hairline border - without it an empty day is invisible against
+ * the card and the grid loses its shape on quiet months. */
+.heat-0 {
+    background-color: rgb(var(--c-surface-container-high));
+    box-shadow: inset 0 0 0 1px rgb(var(--c-outline-variant) / 0.5);
+}
+.heat-1 {
+    background-color: color-mix(in srgb, rgb(var(--c-primary)) 28%, rgb(var(--c-surface-container-high)));
+}
+.heat-2 {
+    background-color: color-mix(in srgb, rgb(var(--c-primary)) 52%, rgb(var(--c-surface-container-high)));
+}
+.heat-3 {
+    background-color: color-mix(in srgb, rgb(var(--c-primary)) 76%, rgb(var(--c-surface-container-high)));
+}
+.heat-4 {
+    background-color: rgb(var(--c-primary));
 }
 
 /* Material Symbols draws its glyph from a LIGATURE, so each element's text

@@ -52,6 +52,26 @@ class ReportService
         ];
     }
 
+    /**
+     * Orders PER DAY for the contribution-style heatmap, keyed "Y-m-d".
+     *
+     * Counts, not revenue: the heatmap answers "how busy was this day", and a
+     * single large order should not paint a day darker than a day of twenty
+     * small ones. One GROUP BY rather than a query per day - a year is 365 of
+     * them.
+     *
+     * @return Collection<string, int>
+     */
+    public function dailyCounts(string $from, string $to): Collection
+    {
+        return $this->scoped($from, $to)
+            ->selectRaw('DATE(created_at) as day, COUNT(*) as orders')
+            ->groupBy('day')
+            ->orderBy('day')
+            ->pluck('orders', 'day')
+            ->map(fn ($count) => (int) $count);
+    }
+
     /** One page of the range's transfers, for the report screen's table. */
     public function transfersPage(string $from, string $to, int $perPage = 20): LengthAwarePaginator
     {
