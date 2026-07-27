@@ -12,17 +12,22 @@ use App\Http\Controllers\Api\V1\Admin\PackageController;
 use App\Http\Controllers\Api\V1\Admin\PartnerController;
 use App\Http\Controllers\Api\V1\Admin\PaymentController;
 use App\Http\Controllers\Api\V1\Admin\SettingController;
+use App\Http\Controllers\Api\V1\Admin\SettlementController as AdminSettlementController;
 use App\Http\Controllers\Api\V1\Admin\WithdrawalController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\BankController;
 use App\Http\Controllers\Api\V1\ConstantListController;
+use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\ExpenseController;
 use App\Http\Controllers\Api\V1\MenuCategoryController;
 use App\Http\Controllers\Api\V1\MenuItemController;
+use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\SyncController;
 use App\Http\Controllers\Api\V1\TeamMemberController;
 use App\Http\Controllers\Api\V1\TransferController;
@@ -53,6 +58,21 @@ Route::prefix('v1')->group(function () {
         Route::put('transfers/{transfer}', [TransferController::class, 'update']);
         Route::delete('transfers/{transfer}', [TransferController::class, 'destroy']);
         Route::get('history', [TransferController::class, 'index']);
+        // The printable receipt, same view and paper size as the web app.
+        Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show']);
+
+        // Customers. Identity is the PHONE, not the name.
+        Route::get('customers', [CustomerController::class, 'index']);
+        Route::get('customers/{customer}', [CustomerController::class, 'show']);
+
+        // In-app notifications.
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead']);
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
+
+        // Global search. Mirrors the web permission rules exactly, so search
+        // can never become a way to read around a permission.
+        Route::get('search', [SearchController::class, 'index']);
 
         Route::get('banks', [BankController::class, 'index']);
         Route::post('banks', [BankController::class, 'store']);
@@ -149,6 +169,14 @@ Route::prefix('v1')->group(function () {
             Route::get('activity-log', [AdminActivityLogController::class, 'index']);
 
             Route::get('finance/summary', [FinanceController::class, 'summary']);
+
+            // Partner clearing (المقاصة).
+            Route::get('settlements', [AdminSettlementController::class, 'index']);
+            Route::get('settlements/preview', [AdminSettlementController::class, 'preview']);
+            Route::post('settlements', [AdminSettlementController::class, 'store']);
+            Route::get('settlements/{settlement}', [AdminSettlementController::class, 'show']);
+            Route::post('settlements/{settlement}/confirm', [AdminSettlementController::class, 'confirm']);
+            Route::delete('settlements/{settlement}', [AdminSettlementController::class, 'destroy']);
 
             Route::get('backups', [BackupController::class, 'index']);
             Route::post('backups', [BackupController::class, 'store']);
