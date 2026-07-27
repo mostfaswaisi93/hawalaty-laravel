@@ -157,11 +157,11 @@
                             <p class="mt-2 font-body-lg leading-relaxed text-on-surface-variant">{{ __('لأي سؤال عن هذه السياسة، أو لطلب نسخة من بياناتك أو حذفها، راسلنا وسنردّ عليك في أقرب وقت ممكن.') }}</p>
                         </div>
                     </div>
-                    <a href="mailto:support@hawalaty.test"
+                    <a href="mailto:{{  }}"
                         class="flex flex-shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
                         title="{{ __('راسلنا') }}">
                         <span class="material-symbols-outlined !text-xl" aria-hidden="true">mail</span>
-                        <span dir="ltr">support@hawalaty.test</span>
+                        <span dir="ltr">{{  }}</span>
                     </a>
                 </div>
             </article>

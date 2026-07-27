@@ -245,7 +245,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Platform key/value settings
         Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
+        // PUT is the grouped, typed form; POST stays the free-form key/value
+        // upsert behind the "custom keys" section.
+        Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
         Route::post('settings', [AdminSettingController::class, 'upsert'])->name('settings.upsert');
+        Route::delete('settings/{key}', [AdminSettingController::class, 'destroy'])->name('settings.destroy');
 
         // The admin's own account - separate from settings above, which is
         // platform-wide key/value config rather than anything personal.

@@ -274,7 +274,7 @@
                 <div class="mt-5 flex flex-wrap items-center gap-2 rounded-2xl bg-surface-container-low p-4">
                     <span class="material-symbols-outlined !text-xl text-primary" aria-hidden="true">mail</span>
                     <span class="font-body-sm text-on-surface-variant">{{ __('لأي استفسار حول هذه الشروط، راسلنا على:') }}</span>
-                    <a href="mailto:support@hawalaty.test" class="font-body-sm font-bold text-primary underline-offset-4 hover:underline" dir="ltr" title="support@hawalaty.test">support@hawalaty.test</a>
+                    <a href="mailto:{{  }}" class="font-body-sm font-bold text-primary underline-offset-4 hover:underline" dir="ltr" title="{{  }}">{{  }}</a>
                 </div>
             </section>
 

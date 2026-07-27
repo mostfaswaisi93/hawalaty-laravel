@@ -12,6 +12,7 @@ use App\Models\License;
 use App\Models\Package;
 use App\Models\Tenant\Permission;
 use App\Models\Tenant\Role;
+use App\Settings\PlatformSettings;
 use App\Models\Tenant\TeamMember;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -34,9 +35,10 @@ use Throwable;
 class TenantProvisioner
 {
     /**
-     * Trial length granted to every newly provisioned license. No
-     * per-package trial length exists in the `packages` schema (see
-     * BACKEND_PROMPT.md section 3), so a single fixed value is used here.
+     * Fallback trial length. The live value is the `trial_days` platform
+     * setting (/admin/settings); this const is only the floor used when the
+     * setting has never been saved. No per-package trial length exists in the
+     * `packages` schema, so one value serves every package.
      */
     protected const TRIAL_DAYS = 14;
 
@@ -62,7 +64,7 @@ class TenantProvisioner
                 'customer_name' => $data['businessName'],
                 'package_id' => $package->id,
                 'status' => LicenseStatus::Trial,
-                'expired_at' => now()->addDays(self::TRIAL_DAYS),
+                'expired_at' => now()->addDays($this->trialDays()),
                 'customer_balance' => 0,
             ]));
 
@@ -107,6 +109,18 @@ class TenantProvisioner
      * (see Illuminate\Support\Str), so the uppercased result is guaranteed
      * safe to also reuse (lowercased) as a MySQL identifier fragment below.
      */
+    /**
+     * Trial length from platform settings, falling back to TRIAL_DAYS. Resolved
+     * from the container rather than injected so the existing constructor
+     * signature (and every caller of it) stays untouched.
+     */
+    protected function trialDays(): int
+    {
+        $configured = app(PlatformSettings::class)->get('trial_days');
+
+        return is_int($configured) && $configured > 0 ? $configured : self::TRIAL_DAYS;
+    }
+
     protected function generateLicenseCode(): string
     {
         do {

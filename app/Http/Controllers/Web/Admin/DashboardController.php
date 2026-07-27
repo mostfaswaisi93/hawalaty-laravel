@@ -11,6 +11,7 @@ use App\Models\License;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Services\Admin\FinanceSummaryService;
+use App\Settings\PlatformSettings;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -25,10 +26,10 @@ class DashboardController extends Controller
     /** How many months of revenue/expense history the trend chart shows. */
     private const TREND_MONTHS = 6;
 
-    /** A license inside this many days of expiry is surfaced as actionable. */
-    private const EXPIRY_WINDOW_DAYS = 30;
-
-    public function __construct(private readonly FinanceSummaryService $finance) {}
+    public function __construct(
+        private readonly FinanceSummaryService $finance,
+        private readonly PlatformSettings $settings,
+    ) {}
 
     public function index(): View
     {
@@ -126,16 +127,20 @@ class DashboardController extends Controller
     }
 
     /**
-     * Active/trial licenses lapsing within EXPIRY_WINDOW_DAYS - the one thing
-     * on this page that needs the admin to actually do something.
+     * Active/trial licenses lapsing soon - the one thing on this page that
+     * needs the admin to actually do something. The window is configurable at
+     * /admin/settings (`license_expiry_warning_days`); it used to be a private
+     * const here, which meant changing it required a deploy.
      */
     private function expiringSoon()
     {
+        $window = (int) $this->settings->get('license_expiry_warning_days');
+
         return License::query()
             ->with('package')
             ->whereIn('status', [LicenseStatus::Active->value, LicenseStatus::Trial->value])
             ->whereNotNull('expired_at')
-            ->whereBetween('expired_at', [Carbon::now(), Carbon::now()->addDays(self::EXPIRY_WINDOW_DAYS)])
+            ->whereBetween('expired_at', [Carbon::now(), Carbon::now()->addDays($window)])
             ->orderBy('expired_at')
             ->take(5)
             ->get();

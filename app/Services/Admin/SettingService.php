@@ -16,4 +16,9 @@ class SettingService
     {
         return Setting::updateOrCreate(['key' => $key], ['value' => $value]);
     }
+
+    public function forget(string $key): void
+    {
+        Setting::query()->where('key', $key)->delete();
+    }
 }

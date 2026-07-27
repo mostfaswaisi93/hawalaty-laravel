@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\TenantPersonalAccessToken;
+use App\Settings\PlatformSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -16,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Singleton so the settings table is read at most once per request even
+        // on a cache miss - it is consulted by the admin dashboard and by the
+        // public help/privacy/terms pages, which render constantly.
+        $this->app->singleton(PlatformSettings::class);
     }
 
     /**
