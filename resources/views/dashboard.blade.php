@@ -120,6 +120,14 @@
             <div class="pointer-events-none absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, rgb(234,241,255) 1px, transparent 0); background-size: 24px 24px;"></div>
         </section>
 
+        <!-- Year at a glance -->
+        <x-activity-heatmap
+            class="reveal-up"
+            style="--d: 200ms"
+            :days="$heatmap"
+            :from="$heatmapFrom"
+            :to="$heatmapTo" />
+
         <!-- Recent orders -->
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-8" style="--d: 220ms">
             <div class="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">

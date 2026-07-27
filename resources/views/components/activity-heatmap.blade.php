@@ -3,11 +3,17 @@
     orders that day carried.
 
     LAYOUT / DIRECTION
-    7 rows (Sun..Sat) x ~53 week columns using `grid-auto-flow: column`, so the
-    DOM stays in chronological order and the browser lays the columns out. Under
-    dir=rtl the grid flows right-to-left by itself, putting the oldest week on
-    the right and the newest on the left - the direction an Arabic reader scans.
-    No mirroring, and the labels stay aligned because they share the grid.
+    7 rows (Sun..Sat) x ~53 week columns using `grid-auto-flow: column`.
+
+    The calendar body is pinned `dir="ltr"` even in the Arabic UI, so time runs
+    OLDEST-LEFT to NEWEST-RIGHT. Letting it inherit RTL flipped the axis, and a
+    time axis reading right-to-left is not what anyone expects from this chart -
+    it is the same reasoning that already keeps every date, phone number and
+    amount in the app `dir="ltr"`. The legend follows the same axis, so its
+    light-to-dark ramp points the same way the weeks do.
+
+    Only the BODY is LTR; the heading and date range above it stay in the page
+    direction so the Arabic text still reads naturally.
 
     The columns are `1fr`, not a fixed 11px, so the grid FILLS the card. Fixed
     cells left roughly half the width empty on a desktop, which is what made the
@@ -112,7 +118,7 @@
 
     {{-- Below md the grid cannot shrink to a usable size, so IT scrolls rather
          than squashing - the page itself never scrolls sideways. --}}
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto" dir="ltr">
         <div class="flex min-w-[560px] gap-2">
             {{-- Weekday rail. Only alternate rows are labelled; seven labels do
                  not fit at this cell height. --}}
@@ -151,11 +157,13 @@
         </div>
     </div>
 
-    <div class="mt-3 flex items-center justify-end gap-1.5 font-body-sm text-[11px] text-outline">
-        <span class="me-1">{{ __('أقل') }}</span>
+    {{-- LTR to match the grid above: the ramp has to point the same way the
+         weeks do, or "أقل -> أكثر" reads against the axis it describes. --}}
+    <div class="mt-3 flex items-center justify-end gap-1.5 font-body-sm text-[11px] text-outline" dir="ltr">
+        <span class="mr-1">{{ __('أقل') }}</span>
         @for ($i = 0; $i <= 4; $i++)
             <span class="heat-{{ $i }} h-[11px] w-[11px] rounded-[2px]"></span>
         @endfor
-        <span class="ms-1">{{ __('أكثر') }}</span>
+        <span class="ml-1">{{ __('أكثر') }}</span>
     </div>
 </div>
