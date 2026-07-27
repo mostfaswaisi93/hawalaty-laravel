@@ -110,7 +110,7 @@ class HttpLayerSmokeTest extends TenantTestCase
             'team' => ['/team', 'members'],
             'activity log' => ['/activity-log', 'logs'],
             'menu' => ['/menu', 'categories'],
-            'reports' => ['/reports', 'report'],
+            'reports' => ['/reports', 'transfers'],
         ];
     }
 
@@ -140,6 +140,9 @@ class HttpLayerSmokeTest extends TenantTestCase
             'history' => ['/history', 'transfers'],
             'team' => ['/team', 'members'],
             'activity log' => ['/activity-log', 'logs'],
+            // The report's transfer list was fetched with a bare ->get(): a
+            // busy tenant's month rendered every row in one table.
+            'reports' => ['/reports', 'transfers'],
         ];
     }
 

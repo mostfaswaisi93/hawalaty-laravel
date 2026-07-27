@@ -98,7 +98,7 @@
                 <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">{{ __('طلبات الفترة') }} ({{ number_format($count) }})</h2>
                 <x-table-responsive :headers="[__('العميل'), __('التاريخ'), __('الحالة'), __('المبلغ')]">
                     <x-slot:table>
-                        @foreach ($transfers->sortByDesc('created_at') as $t)
+                        @foreach ($transfers as $t)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3 text-body-sm font-bold">{{ $t->customer }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->created_at->translatedFormat('j F Y') }}</td>
@@ -108,7 +108,7 @@
                         @endforeach
                     </x-slot:table>
                     <x-slot:cards>
-                        @foreach ($transfers->sortByDesc('created_at') as $t)
+                        @foreach ($transfers as $t)
                             {{-- Cascade is per-card, not a container .stagger - the cards
                                  container itself belongs to the shared table component. --}}
                             <div class="reveal-up flex items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
@@ -122,6 +122,8 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                <x-table-footer :paginator="$transfers" :perPage="$perPage" />
             </section>
         @endif
     </div>

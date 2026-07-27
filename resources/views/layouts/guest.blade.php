@@ -9,9 +9,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', __('حوالاتي'))</title>
 
+    {{-- No favicon was declared anywhere, so browsers fell back to probing /favicon.ico
+         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="apple-touch-icon" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+    {{-- display=block, NOT swap: with swap the browser paints the fallback immediately, and an icon font's fallback is the ligature's literal text - that is the "restaurant_menu" leaking on first load. --}}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

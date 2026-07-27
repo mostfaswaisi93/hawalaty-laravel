@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Services\Tenant\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -19,11 +20,13 @@ use Illuminate\View\View;
  */
 class ReportController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly ReportService $service) {}
 
     public function index(Request $request): View
     {
-        return view('reports.index', $this->buildReport($request));
+        return view('reports.index', $this->buildReport($request, paginate: true));
     }
 
     public function export(Request $request): Response
@@ -41,7 +44,11 @@ class ReportController extends Controller
     }
 
     /** @return array{from: string, to: string, count: int, total: float, average: float, transfers: Collection, daily: Collection} */
-    private function buildReport(Request $request): array
+    /**
+     * @param  bool  $paginate  true for the screen (one page of transfers),
+     *                          false for the CSV/PDF export (every row)
+     */
+    private function buildReport(Request $request, bool $paginate = false): array
     {
         $validated = $request->validate([
             'from' => ['nullable', 'date'],

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hawalaty">
+  <!--
+    Matches the in-app <x-logo> mark: the same wallet glyph on the same brand
+    navy, drawn as paths rather than relying on the Material Symbols webfont
+    (a favicon cannot load an icon font).
+  -->
+  <rect width="64" height="64" rx="15" fill="#00236F"/>
+  <!-- Wallet body -->
+  <path fill="#fff"
+        d="M17 20h24a7 7 0 0 1 7 7v3h-9.5a6.5 6.5 0 0 0 0 13H48v3a7 7 0 0 1-7 7H17a7 7 0 0 1-7-7V27a7 7 0 0 1 7-7Z"/>
+  <!-- Card pocket on the trailing edge -->
+  <path fill="#fff" d="M38.5 33H51a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H38.5a5 5 0 0 1 0-10Z"/>
+  <!-- Clasp -->
+  <circle cx="41.5" cy="38" r="2.4" fill="#00236F"/>
+</svg>
