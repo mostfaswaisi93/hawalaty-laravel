@@ -102,7 +102,10 @@
                         @else
                             <ul class="divide-y divide-outline-variant/50">
                                 @foreach ($cat->menuItems as $item)
-                                    <li class="flex items-center gap-3 p-4 transition-colors hover:bg-surface-container-low/50">
+                                    {{-- Anchor + :target highlight so a catalogue hit in the header
+                                         search lands ON its row instead of at the top of a long page. --}}
+                                    <li id="item-{{ $item->id }}"
+                                        class="flex scroll-mt-24 items-center gap-3 p-4 transition-colors target:bg-primary/10 hover:bg-surface-container-low/50">
                                         {{-- The entry's own icon, falling back to its category's and
                                              then to a neutral glyph. It used to be a hardcoded
                                              `lunch_dining`, which is wrong the moment the catalogue is

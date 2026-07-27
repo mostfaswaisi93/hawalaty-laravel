@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api;
 
 use App\Enums\PaymentMethod;
+use App\Http\Middleware\ResolveTenantConnection;
 use App\Models\Tenant\Bank;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuCategory;
@@ -12,8 +13,8 @@ use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Services\Tenant\TransferService;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\TenantTestCase;
 
 /**
  * The five tenant capabilities that existed on the web but had no API:
@@ -32,7 +33,9 @@ class TenantApiCoverageTest extends TenantApiTestCase
         Notification::fake();
         $this->actAsOwner();
 
-        $item = MenuItem::factory()->create(['price' => '25.00']);
+        // Deliberately not a round number: it also proves the cents survive the
+        // decimal -> float -> JSON round-trip instead of being truncated.
+        $item = MenuItem::factory()->create(['price' => '25.25']);
         app(TransferService::class)->create([
             'customer' => 'أحمد',
             'customerPhone' => '0599111222',
@@ -44,7 +47,7 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertOk()
             ->assertJsonPath('data.0.phone', '0599111222')
             ->assertJsonPath('data.0.orderCount', 1)
-            ->assertJsonPath('data.0.totalSpent', 50.0);
+            ->assertJsonPath('data.0.totalSpent', 50.5);
     }
 
     public function test_customers_can_be_searched_by_phone(): void
@@ -189,10 +192,26 @@ class TenantApiCoverageTest extends TenantApiTestCase
         }
     }
 
+    /**
+     * The base class disables `tenant.header` so the test database stays in
+     * place; this one re-enables it, because "a tenant request without a licence
+     * header is refused" is the behaviour that actually matters and must not go
+     * uncovered just because the rest of the suite bypasses it.
+     */
+    public function test_the_license_header_is_required(): void
+    {
+        $this->withMiddleware(ResolveTenantConnection::class);
+        $this->actAsOwner();
+
+        $this->getJson('/api/v1/customers')
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'The X-License-Code header is required.');
+    }
+
     private function pushNotification(TeamMember $member): void
     {
         $member->notifications()->create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'type' => 'App\\Notifications\\TestNotification',
             'data' => ['message' => 'مرحباً'],
             'read_at' => null,

@@ -2,83 +2,56 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
-use App\Models\Tenant\Bank;
-use App\Models\Tenant\Customer;
-use App\Models\Tenant\MenuItem;
-use App\Models\Tenant\Transfer;
+use App\Services\Tenant\CatalogNaming;
+use App\Services\Tenant\SearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Backs the header search pill (layouts/app.blade.php). Each result group
- * mirrors the permission that gates its own index page - orders/customers
- * are open to every team member (see History/CustomerController), banks and
- * menu items only show up for members who can manage them.
+ * Backs the header search pill (layouts/app.blade.php).
+ *
+ * The querying and every permission rule live in SearchService, shared with the
+ * mobile API. All this adds is what only a browser needs: a `url` per result,
+ * and the tenant's own word for its catalogue, because the dropdown's group
+ * heading has to read "الفاكهة" for a fruit shop and not "الأصناف".
  */
 class SearchController extends Controller
 {
-    private const PER_GROUP = 5;
+    public function __construct(
+        private readonly SearchService $search,
+        private readonly CatalogNaming $naming,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
         $query = trim((string) $request->query('q', ''));
-
-        if (mb_strlen($query) < 2) {
-            return response()->json([
-                'orders' => [],
-                'customers' => [],
-                'banks' => [],
-                'menuItems' => [],
-            ]);
-        }
-
         $member = auth('tenant')->user();
 
+        $results = $this->search->search($query, $member);
+
         return response()->json([
-            'orders' => Transfer::where('customer', 'like', "%{$query}%")
-                ->latest()
-                ->take(self::PER_GROUP)
-                ->get()
-                ->map(fn (Transfer $t) => [
-                    'id' => $t->id,
-                    'customer' => $t->customer,
-                    'itemName' => $t->item_name,
-                    'amount' => (float) $t->amount,
-                    'url' => route('history.index', ['search' => $t->customer]),
-                ]),
-            'customers' => Customer::where('name', 'like', "%{$query}%")
-                ->orWhere('phone', 'like', "%{$query}%")
-                ->take(self::PER_GROUP)
-                ->get()
-                ->map(fn (Customer $c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'phone' => $c->phone,
-                    'url' => route('customers.show', $c->id),
-                ]),
-            'banks' => $member?->hasPermission(PermissionKey::BanksManage)
-                ? Bank::where('name', 'like', "%{$query}%")
-                    ->take(self::PER_GROUP)
-                    ->get()
-                    ->map(fn (Bank $b) => [
-                        'id' => $b->id,
-                        'name' => $b->name,
-                        'url' => route('banks.index', ['search' => $b->name]),
-                    ])
-                : [],
-            'menuItems' => $member?->hasPermission(PermissionKey::MenuManage)
-                ? MenuItem::where('name', 'like', "%{$query}%")
-                    ->take(self::PER_GROUP)
-                    ->get()
-                    ->map(fn (MenuItem $m) => [
-                        'id' => $m->id,
-                        'name' => $m->name,
-                        'price' => (float) $m->price,
-                        'url' => route('menu.index'),
-                    ])
-                : [],
+            'query' => $query,
+            // The heading is data, not markup: the dropdown is rendered by
+            // Alpine from this payload, so the label has to travel with it.
+            'itemLabel' => $this->naming->item(),
+            'catalogLabel' => $this->naming->catalog(),
+
+            'orders' => $results['orders']->map(fn (array $o) => $o + [
+                'url' => route('history.index', ['search' => $o['customer']]),
+            ]),
+            'customers' => $results['customers']->map(fn (array $c) => $c + [
+                'url' => route('customers.show', $c['id']),
+            ]),
+            'banks' => $results['banks']->map(fn (array $b) => $b + [
+                'url' => route('banks.index', ['search' => $b['name']]),
+            ]),
+            // The catalogue page has no search filter, so this uses the row's
+            // own anchor - the result lands on the entry rather than at the top
+            // of a page that can run to dozens of rows.
+            'menuItems' => $results['menuItems']->map(fn (array $m) => $m + [
+                'url' => route('menu.index').'#item-'.$m['id'],
+            ]),
         ]);
     }
 }
