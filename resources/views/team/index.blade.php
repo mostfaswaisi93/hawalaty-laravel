@@ -21,6 +21,10 @@
             form: { id: '{{ old('id', '') }}', name: '{{ old('name', '') }}', email: '{{ old('email', '') }}', password: '', roleId: '{{ old('roleId', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
             openAdd() { this.mode = 'add'; this.submitting = false; this.form = { id: '', name: '', email: '', password: '', roleId: '{{ $roles->first()?->id }}', active: true }; this.open = true; },
             openEdit(member) { this.mode = 'edit'; this.submitting = false; this.form = { ...member, password: '' }; this.open = true; },
+            payOpen: false, rateOpen: false,
+            target: { id: '', name: '', amount: '', period: 'monthly' },
+            openPay(m) { this.submitting = false; this.target = { id: m.id, name: m.name, amount: m.amount || '', period: m.period || 'monthly' }; this.payOpen = true; },
+            openRate(m) { this.submitting = false; this.target = { id: m.id, name: m.name, amount: m.amount || '', period: m.period || 'monthly' }; this.rateOpen = true; },
         }">
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -49,7 +53,7 @@
                     <button type="button" @click="openAdd()" class="font-body-sm font-bold text-primary hover:underline" title="{{ __('أضف أول عضو') }}">{{ __('أضف أول عضو') }}</button>
                 </div>
             @else
-                <x-table-responsive :headers="[__('العضو'), __('الدور'), __('الحالة'), __('إجراءات')]">
+                <x-table-responsive :headers="[__('العضو'), __('الدور'), __('الحالة'), ['label' => __('الراتب'), 'align' => 'end'], __('إجراءات')]">
                     <x-slot:table>
                         @foreach ($members as $m)
                             <tr class="reveal-up transition-colors hover:bg-surface-container-low/50" style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
@@ -71,8 +75,27 @@
                                         {{ $m->active ? __('نشط') : __('متوقف') }}
                                     </span>
                                 </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-end">
+                                    @if ($m->hasSalary())
+                                        <span class="font-body-sm font-bold text-on-surface"><span dir="ltr">{{ number_format($m->salary_amount, 2) }} ₪</span></span>
+                                        <span class="block text-[11px] text-outline">{{ $m->salary_period->label() }}</span>
+                                    @else
+                                        <span class="text-[11px] text-outline">{{ __('غير محدّد') }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
+                                        <button type="button" @click="openPay(@js(['id' => $m->id, 'name' => $m->name, 'amount' => $m->salary_amount, 'period' => $m->salary_period?->value]))"
+                                            @disabled($banks->isEmpty())
+                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-success-container/30 hover:text-success disabled:cursor-not-allowed disabled:opacity-40"
+                                            aria-label="{{ __('صرف راتب') }}" title="{{ $banks->isEmpty() ? __('أضِف حساباً أولاً') : __('صرف راتب') }}">
+                                            <span class="material-symbols-outlined !text-xl">payments</span>
+                                        </button>
+                                        <button type="button" @click="openRate(@js(['id' => $m->id, 'name' => $m->name, 'amount' => $m->salary_amount, 'period' => $m->salary_period?->value]))"
+                                            class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                                            aria-label="{{ __('تحديد الراتب') }}" title="{{ __('تحديد الراتب') }}">
+                                            <span class="material-symbols-outlined !text-xl">request_quote</span>
+                                        </button>
                                         <button type="button" @click="openEdit(@js(['id' => $m->id, 'name' => $m->name, 'email' => $m->email, 'roleId' => $m->role_id, 'active' => (bool) $m->active]))"
                                             class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                             <span class="material-symbols-outlined !text-xl">edit</span>

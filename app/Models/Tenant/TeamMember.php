@@ -3,6 +3,7 @@
 namespace App\Models\Tenant;
 
 use App\Enums\PermissionKey;
+use App\Enums\SalaryPeriod;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -17,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
  * The real "User"/login model of tenant space - see BACKEND_PROMPT.md
  * sections 4-5 and D:\Angular\Hawalaty\src\app\data\team-members.ts.
  */
-#[Fillable(['name', 'email', 'password', 'role_id', 'active'])]
+#[Fillable(['name', 'email', 'password', 'role_id', 'active', 'salary_amount', 'salary_period'])]
 #[Hidden(['password', 'remember_token'])]
 class TeamMember extends Authenticatable
 {
@@ -33,6 +34,8 @@ class TeamMember extends Authenticatable
         return [
             'password' => 'hashed',
             'active' => 'boolean',
+            'salary_amount' => 'decimal:2',
+            'salary_period' => SalaryPeriod::class,
         ];
     }
 
@@ -44,6 +47,17 @@ class TeamMember extends Authenticatable
     public function devices(): HasMany
     {
         return $this->hasMany(Device::class);
+    }
+
+    public function salaryPayments(): HasMany
+    {
+        return $this->hasMany(SalaryPayment::class);
+    }
+
+    /** A rate is only usable once BOTH the amount and its period are set. */
+    public function hasSalary(): bool
+    {
+        return $this->salary_amount !== null && $this->salary_period !== null;
     }
 
     /**

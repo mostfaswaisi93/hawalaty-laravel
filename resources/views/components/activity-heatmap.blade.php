@@ -118,41 +118,59 @@
 
     {{-- Below md the grid cannot shrink to a usable size, so IT scrolls rather
          than squashing - the page itself never scrolls sideways. --}}
+    {{--
+        ONE grid holds the whole thing - corner, month labels, weekday rail and
+        cells - laid out as:
+
+              col 1 (auto)   col 2 (1fr)
+        row 1   (corner)     month labels
+        row 2   weekday rail day cells
+
+        Both row-2 children declare `repeat(7, 1fr)`, and they share an outer
+        grid row, so the weekday labels line up with the cell rows exactly. The
+        rail used to be a sibling flex item offset by a hand-tuned `pt-[18px]`
+        guess at the month row's height, which did not actually match - measured
+        and confirmed misaligned. Structure beats a magic number here.
+    --}}
     <div class="overflow-x-auto" dir="ltr">
-        <div class="flex min-w-[560px] gap-2">
-            {{-- Weekday rail. Only alternate rows are labelled; seven labels do
-                 not fit at this cell height. --}}
-            <div class="grid shrink-0 gap-[3px] pt-[18px]" style="grid-template-rows: repeat(7, 1fr);">
-                @foreach ($dayLabels as $i => $label)
-                    <span class="flex items-center font-body-sm text-[10px] leading-none text-outline">{{ $i % 2 === 1 ? $label : '' }}</span>
+        <div class="grid min-w-[600px] gap-x-2"
+            style="grid-template-columns: auto minmax(0, 1fr); max-width: {{ $weekCount * 22 + ($weekCount - 1) * 3 + 56 }}px;">
+
+            {{-- row 1, col 1: corner spacer above the weekday rail --}}
+            <div aria-hidden="true" style="grid-row: 1; grid-column: 1;"></div>
+
+            {{-- row 1, col 2: month labels, each spanning its own weeks --}}
+            <div class="mb-1.5 grid gap-[3px]" style="grid-row: 1; grid-column: 2; grid-template-columns: repeat({{ $weekCount }}, minmax(0, 1fr));">
+                @foreach ($monthSpans as $month)
+                    <span class="truncate font-body-sm text-[10px] leading-none text-outline" style="grid-column: span {{ $month['span'] }};">{{ $month['label'] }}</span>
                 @endforeach
             </div>
 
-            <div class="min-w-0 flex-1" style="max-width: {{ $weekCount * 22 + ($weekCount - 1) * 3 }}px;">
-                <div class="mb-1.5 grid gap-[3px]" style="grid-template-columns: repeat({{ $weekCount }}, minmax(0, 1fr));">
-                    @foreach ($monthSpans as $month)
-                        <span class="truncate font-body-sm text-[10px] leading-none text-outline" style="grid-column: span {{ $month['span'] }};">{{ $month['label'] }}</span>
-                    @endforeach
-                </div>
+            {{-- row 2, col 1: every weekday, not every other one --}}
+            <div class="grid gap-[3px]" style="grid-row: 2; grid-column: 1; grid-template-rows: repeat(7, 1fr);">
+                @foreach ($dayLabels as $label)
+                    <span class="flex items-center justify-end whitespace-nowrap pr-1 font-body-sm text-[10px] leading-none text-outline">{{ $label }}</span>
+                @endforeach
+            </div>
 
-                <div class="grid gap-[3px]"
-                    style="grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); grid-template-columns: repeat({{ $weekCount }}, minmax(0, 1fr));">
-                    @foreach ($weeks as $week)
-                        @foreach ($week as $cell)
-                            @if ($cell['count'] === null)
-                                {{-- Outside the window: keeps the grid rectangular. --}}
-                                <span class="aspect-square rounded-[2px]" aria-hidden="true"></span>
-                            @else
-                                <span
-                                    class="heat-{{ $cell['level'] }} aspect-square rounded-[2px] transition-transform duration-150 hover:scale-125"
-                                    title="{{ $cell['count'] === 0
-                                        ? __('لا طلبات').' - '.$cell['date']->translatedFormat('j F Y')
-                                        : trans_choice('{1} طلب واحد|[2,*] :count طلبات', $cell['count'], ['count' => $cell['count']]).' - '.$cell['date']->translatedFormat('j F Y') }}"
-                                ></span>
-                            @endif
-                        @endforeach
+            {{-- row 2, col 2: the days --}}
+            <div class="grid gap-[3px]"
+                style="grid-row: 2; grid-column: 2; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); grid-template-columns: repeat({{ $weekCount }}, minmax(0, 1fr));">
+                @foreach ($weeks as $week)
+                    @foreach ($week as $cell)
+                        @if ($cell['count'] === null)
+                            {{-- Outside the window: keeps the grid rectangular. --}}
+                            <span class="aspect-square rounded-[2px]" aria-hidden="true"></span>
+                        @else
+                            <span
+                                class="heat-{{ $cell['level'] }} aspect-square rounded-[2px] transition-transform duration-150 hover:scale-125"
+                                title="{{ $cell['count'] === 0
+                                    ? __('لا طلبات').' - '.$cell['date']->translatedFormat('j F Y')
+                                    : trans_choice('{1} طلب واحد|[2,*] :count طلبات', $cell['count'], ['count' => $cell['count']]).' - '.$cell['date']->translatedFormat('j F Y') }}"
+                            ></span>
+                        @endif
                     @endforeach
-                </div>
+                @endforeach
             </div>
         </div>
     </div>

@@ -167,6 +167,12 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::put('team/{teamMember}', [TeamController::class, 'update'])->name('team.update');
     Route::delete('team/{teamMember}', [TeamController::class, 'destroy'])->name('team.destroy');
 
+    // Payroll. Paying a salary writes an `expenses` row in the same
+    // transaction, so it lands in المصروفات and the reports rather than being
+    // a parallel ledger nobody totals.
+    Route::put('team/{teamMember}/salary', [TeamController::class, 'updateSalary'])->name('team.salary.update');
+    Route::post('team/{teamMember}/salary/pay', [TeamController::class, 'paySalary'])->name('team.salary.pay');
+
     // Devices
     Route::get('devices', [DeviceController::class, 'index'])->name('devices.index');
     Route::delete('devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
