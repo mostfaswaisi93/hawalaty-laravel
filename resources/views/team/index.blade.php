@@ -214,6 +214,115 @@
             </div>
         </div>
 
+        {{-- Pay a salary.
+             The amount defaults to the member's rate but stays editable: a
+             bonus, a deduction or a part payment must be recordable without
+             editing the rate first. Submitting writes an expense in the same
+             transaction, which is what puts this in المصروفات and the reports. --}}
+        <div x-show="payOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
+            <div class="fixed inset-0 bg-black/40" x-show="payOpen" x-transition.opacity></div>
+            <div x-show="payOpen" @keydown.escape.window="payOpen = false" role="dialog" aria-modal="true" aria-labelledby="pay-salary-title"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+                <h3 id="pay-salary-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">
+                    {{ __('صرف راتب') }} <span class="text-on-surface-variant" x-text="target.name"></span>
+                </h3>
+                <form method="POST" :action="'/team/' + target.id + '/salary/pay'" class="space-y-4 p-6" @submit="submitting = true">
+                    @csrf
+                    <div class="space-y-1.5">
+                        <label for="pay-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
+                        <input id="pay-amount" type="number" step="0.01" min="0.01" name="amount" x-model="target.amount" required dir="ltr" placeholder="0.00"
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        @error('amount')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="pay-bank" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من حساب') }}</label>
+                        <select id="pay-bank" name="bankId" required
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                            <option value="" disabled selected>{{ __('اختر...') }}</option>
+                            @foreach ($banks as $bank)
+                                <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('bankId')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="space-y-1.5">
+                            <label for="pay-period" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الدورة') }}</label>
+                            <select id="pay-period" name="period" x-model="target.period"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                <option value="monthly">{{ __('شهري') }}</option>
+                                <option value="daily">{{ __('يومي') }}</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="pay-date" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('عن فترة') }}</label>
+                            <input id="pay-date" type="date" name="paidFor" value="{{ old('paidFor', now()->toDateString()) }}" max="{{ now()->toDateString() }}" required dir="ltr"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            @error('paidFor')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="pay-notes" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('ملاحظات') }} <span class="text-outline">({{ __('اختياري') }})</span></label>
+                        <textarea id="pay-notes" name="notes" rows="2" maxlength="500"
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+
+                    <p class="flex items-start gap-2 rounded-xl bg-surface-container-low p-3 font-body-sm text-body-sm text-on-surface-variant">
+                        <span class="material-symbols-outlined !text-lg">info</span>
+                        {{ __('سيُسجَّل هذا المبلغ كمصروف يُخصم من الحساب المختار، ويظهر في المصروفات والتقارير.') }}
+                    </p>
+
+                    <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
+                        <button type="button" @click="payOpen = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
+                        <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50"
+                            title="{{ __('صرف') }}" x-text="submitting ? @js(__('جارٍ الصرف...')) : @js(__('صرف'))">{{ __('صرف') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- Set the agreed rate. Only a default for the form above. --}}
+        <div x-show="rateOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
+            <div class="fixed inset-0 bg-black/40" x-show="rateOpen" x-transition.opacity></div>
+            <div x-show="rateOpen" @keydown.escape.window="rateOpen = false" role="dialog" aria-modal="true" aria-labelledby="set-rate-title"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative z-10 w-full max-w-md overflow-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
+                <h3 id="set-rate-title" class="border-b border-outline-variant/60 px-6 py-4 font-headline-md text-headline-md">
+                    {{ __('تحديد الراتب') }} <span class="text-on-surface-variant" x-text="target.name"></span>
+                </h3>
+                <form method="POST" :action="'/team/' + target.id + '/salary'" class="space-y-4 p-6" @submit="submitting = true">
+                    @csrf
+                    @method('PUT')
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="space-y-1.5">
+                            <label for="rate-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الراتب (₪)') }}</label>
+                            <input id="rate-amount" type="number" step="0.01" min="0" name="salaryAmount" x-model="target.amount" dir="ltr" placeholder="0.00"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            @error('salaryAmount')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="rate-period" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الدورة') }}</label>
+                            <select id="rate-period" name="salaryPeriod" x-model="target.period"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                <option value="monthly">{{ __('شهري') }}</option>
+                                <option value="daily">{{ __('يومي') }}</option>
+                            </select>
+                            @error('salaryPeriod')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-outline">{{ __('اتركه فارغاً لإزالة الراتب. تغيير الراتب لا يؤثر على رواتب صُرفت سابقاً.') }}</p>
+                    <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
+                        <button type="button" @click="rateOpen = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
+                        <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50" title="{{ __('حفظ') }}">{{ __('حفظ') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <x-confirm-modal />
     </div>
 @endsection

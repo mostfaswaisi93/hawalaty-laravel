@@ -62,9 +62,13 @@
             @endforeach
         </div>
 
-        {{-- The year heatmap lives on the dashboard, not here: this page is
-             scoped to the date range chosen above, and a fixed 12-month grid
-             sitting under a one-week filter reads as a contradiction. --}}
+        {{-- year at a glance (also on the dashboard) --}}
+        <x-activity-heatmap
+            class="reveal-up"
+            style="--d: 110ms"
+            :days="$heatmap"
+            :from="$heatmapFrom"
+            :to="$heatmapTo" />
 
         {{-- daily revenue chart --}}
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6" style="--d: 140ms">

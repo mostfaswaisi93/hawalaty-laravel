@@ -89,6 +89,13 @@ class ReportController extends Controller
                 : $this->service->generate($from, $to)['transfers'],
             'perPage' => $perPage,
             'daily' => $this->service->dailyTotals($from, $to),
+            // A fixed trailing 12 months, deliberately NOT tied to the range
+            // filter above - it is the long view that gives the filtered figures
+            // context. Its own header states its window so the two cannot be
+            // confused. Same block also renders on the dashboard.
+            'heatmapFrom' => $heatmapFrom = Carbon::today()->subYear()->addDay(),
+            'heatmapTo' => $heatmapTo = Carbon::today(),
+            'heatmap' => $this->service->dailyCounts($heatmapFrom->toDateString(), $heatmapTo->toDateString()),
         ];
     }
 }
