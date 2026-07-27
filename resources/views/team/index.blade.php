@@ -126,6 +126,8 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                <x-table-footer :paginator="$members" :perPage="$perPage" />
             @endif
         </section>
 

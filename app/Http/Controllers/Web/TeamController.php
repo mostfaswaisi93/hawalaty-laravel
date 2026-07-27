@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Requests\Tenant\TeamMember\StoreTeamMemberRequest;
 use App\Http\Requests\Tenant\TeamMember\UpdateTeamMemberRequest;
 use App\Models\Tenant\TeamMember;
@@ -16,6 +17,8 @@ use Illuminate\View\View;
 
 class TeamController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(
         private readonly TeamService $service,
         private readonly RoleService $roles,

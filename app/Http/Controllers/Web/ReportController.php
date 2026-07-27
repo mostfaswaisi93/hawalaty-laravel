@@ -65,17 +65,23 @@ class ReportController extends Controller
         $from = $validated['from'] ?? Carbon::now()->startOfMonth()->toDateString();
         $to = $validated['to'] ?? Carbon::now()->toDateString();
 
-        $report = $this->service->generate($from, $to);
-        $daily = $this->service->dailyTotals($from, $to);
+        $summary = $this->service->summary($from, $to);
+        $perPage = $this->perPage($request, 20);
 
         return [
             'from' => $from,
             'to' => $to,
-            'count' => $report['count'],
-            'total' => $report['total'],
-            'average' => $report['average'],
-            'transfers' => $report['transfers'],
-            'daily' => $daily,
+            'count' => $summary['count'],
+            'total' => $summary['total'],
+            'average' => $summary['average'],
+            // Paginated for the screen, complete for the export - the headline
+            // figures above come from aggregates either way, so they stay right
+            // whichever page is shown.
+            'transfers' => $paginate
+                ? $this->service->transfersPage($from, $to, $perPage)
+                : $this->service->generate($from, $to)['transfers'],
+            'perPage' => $perPage,
+            'daily' => $this->service->dailyTotals($from, $to),
         ];
     }
 }

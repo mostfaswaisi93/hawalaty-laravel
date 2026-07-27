@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Requests\Tenant\Bank\StoreBankRequest;
 use App\Http\Requests\Tenant\Bank\UpdateBankRequest;
 use App\Models\Tenant\Bank;
@@ -21,6 +22,8 @@ use Illuminate\View\View;
  */
 class BankController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly BankService $service) {}
 
     public function index(Request $request): View|RedirectResponse

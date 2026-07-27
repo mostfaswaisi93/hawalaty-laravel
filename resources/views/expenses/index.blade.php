@@ -113,6 +113,8 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
+                <x-table-footer :paginator="$expenses" :perPage="$perPage" />
+
                 @if ($expenses->hasPages())
                     <div class="mt-6 flex items-center justify-between gap-4 border-t border-outline-variant/50 pt-5">
                         <span class="font-body-sm text-on-surface-variant">

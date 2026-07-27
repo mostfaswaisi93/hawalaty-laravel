@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Requests\Tenant\Expense\StoreExpenseRequest;
 use App\Http\Requests\Tenant\Expense\UpdateExpenseRequest;
 use App\Models\Tenant\Expense;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class ExpenseController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(
         private readonly ExpenseService $service,
         private readonly BankService $banks,

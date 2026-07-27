@@ -173,6 +173,8 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
+                <x-table-footer :paginator="$transfers" :perPage="$perPage" />
+
                 {{-- pagination --}}
                 @if ($transfers->hasPages())
                     <div class="mt-6 flex items-center justify-between gap-4 border-t border-outline-variant/50 pt-5">

@@ -5,6 +5,8 @@ namespace Tests\Feature\Tenant;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TenantTestCase;
 
 /**
@@ -86,6 +88,76 @@ class HttpLayerSmokeTest extends TenantTestCase
             ->get('/devices')
             ->assertOk()
             ->assertViewHas('manages', false);
+    }
+
+    /**
+     * Every tenant page carrying a table, hit for real.
+     *
+     * These exist because the pagination sweep broke `/banks` and `/expenses`
+     * with a 500 that no test caught - the controllers called `$this->perPage()`
+     * before the trait was applied. A compile check cannot see that; only
+     * issuing the request can.
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function tablePages(): array
+    {
+        return [
+            'banks' => ['/banks', 'banks'],
+            'customers' => ['/customers', 'customers'],
+            'expenses' => ['/expenses', 'expenses'],
+            'history' => ['/history', 'transfers'],
+            'team' => ['/team', 'members'],
+            'activity log' => ['/activity-log', 'logs'],
+            'menu' => ['/menu', 'categories'],
+            'reports' => ['/reports', 'report'],
+        ];
+    }
+
+    #[DataProvider('tablePages')]
+    public function test_a_tenant_table_page_renders(string $uri, string $viewKey): void
+    {
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+
+        $this->actingAs($owner, 'tenant')->get($uri)
+            ->assertOk()
+            ->assertViewHas($viewKey);
+    }
+
+    /**
+     * The paginated ones must actually expose a paginator plus the page size
+     * the footer binds to - a plain Collection would render the footer blank.
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function paginatedPages(): array
+    {
+        return [
+            'banks' => ['/banks', 'banks'],
+            'customers' => ['/customers', 'customers'],
+            'expenses' => ['/expenses', 'expenses'],
+            'history' => ['/history', 'transfers'],
+            'team' => ['/team', 'members'],
+            'activity log' => ['/activity-log', 'logs'],
+        ];
+    }
+
+    #[DataProvider('paginatedPages')]
+    public function test_a_table_page_exposes_a_paginator_and_page_size(string $uri, string $viewKey): void
+    {
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+
+        $this->actingAs($owner, 'tenant')->get($uri)
+            ->assertOk()
+            ->assertViewHas('perPage', 20)
+            ->assertViewHas($viewKey, fn ($rows) => $rows instanceof LengthAwarePaginator);
+
+        // A value outside the whitelist must not become an unbounded page size.
+        $this->actingAs($owner, 'tenant')->get($uri.'?per_page=99999')
+            ->assertOk()
+            ->assertViewHas('perPage', 20);
     }
 
     public function test_the_activity_log_paginates_with_a_whitelisted_page_size(): void

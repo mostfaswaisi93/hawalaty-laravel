@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Services\Tenant\CustomerService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,6 +14,8 @@ use Illuminate\View\View;
  */
 class CustomerController extends Controller
 {
+    use HasPerPage;
+
     public function __construct(private readonly CustomerService $service) {}
 
     public function index(Request $request): View
