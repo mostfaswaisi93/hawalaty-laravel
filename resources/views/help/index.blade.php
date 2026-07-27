@@ -9,9 +9,23 @@
 @section('title', __('مركز المساعدة - حوالاتي'))
 
 @section('content')
-    {{-- lg:col-span-2 is required under layouts.guest, whose <main> is a
-         two-column grid; it is inert inside layouts.app. --}}
-    <div class="page-enter mx-auto w-full max-w-4xl space-y-8 px-inline-md py-8 md:px-inline-lg lg:col-span-2">
+    {{--
+        The width cap is applied ONLY under the guest shell, whose <main> has no
+        max-width of its own - there it keeps a full-bleed reading column from
+        stretching across a desktop. Inside the app shell the layout already caps
+        at 1680px with its own gutters, so capping again left ~410px of dead
+        space on each side while the cards below were cramped into three narrow
+        columns.
+
+        lg:col-span-2 is likewise a guest-shell requirement (its <main> is a
+        two-column grid) and inert inside layouts.app.
+    --}}
+    @php $inAppShell = auth('tenant')->check(); @endphp
+
+    <div @class([
+        'page-enter w-full space-y-8',
+        'mx-auto max-w-4xl px-inline-md py-8 md:px-inline-lg lg:col-span-2' => ! $inAppShell,
+    ])>
         <header class="text-center">
             <div class="reveal-scale mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary" style="--d:120ms">
                 <span class="material-symbols-outlined !text-4xl">help</span>
@@ -20,10 +34,15 @@
             <p class="mt-2 font-body-lg text-on-surface-variant">{{ __('دليل سريع وأجوبة لأكثر الأسئلة شيوعاً.') }}</p>
         </header>
 
+        {{-- Main column = FAQ, sidebar = quick links + contact. Order is
+             swapped on xl so the FAQ leads on desktop while the quick links stay
+             first on mobile, where they are the faster route to a page. --}}
+        <div class="grid items-start gap-6 xl:grid-cols-3">
+
         {{-- quick links --}}
-        <section>
+        <section class="xl:order-2 xl:col-span-1">
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('روابط سريعة') }}</h2>
-            <div class="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                 @foreach ([
                     ['/transfers', 'add_shopping_cart', __('طلب جديد'), __('أنشئ طلباً واحسب المجموع تلقائياً')],
                     ['/history', 'receipt_long', __('السجل'), __('تصفّح وابحث في كل طلباتك')],
@@ -46,7 +65,7 @@
         </section>
 
         {{-- FAQ --}}
-        <section x-data="{ open: 0 }">
+        <section x-data="{ open: 0 }" class="xl:order-1 xl:col-span-2">
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('الأسئلة الشائعة') }}</h2>
             <div class="stagger space-y-3">
                 @foreach ([
@@ -74,7 +93,7 @@
         </section>
 
         {{-- contact --}}
-        <section class="reveal-up tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-primary/5 p-8 text-center" style="--d:200ms">
+        <section class="reveal-up tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-primary/5 p-8 text-center xl:order-3 xl:col-span-1" style="--d:200ms">
             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">
                 <span class="material-symbols-outlined !text-3xl">support_agent</span>
             </div>
@@ -90,5 +109,7 @@
                 <span class="font-body-sm text-on-surface-variant" dir="ltr">+970 59 000 0000</span>
             </div>
         </section>
+
+        </div>{{-- /two-column grid --}}
     </div>
 @endsection

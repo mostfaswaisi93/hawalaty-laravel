@@ -125,10 +125,24 @@
         (function () {
             var html = document.documentElement;
             var face = '24px "Material Symbols Outlined"';
+            var remember = function () { try { sessionStorage.setItem('iconsReady', '1'); } catch (e) {} };
             var reveal = function () { html.classList.add('icons-ready'); };
+
+            // Proven loaded earlier this session -> reveal BEFORE the first
+            // paint. This is the path almost every navigation takes, and it is
+            // what keeps the icons from flashing in on each page.
+            try {
+                if (sessionStorage.getItem('iconsReady') === '1') { reveal(); return; }
+            } catch (e) {}
+
             if (!document.fonts || !document.fonts.load) { reveal(); return; }
+
+            // Stylesheet already parsed and the face is available: still synchronous.
+            if (document.fonts.check(face)) { reveal(); remember(); return; }
+
+            // Genuine cold load - this is the only case that waits.
             document.fonts.load(face).then(function () {
-                if (document.fonts.check(face)) reveal();
+                if (document.fonts.check(face)) { reveal(); remember(); }
             });
         })();
     </script>
