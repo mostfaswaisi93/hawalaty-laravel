@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['menu_category_id', 'name', 'price', 'active'])]
+#[Fillable(['menu_category_id', 'name', 'icon', 'price', 'active'])]
 class MenuItem extends Model
 {
     use HasFactory, HasUlids;

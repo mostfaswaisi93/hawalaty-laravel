@@ -156,6 +156,9 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 
     // Constants - lists + items
     Route::get('constants', [ConstantController::class, 'index'])->name('constants.index');
+    // What this tenant calls its catalogue - a per-account constant, so it lives
+    // on the constants page rather than in a settings screen of its own.
+    Route::put('constants/naming', [ConstantController::class, 'updateNaming'])->name('constants.naming.update');
     Route::post('constants', [ConstantController::class, 'store'])->name('constants.store');
     Route::delete('constants/{list}', [ConstantController::class, 'destroy'])->name('constants.destroy');
     Route::post('constants/{list}/items', [ConstantController::class, 'storeItem'])->name('constants.items.store');

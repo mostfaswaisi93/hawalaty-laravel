@@ -13,7 +13,10 @@ use Illuminate\View\View;
 
 class ConstantController extends Controller
 {
-    public function __construct(private readonly ConstantListService $service) {}
+    public function __construct(
+        private readonly ConstantListService $service,
+        private readonly CatalogNaming $naming,
+    ) {}
 
     public function index(): View|RedirectResponse
     {
@@ -26,7 +29,31 @@ class ConstantController extends Controller
             ->orderBy('title')
             ->get();
 
-        return view('constants.index', ['lists' => $lists]);
+        return view('constants.index', [
+            'lists' => $lists,
+            // What this tenant calls its catalogue. Lives here because it IS a
+            // per-account constant, and this is the page for those.
+            'naming' => $this->naming,
+        ]);
+    }
+
+    /**
+     * Renames the catalogue for this tenant. The app shipped hard-coded as a
+     * restaurant; a fruit shop or a fuel station needs its own words.
+     */
+    public function updateNaming(UpdateCatalogNamingRequest $request): RedirectResponse
+    {
+        abort_unless($this->canManage(), 403);
+
+        $data = $request->validated();
+
+        $this->naming->put([
+            CatalogNaming::CATALOG => $data['catalogLabel'] ?? null,
+            CatalogNaming::CATEGORY => $data['categoryLabel'] ?? null,
+            CatalogNaming::ITEM => $data['itemLabel'] ?? null,
+        ]);
+
+        return redirect()->route('constants.index')->with('success', __('تم تحديث مسمّيات القائمة.'));
     }
 
     public function store(StoreConstantListRequest $request): RedirectResponse

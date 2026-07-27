@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Tenant\MenuItem;
 
+use App\Services\Tenant\CatalogIcons;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * `menuCategoryId` -> `menu_category_id` is mapped by MenuService (not
@@ -22,6 +24,11 @@ class StoreMenuItemRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            // Whitelisted: the value is rendered as a ligature inside a
+            // <span class="material-symbols-outlined">, so free text would be a
+            // way to put arbitrary content on the page - and an unknown ligature
+            // renders as its own literal name, which looks broken.
+            'icon' => ['nullable', 'string', Rule::in(app(CatalogIcons::class)->all())],
             // Physical DB-per-tenant isolation guarantees there's only one
             // tenant's categories reachable per request, so no extra
             // tenant_id scoping is needed on top of exists:... - BUT the

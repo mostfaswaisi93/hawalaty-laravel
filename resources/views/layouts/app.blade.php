@@ -1,6 +1,11 @@
 @php
     $member = auth('tenant')->user();
 
+    // The catalogue is not necessarily a food menu - a fruit shop or a fuel
+    // station names it themselves, so the sidebar follows their wording. Falls
+    // back to the shipped default.
+    $catalogLabel = app(\App\Services\Tenant\CatalogNaming::class)->catalog();
+
     // Mirrors D:\Angular\Hawalaty\src\app\layout\layout.ts's `nav` array,
     // extended with the Devices / Activity Log / Help entries this task's
     // brief calls out explicitly (the current Angular sidebar doesn't
@@ -25,7 +30,7 @@
             'label' => 'الإدارة',
             'items' => [
                 ['href' => '/banks', 'icon' => 'account_balance', 'label' => 'البنوك والمحافظ', 'match' => 'banks*', 'permission' => \App\Enums\PermissionKey::BanksManage],
-                ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => 'قائمة الطعام', 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage],
+                ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
                 ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
             ],

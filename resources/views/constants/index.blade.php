@@ -16,6 +16,70 @@
             </button>
         </header>
 
+        {{--
+            What this account calls its catalogue.
+
+            The app shipped hard-coded as a restaurant - "قائمة الطعام", "فئة",
+            "صنف" - but the same software runs a fruit shop, a fuel station or a
+            hardware store, and those do not sell "أصناف طعام". These three words
+            are the tenant's to choose, and this is the page for per-account
+            constants, so it belongs here.
+        --}}
+        <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+            <div class="mb-5 flex items-center gap-3">
+                <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary-container/20 text-secondary">
+                    <span class="material-symbols-outlined">sell</span>
+                </span>
+                <div>
+                    <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('مسمّيات القائمة') }}</h2>
+                    <p class="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">{{ __('سمِّ ما تبيعه بلغة عملك - قائمة طعام، أصناف فاكهة، أنواع محروقات...') }}</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('constants.naming.update') }}" x-data="{ saving: false }" @submit="saving = true" class="space-y-5">
+                @csrf
+                @method('PUT')
+
+                <div class="grid gap-4 md:grid-cols-3">
+                    <div class="space-y-1.5">
+                        <label for="catalogLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم القائمة') }}</label>
+                        <input id="catalogLabel" name="catalogLabel" maxlength="40"
+                            value="{{ old('catalogLabel', $naming->catalog()) }}"
+                            placeholder="{{ __('قائمة الطعام') }}"
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        @error('catalogLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="categoryLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الفئة') }}</label>
+                        <input id="categoryLabel" name="categoryLabel" maxlength="24"
+                            value="{{ old('categoryLabel', $naming->category()) }}"
+                            placeholder="{{ __('فئة') }}"
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        @error('categoryLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="itemLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الصنف') }}</label>
+                        <input id="itemLabel" name="itemLabel" maxlength="24"
+                            value="{{ old('itemLabel', $naming->item()) }}"
+                            placeholder="{{ __('صنف') }}"
+                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        @error('itemLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/50 pt-4">
+                    <p class="font-body-sm text-body-sm text-outline">{{ __('اترك الحقل فارغاً للعودة إلى التسمية الافتراضية.') }}</p>
+                    <button type="submit" :disabled="saving"
+                        class="press flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container disabled:opacity-50"
+                        title="{{ __('حفظ المسمّيات') }}">
+                        <span class="material-symbols-outlined !text-xl" :class="saving && 'animate-spin'"
+                            x-text="saving ? 'progress_activity' : 'save'">save</span>
+                        {{ __('حفظ المسمّيات') }}
+                    </button>
+                </div>
+            </form>
+        </section>
+
         @if ($lists->isEmpty())
             <div class="reveal-scale tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">tune</span>
