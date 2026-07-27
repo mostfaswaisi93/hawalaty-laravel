@@ -139,15 +139,15 @@
                 <div class="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4 font-body-sm text-body-sm sm:grid-cols-3">
                     <div class="flex items-center justify-between gap-2 sm:block">
                         <span class="text-on-surface-variant">{{ __('إجمالي الاستحقاق') }}</span>
-                        <span class="font-bold text-on-surface sm:mt-1 sm:block" dir="ltr">{{ number_format($settlement->total_entitlement, 2) }} ₪</span>
+                        <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->total_entitlement, 2) }} ₪</span></span>
                     </div>
                     <div class="flex items-center justify-between gap-2 sm:block">
                         <span class="text-on-surface-variant">{{ __('إجمالي المسحوب') }}</span>
-                        <span class="font-bold text-on-surface sm:mt-1 sm:block" dir="ltr">{{ number_format($settlement->total_drawn, 2) }} ₪</span>
+                        <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->total_drawn, 2) }} ₪</span></span>
                     </div>
                     <div class="flex items-center justify-between gap-2 sm:block">
                         <span class="text-on-surface-variant">{{ __('المحتجز للمنصّة') }}</span>
-                        <span class="font-bold text-on-surface sm:mt-1 sm:block" dir="ltr">{{ number_format($settlement->retained, 2) }} ₪</span>
+                        <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->retained, 2) }} ₪</span></span>
                     </div>
                 </div>
             @endif

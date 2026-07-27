@@ -14,7 +14,9 @@
             'pending' => __('قيد الانتظار'),
             default => __('فاشلة'),
         };
-        $total = $customer->transfers->sum('amount');
+        // SQL aggregates from CustomerService::find(), not a sum over a
+        // fully-loaded relation - see that method for why.
+        $total = (float) ($customer->total_spent ?? 0);
     @endphp
 
     <div class="page-enter space-y-6">
@@ -36,7 +38,7 @@
         <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
                 <p class="font-body-sm text-on-surface-variant">{{ __('عدد الطلبات') }}</p>
-                <p class="mt-2 font-display-lg text-3xl font-bold text-on-surface" dir="ltr">{{ $customer->transfers->count() }}</p>
+                <p class="mt-2 font-display-lg text-3xl font-bold text-on-surface" dir="ltr">{{ number_format($customer->order_count ?? 0) }}</p>
             </div>
             <div class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
                 <p class="font-body-sm text-on-surface-variant">{{ __('إجمالي الإنفاق') }}</p>
@@ -47,7 +49,7 @@
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">{{ __('سجل الطلبات') }}</h2>
 
-            @if ($customer->transfers->isEmpty())
+            @if ($transfers->isEmpty())
                 <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">receipt_long</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد طلبات بعد') }}</p>
@@ -55,7 +57,7 @@
             @else
                 <x-table-responsive :headers="[__('الصنف'), __('التاريخ'), __('الحالة'), __('المبلغ'), '']">
                     <x-slot:table>
-                        @foreach ($customer->transfers as $t)
+                        @foreach ($transfers as $t)
                             <tr class="reveal-up transition-colors hover:bg-surface-container-low/50" style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
                                 <td class="max-w-xs truncate px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->item_name ?: '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">{{ $t->created_at->translatedFormat('j F Y') }}</td>
@@ -75,7 +77,7 @@
                         @endforeach
                     </x-slot:table>
                     <x-slot:cards>
-                        @foreach ($customer->transfers as $t)
+                        @foreach ($transfers as $t)
                             <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d:{{ min($loop->index, 11) * 40 + 40 }}ms">
                                 <div class="flex items-center justify-between gap-2">
@@ -88,6 +90,8 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                <x-table-footer :paginator="$transfers" :perPage="$perPage" />
             @endif
         </section>
     </div>

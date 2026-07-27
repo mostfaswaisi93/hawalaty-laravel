@@ -30,10 +30,15 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function show(string $customer): View
+    public function show(Request $request, string $customer): View
     {
+        $model = $this->service->find($customer);
+        $perPage = $this->perPage($request, 20);
+
         return view('customers.show', [
-            'customer' => $this->service->find($customer),
+            'customer' => $model,
+            'transfers' => $this->service->transfersFor($model, $perPage),
+            'perPage' => $perPage,
         ]);
     }
 }

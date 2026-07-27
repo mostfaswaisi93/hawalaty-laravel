@@ -119,6 +119,24 @@
     {{-- display=block, NOT swap: with swap the browser paints the fallback immediately, and an icon font's fallback is the ligature's literal text - that is the "restaurant_menu" leaking on first load. --}}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
 
+    {{-- Reveals the icons only once the ligature font is CONFIRMED available.
+         Without this, a blocked or offline Google Fonts leaves every icon
+         rendered as its own name. See the .material-symbols-outlined rule in
+         app.css. --}}
+    <script>
+        (function () {
+            var html = document.documentElement;
+            var face = '24px "Material Symbols Outlined"';
+            var reveal = function () { html.classList.add('icons-ready'); };
+            if (!document.fonts || !document.fonts.load) { reveal(); return; }
+            document.fonts.load(face).then(function () {
+                if (document.fonts.check(face)) reveal();
+            });
+        })();
+    </script>
+    {{-- JS off: better a visible ligature than no icons at all. --}}
+    <noscript><style>.material-symbols-outlined{visibility:visible}</style></noscript>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
@@ -214,8 +232,12 @@
                 {{-- dir=auto so a Latin name ellipsises at its own end rather than
                      having the RTL container push the "…" to the visual start. --}}
                 <span class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
-                    <span class="block truncate font-body-sm text-body-sm font-bold text-on-sidebar" dir="auto">{{ $admin?->name }}</span>
-                    <span class="block truncate font-body-sm text-[11px] text-on-sidebar-muted" dir="ltr">{{ $admin?->email }}</span>
+                    {{-- Bidi goes on the inner span, never the block: `dir` on a block
+                         sets its text-align too, so an Arabic name (dir=auto -> rtl)
+                         and an email (dir=ltr) ended up aligned to OPPOSITE edges of
+                         the same two-line stack. --}}
+                    <span class="block truncate text-start font-body-sm text-body-sm font-bold text-on-sidebar"><span dir="auto">{{ $admin?->name }}</span></span>
+                    <span class="block truncate text-start font-body-sm text-[11px] text-on-sidebar-muted"><span dir="ltr">{{ $admin?->email }}</span></span>
                 </span>
             </a>
 
@@ -316,8 +338,8 @@
                                 {{-- Surface tokens, NOT the sidebar ones: this dropdown hangs off
                                      the header on a light surface, so the dark-rail palette would
                                      render it at ~1.2:1 in light mode. --}}
-                                <span class="block truncate font-body-sm text-body-sm font-bold text-on-surface" dir="auto">{{ $admin?->name }}</span>
-                                <span class="block truncate font-body-sm text-[11px] text-on-surface-variant" dir="ltr">{{ $admin?->email }}</span>
+                                <span class="block truncate text-start font-body-sm text-body-sm font-bold text-on-surface"><span dir="auto">{{ $admin?->name }}</span></span>
+                                <span class="block truncate text-start font-body-sm text-[11px] text-on-surface-variant"><span dir="ltr">{{ $admin?->email }}</span></span>
                             </span>
                         </div>
 

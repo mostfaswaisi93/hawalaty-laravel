@@ -2,10 +2,14 @@
 
 namespace Tests\Feature\Tenant;
 
+use App\Enums\PaymentMethod;
+use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
+use App\Services\Tenant\TransferService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TenantTestCase;
 
@@ -161,6 +165,41 @@ class HttpLayerSmokeTest extends TenantTestCase
         $this->actingAs($owner, 'tenant')->get($uri.'?per_page=99999')
             ->assertOk()
             ->assertViewHas('perPage', 20);
+    }
+
+    /**
+     * The customer detail page used to eager-load EVERY transfer (and every
+     * line item) purely to sum two numbers and render a table. The figures are
+     * now SQL aggregates and the list is paginated, so both must still be right
+     * while only one page of rows is loaded.
+     */
+    public function test_the_customer_detail_page_paginates_orders_and_keeps_totals_exact(): void
+    {
+        Notification::fake();
+
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+        $item = MenuItem::factory()->create(['price' => '10.00']);
+        $customer = Customer::factory()->create(['name' => 'كثير الطلبات']);
+
+        // 25 orders: more than one page of 20.
+        foreach (range(1, 25) as $ignored) {
+            app(TransferService::class)->create([
+                'customer' => $customer->name,
+                'paymentMethod' => PaymentMethod::Cash,
+                'items' => [['itemId' => $item->id, 'quantity' => 1]],
+            ]);
+        }
+
+        $this->actingAs($owner, 'tenant')->get("/customers/{$customer->id}")
+            ->assertOk()
+            ->assertViewHas('perPage', 20)
+            ->assertViewHas('transfers', fn ($rows) => $rows instanceof LengthAwarePaginator
+                && $rows->total() === 25
+                && $rows->count() === 20)
+            // Aggregates cover ALL 25 orders, not just the loaded page.
+            ->assertViewHas('customer', fn ($c) => (int) $c->order_count === 25
+                && (float) $c->total_spent === 250.0);
     }
 
     public function test_the_activity_log_paginates_with_a_whitelisted_page_size(): void

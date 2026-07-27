@@ -151,15 +151,15 @@
                     <div class="mt-3 grid grid-cols-1 gap-3 font-body-sm text-body-sm sm:grid-cols-3">
                         <div class="flex items-center justify-between gap-2 sm:block">
                             <span class="text-on-surface-variant">{{ __('صافي المستحقات') }}</span>
-                            <span class="font-bold text-on-surface sm:mt-1 sm:block" dir="ltr">{{ number_format($p['totalNet'], 2) }} ₪</span>
+                            <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($p['totalNet'], 2) }} ₪</span></span>
                         </div>
                         <div class="flex items-center justify-between gap-2 sm:block">
                             <span class="text-on-surface-variant">{{ __('المحتجز للمنصّة') }}</span>
-                            <span class="font-bold text-on-surface sm:mt-1 sm:block" dir="ltr">{{ number_format($p['retained'], 2) }} ₪</span>
+                            <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($p['retained'], 2) }} ₪</span></span>
                         </div>
                         <div class="flex items-center justify-between gap-2 sm:block">
                             <span class="text-on-surface-variant">{{ __('الربح - المسحوبات') }}</span>
-                            <span class="font-bold text-on-surface sm:mt-1 sm:block" dir="ltr">{{ number_format($p['distributableProfit'] - $p['totalDrawn'], 2) }} ₪</span>
+                            <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($p['distributableProfit'] - $p['totalDrawn'], 2) }} ₪</span></span>
                         </div>
                     </div>
                     @if ($underAllocated)

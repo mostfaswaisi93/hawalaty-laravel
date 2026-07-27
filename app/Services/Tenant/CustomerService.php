@@ -40,9 +40,32 @@ class CustomerService
         return $query->orderByDesc('last_order_at')->paginate($perPage)->withQueryString();
     }
 
+    /**
+     * The customer plus their headline figures as SQL aggregates.
+     *
+     * Deliberately does NOT eager-load `transfers`: it used to, and the detail
+     * page then summed that in-memory collection for "total spent" and counted
+     * it for "order count". A regular who has placed 500 orders therefore
+     * loaded 500 transfers AND every one of their line items on every page
+     * view, just to render two numbers and a table. The list is paginated
+     * separately by transfersFor().
+     */
     public function find(string $id): Customer
     {
-        return Customer::with(['transfers' => fn ($q) => $q->latest()->with('lineItems')])->findOrFail($id);
+        return Customer::query()
+            ->withCount('transfers as order_count')
+            ->withSum('transfers as total_spent', 'amount')
+            ->findOrFail($id);
+    }
+
+    /** One page of a customer's orders, newest first. */
+    public function transfersFor(Customer $customer, int $perPage = 20): LengthAwarePaginator
+    {
+        return $customer->transfers()
+            ->with('lineItems')
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
     }
 
     /**

@@ -136,7 +136,29 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame([$byPhone->id], $result->getCollection()->pluck('id')->all());
     }
 
-    public function test_find_eager_loads_transfers_latest_first_with_line_items(): void
+    /**
+     * find() deliberately no longer eager-loads transfers: the detail page was
+     * loading every order (and every line item) a customer had ever placed just
+     * to render two totals and a table. It now returns SQL aggregates, and the
+     * orders come back paginated from transfersFor().
+     */
+    public function test_find_returns_aggregates_without_loading_every_transfer(): void
+    {
+        $customer = Customer::factory()->create();
+        Transfer::factory()->create(['customer_id' => $customer->id, 'amount' => '10.00']);
+        Transfer::factory()->create(['customer_id' => $customer->id, 'amount' => '15.50']);
+
+        $found = $this->service()->find($customer->id);
+
+        $this->assertSame(2, $found->order_count);
+        $this->assertSame('25.50', $found->total_spent);
+        $this->assertFalse(
+            $found->relationLoaded('transfers'),
+            'find() eager-loaded transfers again - the detail page will load every order.'
+        );
+    }
+
+    public function test_transfers_for_paginates_latest_first_with_line_items(): void
     {
         $customer = Customer::factory()->create();
 
@@ -144,11 +166,23 @@ class CustomerServiceTest extends TenantTestCase
         $newer = Transfer::factory()->create(['customer_id' => $customer->id, 'created_at' => now()]);
         $newer->lineItems()->create(['name' => 'شاي', 'quantity' => 2, 'price' => '3.00']);
 
-        $found = $this->service()->find($customer->id);
+        $page = $this->service()->transfersFor($customer);
 
-        $this->assertSame($newer->id, $found->transfers->first()->id);
-        $this->assertSame($older->id, $found->transfers->last()->id);
-        $this->assertSame('شاي', $found->transfers->first()->lineItems->first()->name);
+        $this->assertSame($newer->id, $page->getCollection()->first()->id);
+        $this->assertSame($older->id, $page->getCollection()->last()->id);
+        $this->assertSame('شاي', $page->getCollection()->first()->lineItems->first()->name);
+    }
+
+    public function test_transfers_for_respects_the_page_size(): void
+    {
+        $customer = Customer::factory()->create();
+        Transfer::factory()->count(5)->create(['customer_id' => $customer->id]);
+
+        $page = $this->service()->transfersFor($customer, 2);
+
+        $this->assertSame(5, $page->total());
+        $this->assertCount(2, $page->getCollection());
+        $this->assertSame(3, $page->lastPage());
     }
 
     public function test_find_throws_not_found_for_a_bad_id(): void

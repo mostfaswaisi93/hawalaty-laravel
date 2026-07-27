@@ -319,6 +319,27 @@ body {
     font-variation-settings: 'FILL' 1;
 }
 
+/* Material Symbols draws its glyph from a LIGATURE, so each element's text
+   content is the icon's own name ("restaurant_menu", "add", "search"). If the
+   font is missing the browser paints those identifiers as words all over the
+   UI - which is exactly what happened on a cold load, and worse, permanently
+   whenever Google Fonts is slow, blocked or offline.
+
+   `&display=block` on the stylesheet URL covers the LOADING window, but it
+   gives up after ~3s and falls back to the text. This covers the rest: the
+   glyph stays hidden until the font is confirmed available. `visibility`
+   rather than `display` so the box still reserves its space and nothing
+   reflows when the icons appear.
+
+   Unlayered on purpose - Google ships `.material-symbols-outlined` unlayered
+   too, and unlayered rules outrank anything in @layer. */
+.material-symbols-outlined {
+    visibility: hidden;
+}
+html.icons-ready .material-symbols-outlined {
+    visibility: visible;
+}
+
 /* ---------- Design utilities (ported from the Angular app) ---------- */
 .glass-card {
     background: rgba(255, 255, 255, 0.8);
