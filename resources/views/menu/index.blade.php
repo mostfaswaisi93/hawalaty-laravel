@@ -69,7 +69,7 @@
                         <div class="flex items-center justify-between gap-3 border-b border-outline-variant/50 p-5">
                             <div class="flex items-center gap-3">
                                 <div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container/15 text-secondary">
-                                    <span class="material-symbols-outlined">category</span>
+                                    <span class="material-symbols-outlined">{{ $catalogIcons->resolve($cat->icon) }}</span>
                                 </div>
                                 <div>
                                     <h2 class="font-headline-md text-headline-md text-on-surface">{{ $cat->name }}</h2>
@@ -103,8 +103,12 @@
                             <ul class="divide-y divide-outline-variant/50">
                                 @foreach ($cat->menuItems as $item)
                                     <li class="flex items-center gap-3 p-4 transition-colors hover:bg-surface-container-low/50">
+                                        {{-- The entry's own icon, falling back to its category's and
+                                             then to a neutral glyph. It used to be a hardcoded
+                                             `lunch_dining`, which is wrong the moment the catalogue is
+                                             fruit or fuel rather than food. --}}
                                         <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl {{ $item->active ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-outline' }}">
-                                            <span class="material-symbols-outlined">lunch_dining</span>
+                                            <span class="material-symbols-outlined">{{ $catalogIcons->resolve($item->icon, $cat->icon) }}</span>
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <p class="truncate font-body-lg font-bold {{ $item->active ? 'text-on-surface' : 'text-outline line-through' }}">{{ $item->name }}</p>
@@ -122,7 +126,7 @@
                                             </button>
                                         </form>
 
-                                        <button type="button" @click="openEditItem(@js(['id' => $item->id, 'name' => $item->name, 'menuCategoryId' => $item->menu_category_id, 'price' => (float) $item->price, 'active' => (bool) $item->active]))"
+                                        <button type="button" @click="openEditItem(@js(['id' => $item->id, 'name' => $item->name, 'icon' => $item->icon ?? '', 'menuCategoryId' => $item->menu_category_id, 'price' => (float) $item->price, 'active' => (bool) $item->active]))"
                                             class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                             <span class="material-symbols-outlined !text-xl">edit</span>
                                         </button>
@@ -161,6 +165,8 @@
                         <input name="name" value="{{ $categoryHasErrors ? old('name') : '' }}" required placeholder="{{ __('مثال: المشاوي') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
+
+                    <x-icon-picker model="catIcon" />
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="catOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>

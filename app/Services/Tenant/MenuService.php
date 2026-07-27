@@ -42,6 +42,9 @@ class MenuService
 
             $category = MenuCategory::create([
                 'name' => $data['name'],
+                // Blank means "no icon", stored as NULL so the resolver falls
+                // through to the neutral default rather than an empty ligature.
+                'icon' => filled($data['icon'] ?? null) ? $data['icon'] : null,
                 'position' => $nextPosition,
             ]);
 
@@ -77,6 +80,7 @@ class MenuService
         $item = MenuItem::create([
             'menu_category_id' => $data['menuCategoryId'],
             'name' => $data['name'],
+            'icon' => filled($data['icon'] ?? null) ? $data['icon'] : null,
             'price' => $data['price'],
             'active' => $data['active'] ?? true,
         ]);
@@ -97,6 +101,11 @@ class MenuService
         }
         if (array_key_exists('menuCategoryId', $data)) {
             $update['menu_category_id'] = $data['menuCategoryId'];
+        }
+        if (array_key_exists('icon', $data)) {
+            // Submitting an empty picker CLEARS the icon, so this must write
+            // NULL rather than skip the field.
+            $update['icon'] = filled($data['icon']) ? $data['icon'] : null;
         }
         if (array_key_exists('price', $data)) {
             $update['price'] = $data['price'];

@@ -177,6 +177,54 @@ class CatalogNamingTest extends TenantTestCase
         $this->assertSame('category', $icons->resolve('made-up', 'also-made-up'));
     }
 
+    /**
+     * End to end: pick an icon in the form, and it is what the listing draws.
+     * The column and the whitelist existed before the picker did, so this is the
+     * test that proves the feature is actually reachable from the screen.
+     */
+    public function test_an_icon_chosen_in_the_form_is_stored_and_rendered(): void
+    {
+        $owner = $this->owner();
+        $category = MenuCategory::create(['name' => 'فواكه', 'icon' => 'nutrition', 'position' => 0]);
+
+        $this->actingAs($owner, 'tenant')
+            ->post('/menu/items', [
+                'name' => 'تفاح',
+                'menuCategoryId' => $category->id,
+                'price' => '5.00',
+                'icon' => 'grocery',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('grocery', MenuItem::firstOrFail()->icon);
+
+        // The chosen glyph reaches the listing. A "lunch_dining is absent"
+        // assertion would be wrong here - the picker legitimately offers it as
+        // one of the restaurant options further down the same page.
+        $this->actingAs($owner, 'tenant')->get('/menu')
+            ->assertOk()
+            ->assertViewHas('catalogIcons')
+            ->assertSee('>grocery<', false);
+    }
+
+    /** An entry with no icon of its own inherits the category's. */
+    public function test_an_iconless_entry_falls_back_to_its_category_glyph(): void
+    {
+        $owner = $this->owner();
+        $category = MenuCategory::create(['name' => 'محروقات', 'icon' => 'local_gas_station', 'position' => 0]);
+
+        MenuItem::create([
+            'menu_category_id' => $category->id,
+            'name' => 'سولار',
+            'price' => '7.00',
+            'active' => true,
+        ]);
+
+        $this->actingAs($owner, 'tenant')->get('/menu')
+            ->assertOk()
+            ->assertSee('>local_gas_station<', false);
+    }
+
     public function test_every_offered_icon_is_accepted_by_the_validator(): void
     {
         $icons = new CatalogIcons;

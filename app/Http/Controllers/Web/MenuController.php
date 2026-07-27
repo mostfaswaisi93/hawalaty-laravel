@@ -10,6 +10,8 @@ use App\Http\Requests\Tenant\MenuItem\StoreMenuItemRequest;
 use App\Http\Requests\Tenant\MenuItem\UpdateMenuItemRequest;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
+use App\Services\Tenant\CatalogIcons;
+use App\Services\Tenant\CatalogNaming;
 use App\Services\Tenant\MenuService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Response;
@@ -23,7 +25,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class MenuController extends Controller
 {
-    public function __construct(private readonly MenuService $service) {}
+    public function __construct(
+        private readonly MenuService $service,
+        private readonly CatalogIcons $icons,
+        private readonly CatalogNaming $naming,
+    ) {}
 
     public function index(): View|RedirectResponse
     {
@@ -36,7 +42,13 @@ class MenuController extends Controller
             ->orderBy('position')
             ->get();
 
-        return view('menu.index', ['categories' => $categories]);
+        return view('menu.index', [
+            'categories' => $categories,
+            // The catalogue is not assumed to be food: these carry the tenant's
+            // own wording and their chosen glyphs into the page.
+            'catalogIcons' => $this->icons,
+            'naming' => $this->naming,
+        ]);
     }
 
     // --- Categories ---

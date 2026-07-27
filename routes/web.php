@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Web\Admin\SettlementController as AdminSettlementController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
+use App\Http\Controllers\Web\BalanceController;
 use App\Http\Controllers\Web\BankController;
 use App\Http\Controllers\Web\ConstantController;
 use App\Http\Controllers\Web\CustomerController;
@@ -151,6 +152,9 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 
     // Reports
+    // الموازنة المالية - money in vs money out per account. Read-only.
+    Route::get('balance', [BalanceController::class, 'index'])->name('balance.index');
+
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
