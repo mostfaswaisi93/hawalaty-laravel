@@ -27,6 +27,7 @@ use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\TeamController;
@@ -173,6 +174,13 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('team', [TeamController::class, 'store'])->name('team.store');
     Route::put('team/{teamMember}', [TeamController::class, 'update'])->name('team.update');
     Route::delete('team/{teamMember}', [TeamController::class, 'destroy'])->name('team.destroy');
+
+    // Roles + permissions. Gated on TeamManage: inventing a role is the same
+    // power as assigning one.
+    Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
 
     // Payroll. Paying a salary writes an `expenses` row in the same
     // transaction, so it lands in المصروفات and the reports rather than being

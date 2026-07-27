@@ -41,6 +41,7 @@
             'items' => [
                 ['href' => '/constants', 'icon' => 'tune', 'label' => 'الثوابت', 'match' => 'constants*', 'permission' => \App\Enums\PermissionKey::ConstantsManage],
                 ['href' => '/team', 'icon' => 'group', 'label' => 'الفريق', 'match' => 'team*', 'permission' => \App\Enums\PermissionKey::TeamManage],
+                ['href' => '/roles', 'icon' => 'admin_panel_settings', 'label' => 'الأدوار والصلاحيات', 'match' => 'roles*', 'permission' => \App\Enums\PermissionKey::TeamManage],
                 ['href' => '/devices', 'icon' => 'devices', 'label' => 'الأجهزة', 'match' => 'devices*', 'permission' => \App\Enums\PermissionKey::DevicesManage],
                 ['href' => '/activity-log', 'icon' => 'fact_check', 'label' => 'سجل النشاطات', 'match' => 'activity-log*', 'permission' => null],
                 ['href' => '/settings', 'icon' => 'settings', 'label' => 'الإعدادات', 'match' => 'settings*', 'permission' => null],
