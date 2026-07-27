@@ -6,12 +6,30 @@ use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Models\Tenant\Bank;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 class BankService
 {
+    /**
+     * Unpaginated - used by callers that need every bank to populate a select
+     * (the expense and transfer forms), where a page of 20 would silently drop
+     * options.
+     */
     public function list(?string $search = null): Collection
+    {
+        return $this->query($search)->get();
+    }
+
+    /** The banks page itself, which had no pagination and grew unbounded. */
+    public function paginate(?string $search = null, int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->query($search)->paginate($perPage)->withQueryString();
+    }
+
+    private function query(?string $search = null): Builder
     {
         $query = Bank::query();
 
@@ -19,7 +37,7 @@ class BankService
             $query->where('name', 'like', "%{$search}%");
         }
 
-        return $query->get();
+        return $query;
     }
 
     public function create(array $data): Bank

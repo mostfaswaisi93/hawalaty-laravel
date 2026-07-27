@@ -23,7 +23,7 @@ class CustomerService
      * @return LengthAwarePaginator<int, Customer> each with order_count/total_spent
      *                                             aggregates and the most recent order's timestamp attached.
      */
-    public function list(?string $search = null): LengthAwarePaginator
+    public function list(?string $search = null, int $perPage = 20): LengthAwarePaginator
     {
         $query = Customer::query()
             ->withCount('transfers as order_count')
@@ -37,7 +37,7 @@ class CustomerService
             });
         }
 
-        return $query->orderByDesc('last_order_at')->paginate(20)->withQueryString();
+        return $query->orderByDesc('last_order_at')->paginate($perPage)->withQueryString();
     }
 
     public function find(string $id): Customer

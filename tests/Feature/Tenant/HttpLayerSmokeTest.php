@@ -57,4 +57,54 @@ class HttpLayerSmokeTest extends TenantTestCase
     {
         $this->get('/transfers')->assertRedirect('/login');
     }
+
+    /**
+     * The devices page now renders a license-wide allowance meter fed by
+     * DeviceRegistrar. `currentLicense` is not bound in this harness, so this
+     * also pins the "no license bound => unlimited, do not crash" path - the
+     * alternative (treating it as a zero allowance) would lock everyone out.
+     */
+    public function test_the_devices_page_renders_with_the_allowance_meter(): void
+    {
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+
+        $this->actingAs($owner, 'tenant')
+            ->get('/devices')
+            ->assertOk()
+            ->assertViewHas('usage', fn ($usage) => $usage['used'] === 0 && $usage['unlimited'] === true)
+            ->assertViewHas('manages', true);
+    }
+
+    /** A member without DevicesManage sees only their own devices. */
+    public function test_a_member_without_the_permission_sees_only_their_own_devices(): void
+    {
+        $powerless = Role::factory()->create();
+        $member = TeamMember::factory()->create(['role_id' => $powerless->id]);
+
+        $this->actingAs($member, 'tenant')
+            ->get('/devices')
+            ->assertOk()
+            ->assertViewHas('manages', false);
+    }
+
+    public function test_the_activity_log_paginates_with_a_whitelisted_page_size(): void
+    {
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+
+        $this->actingAs($owner, 'tenant')->get('/activity-log')
+            ->assertOk()
+            ->assertViewHas('perPage', 20);
+
+        $this->actingAs($owner, 'tenant')->get('/activity-log?per_page=50')
+            ->assertOk()
+            ->assertViewHas('perPage', 50);
+
+        // Outside the whitelist falls back to the default rather than
+        // honouring an unbounded page size.
+        $this->actingAs($owner, 'tenant')->get('/activity-log?per_page=99999')
+            ->assertOk()
+            ->assertViewHas('perPage', 20);
+    }
 }

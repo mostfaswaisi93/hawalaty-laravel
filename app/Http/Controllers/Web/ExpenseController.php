@@ -27,11 +27,15 @@ class ExpenseController extends Controller
         }
 
         $search = $request->query('search');
+        $perPage = $this->perPage($request, 20);
 
         return view('expenses.index', [
-            'expenses' => $this->service->list($search),
+            'expenses' => $this->service->list($search, $perPage),
+            // Unpaginated on purpose: this feeds the "bank" select in the
+            // expense form, where a page of 20 would hide the rest.
             'banks' => $this->banks->list(),
             'search' => $search,
+            'perPage' => $perPage,
         ]);
     }
 

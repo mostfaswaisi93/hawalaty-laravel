@@ -30,10 +30,12 @@ class BankController extends Controller
         }
 
         $search = $request->query('search');
+        $perPage = $this->perPage($request, 20);
 
         return view('banks.index', [
-            'banks' => $this->service->list($search),
+            'banks' => $this->service->paginate($search, $perPage),
             'search' => $search,
+            'perPage' => $perPage,
         ]);
     }
 

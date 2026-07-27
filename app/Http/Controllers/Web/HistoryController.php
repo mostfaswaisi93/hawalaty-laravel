@@ -21,9 +21,12 @@ class HistoryController extends Controller
         $filters = $request->only(['search', 'status', 'paymentMethod', 'from', 'to']);
         $filters = array_filter($filters, fn ($value) => $value !== null && $value !== '');
 
+        $perPage = $this->perPage($request, 20);
+
         return view('history.index', [
-            'transfers' => $this->service->list($filters),
+            'transfers' => $this->service->list($filters + ['perPage' => $perPage]),
             'filters' => $filters,
+            'perPage' => $perPage,
         ]);
     }
 }

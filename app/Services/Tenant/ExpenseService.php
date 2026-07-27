@@ -15,7 +15,7 @@ class ExpenseService
      * new row with no ceiling, so an unbounded get() would eventually load
      * the tenant's entire expense history on one request.
      */
-    public function list(?string $search = null): LengthAwarePaginator
+    public function list(?string $search = null, int $perPage = 20): LengthAwarePaginator
     {
         $query = Expense::query()->with('bank');
 
@@ -23,7 +23,7 @@ class ExpenseService
             $query->where('description', 'like', "%{$search}%");
         }
 
-        return $query->latest('date')->paginate(20)->withQueryString();
+        return $query->latest('date')->paginate($perPage)->withQueryString();
     }
 
     public function create(array $data): Expense

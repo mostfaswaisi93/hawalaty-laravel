@@ -7,6 +7,8 @@ use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
 use App\Enums\RoleKey;
 use App\Models\Tenant\TeamMember;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -14,6 +16,17 @@ use Illuminate\Validation\ValidationException;
 class TeamService
 {
     public function list(?string $search = null): Collection
+    {
+        return $this->query($search)->get();
+    }
+
+    /** The team page, which had no pagination and grew unbounded. */
+    public function paginate(?string $search = null, int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->query($search)->paginate($perPage)->withQueryString();
+    }
+
+    private function query(?string $search = null): Builder
     {
         $query = TeamMember::query()->with('role');
 
@@ -24,7 +37,7 @@ class TeamService
             });
         }
 
-        return $query->get();
+        return $query;
     }
 
     public function create(array $data): TeamMember

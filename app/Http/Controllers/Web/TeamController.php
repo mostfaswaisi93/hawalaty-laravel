@@ -28,11 +28,13 @@ class TeamController extends Controller
         }
 
         $search = $request->query('search');
+        $perPage = $this->perPage($request, 20);
 
         return view('team.index', [
-            'members' => $this->service->list($search),
+            'members' => $this->service->paginate($search, $perPage),
             'roles' => $this->roles->list(),
             'search' => $search,
+            'perPage' => $perPage,
         ]);
     }
 

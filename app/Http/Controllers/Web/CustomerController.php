@@ -18,10 +18,12 @@ class CustomerController extends Controller
     public function index(Request $request): View
     {
         $search = $request->query('search');
+        $perPage = $this->perPage($request, 20);
 
         return view('customers.index', [
-            'customers' => $this->service->list($search),
+            'customers' => $this->service->list($search, $perPage),
             'search' => $search,
+            'perPage' => $perPage,
         ]);
     }
 
