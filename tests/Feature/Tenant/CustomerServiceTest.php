@@ -6,13 +6,17 @@ use App\Models\Tenant\Customer;
 use App\Models\Tenant\Transfer;
 use App\Services\Tenant\CustomerService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Tests\TenantTestCase;
 
 /**
- * Regression coverage for CustomerService: trimmed exact-name matching,
- * phone backfill-without-overwrite, the unique-constraint race fallback,
- * and the list()/find() aggregates.
+ * Regression coverage for CustomerService.
+ *
+ * The identity rule is the important part: a customer IS a phone number. Name
+ * matching was wrong both ways - it merged two different people who shared a
+ * name, and it split one person whose name was typed two ways. Several tests
+ * below pin both directions.
  */
 class CustomerServiceTest extends TenantTestCase
 {
@@ -21,74 +25,96 @@ class CustomerServiceTest extends TenantTestCase
         return app(CustomerService::class);
     }
 
-    public function test_find_or_create_trims_the_name_before_matching_and_creating(): void
+    public function test_find_or_create_trims_before_matching_and_creating(): void
     {
-        $customer = $this->service()->findOrCreate('  محمد  ', '0599111111');
+        $customer = $this->service()->findOrCreate('  محمد  ', '  0599111111  ');
 
         $this->assertSame('محمد', $customer->name);
+        $this->assertSame('0599111111', $customer->phone);
         $this->assertSame(1, Customer::count());
     }
 
-    public function test_find_or_create_reuses_an_existing_customer_by_exact_trimmed_name(): void
+    /**
+     * IDENTITY IS THE PHONE. Two different people can share a name; they cannot
+     * share a number.
+     */
+    public function test_the_same_phone_is_the_same_customer_even_with_a_different_name(): void
     {
-        $existing = Customer::factory()->create(['name' => 'محمد خالد']);
+        $existing = Customer::factory()->create(['name' => 'محمد خالد', 'phone' => '0599222222']);
 
-        $customer = $this->service()->findOrCreate('  محمد خالد  ', '0599222222');
+        $customer = $this->service()->findOrCreate('محمد خالد الأحمد', '0599222222');
 
         $this->assertSame($existing->id, $customer->id);
         $this->assertSame(1, Customer::count());
     }
 
-    public function test_find_or_create_creates_a_new_customer_when_name_is_new(): void
+    /** The converse: a shared name must NOT merge two different numbers. */
+    public function test_the_same_name_on_a_different_phone_is_a_different_customer(): void
     {
-        $customer = $this->service()->findOrCreate('سارة علي', '0599333333');
+        $first = $this->service()->findOrCreate('أحمد', '0599000001');
+        $second = $this->service()->findOrCreate('أحمد', '0599000002');
 
-        $this->assertTrue($customer->wasRecentlyCreated);
-        $this->assertSame('سارة علي', $customer->name);
-        $this->assertSame('0599333333', $customer->phone);
+        $this->assertNotSame($first->id, $second->id);
+        $this->assertSame(2, Customer::count());
+    }
+
+    /**
+     * The name is a LABEL on the number, so the latest spelling wins - fixing a
+     * typo on a new order corrects the record instead of forking it.
+     */
+    public function test_a_corrected_name_updates_the_record_rather_than_duplicating_it(): void
+    {
+        $this->service()->findOrCreate('احمد محمد', '0599333333');
+        $customer = $this->service()->findOrCreate('أحمد محمد', '0599333333');
+
+        $this->assertSame('أحمد محمد', $customer->fresh()->name);
         $this->assertSame(1, Customer::count());
     }
 
-    public function test_find_or_create_backfills_phone_when_existing_customer_has_none(): void
+    public function test_an_empty_name_never_blanks_out_a_known_one(): void
     {
-        $existing = Customer::factory()->create(['name' => 'ليان أحمد', 'phone' => null]);
+        $this->service()->findOrCreate('سارة علي', '0599444444');
+        $customer = $this->service()->findOrCreate('   ', '0599444444');
 
-        $customer = $this->service()->findOrCreate('ليان أحمد', '0599444444');
-
-        $this->assertSame($existing->id, $customer->id);
-        $this->assertSame('0599444444', $customer->fresh()->phone);
+        $this->assertSame('سارة علي', $customer->fresh()->name);
     }
 
-    public function test_find_or_create_does_not_overwrite_an_existing_phone(): void
+    /**
+     * With no phone there is nothing to identify, so no half-record is created.
+     * The order still carries the typed name in `transfers.customer`.
+     */
+    public function test_no_customer_is_created_without_a_phone(): void
     {
-        $existing = Customer::factory()->create(['name' => 'خالد عمر', 'phone' => '0599555555']);
+        $this->assertNull($this->service()->findOrCreate('زبون عابر'));
+        $this->assertNull($this->service()->findOrCreate('زبون عابر', ''));
+        $this->assertNull($this->service()->findOrCreate('زبون عابر', '   '));
 
-        $customer = $this->service()->findOrCreate('خالد عمر', '0599999999');
-
-        $this->assertSame($existing->id, $customer->id);
-        $this->assertSame('0599555555', $customer->fresh()->phone);
+        $this->assertSame(0, Customer::count());
     }
 
-    public function test_find_or_create_returns_the_pre_existing_row_instead_of_a_duplicate(): void
+    public function test_repeated_orders_from_one_number_never_duplicate(): void
     {
-        $winner = Customer::create(['name' => 'X']);
-
-        $customer = $this->service()->findOrCreate('X', '0599666666');
-
-        $this->assertSame($winner->id, $customer->id);
-        $this->assertSame(1, Customer::count());
-    }
-
-    public function test_find_or_create_never_creates_more_than_one_row_for_the_same_trimmed_name(): void
-    {
-        $first = $this->service()->findOrCreate('نور الدين');
+        $first = $this->service()->findOrCreate('نور الدين', '0599777777');
         $second = $this->service()->findOrCreate('  نور الدين', '0599777777');
-        $third = $this->service()->findOrCreate('نور الدين  ', '0599888888');
+        $third = $this->service()->findOrCreate('نور الدين  ', '  0599777777');
 
         $this->assertSame($first->id, $second->id);
         $this->assertSame($first->id, $third->id);
         $this->assertSame(1, Customer::count());
-        $this->assertSame('0599777777', $first->fresh()->phone);
+    }
+
+    /**
+     * The lookup-then-insert is not atomic, so the UNIQUE index on `phone` is
+     * what turns a concurrent double-insert into a catchable error rather than a
+     * silent duplicate that splits the customer's history.
+     */
+    public function test_a_duplicate_phone_insert_is_rejected_by_the_database(): void
+    {
+        Customer::create(['name' => 'أول', 'phone' => '0599888888']);
+
+        $this->expectException(QueryException::class);
+
+        Customer::create(['name' => 'ثانٍ', 'phone' => '0599888888']);
     }
 
     public function test_list_returns_paginated_customers_with_order_aggregates(): void

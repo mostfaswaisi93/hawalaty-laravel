@@ -62,21 +62,44 @@ class TransferServiceTest extends TenantTestCase
         $this->assertSame('35.50', $transfer->amount);
     }
 
-    public function test_creating_a_transfer_reuses_an_existing_customer_by_exact_name(): void
+    public function test_creating_a_transfer_reuses_an_existing_customer_by_phone(): void
     {
         Notification::fake();
 
-        $existing = Customer::factory()->create(['name' => 'محمد خالد']);
+        $existing = Customer::factory()->create(['name' => 'محمد خالد', 'phone' => '0599123456']);
         $item = MenuItem::factory()->create();
 
+        // Name typed differently; the NUMBER is what identifies them.
         $transfer = app(TransferService::class)->create([
-            'customer' => 'محمد خالد',
+            'customer' => 'محمد خالد الأحمد',
+            'customerPhone' => '0599123456',
             'paymentMethod' => PaymentMethod::Cash,
             'items' => [['itemId' => $item->id, 'quantity' => 1]],
         ]);
 
         $this->assertSame($existing->id, $transfer->customer_id);
         $this->assertSame(1, Customer::count());
+    }
+
+    /**
+     * An order without a phone still records the typed name on the transfer,
+     * but creates no customer profile - there is nothing to identify.
+     */
+    public function test_a_transfer_without_a_phone_creates_no_customer(): void
+    {
+        Notification::fake();
+
+        $item = MenuItem::factory()->create();
+
+        $transfer = app(TransferService::class)->create([
+            'customer' => 'زبون عابر',
+            'paymentMethod' => PaymentMethod::Cash,
+            'items' => [['itemId' => $item->id, 'quantity' => 1]],
+        ]);
+
+        $this->assertNull($transfer->customer_id);
+        $this->assertSame('زبون عابر', $transfer->customer);
+        $this->assertSame(0, Customer::count());
     }
 
     public function test_bank_transfer_records_the_selected_bank(): void

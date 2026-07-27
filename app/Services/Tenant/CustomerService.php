@@ -80,26 +80,53 @@ class CustomerService
      * silent duplicate customer; on that exception we just re-fetch the row
      * the winner created and fall through to the same backfill logic below.
      */
-    public function findOrCreate(string $name, ?string $phone = null): Customer
+    /**
+     * Resolves the customer for an order. IDENTITY IS THE PHONE NUMBER.
+     *
+     * Matching on the name was wrong both ways round: two different people called
+     * "أحمد" collided into one record and pooled their history, while the same
+     * person typed "أحمد محمد" once and "احمد محمد" the next time split in two.
+     * The number is what actually identifies someone.
+     *
+     * The name is therefore just a LABEL on that number, and the most recent
+     * spelling wins - correcting a typo on a new order fixes the record rather
+     * than forking it.
+     *
+     * With no phone there is nothing to identify, so no customer is created at
+     * all: the order still records the typed name in `transfers.customer`, it
+     * simply is not linked to a profile. That keeps the customers list free of
+     * unidentifiable half-records.
+     *
+     * The lookup-then-insert is not atomic, so two concurrent first orders from
+     * the same number can both miss. `customers.phone` is UNIQUE precisely so the
+     * loser fails loudly and is re-fetched instead of silently duplicating.
+     */
+    public function findOrCreate(string $name, ?string $phone = null): ?Customer
     {
         $name = trim($name);
+        $phone = $phone === null ? null : trim($phone);
 
-        $customer = Customer::where('name', $name)->first();
+        if ($phone === null || $phone === '') {
+            return null;
+        }
+
+        $customer = Customer::where('phone', $phone)->first();
 
         if (! $customer) {
             try {
-                $customer = Customer::create(['name' => $name, 'phone' => $phone]);
+                return Customer::create(['name' => $name, 'phone' => $phone]);
             } catch (QueryException $e) {
                 if ($e->getCode() !== '23000') {
                     throw $e;
                 }
 
-                $customer = Customer::where('name', $name)->firstOrFail();
+                $customer = Customer::where('phone', $phone)->firstOrFail();
             }
         }
 
-        if ($phone && ! $customer->phone) {
-            $customer->update(['phone' => $phone]);
+        // Latest spelling wins, but never blank out a known name with an empty one.
+        if ($name !== '' && $name !== $customer->name) {
+            $customer->update(['name' => $name]);
         }
 
         return $customer;

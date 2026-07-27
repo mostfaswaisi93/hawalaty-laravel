@@ -180,12 +180,14 @@ class HttpLayerSmokeTest extends TenantTestCase
         $roles = $this->seedStandardRoles();
         $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
         $item = MenuItem::factory()->create(['price' => '10.00']);
-        $customer = Customer::factory()->create(['name' => 'كثير الطلبات']);
+        $customer = Customer::factory()->create(['name' => 'كثير الطلبات', 'phone' => '0599123123']);
 
-        // 25 orders: more than one page of 20.
+        // 25 orders: more than one page of 20. The PHONE is what links them to
+        // the customer - the name alone no longer identifies anyone.
         foreach (range(1, 25) as $ignored) {
             app(TransferService::class)->create([
                 'customer' => $customer->name,
+                'customerPhone' => $customer->phone,
                 'paymentMethod' => PaymentMethod::Cash,
                 'items' => [['itemId' => $item->id, 'quantity' => 1]],
             ]);

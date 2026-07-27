@@ -94,11 +94,14 @@ class TransferService
                 $summaryParts[] = "{$menuItem->name} ×{$item['quantity']}";
             }
 
+            // Null when the order carries no phone: identity is the number, so
+            // there is nothing to link to. `customer` below still records the
+            // typed name either way, and customer_id is already nullable.
             $customer = $this->customers->findOrCreate($data['customer'], $data['customerPhone'] ?? null);
 
             $transfer = Transfer::create([
                 'customer' => $data['customer'],
-                'customer_id' => $customer->id,
+                'customer_id' => $customer?->id,
                 'status' => TransferStatus::Pending,
                 'amount' => $amount,
                 'item_name' => implode('، ', $summaryParts),

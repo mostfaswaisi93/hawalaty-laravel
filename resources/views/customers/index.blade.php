@@ -20,10 +20,10 @@
                 <div class="reveal-scale flex flex-col items-center gap-3 py-16 text-center">
                     <span class="material-symbols-outlined !text-5xl text-outline/50">group</span>
                     <p class="font-body-lg text-on-surface-variant">{{ __('لا يوجد عملاء بعد') }}</p>
-                    <p class="font-body-sm text-outline">{{ __('يُضاف العميل تلقائياً عند إنشاء أول طلب باسمه.') }}</p>
+                    <p class="font-body-sm text-outline">{{ __('يُضاف العميل تلقائياً عند أول طلب يحمل رقم جواله.') }}</p>
                 </div>
             @else
-                <x-table-responsive :headers="[__('العميل'), __('الهاتف'), __('عدد الطلبات'), __('إجمالي الإنفاق'), __('آخر طلب')]">
+                <x-table-responsive :headers="[__('العميل'), ['label' => __('عدد الطلبات'), 'align' => 'end'], ['label' => __('إجمالي الإنفاق'), 'align' => 'end'], __('آخر طلب')]">
                     <x-slot:table>
                         @foreach ($customers as $c)
                             <tr class="reveal-up cursor-pointer transition-colors hover:bg-surface-container-low/50 focus:bg-surface-container-low/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
@@ -33,13 +33,23 @@
                                 @keydown.enter="location.href='{{ route('customers.show', $c->id) }}'">
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">{{ mb_substr($c->name, 0, 1) }}</div>
-                                        <span class="font-body-sm font-bold">{{ $c->name }}</span>
+                                        <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-white">
+                                            @if (filled($c->name))
+                                                {{ mb_substr($c->name, 0, 1) }}
+                                            @else
+                                                <span class="material-symbols-outlined !text-xl">person</span>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="truncate font-body-sm font-bold text-on-surface">{{ $c->name ?: __('بدون اسم') }}</p>
+                                            {{-- The number IS the customer, so it sits with the name rather
+                                                 than in a column of its own. --}}
+                                            <p class="truncate text-[11px] text-on-surface-variant"><span dir="ltr">{{ $c->phone ?: '-' }}</span></p>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $c->phone ?: '-' }}</span></td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $c->order_count }}</span></td>
-                                <td class="whitespace-nowrap px-4 py-3 font-bold text-primary"><span dir="ltr">{{ number_format($c->total_spent ?? 0, 2) }} ₪</span></td>
+                                <td class="whitespace-nowrap px-4 py-3 text-end font-body-sm text-on-surface-variant"><span dir="ltr">{{ number_format($c->order_count) }}</span></td>
+                                <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary"><span dir="ltr">{{ number_format($c->total_spent ?? 0, 2) }} ₪</span></td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $c->last_order_at ? \Illuminate\Support\Carbon::parse($c->last_order_at)->diffForHumans() : '-' }}</td>
                             </tr>
                         @endforeach
