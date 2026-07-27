@@ -156,17 +156,22 @@ class AdminPagesTest extends TestCase
         $this->assertDatabaseHas('partners', ['name' => 'Ali']);
     }
 
-    public function test_can_upsert_a_setting(): void
+    /**
+     * The free-form endpoint now only serves keys OUTSIDE the registry - a
+     * registered key like `site_name` has a typed field on the form and is
+     * rejected here, so this uses a genuinely custom key.
+     */
+    public function test_can_upsert_a_custom_setting(): void
     {
         $admin = $this->admin();
 
-        $this->actingAs($admin, 'admin')->post('/admin/settings', ['key' => 'site_name', 'value' => 'Hawalaty'])->assertRedirect('/admin/settings');
-        $this->assertDatabaseHas('settings', ['key' => 'site_name', 'value' => 'Hawalaty']);
+        $this->actingAs($admin, 'admin')->post('/admin/settings', ['key' => 'custom_flag', 'value' => 'Hawalaty'])->assertRedirect('/admin/settings');
+        $this->assertDatabaseHas('settings', ['key' => 'custom_flag', 'value' => 'Hawalaty']);
 
         // Same key again updates in place instead of duplicating.
-        $this->actingAs($admin, 'admin')->post('/admin/settings', ['key' => 'site_name', 'value' => 'Changed'])->assertRedirect();
+        $this->actingAs($admin, 'admin')->post('/admin/settings', ['key' => 'custom_flag', 'value' => 'Changed'])->assertRedirect();
         $this->assertDatabaseCount('settings', 1);
-        $this->assertDatabaseHas('settings', ['key' => 'site_name', 'value' => 'Changed']);
+        $this->assertDatabaseHas('settings', ['key' => 'custom_flag', 'value' => 'Changed']);
     }
 
     public function test_recording_a_payment_credits_the_box_and_renews_the_license(): void

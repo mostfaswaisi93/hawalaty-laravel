@@ -4,6 +4,7 @@ namespace App\Settings;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 /**
  * The single way the application reads a platform setting.
@@ -109,9 +110,25 @@ class PlatformSettings
      */
     private function raw(): array
     {
-        return $this->raw ??= Cache::rememberForever(
-            self::CACHE_KEY,
-            fn () => Setting::query()->pluck('value', 'key')->all(),
-        );
+        if ($this->raw !== null) {
+            return $this->raw;
+        }
+
+        try {
+            return $this->raw = Cache::rememberForever(
+                self::CACHE_KEY,
+                fn () => Setting::query()->pluck('value', 'key')->all(),
+            );
+        } catch (Throwable) {
+            // Settings are read by the PUBLIC landing, help, privacy and terms
+            // pages. If the table is missing (fresh checkout before migrating)
+            // or the database is briefly unreachable, those pages must still
+            // render on registry defaults rather than 500 - a support address
+            // is not worth taking the marketing site down for.
+            //
+            // Deliberately NOT cached: a transient outage must not pin an empty
+            // result until the cache is flushed by hand.
+            return [];
+        }
     }
 }

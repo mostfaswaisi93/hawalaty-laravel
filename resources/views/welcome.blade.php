@@ -356,7 +356,7 @@
                 @foreach ([
                     __('المنتج') => [[__('المزايا'), '#features'], [__('كيف يعمل'), '#how'], [__('الأسعار'), '#pricing']],
                     __('الحساب') => [[__('تسجيل الدخول'), route('login')], [__('إنشاء حساب'), route('signup')]],
-                    __('الدعم') => [[__('مركز المساعدة'), '/help'], [__('تواصل معنا'), 'mailto:{{  }}']],
+                    __('الدعم') => [[__('مركز المساعدة'), '/help'], [__('تواصل معنا'), 'mailto:'.$supportEmail]],
                 ] as $group => $links)
                     <div>
                         <h4 class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ $group }}</h4>

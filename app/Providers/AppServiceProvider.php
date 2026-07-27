@@ -7,6 +7,7 @@ use App\Settings\PlatformSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
 
@@ -28,6 +29,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The public-facing pages all print the support address, which used to
+        // be the hardcoded literal `support@hawalaty.test` in five places. It is
+        // now the `support_email` platform setting. Scoped to these four views
+        // rather than shared globally so the settings table is not touched on
+        // every render of every page.
+        View::composer(['welcome', 'privacy', 'terms', 'help.index'], function ($view) {
+            $settings = app(PlatformSettings::class);
+
+            $view->with([
+                'supportEmail' => $settings->get('support_email'),
+                'supportPhone' => $settings->get('support_phone'),
+            ]);
+        });
+
         // Sanctum only supports one globally-registered token model, so it
         // must serve BOTH the Super Admin portal (Admin, platform `mysql`
         // connection) and every tenant's team members (`tenant` connection).
