@@ -293,24 +293,47 @@
                         </span>
                     </nav>
                 @endif
-                <div class="relative" x-data="globalSearch()" @click.outside="open = false">
+                {{-- Global search. Arrow keys move a cursor through the flat
+                     result list, Enter opens the highlighted one, and Ctrl/Cmd+K
+                     focuses the box from anywhere - see globalSearch() in app.js. --}}
+                {{-- Width only from `sm` up: below that this is just the 40px
+                     icon that opens the overlay, and a full-width wrapper would
+                     strand it far from the header's other controls. --}}
+                <div class="relative sm:w-full sm:max-w-lg" x-data="globalSearch()" @click.outside="open = false">
                     {{-- desktop: inline pill with an anchored dropdown --}}
-                    <div class="hidden w-full max-w-md items-center gap-2 rounded-full bg-surface-container px-4 py-1.5 transition-shadow sm:flex">
-                        <span class="material-symbols-outlined text-outline">search</span>
-                        <input type="text" x-model="query" @input="onInput()" @focus="if (hasResults) open = true" autocomplete="off"
+                    <div class="hidden w-full items-center gap-2 rounded-full bg-surface-container px-4 py-2 ring-1 ring-transparent transition-all focus-within:bg-surface-container-lowest focus-within:ring-primary/40 sm:flex">
+                        <span class="material-symbols-outlined flex-shrink-0 !text-xl text-outline">search</span>
+                        <input type="text" x-model="query" x-ref="desktopSearchInput" autocomplete="off"
+                            role="combobox" aria-autocomplete="list" aria-controls="search-results-desktop"
+                            :aria-expanded="open ? 'true' : 'false'"
+                            @input="onInput()"
+                            @focus="open = hasResults || showRecent"
+                            @keydown.arrow-down.prevent="move(1)"
+                            @keydown.arrow-up.prevent="move(-1)"
+                            @keydown.enter.prevent="choose()"
+                            @keydown.escape.prevent="open = false; $el.blur()"
                             aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}"
-                            class="w-full border-none bg-transparent px-2 font-body-sm text-sm outline-none focus:ring-0" />
-                        <span x-show="loading" x-cloak class="material-symbols-outlined animate-spin !text-lg text-outline">progress_activity</span>
+                            class="w-full border-none bg-transparent font-body-sm text-sm outline-none placeholder:text-outline focus:ring-0" />
+                        <span x-show="loading" x-cloak class="material-symbols-outlined flex-shrink-0 animate-spin !text-lg text-outline">progress_activity</span>
+                        <button type="button" x-show="query.length" x-cloak @click="reset(); $refs.desktopSearchInput.focus()"
+                            aria-label="{{ __('مسح') }}" title="{{ __('مسح') }}"
+                            class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-container-high hover:text-on-surface">
+                            <span class="material-symbols-outlined !text-base">close</span>
+                        </button>
+                        {{-- The shortcut hint, hidden once typing starts so it
+                             never sits on top of the text. --}}
+                        <kbd x-show="!query.length && !loading"
+                            class="hidden flex-shrink-0 rounded-md border border-outline-variant px-1.5 py-0.5 font-numeral-lg text-[10px] font-bold text-outline lg:block" dir="ltr">Ctrl K</kbd>
                     </div>
 
-                    <div x-show="open && (hasResults || (searched && !loading))" x-cloak @keydown.escape.window="open = false"
+                    <div id="search-results-desktop" role="listbox" x-show="open && showPanel" x-cloak
                         x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        class="absolute inset-x-0 top-12 z-50 hidden max-h-96 overflow-y-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-2xl sm:block">
+                        class="absolute inset-x-0 top-13 z-50 hidden max-h-96 overflow-y-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-2xl sm:block">
                         <x-search-results-list />
                     </div>
 
                     {{-- mobile: icon that opens a full-screen search overlay --}}
-                    <button type="button" @click="mobileOpen = true; $nextTick(() => $refs.mobileSearchInput?.focus())"
+                    <button type="button" @click="focusSearch()"
                         class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary sm:hidden"
                         aria-label="{{ __('بحث') }}">
                         <span class="material-symbols-outlined">search</span>
@@ -320,16 +343,22 @@
                         class="fixed inset-0 z-[100] flex flex-col bg-surface sm:hidden" style="display:none">
                         <div class="flex items-center gap-2 border-b border-outline-variant p-4">
                             <span class="material-symbols-outlined flex-shrink-0 text-outline">search</span>
-                            <input type="text" x-model="query" @input="onInput()" x-ref="mobileSearchInput" autocomplete="off"
+                            <input type="text" x-model="query" x-ref="mobileSearchInput" autocomplete="off"
+                                role="combobox" aria-autocomplete="list" aria-controls="search-results-mobile"
+                                :aria-expanded="showPanel ? 'true' : 'false'"
+                                @input="onInput()"
+                                @keydown.arrow-down.prevent="move(1)"
+                                @keydown.arrow-up.prevent="move(-1)"
+                                @keydown.enter.prevent="choose()"
                                 aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}"
-                                class="w-full border-none bg-transparent font-body-lg text-body-lg outline-none focus:ring-0" />
+                                class="w-full border-none bg-transparent font-body-lg text-body-lg outline-none placeholder:text-outline focus:ring-0" />
                             <span x-show="loading" x-cloak class="material-symbols-outlined flex-shrink-0 animate-spin !text-lg text-outline">progress_activity</span>
                             <button type="button" @click="closeMobile()" aria-label="{{ __('إغلاق') }}" title="{{ __('إغلاق') }}"
                                 class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high">
                                 <span class="material-symbols-outlined">close</span>
                             </button>
                         </div>
-                        <div class="flex-1 overflow-y-auto p-2">
+                        <div id="search-results-mobile" role="listbox" class="flex-1 overflow-y-auto p-2">
                             <x-search-results-list />
                         </div>
                     </div>
@@ -464,7 +493,11 @@
             </div>
         </header>
 
-        <main class="mx-auto w-full max-w-[1680px] flex-1 p-inline-lg">
+        {{-- Full width on purpose. This used to be capped at max-w-[1680px] and
+             centred, which on any monitor wider than the cap plus the sidebar
+             threw ~100px of dead margin down each side of every page while the
+             tables inside were still cramped. --}}
+        <main class="w-full flex-1 p-inline-lg">
             <x-flash-messages />
             @yield('content')
         </main>

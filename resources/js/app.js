@@ -160,8 +160,11 @@ Alpine.data('globalSearch', () => ({
         this.open = true;
 
         this.$nextTick(() => {
-            this.$root
-                .querySelector(`[data-result-index="${this.cursor}"]`)
+            // The desktop panel and the mobile overlay both render the row, so
+            // this has to scroll the one actually on screen - `offsetParent` is
+            // null for the hidden copy.
+            [...this.$root.querySelectorAll(`[data-result-index="${this.cursor}"]`)]
+                .find((el) => el.offsetParent !== null)
                 ?.scrollIntoView({ block: 'nearest' });
         });
     },

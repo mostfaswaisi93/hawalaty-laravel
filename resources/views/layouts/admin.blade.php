@@ -397,7 +397,9 @@
             </div>
         </header>
 
-        <main class="mx-auto w-full max-w-[1680px] flex-1 p-inline-lg">
+        {{-- Full width, matching layouts/app.blade.php - see the note there on
+             why the max-w cap was removed. --}}
+        <main class="w-full flex-1 p-inline-lg">
             <x-flash-messages />
             @yield('content')
         </main>
