@@ -43,7 +43,7 @@
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $backup->license?->customer_name ?? __('قاعدة المنصّة') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $backup->trigger->value === 'manual' ? __('يدوي') : __('مجدول') }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $backup->size_mb ? $backup->size_mb.' MB' : '-' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $backup->size_mb ? $backup->size_mb.' MB' : '-' }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $meta['class'] }}">{{ $meta['label'] }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $backup->created_at?->translatedFormat('j F Y H:i') }}</td>
                                 <td class="px-4 py-3">

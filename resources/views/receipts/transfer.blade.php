@@ -92,12 +92,12 @@
             <table>
                 <tr class="total-row">
                     <td>{{ __('الإجمالي') }}</td>
-                    <td class="amount-cell" dir="ltr">{{ number_format($order->amount, 2) }} ₪</td>
+                    <td class="amount-cell"><span dir="ltr">{{ number_format($order->amount, 2) }} ₪</span></td>
                 </tr>
                 @if ($order->has_change && $order->change_amount)
                     <tr>
                         <td class="muted">{{ __('الباقي') }}</td>
-                        <td class="muted amount-cell" dir="ltr">{{ number_format($order->change_amount, 2) }} ₪</td>
+                        <td class="muted amount-cell"><span dir="ltr">{{ number_format($order->change_amount, 2) }} ₪</span></td>
                     </tr>
                 @endif
             </table>

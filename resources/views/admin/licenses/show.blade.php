@@ -118,7 +118,7 @@
                         @foreach ($team as $member)
                             <tr class="transition-colors hover:bg-surface-container-low/50">
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm font-bold">{{ $member->name }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $member->email }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $member->email }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $member->role?->name ?? '-' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <span class="rounded-full px-2.5 py-1 text-[11px] font-bold {{ $member->active ? 'bg-primary/10 text-primary' : 'bg-outline/10 text-outline' }}">

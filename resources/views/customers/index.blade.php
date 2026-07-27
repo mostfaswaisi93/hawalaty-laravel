@@ -37,9 +37,9 @@
                                         <span class="font-body-sm font-bold">{{ $c->name }}</span>
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $c->phone ?: '-' }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $c->order_count }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-bold text-primary" dir="ltr">{{ number_format($c->total_spent ?? 0, 2) }} ₪</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $c->phone ?: '-' }}</span></td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $c->order_count }}</span></td>
+                                <td class="whitespace-nowrap px-4 py-3 font-bold text-primary"><span dir="ltr">{{ number_format($c->total_spent ?? 0, 2) }} ₪</span></td>
                                 <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant">{{ $c->last_order_at ? \Illuminate\Support\Carbon::parse($c->last_order_at)->diffForHumans() : '-' }}</td>
                             </tr>
                         @endforeach

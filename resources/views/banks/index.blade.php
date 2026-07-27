@@ -57,8 +57,8 @@
                                         {{ $b->type->value === 'wallet' ? __('محفظة') : __('بنك') }}
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->code }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant" dir="ltr">{{ $b->phone ?: '-' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $b->code }}</span></td>
+                                <td class="whitespace-nowrap px-4 py-3 font-body-sm text-on-surface-variant"><span dir="ltr">{{ $b->phone ?: '-' }}</span></td>
                                 <td class="px-4 py-3">
                                     @include('banks._toggle', ['b' => $b])
                                 </td>

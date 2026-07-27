@@ -66,7 +66,7 @@
                                         {{ $statusLabel($t->status) }}
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary" dir="ltr">+{{ number_format($t->amount, 2) }} ₪</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <a href="{{ route('transfers.receipt', $t->id) }}" target="_blank" aria-label="{{ __('طباعة الإيصال') }}"
                                         class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">

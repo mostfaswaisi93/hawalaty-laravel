@@ -42,7 +42,7 @@
                                         <span class="font-body-sm font-bold">{{ $partner->name }}</span>
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 font-bold" dir="ltr">{{ number_format($partner->percentage, 2) }}%</td>
+                                <td class="whitespace-nowrap px-4 py-3 font-bold"><span dir="ltr">{{ number_format($partner->percentage, 2) }}%</span></td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openEdit(@js(['id' => $partner->id, 'name' => $partner->name, 'percentage' => (float) $partner->percentage]))" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}"><span class="material-symbols-outlined !text-xl">edit</span></button>
