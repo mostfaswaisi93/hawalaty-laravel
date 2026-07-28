@@ -100,23 +100,35 @@
                 <div>
                     <p class="mb-1 text-sm opacity-70">{{ __('إجمالي طلبات هذا الأسبوع') }}</p>
                     <h4 class="mb-4 text-3xl font-bold" dir="ltr">{{ $weeklyTotalCount }}</h4>
-                    {{-- dir="ltr": these are the last seven DAYS, oldest first, so
-                         inheriting RTL put today on the far left and a week ago on
-                         the right. Same axis as the activity heatmap and the admin
-                         trend chart - time reads left to right in all three. --}}
-                    <div class="mt-4 flex h-24 items-end gap-2" dir="ltr">
+                    {{--
+                        ONE column owns its bar and its own day label.
+
+                        They used to be two sibling rows, and only the bars row
+                        carried dir="ltr" - so the bars ran oldest-left while the
+                        labels below them still ran oldest-RIGHT. The two were
+                        mirrored, and every bar was captioned with the wrong day.
+                        The rows also distributed differently (gap-2 + w-full
+                        against justify-between), so they did not even line up.
+
+                        Keeping the label inside the column makes both faults
+                        unrepresentable: a caption cannot drift from the bar it
+                        belongs to.
+
+                        dir="ltr" because these are the last seven DAYS, oldest
+                        first - the same axis as the activity heatmap and the
+                        admin trend chart. Time reads left to right in all three.
+                    --}}
+                    <div class="mt-4 flex items-end gap-2" dir="ltr">
                         @foreach ($weeklyActivity as $day)
-                            <div class="flex h-full w-full flex-col items-center justify-end gap-1">
-                                <span class="font-numeral-lg text-[10px] opacity-70" dir="ltr">{{ $day['count'] }}</span>
-                                <div
-                                    class="grow-bar w-full rounded-t-lg transition-all duration-500 {{ $day['count'] === $maxDaily ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}"
-                                    style="height: {{ max(4, ($day['count'] / $maxDaily) * 100) }}%; --d: {{ 220 + $loop->index * 60 }}ms"></div>
+                            <div class="flex w-full flex-col items-center gap-1">
+                                <span class="font-numeral-lg text-[10px] opacity-70">{{ $day['count'] }}</span>
+                                <div class="flex h-24 w-full items-end">
+                                    <div
+                                        class="grow-bar w-full rounded-t-lg transition-all duration-500 {{ $day['count'] === $maxDaily ? 'bg-secondary-container' : 'bg-primary-container opacity-40' }}"
+                                        style="height: {{ max(4, ($day['count'] / $maxDaily) * 100) }}%; --d: {{ 220 + $loop->index * 60 }}ms"></div>
+                                </div>
+                                <span class="font-label-caps text-[10px] opacity-50">{{ $dayLabels[\Illuminate\Support\Carbon::parse($day['date'])->dayOfWeek] }}</span>
                             </div>
-                        @endforeach
-                    </div>
-                    <div class="mt-2 flex justify-between font-label-caps text-[10px] opacity-50">
-                        @foreach ($weeklyActivity as $day)
-                            <span>{{ $dayLabels[\Illuminate\Support\Carbon::parse($day['date'])->dayOfWeek] }}</span>
                         @endforeach
                     </div>
                 </div>

@@ -39,6 +39,8 @@
         {{-- ══════════════ filters ══════════════ --}}
         <form method="GET" action="{{ route('history.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5" style="--d: 40ms">
+            {{-- Filtering must not throw away a chosen page size. --}}
+            <x-keep-per-page />
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <label for="history-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">

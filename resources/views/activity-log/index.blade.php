@@ -23,6 +23,8 @@
         </header>
 
         <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3" style="--d: 40ms">
+            {{-- Filtering must not throw away a chosen page size. --}}
+            <x-keep-per-page />
             <div class="space-y-1.5 sm:col-span-1">
                 <label for="activity-log-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">

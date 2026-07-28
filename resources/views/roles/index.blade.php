@@ -115,7 +115,10 @@
         {{-- add / edit --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
+            {{-- Focus the first field on open, like every other modal in the app:
+                 without it a keyboard user is still on the page behind the dialog. --}}
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true" aria-labelledby="role-modal-title"
+                x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
                 <x-modal-close on-close="open = false" />
