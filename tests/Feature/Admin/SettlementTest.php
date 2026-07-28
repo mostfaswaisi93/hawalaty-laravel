@@ -409,4 +409,52 @@ class SettlementTest extends TestCase
         $this->assertTrue($draft->fresh()->isConfirmed());
         $this->assertNotNull($draft->fresh()->confirmed_at);
     }
+
+    /**
+     * An open draft is the ONLY thing that blocks running a new clearing, so
+     * the preview has to hand back the draft itself and not merely a boolean -
+     * otherwise the page announces the blocker and cannot link to it.
+     */
+    public function test_the_preview_hands_back_the_open_draft_itself(): void
+    {
+        Partner::create(['name' => 'Alice', 'percentage' => 100]);
+        $this->payment(100, '2026-01-10');
+
+        $this->assertNull($this->service()->preview()['openDraft']);
+
+        $draft = $this->service()->create(['periodTo' => '2026-01-31']);
+
+        $preview = $this->service()->preview();
+
+        $this->assertTrue($preview['hasOpenDraft']);
+        $this->assertSame($draft->id, $preview['openDraft']?->id);
+    }
+
+    /** A confirmed run is not an open draft and must not block the next one. */
+    public function test_a_confirmed_run_leaves_no_open_draft(): void
+    {
+        Partner::create(['name' => 'Alice', 'percentage' => 100]);
+        $this->payment(100, '2026-01-10');
+
+        $this->service()->create(['periodTo' => '2026-01-31', 'confirm' => true]);
+
+        $preview = $this->service()->preview();
+
+        $this->assertFalse($preview['hasOpenDraft']);
+        $this->assertNull($preview['openDraft']);
+    }
+
+    /** The clearing page must link to the draft, not just mention it. */
+    public function test_the_clearing_page_links_to_the_open_draft(): void
+    {
+        Partner::create(['name' => 'Alice', 'percentage' => 100]);
+        $this->payment(100, '2026-01-10');
+        $draft = $this->service()->create(['periodTo' => '2026-01-31']);
+
+        $this->actingAs(Admin::factory()->create(), 'admin')
+            ->get('/admin/settlements')
+            ->assertOk()
+            ->assertSee(route('admin.settlements.show', $draft), false)
+            ->assertSee($draft->reference);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Exceptions\InsufficientBoxBalanceException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Expense\StoreExpenseRequest;
 use App\Http\Requests\Admin\Withdrawal\StoreWithdrawalRequest;
@@ -33,16 +34,32 @@ class FinanceController extends Controller
         ]);
     }
 
+    /**
+     * The insufficient-balance catch is not belt-and-braces: the services check
+     * the balance INSIDE their locked transaction, which is the only place the
+     * answer is authoritative, so a refusal can arrive here even when the
+     * request-level rule passed. Rendering it as an `amount` error puts it on
+     * the field the admin has to change, and withInput() reopens the modal with
+     * their figures still in it.
+     */
     public function storeWithdrawal(StoreWithdrawalRequest $request, WithdrawalService $service): RedirectResponse
     {
-        $service->create($request->validated());
+        try {
+            $service->create($request->validated());
+        } catch (InsufficientBoxBalanceException $e) {
+            return back()->withInput()->withErrors(['amount' => $e->userMessage()]);
+        }
 
         return redirect()->route('admin.finance')->with('success', __('تم تسجيل السحب وخصمه من رصيد الصندوق.'));
     }
 
     public function storeExpense(StoreExpenseRequest $request, ExpenseService $service): RedirectResponse
     {
-        $service->create($request->validated());
+        try {
+            $service->create($request->validated());
+        } catch (InsufficientBoxBalanceException $e) {
+            return back()->withInput()->withErrors(['amount' => $e->userMessage()]);
+        }
 
         return redirect()->route('admin.finance')->with('success', __('تم تسجيل المصروف وخصمه من رصيد الصندوق.'));
     }

@@ -136,18 +136,42 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                <div class="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4 font-body-sm text-body-sm sm:grid-cols-3">
-                    <div class="flex items-center justify-between gap-2 sm:block">
-                        <span class="text-on-surface-variant">{{ __('إجمالي الاستحقاق') }}</span>
-                        <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->total_entitlement, 2) }} ₪</span></span>
+                @php
+                    // Recomputed from the STORED columns, not from the live
+                    // partner table: this document is a snapshot, and it must
+                    // still add up years later when the percentages behind it
+                    // have long since changed.
+                    $reconciles = bccomp(
+                        bcadd((string) $settlement->total_entitlement, (string) $settlement->retained, 2),
+                        (string) $settlement->distributable_profit,
+                        2,
+                    ) === 0;
+                @endphp
+
+                <div class="mt-6 rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4">
+                    {{-- The same arithmetic check the live preview shows. Without
+                         it the uncommitted position was auditable and the
+                         COMMITTED document - the one a partner is actually shown -
+                         was not, which is the wrong way round. --}}
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined !text-xl {{ $reconciles ? 'text-success' : 'text-error' }}">{{ $reconciles ? 'verified' : 'error' }}</span>
+                        <p class="font-body-sm text-body-sm font-bold text-on-surface">{{ __('التحقق الحسابي') }}</p>
+                        <span class="font-body-sm text-body-sm text-outline">{{ __('الاستحقاق + المحتجز = الربح القابل للتوزيع') }}</span>
                     </div>
-                    <div class="flex items-center justify-between gap-2 sm:block">
-                        <span class="text-on-surface-variant">{{ __('إجمالي المسحوب') }}</span>
-                        <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->total_drawn, 2) }} ₪</span></span>
-                    </div>
-                    <div class="flex items-center justify-between gap-2 sm:block">
-                        <span class="text-on-surface-variant">{{ __('المحتجز للمنصّة') }}</span>
-                        <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->retained, 2) }} ₪</span></span>
+
+                    <div class="mt-3 grid grid-cols-1 gap-3 font-body-sm text-body-sm sm:grid-cols-3">
+                        <div class="flex items-center justify-between gap-2 sm:block">
+                            <span class="text-on-surface-variant">{{ __('إجمالي الاستحقاق') }}</span>
+                            <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->total_entitlement, 2) }} ₪</span></span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 sm:block">
+                            <span class="text-on-surface-variant">{{ __('إجمالي المسحوب') }}</span>
+                            <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->total_drawn, 2) }} ₪</span></span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 sm:block">
+                            <span class="text-on-surface-variant">{{ __('المحتجز للمنصّة') }}</span>
+                            <span class="font-bold text-on-surface sm:mt-1 sm:block"><span dir="ltr">{{ number_format($settlement->retained, 2) }} ₪</span></span>
+                        </div>
                     </div>
                 </div>
             @endif

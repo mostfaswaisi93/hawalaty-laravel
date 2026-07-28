@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\LicenseStatus;
+use App\Exceptions\InsufficientBoxBalanceException;
 use App\Models\Admin;
 use App\Models\Box;
 use App\Models\Expense;
@@ -10,6 +11,8 @@ use App\Models\License;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Payment;
+use App\Models\Withdrawal;
+use App\Services\Admin\WithdrawalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -279,5 +282,88 @@ class AdminPagesTest extends TestCase
             ->assertRedirect('/admin/finance');
 
         $this->assertSame('180.00', $box->fresh()->box_balance);
+    }
+
+    /**
+     * A box holds real money. Neither the request rules (`min:0.01`, no ceiling)
+     * nor the service checked the balance before decrementing, and there is no
+     * CHECK constraint on `boxes.box_balance` to catch it either - so a
+     * withdrawal larger than the box could drive it negative and every
+     * downstream figure (finance summary, partner shares, the dashboard tile)
+     * would quietly report a number that cannot exist.
+     */
+    public function test_a_withdrawal_cannot_overdraw_its_box(): void
+    {
+        $box = Box::create(['box_name' => 'Main', 'box_balance' => 300]);
+        $partner = Partner::create(['name' => 'Ali', 'percentage' => 50]);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->from('/admin/finance')
+            ->post('/admin/finance/withdrawals', ['boxId' => $box->id, 'partnerId' => $partner->id, 'amount' => '500'])
+            ->assertRedirect('/admin/finance')
+            ->assertSessionHasErrors('amount');
+
+        $this->assertSame('300.00', $box->fresh()->box_balance, 'The box was debited despite the refusal.');
+        $this->assertSame(0, Withdrawal::count());
+    }
+
+    /** The same hole existed on the platform-expense path. */
+    public function test_a_platform_expense_cannot_overdraw_its_box(): void
+    {
+        $box = Box::create(['box_name' => 'Main', 'box_balance' => 50]);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->from('/admin/finance')
+            ->post('/admin/finance/expenses', [
+                'boxId' => $box->id,
+                'description' => 'استضافة',
+                'amount' => '80',
+                'date' => now()->toDateString(),
+            ])
+            ->assertRedirect('/admin/finance')
+            ->assertSessionHasErrors('amount');
+
+        $this->assertSame('50.00', $box->fresh()->box_balance);
+        $this->assertSame(0, Expense::count());
+    }
+
+    /**
+     * The request-level rule would hide this: it is the check INSIDE the locked
+     * transaction that actually stops two concurrent withdrawals from both being
+     * approved against the same starting balance. Calling the service directly
+     * is the only way to exercise it.
+     */
+    public function test_the_service_itself_refuses_an_overdraw_even_when_validation_is_bypassed(): void
+    {
+        $box = Box::create(['box_name' => 'Main', 'box_balance' => 100]);
+        $partner = Partner::create(['name' => 'Ali', 'percentage' => 50]);
+
+        $this->expectException(InsufficientBoxBalanceException::class);
+
+        try {
+            app(WithdrawalService::class)->create([
+                'boxId' => $box->id,
+                'partnerId' => $partner->id,
+                'amount' => '250',
+            ]);
+        } finally {
+            // The transaction must have rolled back completely.
+            $this->assertSame('100.00', $box->fresh()->box_balance);
+            $this->assertSame(0, Withdrawal::count());
+        }
+    }
+
+    /** Spending the box down to exactly zero is legitimate and must still work. */
+    public function test_a_withdrawal_of_the_entire_balance_is_allowed(): void
+    {
+        $box = Box::create(['box_name' => 'Main', 'box_balance' => 300]);
+        $partner = Partner::create(['name' => 'Ali', 'percentage' => 50]);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->post('/admin/finance/withdrawals', ['boxId' => $box->id, 'partnerId' => $partner->id, 'amount' => '300'])
+            ->assertRedirect('/admin/finance')
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('0.00', $box->fresh()->box_balance);
     }
 }

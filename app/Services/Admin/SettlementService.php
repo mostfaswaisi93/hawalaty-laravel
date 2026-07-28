@@ -65,7 +65,7 @@ class SettlementService
      * This is what the clearing page shows before anyone commits to a run.
      *
      * @return array{
-     *     periodFrom: Carbon, periodTo: Carbon, hasOpenDraft: bool,
+     *     periodFrom: Carbon, periodTo: Carbon, hasOpenDraft: bool, openDraft: ?Settlement,
      *     totalPayments: float, totalExpenses: float, distributableProfit: float,
      *     totalEntitlement: float, totalDrawn: float, totalNet: float,
      *     retained: float, percentageTotal: float, reconciles: bool,
@@ -77,8 +77,16 @@ class SettlementService
         $from = $this->nextPeriodStart();
         $to = ($periodTo ?? Carbon::today())->copy()->endOfDay();
 
+        // The draft itself, not just whether one exists. An open draft is the
+        // only thing that blocks running a new clearing, so the page has to be
+        // able to send the admin TO it - saying "a draft is waiting" while
+        // offering no way to reach it leaves the screen's whole purpose stuck
+        // behind a message.
+        $openDraft = Settlement::query()->where('status', SettlementStatus::Draft)->latest()->first();
+
         return $this->compute($from, $to) + [
-            'hasOpenDraft' => Settlement::query()->where('status', SettlementStatus::Draft)->exists(),
+            'openDraft' => $openDraft,
+            'hasOpenDraft' => $openDraft !== null,
         ];
     }
 

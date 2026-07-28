@@ -46,10 +46,19 @@
                     </p>
                 </div>
             </div>
-            @if ($p['hasOpenDraft'])
-                <span class="inline-flex items-center gap-1.5 self-start rounded-full bg-secondary-container/20 px-3 py-1.5 font-body-sm text-body-sm font-bold text-secondary sm:self-auto">
-                    <span class="material-symbols-outlined !text-base">edit_note</span>{{ __('توجد مسودّة بانتظار التأكيد') }}
-                </span>
+            {{-- A LINK, not a badge. The open draft is the only thing that
+                 disables "تنفيذ المقاصة", so announcing it without a way to
+                 reach it left the page's primary action stuck behind a message
+                 and made the admin hunt for the draft in the history table. --}}
+            @if ($p['openDraft'])
+                <a href="{{ route('admin.settlements.show', $p['openDraft']) }}"
+                    class="inline-flex items-center gap-1.5 self-start rounded-full bg-secondary-container/20 px-3 py-1.5 font-body-sm text-body-sm font-bold text-secondary transition-colors hover:bg-secondary-container/40 sm:self-auto"
+                    title="{{ __('فتح المسودّة') }}">
+                    <span class="material-symbols-outlined !text-base">edit_note</span>
+                    {{ __('توجد مسودّة بانتظار التأكيد') }}
+                    <span dir="ltr" class="font-numeral-lg">{{ $p['openDraft']->reference }}</span>
+                    <span class="material-symbols-outlined !text-base rtl:-scale-x-100">chevron_right</span>
+                </a>
             @endif
         </section>
 
