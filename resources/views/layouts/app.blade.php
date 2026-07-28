@@ -159,6 +159,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
+    <x-skip-link />
 
     <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-black/30 lg:hidden" @click="sidebarOpen = false" style="display:none"></div>
 
@@ -518,7 +519,10 @@
              centred, which on any monitor wider than the cap plus the sidebar
              threw ~100px of dead margin down each side of every page while the
              tables inside were still cramped. --}}
-        <main class="w-full flex-1 p-inline-lg">
+        {{-- tabindex="-1" so the skip link moves FOCUS here, not just the
+             viewport: a <main> is not focusable by default, and without it the
+             next Tab would return to the navigation the user just skipped. --}}
+        <main id="main-content" tabindex="-1" class="w-full flex-1 p-inline-lg focus:outline-none">
             <x-flash-messages />
             @yield('content')
         </main>

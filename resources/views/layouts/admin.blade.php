@@ -154,6 +154,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
+    <x-skip-link />
 
     <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-black/30 lg:hidden" @click="sidebarOpen = false" style="display:none"></div>
 
@@ -399,7 +400,8 @@
 
         {{-- Full width, matching layouts/app.blade.php - see the note there on
              why the max-w cap was removed. --}}
-        <main class="w-full flex-1 p-inline-lg">
+        {{-- See layouts/app.blade.php for why this is focusable. --}}
+        <main id="main-content" tabindex="-1" class="w-full flex-1 p-inline-lg focus:outline-none">
             <x-flash-messages />
             @yield('content')
         </main>

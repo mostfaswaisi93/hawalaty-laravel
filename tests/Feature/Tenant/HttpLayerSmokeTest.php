@@ -226,6 +226,29 @@ class HttpLayerSmokeTest extends TenantTestCase
     }
 
     /**
+     * The skip link, checked in RENDERED output rather than in the template.
+     * ViewMarkupTest asserts the shell declares it; this proves it survives to
+     * the browser, with its target present and focusable on the same page.
+     */
+    public function test_a_rendered_tenant_page_carries_a_working_skip_link(): void
+    {
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+
+        $html = $this->actingAs($owner, 'tenant')->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertStringContainsString('href="#main-content"', $html);
+        $this->assertMatchesRegularExpression('/<main[^>]*id="main-content"[^>]*tabindex="-1"/', $html);
+
+        // It has to come BEFORE the navigation, or it skips nothing.
+        $this->assertLessThan(
+            strpos($html, '<aside'),
+            strpos($html, 'href="#main-content"'),
+            'The skip link renders after the sidebar, so it is not the first tab stop.',
+        );
+    }
+
+    /**
      * The weekly chart's day captions must run in the same direction as its
      * bars.
      *

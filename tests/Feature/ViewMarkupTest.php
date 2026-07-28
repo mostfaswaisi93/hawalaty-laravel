@@ -127,6 +127,43 @@ class ViewMarkupTest extends TestCase
     }
 
     /**
+     * Both shells put ~30 controls - a sidebar of navigation plus a header -
+     * ahead of the page content, so a keyboard user tabbed past all of them on
+     * every page load. The skip link is the first thing in the tab order.
+     *
+     * Its target must exist and be FOCUSABLE: `<main>` is not by default, and
+     * without `tabindex="-1"` the browser scrolls but leaves focus where it
+     * was, so the next Tab returns to the navigation just skipped. A skip link
+     * that only moves the viewport is worse than none - it looks like it worked.
+     */
+    public function test_each_shell_offers_a_working_skip_link(): void
+    {
+        foreach (['layouts/app.blade.php', 'layouts/admin.blade.php'] as $shell) {
+            $src = $this->templates()[$shell] ?? null;
+            $this->assertNotNull($src, "{$shell} is gone.");
+
+            $this->assertStringContainsString('<x-skip-link', $src, "{$shell} has no skip link.");
+            $this->assertMatchesRegularExpression(
+                '/<main[^>]*\bid="main-content"/',
+                $src,
+                "{$shell}: the skip link's target id is missing from <main>.",
+            );
+            $this->assertMatchesRegularExpression(
+                '/<main[^>]*\btabindex="-1"/',
+                $src,
+                "{$shell}: <main> is not focusable, so the skip link moves the viewport but not focus.",
+            );
+        }
+
+        $link = $this->templates()['components/skip-link.blade.php'] ?? null;
+        $this->assertNotNull($link, 'The skip-link component is gone.');
+        $this->assertStringContainsString('href="#main-content"', $link);
+        // Hidden until focused, or it becomes clutter for everyone else.
+        $this->assertStringContainsString('sr-only', $link);
+        $this->assertStringContainsString('focus:not-sr-only', $link);
+    }
+
+    /**
      * Blade comments stripped: a comment that discusses `<label>` or shows an
      * `id="..."` example is prose, not markup, and counting it produced false
      * findings while this was being written.
