@@ -137,7 +137,21 @@
                                 {{ __('هاتف العميل') }} <span class="normal-case text-outline">({{ __('اختياري') }})</span>
                             </label>
                             <input id="customerPhone" name="customerPhone" x-model="customerPhone" dir="ltr" placeholder="059..."
+                                aria-describedby="customerPhone-hint"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            {{--
+                                The field stays OPTIONAL on purpose. The phone is the
+                                customer's identity, so requiring it here would push staff
+                                to type a placeholder to get past the form - and two people
+                                typing the same placeholder would merge two real customers
+                                into one record. A blank is honest; a fake number is not.
+                                The consequence is stated instead of enforced.
+                            --}}
+                            <p id="customerPhone-hint" x-show="!customerPhone.trim()" x-cloak
+                                class="flex items-start gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+                                <span class="material-symbols-outlined !text-base">info</span>
+                                {{ __('بدون رقم، لن يُربط هذا الطلب بملف عميل.') }}
+                            </p>
                         </div>
 
                         {{-- payment method segmented --}}

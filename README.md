@@ -434,12 +434,32 @@ GET/POST/DELETE + download  /api/v1/admin/backups
 
 ## Offline sync
 
-Mobile/SPA clients work offline and reconcile through two endpoints:
+Mobile/SPA clients work offline and reconcile through two endpoints, both handled by [`SyncService`](app/Services/Tenant/SyncService.php):
 
-- `POST /api/v1/sync/push` - the client uploads queued create/update/delete operations ([`SyncOperation`](app/Enums/SyncOperation.php)).
-- `GET /api/v1/sync/pull` - the client downloads server-side changes.
+- `POST /api/v1/sync/push` - the client uploads queued create / update / delete operations ([`SyncOperation`](app/Enums/SyncOperation.php)).
+- `GET /api/v1/sync/pull?since=N` - the client downloads every event after cursor `N`, in order.
 
-Sync is backed by the tenant's `Device` and `SyncEvent` models and handled by [`App\Services\Tenant\SyncService`](app/Services/Tenant/SyncService.php).
+**Scope is `transfer` and `expense`.** Those are what staff record with no signal. Banks, catalog entries and team members are configuration, changed deliberately at a desk, so giving them an offline write path would buy conflict handling nobody needs.
+
+**Ordering and idempotency.** `sync_events.server_sequence` is an auto-incrementing integer that doubles as the pull cursor - which is why that table alone does not use ULIDs. `client_uuid` is unique, so a resend after a dropped connection comes back in `alreadyApplied[]` rather than applying twice.
+
+**Every event gets its own transaction**, not one for the batch, so a single bad event lands in `failed[]` while the rest of the batch still applies.
+
+### Addressing a record the server has never seen
+
+An update or delete must say which record it means, and a record created offline has no server id yet. So a client may name either:
+
+| Field | Use |
+|-------|-----|
+| `payload.id` | a server id, for a record the client pulled |
+| `payload.clientUuid` | the uuid of the **create event** that made it |
+
+The second resolves through the event log's own `entity_id`, and is what lets a client create, edit and delete the same record while offline and push all three in one batch.
+
+Two behaviours worth knowing:
+
+- **An order update can only change its `status`.** The amount and line items are computed server-side from the catalog; the payload is validated with [`UpdateTransferRequest`](app/Http/Requests/Tenant/Transfer/UpdateTransferRequest.php)'s rules, so a client cannot rewrite what an order was worth.
+- **Deleting something already deleted succeeds.** Sync converges on end states - the client asked for a state that already holds, and failing would leave it retrying forever over a record two devices both removed.
 
 ## WhatsApp order notifications
 
@@ -498,7 +518,7 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (909 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (911 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
 - **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`. Both files must keep identical key sets, in the same order - enforced by [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php).
 - Where a label is composed from a **tenant-supplied word**, use a placeholder (`__('إضافة :label', ['label' => $naming->item()])`) rather than gluing on a fixed adjective. Arabic adjectives agree in gender, so `":label جديدة"` is broken for every masculine noun the tenant might choose.
 
@@ -614,7 +634,7 @@ php artisan test
 composer test
 ```
 
-**294 tests, 4 479 assertions.**
+**312 tests, 4 534 assertions.**
 
 Platform tests run against an **in-memory SQLite** database (`phpunit.xml`). Tenant tests do not, and cannot: `database/migrations/tenant` uses MySQL-only DDL, and `RefreshDatabase` only ever runs `database/migrations` anyway. [`TenantTestCase`](tests/TenantTestCase.php) therefore points the `tenant` connection at a **dedicated, disposable MySQL database**, migrates it once, and wraps each test in a transaction it rolls back - the same isolation `RefreshDatabase` gives, done by hand because `migrate:fresh` has to target a non-default connection.
 
@@ -625,6 +645,7 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Tenant/TransferServiceTest`](tests/Feature/Tenant/TransferServiceTest.php), [`ExpenseServiceTest`](tests/Feature/Tenant/ExpenseServiceTest.php), [`BankServiceTest`](tests/Feature/Tenant/BankServiceTest.php) | The money paths: order creation and totals, expense windows, bank deletion safety |
 | [`Tenant/BalanceServiceTest`](tests/Feature/Tenant/BalanceServiceTest.php), [`SalaryServiceTest`](tests/Feature/Tenant/SalaryServiceTest.php) | In-vs-out per account; a salary payment writing both an expense and a salary record atomically |
 | [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, LIKE-wildcard escaping, soft-deleted rows staying hidden, permission gating |
+| [`Tenant/SyncServiceTest`](tests/Feature/Tenant/SyncServiceTest.php) | Convergence: resends applying once, one bad event not taking the batch down, editing a record created offline, deleting what is already gone |
 | [`Tenant/CustomerServiceTest`](tests/Feature/Tenant/CustomerServiceTest.php) | Phone-as-identity, including that a blank name never blanks a known one |
 | [`Tenant/CatalogNamingTest`](tests/Feature/Tenant/CatalogNamingTest.php) | Tenant catalog wording and icon fallback |
 | [`Tenant/RoleServiceTest`](tests/Feature/Tenant/RoleServiceTest.php), [`TeamServiceTest`](tests/Feature/Tenant/TeamServiceTest.php), [`RolePageTest`](tests/Feature/Tenant/RolePageTest.php) | Permissions, the last-owner guard, and the roles UI |

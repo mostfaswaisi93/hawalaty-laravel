@@ -208,6 +208,45 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonPath('message', 'The X-License-Code header is required.');
     }
 
+    // --- sync ---
+
+    /**
+     * The envelope rule that cannot be written with required_if alone: an update
+     * or delete has to name its target, by server id or by the create event's
+     * uuid, and "neither" must be refused rather than silently applied to
+     * nothing.
+     */
+    public function test_a_sync_update_without_a_target_is_rejected(): void
+    {
+        $this->actAsOwner();
+
+        $this->postJson('/api/v1/sync/push', [
+            'events' => [[
+                'clientUuid' => 'uuid-1',
+                'entityType' => 'transfer',
+                'operation' => 'update',
+                'payload' => ['status' => 'completed'],
+            ]],
+        ])->assertStatus(422)->assertJsonValidationErrors('events.0.payload');
+    }
+
+    public function test_a_sync_delete_naming_its_target_is_accepted(): void
+    {
+        $this->actAsOwner();
+        $transfer = Transfer::factory()->create();
+
+        $this->postJson('/api/v1/sync/push', [
+            'events' => [[
+                'clientUuid' => 'uuid-del',
+                'entityType' => 'transfer',
+                'operation' => 'delete',
+                'payload' => ['id' => $transfer->id],
+            ]],
+        ])->assertOk()->assertJsonPath('applied.0', 'uuid-del');
+
+        $this->assertSoftDeleted('transfers', ['id' => $transfer->id], 'tenant');
+    }
+
     private function pushNotification(TeamMember $member): void
     {
         $member->notifications()->create([
