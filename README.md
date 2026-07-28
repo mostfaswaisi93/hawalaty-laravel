@@ -41,6 +41,7 @@
 - [WhatsApp order notifications](#whatsapp-order-notifications)
 - [Localization](#localization)
   - [RTL notes](#rtl-notes)
+  - [Time reads left to right, in every chart](#time-reads-left-to-right-in-every-chart)
 - [Design system](#design-system)
 - [Project structure](#project-structure)
   - [Shared table conventions](#shared-table-conventions)
@@ -571,10 +572,21 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 ### RTL notes
 
-Two mistakes account for most directional bugs in this codebase, both already fixed but easy to reintroduce:
+Three mistakes account for most directional bugs in this codebase, all already fixed but easy to reintroduce:
 
 - **`dir` on a block element also sets `text-align`.** Putting `dir="ltr"` on a `<td>` to keep a phone number or amount readable left-aligns the whole cell while its `<th>` stays start-aligned, and the column stops lining up. Put the `dir` on an inner inline `<span>` instead.
 - **Directional glyphs need `rtl:-scale-x-100`.** Arrows, `send`, `logout` and `north_east` point the wrong way in RTL otherwise.
+- **A time axis runs oldest-left, and `dir="ltr"` must cover the whole chart.** See below.
+
+#### Time reads left to right, in every chart
+
+Three charts plot time — the activity heatmap, the dashboard's weekly bars, and the reports' daily revenue — and all three are pinned `dir="ltr"` even in the Arabic UI. Letting them inherit RTL flips the axis, and a trend that reads right-to-left is not what anyone expects from a chart; it is the same reasoning that already keeps every date, phone number and amount `dir="ltr"`.
+
+**Pin the whole chart, not one row of it.** The weekly chart once had its bars and its day captions as two sibling rows with `dir="ltr"` on only the bars. The bars ran oldest-left, the captions still ran oldest-right, and every bar was labelled with the wrong day — an order placed on a Monday displayed under Thursday. Nothing errored and the page looked plausible.
+
+The fix was structural rather than corrective: each caption now lives **inside** the column it belongs to, so `dir` can only ever apply to both together. For the reports chart the attribute sits on the wrapper rather than the scroller, which also keeps the scroll-affordance gradient on the edge that actually overflows.
+
+> **A test that reads source order cannot catch this.** Both layouts emit the days oldest-first, because the loop does; the flip happens in CSS at render time. The first attempt at this guard asserted exactly that and passed against the broken markup. [`HttpLayerSmokeTest`](tests/Feature/Tenant/HttpLayerSmokeTest.php) now asserts the structural property instead — each caption precedes the next column's bar — verified by reproducing the mirrored layout and watching it fail.
 
 ## Design system
 
@@ -661,7 +673,7 @@ Every paginated table in the app - tenant **and** Super Admin, 14 controllers - 
 | [`Web\Concerns\HasPerPage`](app/Http/Controllers/Web/Concerns/HasPerPage.php) | Resolves `?per_page=`, **whitelisted to 10 / 50 / 100** - a crafted value can never request an unbounded page size |
 | [`<x-per-page>`](resources/views/components/per-page.blade.php) | The 10 / 50 / 100 selector. Auto-submits on change and re-emits every active filter as a hidden input (except `per_page` / `page`), so changing page size preserves filters and resets to page 1 |
 | [`<x-table-footer>`](resources/views/components/table-footer.blade.php) | Combines the selector with a themed paginator built from the paginator's own methods rather than `->links()`, so it matches the design system in light/dark and under RTL |
-| [`<x-keep-per-page>`](resources/views/components/keep-per-page.blade.php) | Goes inside every GET **filter** form. The selector already re-emits active filters when it submits; without this the reverse never happened, so choosing 100-per-page and then searching silently dropped back to 10 |
+| [`<x-keep-per-page>`](resources/views/components/keep-per-page.blade.php) | Goes inside every GET **filter** form, tenant and admin alike. The selector already re-emits active filters when it submits; without this the reverse never happened, so choosing 100-per-page and then searching silently dropped back to 10 |
 
 The controller must call `->withQueryString()` so page links keep the active filters and `per_page`:
 
@@ -691,7 +703,7 @@ php artisan test
 composer test
 ```
 
-**343 tests, 7 170 assertions.**
+**344 tests, 7 192 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
