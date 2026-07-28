@@ -172,18 +172,18 @@
 
                     <div class="space-y-1.5">
                         <label for="team-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الاسم') }}</label>
-                        <input name="name" x-model="form.name" required placeholder="{{ __('اسم الموظف') }}"
+                        <input id="team-name" name="name" x-model="form.name" required placeholder="{{ __('اسم الموظف') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="space-y-1.5">
                         <label for="team-email" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('البريد الإلكتروني') }}</label>
-                        <input type="email" name="email" x-model="form.email" required dir="ltr" placeholder="name@example.com"
+                        <input id="team-email" type="email" name="email" x-model="form.email" required dir="ltr" placeholder="name@example.com"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label for="team-role-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الدور') }}</label>
-                            <select name="roleId" x-model="form.roleId" required
+                            <select id="team-role-id" name="roleId" x-model="form.roleId" required
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                 @foreach ($roles as $role)
                                     <option value="{{ $role->id }}">{{ $roleLabel($role) }}</option>
@@ -194,7 +194,7 @@
                             <label for="team-password" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
                                 {{ __('كلمة المرور') }} <span x-show="mode === 'edit'" class="text-outline">{{ __('(اتركها فارغة)') }}</span>
                             </label>
-                            <input type="password" name="password" x-model="form.password" :required="mode === 'add'" dir="ltr" placeholder="••••••"
+                            <input id="team-password" type="password" name="password" x-model="form.password" :required="mode === 'add'" dir="ltr" placeholder="••••••"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
@@ -329,4 +329,3 @@
         <x-confirm-modal />
     </div>
 @endsection
- id="team-password" id="team-role-id" id="team-email" id="team-name"

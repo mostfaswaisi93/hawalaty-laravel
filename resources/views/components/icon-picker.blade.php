@@ -19,23 +19,37 @@
     'label' => null,
 ])
 
-@php $icons = app(\App\Services\Tenant\CatalogIcons::class); @endphp
+@php
+    $icons = app(\App\Services\Tenant\CatalogIcons::class);
+
+    // Derived from the bound property, because this component renders TWICE on
+    // the catalogue page (once for a category, once for an entry). A static id
+    // would repeat, and a duplicate id is worse than none - the label would
+    // point at whichever copy the browser saw first.
+    $pickerId = 'icon-picker-'.\Illuminate\Support\Str::slug(str_replace('.', '-', $model));
+@endphp
 
 <div class="space-y-1.5" x-data="{ pickerOpen: false }">
-    <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
+    {{-- No `for` here on purpose: the only form control is a HIDDEN input, which
+         nothing can focus or announce. The thing a user actually operates is the
+         button below, so the label names THAT - together with the current value,
+         so the button reads as "الأيقونة, بدون أيقونة" rather than losing one
+         half or the other. --}}
+    <label id="{{ $pickerId }}-label" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
         {{ $label ?? __('الأيقونة') }} <span class="text-outline">({{ __('اختياري') }})</span>
     </label>
 
     <input type="hidden" name="icon" :value="{{ $model }} || ''">
 
     <button type="button" @click="pickerOpen = !pickerOpen"
+        aria-labelledby="{{ $pickerId }}-label {{ $pickerId }}-value"
         class="flex w-full items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-start transition-colors hover:bg-surface-container-low"
         :aria-expanded="pickerOpen ? 'true' : 'false'">
         <span class="flex items-center gap-3">
             <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <span class="material-symbols-outlined !text-xl" x-text="{{ $model }} || 'category'">category</span>
             </span>
-            <span class="font-body-sm text-on-surface-variant"
+            <span id="{{ $pickerId }}-value" class="font-body-sm text-on-surface-variant"
                 x-text="{{ $model }} ? {{ $model }} : @js(__('بدون أيقونة'))">{{ __('بدون أيقونة') }}</span>
         </span>
         <span class="material-symbols-outlined !text-xl text-outline transition-transform" :class="pickerOpen && 'rotate-180'">expand_more</span>

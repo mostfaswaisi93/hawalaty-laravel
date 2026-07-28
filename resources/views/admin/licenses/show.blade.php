@@ -97,7 +97,7 @@
                     @csrf
                     <div class="flex-1 space-y-1.5">
                         <label for="admin-licenses-show-package-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تغيير الباقة') }}</label>
-                        <select name="packageId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                        <select id="admin-licenses-show-package-id" name="packageId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             @foreach ($packages as $package)
                                 <option value="{{ $package->id }}" @selected($license->package_id === $package->id)>{{ $package->name }} - {{ number_format($package->price, 2) }} ₪</option>
                             @endforeach
@@ -185,4 +185,3 @@
         <x-confirm-modal />
     </div>
 @endsection
- id="admin-licenses-show-package-id"

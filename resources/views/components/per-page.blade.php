@@ -16,12 +16,11 @@
         @endif
     @endforeach
 
-    <label for="components-per-page-per_page" class="font-body-sm text-body-sm text-on-surface-variant">{{ __('لكل صفحة') }}</label>
-    <select name="per_page" onchange="this.form.submit()"
+    <label for="per-page-select" class="font-body-sm text-body-sm text-on-surface-variant">{{ __('لكل صفحة') }}</label>
+    <select id="per-page-select" name="per_page" onchange="this.form.submit()"
         class="rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-sm font-bold text-on-surface outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
         @foreach ($options as $opt)
             <option value="{{ $opt }}" @selected((int) $perPage === (int) $opt)>{{ $opt }}</option>
         @endforeach
     </select>
 </form>
- id="components-per-page-per_page"

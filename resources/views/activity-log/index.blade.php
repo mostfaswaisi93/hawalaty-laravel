@@ -27,13 +27,13 @@
                 <label for="activity-log-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
-                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('المنفّذ أو العنصر...') }}"
+                    <input id="activity-log-search" type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('المنفّذ أو العنصر...') }}"
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-10 pl-3' : 'pl-10 pr-3' }}" />
                 </div>
             </div>
             <div class="space-y-1.5">
                 <label for="activity-log-category" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الفئة') }}</label>
-                <select name="category" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                <select id="activity-log-category" name="category" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
                     @foreach (\App\Enums\AuditCategory::cases() as $cat)
                         <option value="{{ $cat->value }}" @selected(($filters['category'] ?? '') === $cat->value)>{{ $categoryLabels[$cat->value] ?? $cat->value }}</option>
@@ -90,4 +90,3 @@
         </section>
     </div>
 @endsection
- id="activity-log-category" id="activity-log-search"

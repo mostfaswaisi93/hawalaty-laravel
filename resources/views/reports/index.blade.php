@@ -24,12 +24,12 @@
             class="reveal-up tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end" style="--d: 40ms">
             <div class="flex-1 space-y-1.5">
                 <label for="reports-from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
-                <input type="date" name="from" value="{{ $from }}" dir="ltr"
+                <input id="reports-from" type="date" name="from" value="{{ $from }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
             <div class="flex-1 space-y-1.5">
                 <label for="reports-to" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
-                <input type="date" name="to" value="{{ $to }}" dir="ltr"
+                <input id="reports-to" type="date" name="to" value="{{ $to }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
             <button type="submit" :disabled="submitting" class="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
@@ -136,4 +136,3 @@
         @endif
     </div>
 @endsection
- id="reports-to" id="reports-from"

@@ -147,7 +147,7 @@
                     @csrf
                     <div class="space-y-1.5">
                         <label for="admin-finance-box-id-2" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق') }}</label>
-                        <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                        <select id="admin-finance-box-id-2" name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
                                 <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }} - {{ number_format($box->box_balance, 2) }} ₪</option>
@@ -156,7 +156,7 @@
                     </div>
                     <div class="space-y-1.5">
                         <label for="admin-finance-partner-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الشريك') }}</label>
-                        <select name="partnerId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                        <select id="admin-finance-partner-id" name="partnerId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($partners as $partner)
                                 <option value="{{ $partner->id }}" @selected(old('partnerId') === $partner->id)>{{ $partner->name }}</option>
@@ -165,7 +165,7 @@
                     </div>
                     <div class="space-y-1.5">
                         <label for="admin-finance-amount-2" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
-                        <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00"
+                        <input id="admin-finance-amount-2" type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
@@ -188,24 +188,24 @@
                     @csrf
                     <div class="space-y-1.5">
                         <label for="admin-finance-description" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الوصف') }}</label>
-                        <input name="description" value="{{ old('description') }}" required placeholder="{{ __('مثال: استضافة، دومين...') }}"
+                        <input id="admin-finance-description" name="description" value="{{ old('description') }}" required placeholder="{{ __('مثال: استضافة، دومين...') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label for="admin-finance-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
-                            <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00"
+                            <input id="admin-finance-amount" type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                         <div class="space-y-1.5">
                             <label for="admin-finance-date" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('التاريخ') }}</label>
-                            <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" required dir="ltr"
+                            <input id="admin-finance-date" type="date" name="date" value="{{ old('date', now()->toDateString()) }}" required dir="ltr"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
                     <div class="space-y-1.5">
                         <label for="admin-finance-box-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق') }}</label>
-                        <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                        <select id="admin-finance-box-id" name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
                                 <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }} - {{ number_format($box->box_balance, 2) }} ₪</option>
@@ -221,4 +221,3 @@
         </div>
     </div>
 @endsection
- id="admin-finance-box-id" id="admin-finance-date" id="admin-finance-amount" id="admin-finance-description" id="admin-finance-amount-2" id="admin-finance-partner-id" id="admin-finance-box-id-2"

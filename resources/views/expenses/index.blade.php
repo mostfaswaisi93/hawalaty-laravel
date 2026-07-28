@@ -163,24 +163,24 @@
 
                     <div class="space-y-1.5">
                         <label for="expenses-description" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الوصف') }}</label>
-                        <input name="description" x-model="form.description" required placeholder="{{ __('مثال: فاتورة كهرباء') }}"
+                        <input id="expenses-description" name="description" x-model="form.description" required placeholder="{{ __('مثال: فاتورة كهرباء') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label for="expenses-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
-                            <input type="number" step="0.01" min="0" name="amount" x-model="form.amount" required dir="ltr" placeholder="0.00"
+                            <input id="expenses-amount" type="number" step="0.01" min="0" name="amount" x-model="form.amount" required dir="ltr" placeholder="0.00"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                         <div class="space-y-1.5">
                             <label for="expenses-date" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('التاريخ') }}</label>
-                            <input type="date" name="date" x-model="form.date" required dir="ltr"
+                            <input id="expenses-date" type="date" name="date" x-model="form.date" required dir="ltr"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
                     <div class="space-y-1.5">
                         <label for="expenses-bank-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
-                        <select name="bankId" x-model="form.bankId" required
+                        <select id="expenses-bank-id" name="bankId" x-model="form.bankId" required
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled>{{ __('اختر...') }}</option>
                             @foreach ($banks as $bank)
@@ -202,4 +202,3 @@
         <x-confirm-modal />
     </div>
 @endsection
- id="expenses-bank-id" id="expenses-date" id="expenses-amount" id="expenses-description"

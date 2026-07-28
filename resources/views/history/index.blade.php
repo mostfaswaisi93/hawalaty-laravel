@@ -43,14 +43,14 @@
                 <label for="history-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
-                    <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('اسم العميل...') }}"
+                    <input id="history-search" type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('اسم العميل...') }}"
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-10 pl-3' : 'pl-10 pr-3' }}" />
                 </div>
             </div>
 
             <div class="space-y-1.5">
                 <label for="history-status" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الحالة') }}</label>
-                <select name="status" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                <select id="history-status" name="status" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
                     <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>{{ __('مكتملة') }}</option>
                     <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>{{ __('قيد الانتظار') }}</option>
@@ -60,7 +60,7 @@
 
             <div class="space-y-1.5">
                 <label for="history-payment-method" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</label>
-                <select name="paymentMethod" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                <select id="history-payment-method" name="paymentMethod" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
                     <option value="cash" @selected(($filters['paymentMethod'] ?? '') === 'cash')>{{ __('نقدي') }}</option>
                     <option value="bank" @selected(($filters['paymentMethod'] ?? '') === 'bank')>{{ __('تحويل بنكي') }}</option>
@@ -69,13 +69,13 @@
 
             <div class="space-y-1.5">
                 <label for="history-from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
-                <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" dir="ltr"
+                <input id="history-from" type="date" name="from" value="{{ $filters['from'] ?? '' }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
 
             <div class="space-y-1.5">
                 <label for="history-to" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
-                <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" dir="ltr"
+                <input id="history-to" type="date" name="to" value="{{ $filters['to'] ?? '' }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
 
@@ -208,4 +208,3 @@
         </section>
     </div>
 @endsection
- id="history-to" id="history-from" id="history-payment-method" id="history-status" id="history-search"

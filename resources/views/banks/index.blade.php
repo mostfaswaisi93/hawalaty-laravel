@@ -128,14 +128,14 @@
 
                     <div class="space-y-1.5">
                         <label for="banks-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الاسم') }}</label>
-                        <input name="name" x-model="form.name" required placeholder="{{ __('مثال: بنك فلسطين') }}"
+                        <input id="banks-name" name="name" x-model="form.name" required placeholder="{{ __('مثال: بنك فلسطين') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label for="banks-type" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('النوع') }}</label>
-                            <select name="type" x-model="form.type"
+                            <select id="banks-type" name="type" x-model="form.type"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                 <option value="bank">{{ __('بنك') }}</option>
                                 <option value="wallet">{{ __('محفظة') }}</option>
@@ -143,14 +143,14 @@
                         </div>
                         <div class="space-y-1.5">
                             <label for="banks-code" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الرمز') }}</label>
-                            <input name="code" x-model="form.code" required dir="ltr" placeholder="BOP"
+                            <input id="banks-code" name="code" x-model="form.code" required dir="ltr" placeholder="BOP"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
 
                     <div class="space-y-1.5">
                         <label for="banks-phone" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('رقم واتساب (اختياري)') }}</label>
-                        <input name="phone" x-model="form.phone" dir="ltr" placeholder="+972595817016"
+                        <input id="banks-phone" name="phone" x-model="form.phone" dir="ltr" placeholder="+972595817016"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         <p class="flex items-start gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
                             <span class="material-symbols-outlined !text-base">chat</span>
@@ -177,4 +177,3 @@
         <x-confirm-modal />
     </div>
 @endsection
- id="banks-phone" id="banks-code" id="banks-type" id="banks-name"

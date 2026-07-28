@@ -157,7 +157,7 @@
                     @csrf
                     <div class="space-y-1.5">
                         <label for="constants-title" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('عنوان القائمة') }}</label>
-                        <input name="title" value="{{ old('title') }}" required placeholder="{{ __('مثال: طرق التوصيل') }}"
+                        <input id="constants-title" name="title" value="{{ old('title') }}" required placeholder="{{ __('مثال: طرق التوصيل') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
@@ -174,4 +174,3 @@
         <x-confirm-modal />
     </div>
 @endsection
- id="constants-title"
