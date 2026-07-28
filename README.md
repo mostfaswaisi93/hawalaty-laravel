@@ -26,6 +26,7 @@
   - [Tenant workspace](#tenant-workspace)
   - [Catalog naming](#catalog-naming)
   - [Super Admin platform](#super-admin-platform)
+  - [A box can never go negative](#a-box-can-never-go-negative)
   - [Partner clearing (المقاصة)](#partner-clearing-المقاصة)
 - [Domain model](#domain-model)
 - [Tech stack](#tech-stack)
@@ -42,6 +43,8 @@
   - [RTL notes](#rtl-notes)
 - [Design system](#design-system)
 - [Project structure](#project-structure)
+  - [Shared table conventions](#shared-table-conventions)
+  - [Accessible names are not optional](#accessible-names-are-not-optional)
 - [Testing](#testing)
 - [Code style](#code-style)
 - [License](#license)
@@ -216,6 +219,17 @@ The Super Admin portal is a **full server-rendered Blade UI** under `/admin/*` (
 
 > Withdrawals and platform expenses have no page of their own - both are forms on `/admin/finance`, since both exist to move money out of a box.
 
+#### A box can never go negative
+
+Both money-out paths — a partner withdrawal and a platform expense — are guarded **twice**, and the pairing is the point:
+
+| Where | What it catches |
+|-------|-----------------|
+| [`ChecksBoxBalance`](app/Http/Requests/Admin/Concerns/ChecksBoxBalance.php) on the FormRequest | the ordinary case, returned as an `amount` field error with the shortfall spelled out |
+| Inside the services' **locked** transaction | two submissions racing each other, which both pass a request-level check read against the same starting balance |
+
+Only the second is authoritative. `lockForUpdate()` alone prevents a lost update, not an overdraw, and there is no `CHECK` constraint on `boxes.box_balance` to catch one either — so before this, withdrawing 10 000 from a box holding 850 simply left it at −9 150, and every figure built on it (the finance summary, partner shares, the dashboard tile) reported a number that cannot exist. Comparison is `bccomp` on the decimal strings, never float arithmetic, because these are `decimal(12,2)` money columns.
+
 #### Partner clearing (المقاصة)
 
 A settlement closes a period and states what each partner is owed. The arithmetic lives in one place, [`SettlementService`](app/Services/Admin/SettlementService.php):
@@ -234,6 +248,10 @@ Three decisions worth knowing:
 - **Period windows are half-open, `[start, end)`.** `expenses.date` is a date cast stored as a datetime string; an inclusive `BETWEEN` upper bound silently dropped every row on the final day of the period.
 
 A run is created as a **draft** (one open draft at a time), reviewed, then **confirmed**. Confirmed runs are immutable, and each line snapshots the partner's name and percentage so a later edit to the partner never rewrites a statement that has already been agreed.
+
+**Percentages summing over 100% are refused**, not merely flagged. They would hand out more than the period earned and drive `retained` negative — recording the platform as owing money it never made. A warning could not be the guard here, because a run can be confirmed immediately and a confirmed settlement cannot be edited or deleted afterwards. The message names the actual total, since this is nearly always a slip in the partner list, and the clearing page disables the run button for the same condition and links to the percentages. Exactly 100% and under 100% are both normal and unaffected.
+
+> **Partner shares appear on two screens and legitimately differ.** The dashboard and finance pages show `box balance × percentage` — a balance-sheet view of who owns the cash on hand. A settlement distributes `(payments − expenses) × percentage` — an income view of what was earned this period. Box balance also holds opening capital that was never profit, so the same partner can show a much larger number on the dashboard. Both are correct about different questions; the cards say so explicitly and link to the settlement rather than being reconciled into one figure.
 
 ## Domain model
 
@@ -464,6 +482,8 @@ Four decisions behind it:
 
 The service worker never answers a POST from cache: an order must reach the server or fail loudly enough for the page to queue it. `/login`, `/logout`, `/sync` and `/api` are never cached, so a cached shell can never show a signed-out page to someone signed in, or a stale CSRF token that fails every later post. Signing out clears both the queue and the cache.
 
+**A session that dies mid-shift must not look like a successful push.** The flush posts with `redirect: 'manual'`, because a timed-out session redirects `/sync/push` to `/login` and the default `follow` turns that into a `200` HTML response — `response.ok` would be true, and the queue would survive only because `JSON.parse` chokes on markup. Orders kept by an exception rather than by design is one login route away from a flush that reports success with nothing sent, hiding a dead session while orders pile up. With `manual`, a redirect arrives opaque (status `0`, not ok) and is refused outright; the response envelope is then checked to actually be the sync engine's before any order is treated as delivered.
+
 ### Addressing a record the server has never seen
 
 An update or delete must say which record it means, and a record created offline has no server id yet. So a client may name either:
@@ -537,7 +557,7 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 023 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 032 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
 - **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`.
 - **Both files are sorted with plain `SORT_STRING`** and must hold identical key sets. That is mechanical on purpose: they were previously ordered by a collation nothing could reproduce, which made every insertion a judgement call.
 
@@ -641,12 +661,22 @@ Every paginated table in the app - tenant **and** Super Admin, 14 controllers - 
 | [`Web\Concerns\HasPerPage`](app/Http/Controllers/Web/Concerns/HasPerPage.php) | Resolves `?per_page=`, **whitelisted to 10 / 50 / 100** - a crafted value can never request an unbounded page size |
 | [`<x-per-page>`](resources/views/components/per-page.blade.php) | The 10 / 50 / 100 selector. Auto-submits on change and re-emits every active filter as a hidden input (except `per_page` / `page`), so changing page size preserves filters and resets to page 1 |
 | [`<x-table-footer>`](resources/views/components/table-footer.blade.php) | Combines the selector with a themed paginator built from the paginator's own methods rather than `->links()`, so it matches the design system in light/dark and under RTL |
+| [`<x-keep-per-page>`](resources/views/components/keep-per-page.blade.php) | Goes inside every GET **filter** form. The selector already re-emits active filters when it submits; without this the reverse never happened, so choosing 100-per-page and then searching silently dropped back to 10 |
 
 The controller must call `->withQueryString()` so page links keep the active filters and `per_page`:
 
 ```php
 $rows = $query->paginate($this->perPage($request))->withQueryString();
 ```
+
+### Accessible names are not optional
+
+Enforced by [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php), because a control with no accessible name renders perfectly and is only ever noticed by someone using a screen reader.
+
+- **A `<label>` must name its control** — via `for`/`id`, by wrapping it, or by an id referenced through `aria-labelledby`. A bare `<label>` beside an input names nothing.
+- **A placeholder is not a name.** Filter inputs and `<select>`s need `aria-label`; a first option reading "كل الحالات" says what the default is, never what the control filters.
+- **A dialog needs `aria-labelledby`** and should move focus to its first field when it opens.
+- **Ids must be unique per render.** A component used twice on one page — the icon picker is, once for a category and once for an entry — has to derive its ids from something instance-specific. A duplicate id is worse than none: the label points at whichever copy the browser saw first.
 ```blade
 <x-table-footer :paginator="$rows" :perPage="$perPage" />
 ```
@@ -661,7 +691,7 @@ php artisan test
 composer test
 ```
 
-**340 tests, 7 146 assertions.**
+**343 tests, 7 170 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
