@@ -61,16 +61,17 @@
 
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
-            <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
+            <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title"
+                x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
                 <x-modal-close on-close="open = false" />
-                <h3 class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md">{{ __('تسجيل دفعة') }}</h3>
+                <h3 id="payment-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md">{{ __('تسجيل دفعة') }}</h3>
                 <form method="POST" action="{{ route('admin.payments.store') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الترخيص') }}</label>
-                        <select name="licenseId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                        <label for="payment-license" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الترخيص') }}</label>
+                        <select id="payment-license" name="licenseId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($licenses as $license)
                                 <option value="{{ $license->id }}" @selected(old('licenseId') === $license->id)>{{ $license->customer_name }} ({{ $license->license_code }})</option>
@@ -78,8 +79,8 @@
                         </select>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق المستلِم') }}</label>
-                        <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                        <label for="payment-box" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق المستلِم') }}</label>
+                        <select id="payment-box" name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
                                 <option value="{{ $box->id }}" @selected(old('boxId') === $box->id)>{{ $box->box_name }}</option>
@@ -87,8 +88,8 @@
                         </select>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
-                        <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        <label for="payment-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
+                        <input id="payment-amount" type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <p class="flex items-center gap-1.5 font-body-sm text-on-surface-variant"><span class="material-symbols-outlined !text-lg">info</span>{{ __('ستُجدَّد صلاحية الترخيص 30 يوماً.') }}</p>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">

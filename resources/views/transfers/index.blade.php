@@ -219,7 +219,7 @@
                                 </div>
 
                                 <div x-show="changeMethod === 'bank'" x-cloak class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
+                                    <label for="transfers-change-bank-id" class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
                                     <select name="changeBankId" x-model="changeBankId"
                                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                         <option value="">{{ __('اختر...') }}</option>
@@ -230,7 +230,7 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block font-body-sm text-on-surface-variant">{{ __('قيمة الباقي (₪)') }}</label>
+                                    <label for="transfers-change-amount" class="block font-body-sm text-on-surface-variant">{{ __('قيمة الباقي (₪)') }}</label>
                                     <input type="number" step="0.01" min="0" name="changeAmount" x-model="changeAmount" dir="ltr" placeholder="0.00"
                                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                                 </div>
@@ -240,7 +240,7 @@
                         {{-- ── BANK scenario ── --}}
                         <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-4">
                             <div class="space-y-2">
-                                <label class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
+                                <label for="transfers-bank-id" class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
                                 <select name="bankId" x-model="bankId"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                     <option value="">{{ __('اختر...') }}</option>
@@ -262,7 +262,7 @@
                                  `transfers` so historical orders keep their values, and the API
                                  still accepts both for backwards compatibility. --}}
                             <div class="space-y-2">
-                                <label class="block font-body-sm text-on-surface-variant">{{ __('المبلغ المُحوَّل (₪)') }}</label>
+                                <label for="transfers-transferred-amount" class="block font-body-sm text-on-surface-variant">{{ __('المبلغ المُحوَّل (₪)') }}</label>
                                 <input type="number" step="0.01" min="0" name="transferredAmount" x-model="transferredAmount" dir="ltr" placeholder="0.00"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                             </div>
@@ -461,3 +461,4 @@
         };
     </script>
 @endsection
+ id="transfers-transferred-amount" id="transfers-bank-id" id="transfers-change-amount" id="transfers-change-bank-id"

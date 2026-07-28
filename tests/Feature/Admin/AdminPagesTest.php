@@ -100,6 +100,29 @@ class AdminPagesTest extends TestCase
             ->assertDontSee('من أصل');
     }
 
+    /**
+     * Choosing 100-per-page and then filtering used to silently drop back to
+     * the default: <x-per-page> re-emits every active filter when it submits,
+     * but the filter forms never carried the page size back the other way.
+     */
+    public function test_a_filter_form_carries_the_chosen_page_size(): void
+    {
+        $response = $this->actingAs($this->admin(), 'admin')
+            ->get('/admin/licenses?per_page=50')
+            ->assertOk();
+
+        $response->assertSee('name="per_page" value="50"', false);
+    }
+
+    /** ...and emits nothing when the admin never touched the selector. */
+    public function test_no_page_size_input_is_emitted_by_default(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->get('/admin/licenses')
+            ->assertOk()
+            ->assertDontSee('name="per_page" value=', false);
+    }
+
     public function test_admin_can_update_their_own_profile(): void
     {
         $admin = $this->admin();

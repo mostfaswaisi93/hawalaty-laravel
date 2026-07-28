@@ -146,7 +146,7 @@
                 <form method="POST" action="{{ route('admin.finance.withdrawals.store') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق') }}</label>
+                        <label for="admin-finance-box-id-2" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق') }}</label>
                         <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
@@ -155,7 +155,7 @@
                         </select>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الشريك') }}</label>
+                        <label for="admin-finance-partner-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الشريك') }}</label>
                         <select name="partnerId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($partners as $partner)
@@ -164,7 +164,7 @@
                         </select>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
+                        <label for="admin-finance-amount-2" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
                         <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
@@ -187,24 +187,24 @@
                 <form method="POST" action="{{ route('admin.finance.expenses.store') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الوصف') }}</label>
+                        <label for="admin-finance-description" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الوصف') }}</label>
                         <input name="description" value="{{ old('description') }}" required placeholder="{{ __('مثال: استضافة، دومين...') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
+                            <label for="admin-finance-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
                             <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}" required dir="ltr" placeholder="0.00"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                         <div class="space-y-1.5">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('التاريخ') }}</label>
+                            <label for="admin-finance-date" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('التاريخ') }}</label>
                             <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" required dir="ltr"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق') }}</label>
+                        <label for="admin-finance-box-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق') }}</label>
                         <select name="boxId" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="" disabled selected>{{ __('اختر...') }}</option>
                             @foreach ($boxes as $box)
@@ -221,3 +221,4 @@
         </div>
     </div>
 @endsection
+ id="admin-finance-box-id" id="admin-finance-date" id="admin-finance-amount" id="admin-finance-description" id="admin-finance-amount-2" id="admin-finance-partner-id" id="admin-finance-box-id-2"

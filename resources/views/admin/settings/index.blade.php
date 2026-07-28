@@ -52,6 +52,8 @@
                                 $field = "settings.{$key}";
                                 $current = old("settings.{$key}", $values[$key] ?? $setting['default']);
                                 $hasError = $errors->has($field);
+                                // From the setting's OWN rules - see boundsFor().
+                                $bounds = $registry->boundsFor($setting);
                             @endphp
 
                             <div class="grid grid-cols-1 gap-x-6 gap-y-2 py-5 first:pt-0 last:pb-0 md:grid-cols-3">
@@ -84,7 +86,11 @@
                                                 name="settings[{{ $key }}]"
                                                 value="{{ $current }}"
                                                 placeholder="{{ $setting['placeholder'] ?? '' }}"
-                                                @if ($setting['type'] === \App\Settings\SettingType::Number) min="1" max="365" inputmode="numeric" @endif
+                                                @if ($setting['type'] === \App\Settings\SettingType::Number)
+                                                    inputmode="numeric"
+                                                    @isset($bounds['min']) min="{{ $bounds['min'] }}" @endisset
+                                                    @isset($bounds['max']) max="{{ $bounds['max'] }}" @endisset
+                                                @endif
                                                 @if ($setting['type'] !== \App\Settings\SettingType::Text) dir="ltr" @endif
                                                 @class([
                                                     'w-full rounded-xl border bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2',

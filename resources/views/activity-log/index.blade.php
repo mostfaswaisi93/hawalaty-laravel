@@ -24,7 +24,7 @@
 
         <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3" style="--d: 40ms">
             <div class="space-y-1.5 sm:col-span-1">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
+                <label for="activity-log-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
                     <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('المنفّذ أو العنصر...') }}"
@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الفئة') }}</label>
+                <label for="activity-log-category" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الفئة') }}</label>
                 <select name="category" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
                     @foreach (\App\Enums\AuditCategory::cases() as $cat)
@@ -90,3 +90,4 @@
         </section>
     </div>
 @endsection
+ id="activity-log-category" id="activity-log-search"

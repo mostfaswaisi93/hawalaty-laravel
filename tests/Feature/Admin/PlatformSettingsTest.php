@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\Setting;
 use App\Settings\PlatformSettings;
 use App\Settings\SettingRegistry;
+use App\Settings\SettingType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -198,5 +199,58 @@ class PlatformSettingsTest extends TestCase
         $this->settings()->flush();
 
         $this->assertSame(1, $this->settings()->get('license_expiry_warning_days'));
+    }
+
+    /**
+     * The rendered `min`/`max` must come from the setting's own rules. The form
+     * used to hardcode `min="1" max="365"` on every Number field - fine for the
+     * two day-counts that existed, and silently wrong for the first Number
+     * setting added with any other range. A browser constraint that contradicts
+     * the server rule blocks a value the server would have accepted, with no
+     * error to explain it.
+     */
+    public function test_number_bounds_are_read_from_the_settings_own_rules(): void
+    {
+        $registry = app(SettingRegistry::class);
+
+        $bounds = $registry->boundsFor([
+            'type' => SettingType::Number,
+            'rules' => ['required', 'integer', 'min:5', 'max:50'],
+        ]);
+
+        $this->assertSame(['min' => '5', 'max' => '50'], $bounds);
+    }
+
+    /**
+     * `max:120` on a string is a LENGTH. Treating it as a numeric bound would
+     * cap a text field at its own character count.
+     */
+    public function test_a_string_length_rule_is_not_mistaken_for_a_number_bound(): void
+    {
+        $bounds = app(SettingRegistry::class)->boundsFor([
+            'type' => SettingType::Text,
+            'rules' => ['required', 'string', 'max:120'],
+        ]);
+
+        $this->assertSame(['min' => null, 'max' => null], $bounds);
+    }
+
+    /** Every registered Number setting must actually render its declared bounds. */
+    public function test_the_page_renders_each_number_settings_declared_bounds(): void
+    {
+        $response = $this->actingAs(Admin::factory()->create(), 'admin')
+            ->get('/admin/settings')
+            ->assertOk();
+
+        foreach (app(SettingRegistry::class)->all() as $key => $definition) {
+            if ($definition['type'] !== SettingType::Number) {
+                continue;
+            }
+
+            $bounds = app(SettingRegistry::class)->boundsFor($definition);
+
+            $response->assertSee('min="'.$bounds['min'].'"', false);
+            $response->assertSee('max="'.$bounds['max'].'"', false);
+        }
     }
 }

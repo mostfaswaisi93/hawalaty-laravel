@@ -10,7 +10,11 @@
         </header>
 
         <form method="GET" action="{{ route('admin.logs.index') }}" class="reveal-up flex gap-2" style="--d: 80ms">
-            <select name="adminId" class="max-w-xs rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+            {{-- Filtering must not throw away a chosen page size - see the component. --}}
+            <x-keep-per-page />
+            {{-- aria-label: the first option reads "كل المشرفين", which says what the
+                 default IS but never what the control filters. --}}
+            <select name="adminId" aria-label="{{ __('المشرف') }}" class="max-w-xs rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                 <option value="">{{ __('كل المشرفين') }}</option>
                 @foreach ($admins as $admin)
                     <option value="{{ $admin->id }}" @selected(($adminId ?? '') === $admin->id)>{{ $admin->name }}</option>

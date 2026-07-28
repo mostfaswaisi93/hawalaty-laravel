@@ -36,6 +36,9 @@ class SettingController extends Controller
             'groups' => $this->registry->groups(),
             'values' => $this->settings->all(),
             'custom' => $this->settings->unregistered(),
+            // The view asks it for each field's min/max, so the browser
+            // constraint can never contradict the server rule.
+            'registry' => $this->registry,
         ]);
     }
 

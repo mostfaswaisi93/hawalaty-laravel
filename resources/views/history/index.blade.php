@@ -40,7 +40,7 @@
         <form method="GET" action="{{ route('history.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5" style="--d: 40ms">
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
+                <label for="history-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
                     <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('اسم العميل...') }}"
@@ -49,7 +49,7 @@
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الحالة') }}</label>
+                <label for="history-status" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الحالة') }}</label>
                 <select name="status" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
                     <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>{{ __('مكتملة') }}</option>
@@ -59,7 +59,7 @@
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</label>
+                <label for="history-payment-method" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</label>
                 <select name="paymentMethod" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
                     <option value="cash" @selected(($filters['paymentMethod'] ?? '') === 'cash')>{{ __('نقدي') }}</option>
@@ -68,13 +68,13 @@
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
+                <label for="history-from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
                 <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
 
             <div class="space-y-1.5">
-                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
+                <label for="history-to" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
                 <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" dir="ltr"
                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
             </div>
@@ -208,3 +208,4 @@
         </section>
     </div>
 @endsection
+ id="history-to" id="history-from" id="history-payment-method" id="history-status" id="history-search"

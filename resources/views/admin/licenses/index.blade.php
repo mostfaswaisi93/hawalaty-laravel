@@ -151,23 +151,23 @@
                 <form method="POST" action="{{ route('admin.licenses.store') }}" class="grid grid-cols-1 gap-4 p-6 md:grid-cols-2" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5 md:col-span-2">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم النشاط التجاري') }}</label>
+                        <label for="admin-licenses-business-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم النشاط التجاري') }}</label>
                         <input name="businessName" value="{{ old('businessName') }}" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم المالك') }}</label>
+                        <label for="admin-licenses-owner-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم المالك') }}</label>
                         <input name="ownerName" value="{{ old('ownerName') }}" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بريد المالك') }}</label>
+                        <label for="admin-licenses-owner-email" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بريد المالك') }}</label>
                         <input type="email" name="ownerEmail" value="{{ old('ownerEmail') }}" required dir="ltr" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الهاتف (اختياري)') }}</label>
+                        <label for="admin-licenses-phone" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الهاتف (اختياري)') }}</label>
                         <input name="phone" value="{{ old('phone') }}" dir="ltr" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الباقة') }}</label>
+                        <label for="admin-licenses-package-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الباقة') }}</label>
                         <select name="packageId" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                             <option value="">{{ __('الأرخص افتراضياً') }}</option>
                             @foreach ($packages as $package)
@@ -176,7 +176,7 @@
                         </select>
                     </div>
                     <div class="space-y-1.5 md:col-span-2">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('كلمة مرور المالك') }}</label>
+                        <label for="admin-licenses-password" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('كلمة مرور المالك') }}</label>
                         <input type="password" name="password" required dir="ltr" placeholder="{{ __('8 أحرف على الأقل، حروف وأرقام') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4 md:col-span-2">
@@ -190,3 +190,4 @@
         <x-confirm-modal />
     </div>
 @endsection
+ id="admin-licenses-password" id="admin-licenses-package-id" id="admin-licenses-phone" id="admin-licenses-owner-email" id="admin-licenses-owner-name" id="admin-licenses-business-name"

@@ -185,7 +185,7 @@
                 <form method="POST" action="{{ route('menu.categories.store') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم :label', ['label' => $naming->category()]) }}</label>
+                        <label for="menu-name-2" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم :label', ['label' => $naming->category()]) }}</label>
                         <input name="name" value="{{ $categoryHasErrors ? old('name') : '' }}" required placeholder="{{ __('مثال: المشاوي') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
@@ -221,7 +221,7 @@
                     <input type="hidden" name="active" :value="itemForm.active ? 1 : 0">
 
                     <div class="space-y-1.5">
-                        <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم :label', ['label' => $naming->item()]) }}</label>
+                        <label for="menu-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم :label', ['label' => $naming->item()]) }}</label>
                         <input name="name" x-model="itemForm.name" required placeholder="{{ __('مثال: شاورما لحمة') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
@@ -230,7 +230,7 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ $naming->category() }}</label>
+                            <label for="menu-menu-category-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ $naming->category() }}</label>
                             <select name="menuCategoryId" x-model="itemForm.menuCategoryId" required
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                 <option value="" disabled>{{ __('اختر...') }}</option>
@@ -240,7 +240,7 @@
                             </select>
                         </div>
                         <div class="space-y-1.5">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('السعر (₪)') }}</label>
+                            <label for="menu-price" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('السعر (₪)') }}</label>
                             <input type="number" step="0.01" min="0" name="price" x-model="itemForm.price" required dir="ltr" placeholder="0.00"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
@@ -293,3 +293,4 @@
         <x-confirm-modal />
     </div>
 @endsection
+ id="menu-price" id="menu-menu-category-id" id="menu-name" id="menu-name-2"

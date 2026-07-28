@@ -112,6 +112,47 @@ class SettingRegistry
         return $this->all()[$key] ?? null;
     }
 
+    /**
+     * The `min:`/`max:` bounds a setting already declares, as HTML input
+     * attributes.
+     *
+     * Read from the SAME rules the server validates with, deliberately. The
+     * settings form used to hardcode `min="1" max="365"` on every Number field -
+     * correct for the two day-count settings that existed, and silently wrong
+     * for the first Number setting added with any other range. A browser
+     * constraint that contradicts the server rule is worse than none: it blocks
+     * a value the server would have accepted, with no error to explain why.
+     *
+     * @param  array<string, mixed>  $definition
+     * @return array{min: ?string, max: ?string}
+     */
+    public function boundsFor(array $definition): array
+    {
+        $bounds = ['min' => null, 'max' => null];
+
+        foreach ((array) ($definition['rules'] ?? []) as $rule) {
+            if (! is_string($rule)) {
+                continue;
+            }
+
+            // `max:120` on a string is a LENGTH, not a value - applying it as a
+            // number bound would cap a numeric field at its own digit count.
+            if ($definition['type'] !== SettingType::Number) {
+                continue;
+            }
+
+            if (str_starts_with($rule, 'min:')) {
+                $bounds['min'] = substr($rule, 4);
+            }
+
+            if (str_starts_with($rule, 'max:')) {
+                $bounds['max'] = substr($rule, 4);
+            }
+        }
+
+        return $bounds;
+    }
+
     public function has(string $key): bool
     {
         return $this->find($key) !== null;
