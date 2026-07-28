@@ -32,16 +32,22 @@
 
         {{-- Filters --}}
         <form method="GET" action="{{ route('admin.licenses.index') }}" class="reveal-up grid grid-cols-1 gap-3 md:grid-cols-4" style="--d: 80ms">
+            {{-- Filtering must not throw away a chosen page size - see the component. --}}
+            <x-keep-per-page />
+            {{-- aria-label on all three: a placeholder is not an accessible name,
+                 and a bare <select> whose first option reads "كل الحالات" announces
+                 nothing at all about what it filters. --}}
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الرمز...') }}"
+                aria-label="{{ __('ابحث بالاسم أو الرمز...') }}"
                 class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary md:col-span-2" />
-            <select name="status" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+            <select name="status" aria-label="{{ __('الحالة') }}" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                 <option value="">{{ __('كل الحالات') }}</option>
                 @foreach ($statusMap as $key => $meta)
                     <option value="{{ $key }}" @selected(($status ?? '') === $key)>{{ $meta['label'] }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                <select name="packageId" class="flex-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                <select name="packageId" aria-label="{{ __('الباقة') }}" class="flex-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('كل الباقات') }}</option>
                     @foreach ($packages as $package)
                         <option value="{{ $package->id }}" @selected(($packageId ?? '') === $package->id)>{{ $package->name }}</option>

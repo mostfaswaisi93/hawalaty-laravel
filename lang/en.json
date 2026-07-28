@@ -1018,6 +1018,7 @@
   "يُرسَل إشعار بالطلبات الجديدة إلى هذا الرقم عبر واتساب.": "New order notifications are sent to this number via WhatsApp.",
   "يُستخدم في صفحات المساعدة والخصوصية والشروط وصفحة الهبوط.": "Used on the help, privacy, terms and landing pages.",
   "يُضاف العميل تلقائياً عند أول طلب يحمل رقم جواله.": "A customer is added automatically on their first order carrying a phone number.",
+  "يُعرض :shown من أصل :total عضواً.": "Showing :shown of :total members.",
   "١٠ أجهزة": "10 devices",
   "٣ أجهزة": "3 devices",
   "٥٠ جهازاً": "50 devices",

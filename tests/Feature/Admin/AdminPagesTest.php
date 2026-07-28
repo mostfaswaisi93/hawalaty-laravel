@@ -48,6 +48,55 @@ class AdminPagesTest extends TestCase
         ];
     }
 
+    /**
+     * The licence detail page had no coverage at all, only the index did. The
+     * peek at a tenant's own database needs real MySQL and stays out of this
+     * suite - but a licence with NO `databaseConnection` row skips that block
+     * entirely (see LicenseService::show), so the page itself, its empty states
+     * and its change-package form are all reachable here.
+     */
+    public function test_the_license_detail_page_renders_without_a_tenant_database(): void
+    {
+        $package = Package::create(['name' => 'Starter', 'price' => 30, 'device_limit' => 2, 'features' => []]);
+        $license = License::create([
+            'license_code' => 'DETAIL01',
+            'customer_name' => 'مطعم التجربة',
+            'package_id' => $package->id,
+            'status' => LicenseStatus::Active,
+            'expired_at' => now()->addMonth(),
+            'customer_balance' => 0,
+        ]);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->get("/admin/licenses/{$license->id}")
+            ->assertOk()
+            ->assertSee('مطعم التجربة')
+            ->assertSee('DETAIL01')
+            // No connection means nothing to peek at, and both cards say so
+            // rather than rendering an empty table.
+            ->assertSee(__('لا يوجد أعضاء فريق'))
+            ->assertSee(__('لا يوجد نشاط'));
+    }
+
+    /** A roster that fits under the cap must not claim it was truncated. */
+    public function test_the_roster_notice_is_absent_when_nothing_was_cut(): void
+    {
+        $package = Package::create(['name' => 'Basic', 'price' => 20, 'device_limit' => 1, 'features' => []]);
+        $license = License::create([
+            'license_code' => 'DETAIL02',
+            'customer_name' => 'Acme',
+            'package_id' => $package->id,
+            'status' => LicenseStatus::Active,
+            'expired_at' => now()->addMonth(),
+            'customer_balance' => 0,
+        ]);
+
+        $this->actingAs($this->admin(), 'admin')
+            ->get("/admin/licenses/{$license->id}")
+            ->assertOk()
+            ->assertDontSee('من أصل');
+    }
+
     public function test_admin_can_update_their_own_profile(): void
     {
         $admin = $this->admin();

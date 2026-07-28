@@ -11,6 +11,22 @@
     ];
     $meta = $statusMap[$license->status->value] ?? ['label' => $license->status->value, 'class' => 'bg-outline/10 text-outline'];
     $connection = $license->databaseConnection;
+
+    // The tenant's own audit vocabulary, matching activity-log/index so the same
+    // event never reads one way inside the tenant app and another way here.
+    $actionLabels = [
+        'created' => __('إنشاء'),
+        'updated' => __('تعديل'),
+        'deleted' => __('حذف'),
+        'loggedIn' => __('تسجيل دخول'),
+        'signedOut' => __('تسجيل خروج'),
+    ];
+    $actionPill = fn (?string $value) => match ($value) {
+        'created' => 'bg-primary/10 text-primary',
+        'deleted' => 'bg-error/10 text-error',
+        'updated' => 'bg-secondary/10 text-secondary',
+        default => 'bg-surface-container-high text-on-surface-variant',
+    };
 @endphp
 
 @section('content')
@@ -99,8 +115,20 @@
                     <ul class="divide-y divide-outline-variant/50">
                         @foreach ($recentActivity as $log)
                             <li class="py-3">
-                                <p class="font-body-sm font-bold">{{ $log->entity_label ?? __($log->action?->value ?? '-') }}</p>
-                                <p class="text-[11px] text-on-surface-variant">{{ $log->actor_name ?? '-' }} · {{ $log->created_at?->diffForHumans() }}</p>
+                                {{-- WHAT happened, not only what it happened to. This
+                                     used to print `entity_label` alone, so a row read
+                                     "شاورما دجاج" with no way to tell whether it was
+                                     created, edited or deleted - and the fallback
+                                     printed the raw enum ("created") because those
+                                     codes are not translation keys. The label map is
+                                     the same one the tenant's own activity log uses. --}}
+                                <div class="flex items-center gap-2">
+                                    <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold {{ $actionPill($log->action?->value) }}">
+                                        {{ $actionLabels[$log->action?->value] ?? ($log->action?->value ?? '-') }}
+                                    </span>
+                                    <p class="truncate font-body-sm font-bold">{{ $log->entity_label ?? '-' }}</p>
+                                </div>
+                                <p class="mt-1 text-[11px] text-on-surface-variant">{{ $log->actor_name ?? '-' }} · {{ $log->created_at?->diffForHumans() }}</p>
                             </li>
                         @endforeach
                     </ul>
@@ -141,6 +169,16 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                {{-- The roster is capped, so say so. A silently truncated list of
+                     people reads as "this is everyone", which is the one thing an
+                     admin opening this card must not be told wrongly. --}}
+                @if ($teamTotal > $team->count())
+                    <p class="mt-4 flex items-start gap-1.5 border-t border-outline-variant/50 pt-3 text-[11px] text-on-surface-variant">
+                        <span class="material-symbols-outlined !text-base flex-shrink-0">info</span>
+                        {{ __('يُعرض :shown من أصل :total عضواً.', ['shown' => $team->count(), 'total' => $teamTotal]) }}
+                    </p>
+                @endif
             @endif
         </x-card>
 
