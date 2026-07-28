@@ -430,6 +430,56 @@ class SettlementTest extends TestCase
         $this->assertSame($draft->id, $preview['openDraft']?->id);
     }
 
+    /**
+     * Partner percentages summing over 100 mean the run would hand out more
+     * than the period earned, leaving `retained` negative - the platform owing
+     * money it never made. The page warns about it, but a warning is not a
+     * guard: the run was still committable, and a confirmed settlement cannot
+     * be edited or deleted afterwards.
+     *
+     * Almost always this is a data-entry slip in the partner list, which is why
+     * the message says what the total actually is.
+     */
+    public function test_a_run_is_refused_when_partner_percentages_exceed_one_hundred(): void
+    {
+        Partner::create(['name' => 'Alice', 'percentage' => 70]);
+        Partner::create(['name' => 'Bob', 'percentage' => 55]);
+        $this->payment(1000, '2026-01-10');
+
+        $this->expectException(\RuntimeException::class);
+
+        try {
+            $this->service()->create(['periodTo' => '2026-01-31']);
+        } finally {
+            $this->assertSame(0, Settlement::count(), 'A refused run must leave nothing behind.');
+        }
+    }
+
+    /** Exactly 100% is the normal, fully-allocated case and must still run. */
+    public function test_percentages_totalling_exactly_one_hundred_are_allowed(): void
+    {
+        Partner::create(['name' => 'Alice', 'percentage' => 60]);
+        Partner::create(['name' => 'Bob', 'percentage' => 40]);
+        $this->payment(1000, '2026-01-10');
+
+        $settlement = $this->service()->create(['periodTo' => '2026-01-31']);
+
+        $this->assertSame('1000.00', $settlement->total_entitlement);
+        $this->assertSame('0.00', $settlement->retained);
+    }
+
+    /** Under 100% is also normal - the remainder is simply retained. */
+    public function test_percentages_under_one_hundred_still_run(): void
+    {
+        Partner::create(['name' => 'Alice', 'percentage' => 30]);
+        $this->payment(1000, '2026-01-10');
+
+        $settlement = $this->service()->create(['periodTo' => '2026-01-31']);
+
+        $this->assertSame('300.00', $settlement->total_entitlement);
+        $this->assertSame('700.00', $settlement->retained);
+    }
+
     /** A confirmed run is not an open draft and must not block the next one. */
     public function test_a_confirmed_run_leaves_no_open_draft(): void
     {

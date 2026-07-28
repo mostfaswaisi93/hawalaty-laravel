@@ -25,10 +25,13 @@
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('المقاصة') }}</h1>
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('تسوية حصص الشركاء: ما استحقّه كل شريك مقابل ما سحبه فعلياً.') }}</p>
             </div>
+            {{-- Over-allocation disables the button, because SettlementService now
+                 REFUSES the run outright. Leaving it clickable would walk the
+                 admin into an error they can already see explained above. --}}
             <button type="button" @click="runOpen = true; submitting = false"
-                @disabled($p['hasOpenDraft'] || empty($p['lines']))
+                @disabled($p['hasOpenDraft'] || empty($p['lines']) || $overAllocated)
                 class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                title="{{ $p['hasOpenDraft'] ? __('توجد مسودّة مفتوحة') : __('تنفيذ المقاصة') }}">
+                title="{{ $p['hasOpenDraft'] ? __('توجد مسودّة مفتوحة') : ($overAllocated ? __('مجموع نسب الشركاء يتجاوز 100%') : __('تنفيذ المقاصة')) }}">
                 <span class="material-symbols-outlined !text-xl">balance</span>{{ __('تنفيذ المقاصة') }}
             </button>
         </header>
@@ -93,7 +96,11 @@
                 <span class="material-symbols-outlined text-error">warning</span>
                 <div class="font-body-sm text-body-sm">
                     <p class="font-bold">{{ __('مجموع نسب الشركاء يتجاوز 100%') }}</p>
-                    <p class="mt-1">{{ __('المجموع الحالي') }} <span dir="ltr">{{ number_format($p['percentageTotal'], 2) }}%</span> - {{ __('سيوزَّع أكثر من الربح المتاح. راجع نسب الشركاء قبل تنفيذ المقاصة.') }}</p>
+                    <p class="mt-1">{{ __('المجموع الحالي') }} <span dir="ltr">{{ number_format($p['percentageTotal'], 2) }}%</span> - {{ __('لا يمكن تنفيذ المقاصة حتى تُصحَّح النسب، لأنها ستوزّع أكثر من الربح المتاح.') }}</p>
+                    <a href="{{ route('admin.partners.index') }}" class="mt-2 inline-flex items-center gap-1 font-bold text-error hover:underline" title="{{ __('الشركاء') }}">
+                        {{ __('تعديل نسب الشركاء') }}
+                        <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
+                    </a>
                 </div>
             </div>
         @endif

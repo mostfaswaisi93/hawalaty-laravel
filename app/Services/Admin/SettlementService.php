@@ -111,6 +111,22 @@ class SettlementService
             }
 
             $computed = $this->compute($from, $to);
+
+            // Over-allocation is refused, not merely warned about. Percentages
+            // summing past 100 hand out more than the period earned and drive
+            // `retained` negative - the platform recorded as owing money it
+            // never made. The clearing page already flags it, but a warning
+            // cannot be a guard here: a run can be confirmed straight away, and
+            // a confirmed settlement is immutable by design.
+            //
+            // Almost always this is a slip in the partner list, so the message
+            // names the actual total rather than saying "invalid".
+            if ($computed['percentageTotal'] > 100) {
+                throw new RuntimeException(__('مجموع نسب الشركاء :total% يتجاوز 100% - راجع نسب الشركاء قبل تنفيذ المقاصة.', [
+                    'total' => number_format($computed['percentageTotal'], 2),
+                ]));
+            }
+
             $confirming = (bool) ($data['confirm'] ?? false);
 
             $settlement = Settlement::create([
