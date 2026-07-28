@@ -11,6 +11,29 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('اختر الأصناف، حدّد طريقة الدفع، وأنشئ الطلب.') }}</p>
         </header>
 
+        {{-- Connection state, stated before the order is written rather than
+             after it fails - staff need to know the order will be held. --}}
+        <div x-show="!$store.offline.online" x-cloak
+            class="flex items-start gap-3 rounded-2xl border border-tertiary/40 bg-tertiary/10 p-4">
+            <span class="material-symbols-outlined flex-shrink-0 text-tertiary">cloud_off</span>
+            <div>
+                <p class="font-body-lg font-bold text-on-surface">{{ __('لا يوجد اتصال') }}</p>
+                <p class="font-body-sm text-on-surface-variant">{{ __('يمكنك متابعة تسجيل الطلبات - ستُحفظ على هذا الجهاز وتُرسل تلقائياً عند عودة الشبكة.') }}</p>
+            </div>
+        </div>
+
+        <div x-show="queued" x-cloak
+            class="flex items-start gap-3 rounded-2xl border border-success/40 bg-success/10 p-4">
+            <span class="material-symbols-outlined flex-shrink-0 text-success">schedule_send</span>
+            <p class="font-body-lg text-on-surface">{{ __('حُفظ الطلب على هذا الجهاز وسيُرسل عند عودة الاتصال.') }}</p>
+        </div>
+
+        <div x-show="queueFailed" x-cloak
+            class="flex items-start gap-3 rounded-2xl border border-error/40 bg-error/10 p-4">
+            <span class="material-symbols-outlined flex-shrink-0 text-error">error</span>
+            <p class="font-body-lg text-on-surface">{{ __('تعذّر حفظ الطلب على هذا الجهاز. لا تُغلق الصفحة قبل عودة الاتصال.') }}</p>
+        </div>
+
         <form method="POST" action="{{ route('transfers.store') }}" @submit="onSubmit"
             class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.7fr_1fr]">
             @csrf
@@ -290,6 +313,8 @@
                 bankId: '',
                 transferredAmount: '',
                 submitting: false,
+                queued: false,
+                queueFailed: false,
 
                 init() {
                     // Reset the fields of the scenario the user just left so a
@@ -351,9 +376,69 @@
                     return true;
                 },
 
-                onSubmit(e) {
+                /**
+                 * Exactly what StoreTransferRequest validates, so a queued order
+                 * is checked by the same rules as one posted online - the server
+                 * still recomputes the amount from the catalogue either way.
+                 */
+                orderPayload() {
+                    return {
+                        customer: this.customer.trim(),
+                        customerPhone: this.customerPhone.trim() || null,
+                        paymentMethod: this.paymentMethod,
+                        hasChange: this.paymentMethod === 'cash' ? this.hasChange : false,
+                        changeMethod: this.hasChange ? this.changeMethod : null,
+                        changeBankId: this.hasChange && this.changeMethod === 'bank' ? this.changeBankId : null,
+                        changeAmount: this.hasChange ? this.changeAmount : null,
+                        bankId: this.paymentMethod === 'bank' ? this.bankId : null,
+                        transferredAmount: this.paymentMethod === 'bank' ? this.transferredAmount : null,
+                        items: this.cart.map(l => ({
+                            itemId: l.id,
+                            name: l.name,
+                            quantity: l.qty,
+                            price: l.price,
+                        })),
+                    };
+                },
+
+                resetOrder() {
+                    this.cart = [];
+                    this.customer = '';
+                    this.customerPhone = '';
+                    this.hasChange = false;
+                    this.changeMethod = 'cash';
+                    this.changeBankId = '';
+                    this.changeAmount = '';
+                    this.bankId = '';
+                    this.transferredAmount = '';
+                    this.submitting = false;
+                },
+
+                async onSubmit(e) {
                     if (!this.canSubmit) { e.preventDefault(); return; }
+
+                    // Online: let the form post normally. The offline path is a
+                    // fallback, never the default - an order that can reach the
+                    // server now should, so the kitchen sees it now.
+                    if (navigator.onLine) {
+                        this.submitting = true;
+                        return;
+                    }
+
+                    e.preventDefault();
                     this.submitting = true;
+
+                    try {
+                        await Alpine.store('offline').queue(this.orderPayload());
+                        this.queued = true;
+                        this.resetOrder();
+                        setTimeout(() => { this.queued = false; }, 6000);
+                    } catch {
+                        // Storage refused - private mode, or the disk is full.
+                        // Say so rather than silently losing a sale.
+                        this.queueFailed = true;
+                        this.submitting = false;
+                    }
                 },
             };
         };

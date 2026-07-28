@@ -1,6 +1,59 @@
 import Alpine from 'alpinejs';
+import { clearAll, flush, pendingCount, queueOrder, registerServiceWorker } from './offline.js';
 
 window.Alpine = Alpine;
+
+registerServiceWorker();
+
+/**
+ * Connection state and the queue of orders taken while it was down, in one
+ * place so the header badge, the order screen and any toast all read the same
+ * numbers rather than each polling IndexedDB on their own.
+ */
+Alpine.store('offline', {
+    online: navigator.onLine,
+    pending: 0,
+    /** Set after a flush so the page can say what actually happened. */
+    lastResult: null,
+
+    async init() {
+        this.pending = await pendingCount();
+
+        window.addEventListener('online', () => {
+            this.online = true;
+            this.drain();
+        });
+
+        window.addEventListener('offline', () => {
+            this.online = false;
+        });
+
+        // A page opened after the connection came back never fires `online`,
+        // so the queue has to be drained on load too or it would sit there
+        // until the network happened to flap.
+        if (this.online) this.drain();
+    },
+
+    async queue(payload) {
+        await queueOrder(payload);
+        this.pending = await pendingCount();
+    },
+
+    async drain() {
+        const result = await flush();
+        this.pending = await pendingCount();
+
+        if (result) this.lastResult = result;
+
+        return result;
+    },
+
+    /** Sign-out: the next person here must not find the previous one's data. */
+    async wipe() {
+        await clearAll();
+        this.pending = 0;
+    },
+});
 
 Alpine.data('notificationBell', (initialUnread = 0) => ({
     open: false,

@@ -30,6 +30,7 @@ use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
+use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
 use App\Http\Middleware\SetLocale;
@@ -114,6 +115,10 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 
     Route::get('transfers', [TransferController::class, 'index'])->name('transfers.index');
     Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
+
+    // Drain for orders taken while the connection was down. Session-authed on
+    // purpose - see Web\SyncController for why it does not reuse the API route.
+    Route::post('sync/push', [WebSyncController::class, 'push'])->name('sync.push');
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
     Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show'])->name('transfers.receipt');

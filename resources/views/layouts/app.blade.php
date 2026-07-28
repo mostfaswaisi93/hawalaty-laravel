@@ -258,7 +258,12 @@
 
             {{-- Confirmed: an accidental click here drops unsaved work and forces
                  the operator to re-enter the license code to get back in. --}}
-            <form method="POST" action="{{ route('logout') }}" id="tenant-logout-form">@csrf</form>
+            {{-- The wipe runs BEFORE the post: once the session is gone the page
+                 is navigating away, and whatever this browser still held of the
+                 previous member's orders and cached screens must not be there
+                 for whoever signs in next. --}}
+            <form method="POST" action="{{ route('logout') }}" id="tenant-logout-form"
+                @submit="$store.offline.wipe()">@csrf</form>
             <button
                 type="button"
                 @click="confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'tenant-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
@@ -366,6 +371,22 @@
             </div>
 
             <div class="flex items-center gap-4 md:gap-6">
+                {{-- Connection and queue state. Shown only when there is
+                     something to say: a permanent "you are online" badge is
+                     noise that trains people to stop reading it. --}}
+                <div x-show="!$store.offline.online || $store.offline.pending" x-cloak
+                    class="flex items-center gap-2 rounded-full px-3 py-1.5 font-body-sm font-bold"
+                    :class="$store.offline.online ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error'"
+                    :title="$store.offline.online
+                        ? @js(__('جارٍ إرسال الطلبات المحفوظة...'))
+                        : @js(__('لا يوجد اتصال - الطلبات تُحفظ على هذا الجهاز'))">
+                    <span class="material-symbols-outlined !text-xl"
+                        x-text="$store.offline.online ? 'sync' : 'cloud_off'"
+                        :class="$store.offline.online && $store.offline.pending ? 'animate-spin' : ''"></span>
+                    <span x-show="$store.offline.pending" class="font-numeral-lg" x-text="$store.offline.pending"></span>
+                    <span class="hidden sm:inline" x-show="!$store.offline.online">{{ __('بدون اتصال') }}</span>
+                </div>
+
                 {{-- notifications --}}
                 <div class="relative" x-data="notificationBell({{ auth('tenant')->user()->unreadNotifications()->count() }})" @click.outside="open = false">
                     <button type="button" @click="toggle()" class="relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('الإشعارات') }}" title="{{ __('الإشعارات') }}">
