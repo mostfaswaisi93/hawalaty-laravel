@@ -55,6 +55,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
+    <x-skip-link />
     <div class="page-enter flex min-h-screen flex-col bg-surface text-on-surface">
         <header class="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-inline-md shadow-sm md:px-inline-lg">
             <a href="{{ route('login') }}" class="flex items-center gap-3" title="{{ __('حوالاتي') }}">
@@ -80,7 +81,10 @@
             </div>
         </header>
 
-        <main class="w-full flex-grow pt-16 lg:grid lg:grid-cols-2">
+        {{-- Fewer controls ahead of it than the app shell, but /help renders
+             here for a guest and runs long. See layouts/app.blade.php for why
+             the target is focusable. --}}
+        <main id="main-content" tabindex="-1" class="w-full flex-grow pt-16 focus:outline-none lg:grid lg:grid-cols-2">
             @yield('content')
         </main>
 
