@@ -661,7 +661,12 @@ php artisan test
 composer test
 ```
 
-**322 tests, 7 061 assertions.**
+**340 tests, 7 146 assertions.**
+
+> Two of these suites guard against the same kind of defect: one that renders
+> perfectly, passes every other test, and is only ever noticed by a user who
+> cannot see the screen. A missing translation key falls back to printing the
+> Arabic source; a `<label>` with no `for` announces nothing. Neither throws.
 
 Platform tests run against an **in-memory SQLite** database (`phpunit.xml`). Tenant tests do not, and cannot: `database/migrations/tenant` uses MySQL-only DDL, and `RefreshDatabase` only ever runs `database/migrations` anyway. [`TenantTestCase`](tests/TenantTestCase.php) therefore points the `tenant` connection at a **dedicated, disposable MySQL database**, migrates it once, and wraps each test in a transaction it rolls back - the same isolation `RefreshDatabase` gives, done by hand because `migrate:fresh` has to target a non-default connection.
 
@@ -683,6 +688,7 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Admin/SettlementTest`](tests/Feature/Admin/SettlementTest.php) | Clearing arithmetic, the rounding residual, period boundaries, and confirmed runs being immutable |
 | [`Api/TenantApiCoverageTest`](tests/Feature/Api/TenantApiCoverageTest.php) | The customer, notification, search and receipt endpoints, plus the `X-License-Code` requirement |
 | [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | **Every `__()` string in the codebase has a catalog entry** (a missing one silently shows Arabic to English users), both files sorted and identical, no English value left as Arabic |
+| [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag |
 | [`WhatsApp/WhatsAppSenderTest`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) + the two unit tests | The send guard matrix, both drivers, E.164 normalisation, Arabic message formatting |
 
 ```bash
