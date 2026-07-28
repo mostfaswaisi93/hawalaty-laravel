@@ -17,7 +17,7 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
   - [The two planes](#the-two-planes)
-  - [Multi-tenancy - database per tenant](#multi-tenancy--database-per-tenant)
+  - [Multi-tenancy - database per tenant](#multi-tenancy---database-per-tenant)
   - [Request lifecycle](#request-lifecycle)
   - [Authentication guards](#authentication-guards)
   - [Roles & permissions](#roles--permissions)
@@ -514,6 +514,8 @@ Two mistakes account for most directional bugs in this codebase, both already fi
 Everything lives in [`resources/css/app.css`](resources/css/app.css). **Tailwind CSS v4 is configured in CSS, not JavaScript** - there is no `tailwind.config.js`, and adding one will not be read.
 
 If your editor flags `Unknown at rule @custom-variant` or `@source`, that is the CSS language server not knowing Tailwind v4 syntax. The build is correct; point the editor at the Tailwind CSS IntelliSense extension or silence `css.lint.unknownAtRules`.
+
+> **Never run `npm run build` straight after `php artisan view:clear`.** `app.css` scans `storage/framework/views/*.php` via `@source` (that directory is gitignored, so it needs declaring explicitly). With it emptied, the build succeeds, says nothing, and ships a stylesheet missing every utility that only appears in compiled Blade - about 18 kB of rules. Run `php artisan view:cache` first, or just build before clearing.
 
 **Colour is two-layered.** Raw `R G B` triples are declared as `--c-<name>` under `:root` and again under `.dark`, then mapped once inside `@theme`:
 

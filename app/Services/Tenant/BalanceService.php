@@ -2,6 +2,7 @@
 
 namespace App\Services\Tenant;
 
+use App\Enums\ChangeMethod;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
 use App\Models\Tenant\Bank;
@@ -27,10 +28,22 @@ use Illuminate\Support\Carbon;
  * which has no `banks` row and is therefore reported as its own synthetic line.
  * Expenses always carry a bank, so they debit it directly.
  *
- * CHANGE IS NOT NETTED. `transfers.change_amount` is money handed back on a cash
- * order, but whether it is an outflow or merely part of the tender is a business
- * question this code should not answer silently - it is surfaced as its own
- * figure, clearly labelled, and left out of the balance.
+ * CHANGE IS NOT REVENUE, AND IS NOT SUBTRACTED FROM IT. `transfers.amount` is the
+ * order total, computed server-side from the line items - it is never the tender.
+ * The business earned exactly that, so `change_amount` is already excluded from
+ * income and subtracting it again would take the same money away twice. It is
+ * reported on its own as `changeGiven`, for information.
+ *
+ * PER ACCOUNT IT IS A DIFFERENT STORY, and this is the part that used to be
+ * wrong. Change can be paid out of a DIFFERENT account than the one that took
+ * the payment - cash in hand, the remainder sent to the customer's wallet. When
+ * that happens the wallet really did pay money out and the drawer really did
+ * take more in than the order was worth, and reporting neither leg made a real
+ * movement invisible. Both legs are now booked (see `byAccount`), so an account
+ * row reports MOVEMENT rather than revenue. Change that stays inside one account
+ * is skipped, because paying yourself nets to zero.
+ *
+ * The invariant that holds either way: Σ(account net) == totalIn - totalOut.
  *
  * Windows are HALF-OPEN [from, to+1day) throughout - the same reason as
  * SettlementService: `expenses.date` is a cast date stored as "Y-m-d H:i:s", so
@@ -103,7 +116,7 @@ class BalanceService
 
     /**
      * One row per account - every bank/wallet plus the cash drawer - with what
-     * came in, what went out, and the difference.
+     * moved in, what moved out, and the difference.
      *
      * Accounts with no movement at all are dropped: a statement listing twenty
      * idle wallets buries the two that actually moved.
@@ -136,6 +149,26 @@ class BalanceService
             ->where('created_at', '>=', $start)->where('created_at', '<', $end)
             ->sum('amount');
 
+        $cashOut = 0.0;
+
+        // Both legs of any change that crossed accounts - see the class docblock.
+        foreach ($this->crossAccountChange($start, $end) as $leg) {
+            // The account that handed the change over is down by it...
+            if ($leg['fromBankId'] === null) {
+                $cashOut += $leg['amount'];
+            } else {
+                $outByBank[$leg['fromBankId']] = (float) ($outByBank[$leg['fromBankId']] ?? 0) + $leg['amount'];
+            }
+
+            // ...and the account that took the payment received that much more
+            // than the order was worth, because the customer over-tendered.
+            if ($leg['toBankId'] === null) {
+                $cashIn += $leg['amount'];
+            } else {
+                $inByBank[$leg['toBankId']] = (float) ($inByBank[$leg['toBankId']] ?? 0) + $leg['amount'];
+            }
+        }
+
         $rows = [];
 
         // withTrashed: a retired bank must still show the money that moved
@@ -158,20 +191,60 @@ class BalanceService
             ];
         }
 
-        if ($cashIn > 0) {
+        if ($cashIn > 0 || $cashOut > 0) {
             array_unshift($rows, [
                 'id' => self::CASH,
                 'name' => __('نقدي'),
                 'isCash' => true,
                 'in' => round($cashIn, 2),
-                // Cash has no account row, so an expense can never be booked
-                // against it - every expense names a bank.
-                'out' => 0.0,
-                'net' => round($cashIn, 2),
+                // An expense can never be booked against cash - every expense
+                // names a bank - so the only way the drawer pays out is change.
+                'out' => round($cashOut, 2),
+                'net' => round($cashIn - $cashOut, 2),
             ]);
         }
 
         return $rows;
+    }
+
+    /**
+     * Completed orders whose change left one account and whose payment landed in
+     * another. Change returned from the same account it was paid into is left
+     * out: it nets to zero, and booking both legs would only inflate the gross
+     * figures without changing anyone's balance.
+     *
+     * A null bank id means the cash drawer.
+     *
+     * @return array<int, array{amount: float, fromBankId: ?string, toBankId: ?string}>
+     */
+    private function crossAccountChange(Carbon $start, Carbon $end): array
+    {
+        $orders = Transfer::query()
+            ->where('status', TransferStatus::Completed->value)
+            ->where('created_at', '>=', $start)->where('created_at', '<', $end)
+            ->whereNotNull('change_amount')
+            ->where('change_amount', '>', 0)
+            ->get(['payment_method', 'bank_id', 'change_method', 'change_bank_id', 'change_amount']);
+
+        $legs = [];
+
+        foreach ($orders as $order) {
+            $to = $order->payment_method === PaymentMethod::Bank ? $order->bank_id : null;
+            $from = $order->change_method === ChangeMethod::Bank ? $order->change_bank_id : null;
+
+            // Same account (including cash-to-cash): nothing moved between them.
+            if ($from === $to) {
+                continue;
+            }
+
+            $legs[] = [
+                'amount' => (float) $order->change_amount,
+                'fromBankId' => $from,
+                'toBankId' => $to,
+            ];
+        }
+
+        return $legs;
     }
 
     /**

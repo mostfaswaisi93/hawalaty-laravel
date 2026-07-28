@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tenant;
 
+use App\Enums\ChangeMethod;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
 use App\Models\Tenant\Bank;
@@ -157,6 +158,82 @@ class BalanceServiceTest extends TenantTestCase
 
         $this->assertSame($s['totalIn'], round(array_sum(array_column($rows, 'in')), 2));
         $this->assertSame($s['totalOut'], round(array_sum(array_column($rows, 'out')), 2));
+    }
+
+    /**
+     * Change paid out of a DIFFERENT account than the one that took the payment
+     * is a real movement between two accounts. Booking neither leg - which is
+     * what used to happen - left the wallet looking untouched when it had just
+     * paid money out.
+     */
+    public function test_change_paid_from_another_account_moves_money_between_them(): void
+    {
+        $wallet = Bank::factory()->create(['name' => 'محفظة']);
+
+        // 100 order paid in cash; 30 of change sent back from the wallet. The
+        // customer therefore handed over 130.
+        $this->order([
+            'amount' => '100.00',
+            'payment_method' => PaymentMethod::Cash,
+            'has_change' => true,
+            'change_method' => ChangeMethod::Bank,
+            'change_bank_id' => $wallet->id,
+            'change_amount' => '30.00',
+        ]);
+
+        $rows = collect($this->service()->byAccount('2026-07-01', '2026-07-31'))->keyBy('name');
+
+        $this->assertSame(130.0, $rows[__('نقدي')]['in'], 'The drawer took the whole tender, not just the order total.');
+        $this->assertSame(0.0, $rows[__('نقدي')]['out']);
+
+        $this->assertSame(30.0, $rows['محفظة']['out'], 'The wallet paid the change out and must show it.');
+        $this->assertSame(-30.0, $rows['محفظة']['net']);
+    }
+
+    /** Change returned to the account that paid nets to zero - do not inflate it. */
+    public function test_change_within_one_account_is_not_booked(): void
+    {
+        $this->order([
+            'amount' => '100.00',
+            'payment_method' => PaymentMethod::Cash,
+            'has_change' => true,
+            'change_method' => ChangeMethod::Cash,
+            'change_amount' => '30.00',
+        ]);
+
+        $rows = collect($this->service()->byAccount('2026-07-01', '2026-07-31'))->keyBy('name');
+
+        $this->assertSame(100.0, $rows[__('نقدي')]['in']);
+        $this->assertSame(0.0, $rows[__('نقدي')]['out']);
+    }
+
+    /**
+     * The invariant that survives cross-account change, where `Σ in == totalIn`
+     * no longer can: the accounts still net to the headline position.
+     */
+    public function test_account_rows_always_net_to_the_headline_position(): void
+    {
+        $bank = Bank::factory()->create();
+        $wallet = Bank::factory()->create();
+
+        $this->order(['amount' => '200.00', 'payment_method' => PaymentMethod::Bank, 'bank_id' => $bank->id]);
+        $this->order([
+            'amount' => '100.00',
+            'payment_method' => PaymentMethod::Cash,
+            'has_change' => true,
+            'change_method' => ChangeMethod::Bank,
+            'change_bank_id' => $wallet->id,
+            'change_amount' => '30.00',
+        ]);
+        Expense::create(['description' => 'x', 'amount' => '45.00', 'bank_id' => $bank->id, 'date' => '2026-07-11']);
+
+        $s = $this->service()->summary('2026-07-01', '2026-07-31');
+        $rows = $this->service()->byAccount('2026-07-01', '2026-07-31');
+
+        $this->assertSame(
+            round($s['totalIn'] - $s['totalOut'], 2),
+            round(array_sum(array_column($rows, 'net')), 2),
+        );
     }
 
     /**

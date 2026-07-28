@@ -103,6 +103,31 @@ class CatalogNamingTest extends TenantTestCase
             ->assertSee('أصناف الفاكهة');
     }
 
+    /**
+     * The sidebar was reading the tenant's wording while the catalogue page
+     * itself still said "قائمة الطعام" - `$naming` was handed to the view and
+     * never used, so a fuel station saw its own name in the nav and a
+     * restaurant menu the moment it clicked through.
+     */
+    public function test_the_catalogue_page_uses_the_tenants_own_wording(): void
+    {
+        $owner = $this->owner();
+        $this->naming()->put([
+            CatalogNaming::CATALOG => 'أنواع المحروقات',
+            CatalogNaming::CATEGORY => 'تصنيف',
+            CatalogNaming::ITEM => 'منتج',
+        ]);
+
+        $this->actingAs($owner, 'tenant')->get('/menu')
+            ->assertOk()
+            ->assertSee('أنواع المحروقات')
+            // The buttons compose with a placeholder rather than a glued-on
+            // adjective, so any gender of noun stays grammatical.
+            ->assertSee('إضافة تصنيف')
+            ->assertSee('إضافة منتج')
+            ->assertDontSee('قائمة الطعام');
+    }
+
     public function test_the_naming_form_saves_over_http(): void
     {
         $owner = $this->owner();
