@@ -111,6 +111,14 @@ export async function flush() {
     try {
         const response = await fetch('/sync/push', {
             method: 'POST',
+            // MANUAL, not the default 'follow'. A session that timed out during
+            // a long shift redirects to /login, and following that returns 200
+            // HTML - so `response.ok` was true and the only thing that saved the
+            // queue was JSON.parse choking on markup. Orders were kept by an
+            // exception rather than by design, and a login page that ever
+            // answered in JSON would have made this report a SUCCESSFUL flush
+            // with nothing sent, hiding a dead session while orders piled up.
+            redirect: 'manual',
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
@@ -127,14 +135,21 @@ export async function flush() {
             }),
         });
 
-        // 419 is an expired CSRF token and 401/403 a dead session: the orders
-        // are fine, this browser just cannot post right now. Keeping them
-        // queued is the only safe move - dropping them would lose real sales.
+        // A redirect now arrives as an opaque response: status 0, ok false.
+        // 419 is an expired CSRF token, 401/403 a dead session. In every case
+        // the orders are fine and this browser simply cannot post right now,
+        // so they stay queued - dropping them would lose real sales.
         if (!response.ok) {
             return { ok: false, status: response.status, kept: queued.length };
         }
 
         const result = await response.json();
+
+        // The envelope must actually be ours. Anything else is not a verdict on
+        // these orders, and treating it as one would forget them silently.
+        if (!Array.isArray(result?.applied) || !Array.isArray(result?.alreadyApplied)) {
+            return { ok: false, status: response.status, kept: queued.length };
+        }
 
         // Applied AND already-applied both mean the server has it. A failed one
         // stays queued only if it could still succeed later; a validation
