@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 
 class LicenseService
 {
+    /** How many team members the licence detail page peeks at. See show(). */
+    private const TEAM_PEEK = 25;
+
     public function __construct(private readonly TenantProvisioner $provisioner) {}
 
     public function list(?string $search, ?string $status, ?string $packageId, int $perPage = 20): LengthAwarePaginator
@@ -71,7 +74,7 @@ class LicenseService
      * TenantConnectionResolver::resolve() and 500'd on every suspended/
      * expired license.
      *
-     * @return array{license: License, team: Collection, recentActivity: Collection}
+     * @return array{license: License, team: Collection, teamTotal: int, recentActivity: Collection}
      */
     public function show(License $license): array
     {
@@ -79,6 +82,7 @@ class LicenseService
 
         $team = new Collection;
         $recentActivity = new Collection;
+        $teamTotal = 0;
 
         $connection = $license->databaseConnection;
 
@@ -101,7 +105,14 @@ class LicenseService
 
                 DB::purge('tenant');
 
-                $team = TeamMember::query()->with('role')->get();
+                // Capped, like the activity list beside it. This card is a PEEK
+                // - "قراءة مباشرة من قاعدة بيانات المستأجر" - and an uncapped
+                // get() would render every member a tenant has ever had onto an
+                // admin page that exists to answer "who is on this account?".
+                // `teamTotal` is what makes the cap honest: the page says how
+                // many were left out instead of quietly showing a partial list.
+                $teamTotal = TeamMember::query()->count();
+                $team = TeamMember::query()->with('role')->orderBy('name')->take(self::TEAM_PEEK)->get();
                 $recentActivity = AuditLog::query()->latest()->take(10)->get();
             } finally {
                 // Restore the connection config to whatever it was before
@@ -116,6 +127,7 @@ class LicenseService
         return [
             'license' => $license,
             'team' => $team,
+            'teamTotal' => $teamTotal,
             'recentActivity' => $recentActivity,
         ];
     }

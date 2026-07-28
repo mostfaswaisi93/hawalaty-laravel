@@ -100,7 +100,11 @@
                 <div>
                     <p class="mb-1 text-sm opacity-70">{{ __('إجمالي طلبات هذا الأسبوع') }}</p>
                     <h4 class="mb-4 text-3xl font-bold" dir="ltr">{{ $weeklyTotalCount }}</h4>
-                    <div class="mt-4 flex h-24 items-end gap-2">
+                    {{-- dir="ltr": these are the last seven DAYS, oldest first, so
+                         inheriting RTL put today on the far left and a week ago on
+                         the right. Same axis as the activity heatmap and the admin
+                         trend chart - time reads left to right in all three. --}}
+                    <div class="mt-4 flex h-24 items-end gap-2" dir="ltr">
                         @foreach ($weeklyActivity as $day)
                             <div class="flex h-full w-full flex-col items-center justify-end gap-1">
                                 <span class="font-numeral-lg text-[10px] opacity-70" dir="ltr">{{ $day['count'] }}</span>

@@ -171,24 +171,45 @@
                 </div>
             </div>
 
-            <div class="flex items-end justify-between gap-3 overflow-x-auto pb-2">
+            {{--
+                dir="ltr" even in Arabic, so time runs OLDEST-LEFT to NEWEST-RIGHT.
+                Inheriting RTL put February on the right and July on the left, which
+                is not how a trend is read - and it disagreed with the activity
+                heatmap, which is already pinned LTR for exactly this reason.
+            --}}
+            <div class="flex items-end justify-between gap-3 overflow-x-auto pb-2" dir="ltr">
                 @foreach ($trend as $month)
+                    @php
+                        // Paired bars share one scale so the two series stay comparable.
+                        // A zero is drawn as ZERO: the old code gave it 2% (~3.5px of
+                        // the 176px track), a visible stub that read as "a small
+                        // amount" when the truth was none at all.
+                        $payHeight = $month['payments'] > 0 ? max(4, round($month['payments'] / $trendMax * 100)) : 0;
+                        $expHeight = $month['expenses'] > 0 ? max(4, round($month['expenses'] / $trendMax * 100)) : 0;
+                    @endphp
                     <div class="flex min-w-14 flex-1 flex-col items-center gap-2">
-                        <div class="flex h-44 w-full items-end justify-center gap-1.5">
-                            {{-- Paired bars share one scale so the two series stay comparable. --}}
-                            <div class="group relative flex h-full flex-1 items-end justify-center">
+                        {{-- pt-6 reserves headroom for the value above the tallest bar;
+                             border-b is the baseline a zero month sits flat on. --}}
+                        <div class="flex h-44 w-full items-end justify-center gap-1.5 border-b border-outline-variant pt-6">
+                            <div class="relative flex h-full flex-1 items-end justify-center">
                                 <div class="grow-bar w-full max-w-8 rounded-t-lg bg-primary transition-all"
-                                    style="height: {{ $month['payments'] > 0 ? max(4, round($month['payments'] / $trendMax * 100)) : 2 }}%; --d: {{ $loop->index * 80 }}ms"></div>
-                                <span class="pointer-events-none absolute -top-7 whitespace-nowrap rounded-lg bg-inverse-surface px-2 py-1 text-[11px] font-bold text-inverse-on-surface opacity-0 transition-opacity group-hover:opacity-100" dir="ltr">
-                                    {{ number_format($month['payments'], 0) }} ₪
-                                </span>
+                                    style="height: {{ $payHeight }}%; --d: {{ $loop->index * 80 }}ms"></div>
+                                {{-- Printed, not hovered. The value used to live in a
+                                     `group-hover` tooltip, which no touch screen can
+                                     ever show - so on a tablet the amounts simply did
+                                     not exist. --}}
+                                @if ($month['payments'] > 0)
+                                    <span class="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-numeral-lg text-[10px] font-bold text-primary"
+                                        style="bottom: calc({{ $payHeight }}% + 3px)" dir="ltr">{{ number_format($month['payments'], 0) }}</span>
+                                @endif
                             </div>
-                            <div class="group relative flex h-full flex-1 items-end justify-center">
+                            <div class="relative flex h-full flex-1 items-end justify-center">
                                 <div class="grow-bar w-full max-w-8 rounded-t-lg bg-error transition-all"
-                                    style="height: {{ $month['expenses'] > 0 ? max(4, round($month['expenses'] / $trendMax * 100)) : 2 }}%; --d: {{ $loop->index * 80 + 40 }}ms"></div>
-                                <span class="pointer-events-none absolute -top-7 whitespace-nowrap rounded-lg bg-inverse-surface px-2 py-1 text-[11px] font-bold text-inverse-on-surface opacity-0 transition-opacity group-hover:opacity-100" dir="ltr">
-                                    {{ number_format($month['expenses'], 0) }} ₪
-                                </span>
+                                    style="height: {{ $expHeight }}%; --d: {{ $loop->index * 80 + 40 }}ms"></div>
+                                @if ($month['expenses'] > 0)
+                                    <span class="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-numeral-lg text-[10px] font-bold text-error"
+                                        style="bottom: calc({{ $expHeight }}% + 3px)" dir="ltr">{{ number_format($month['expenses'], 0) }}</span>
+                                @endif
                             </div>
                         </div>
                         <span class="font-body-sm text-[11px] text-on-surface-variant">{{ $month['label'] }}</span>
@@ -244,6 +265,17 @@
                 @endif
             </x-card>
 
+            {{--
+                This figure is `box balance x percentage`, which is NOT what a
+                partner is owed. A settlement pays out of DISTRIBUTABLE PROFIT
+                (payments - expenses, see SettlementService), while the box
+                balance also holds opening capital that was never profit - so
+                the same partner legitimately shows a much larger number here
+                than on the settlement screen. Both are correct about different
+                things, and an admin comparing the two without being told that
+                will read one of them as wrong. Hence the explicit note and the
+                link, rather than a bare number.
+            --}}
             <x-card title="{{ __('حصص الشركاء') }}" subtitle="{{ __('محسوبة من رصيد الصناديق') }}">
                 @if (empty($partners))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد شركاء بعد') }}</p>
@@ -261,6 +293,14 @@
                             </li>
                         @endforeach
                     </ul>
+                    <p class="mt-3 flex items-start gap-1.5 border-t border-outline-variant pt-3 text-[11px] text-on-surface-variant">
+                        <span class="material-symbols-outlined !text-base flex-shrink-0">info</span>
+                        {{ __('حصّة من رصيد الصناديق الحالي، وليست استحقاق مقاصة - المقاصة تُوزّع الأرباح القابلة للتوزيع فقط.') }}
+                    </p>
+                    <a href="{{ route('admin.settlements.index') }}" class="mt-2 flex items-center justify-center gap-1 font-body-sm font-bold text-primary hover:underline" title="{{ __('عرض المقاصة') }}">
+                        {{ __('عرض المقاصة') }}
+                        <span class="material-symbols-outlined !text-lg rtl:-scale-x-100">arrow_forward</span>
+                    </a>
                 @endif
             </x-card>
         </div>

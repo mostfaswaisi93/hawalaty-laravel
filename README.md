@@ -537,9 +537,17 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (918 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
-- **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`. Both files must keep identical key sets, in the same order - enforced by [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php).
-- Where a label is composed from a **tenant-supplied word**, use a placeholder (`__('إضافة :label', ['label' => $naming->item()])`) rather than gluing on a fixed adjective. Arabic adjectives agree in gender, so `":label جديدة"` is broken for every masculine noun the tenant might choose.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 023 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`.
+- **Both files are sorted with plain `SORT_STRING`** and must hold identical key sets. That is mechanical on purpose: they were previously ordered by a collation nothing could reproduce, which made every insertion a judgement call.
+
+#### A missing key is invisible, so a test looks for it
+
+`__()` falls back to returning its argument. A string with no catalog entry therefore renders *perfectly* in Arabic and silently renders **Arabic to English users too** - nothing throws, nothing is logged, and the page looks right to whoever wrote it. That is how 128 strings, most of the Super Admin portal, stayed untranslated without anyone noticing.
+
+[`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) now scans `app/`, `resources/`, `routes/`, `config/` and `database/` for every `__()` and `trans_choice()` argument and fails with the offending string and file if it has no key. It also rejects an `en.json` value left as its Arabic source.
+
+> When a label is composed from a **tenant-supplied word**, use a placeholder - `__('إضافة :label', ['label' => $naming->item()])` - never string concatenation. Arabic adjectives agree in gender, so `":label جديدة"` is broken for every masculine noun a tenant might choose.
 
 ### RTL notes
 
@@ -653,7 +661,7 @@ php artisan test
 composer test
 ```
 
-**318 tests, 4 582 assertions.**
+**322 tests, 7 061 assertions.**
 
 Platform tests run against an **in-memory SQLite** database (`phpunit.xml`). Tenant tests do not, and cannot: `database/migrations/tenant` uses MySQL-only DDL, and `RefreshDatabase` only ever runs `database/migrations` anyway. [`TenantTestCase`](tests/TenantTestCase.php) therefore points the `tenant` connection at a **dedicated, disposable MySQL database**, migrates it once, and wraps each test in a transaction it rolls back - the same isolation `RefreshDatabase` gives, done by hand because `migrate:fresh` has to target a non-default connection.
 
@@ -674,7 +682,7 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Admin/AdminPagesTest`](tests/Feature/Admin/AdminPagesTest.php) | Every Super Admin page renders and is guarded; the payment→box→license money flow |
 | [`Admin/SettlementTest`](tests/Feature/Admin/SettlementTest.php) | Clearing arithmetic, the rounding residual, period boundaries, and confirmed runs being immutable |
 | [`Api/TenantApiCoverageTest`](tests/Feature/Api/TenantApiCoverageTest.php) | The customer, notification, search and receipt endpoints, plus the `X-License-Code` requirement |
-| [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | `ar.json` and `en.json` hold the same keys in the same order, and every Arabic key maps to itself |
+| [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | **Every `__()` string in the codebase has a catalog entry** (a missing one silently shows Arabic to English users), both files sorted and identical, no English value left as Arabic |
 | [`WhatsApp/WhatsAppSenderTest`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) + the two unit tests | The send guard matrix, both drivers, E.164 normalisation, Arabic message formatting |
 
 ```bash
