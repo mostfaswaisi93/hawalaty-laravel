@@ -38,9 +38,14 @@ class SyncPushRequest extends FormRequest
             'events.*.clientUuid' => ['required', 'string', 'max:255'],
             'events.*.entityType' => ['required', Rule::in(['transfer', 'expense'])],
             'events.*.operation' => ['required', Rule::in(['create', 'update', 'delete'])],
+
+            // `payload` is validated as a whole and NOT broken into per-key
+            // rules. Adding even one (`payload.id`) makes validated() return
+            // just the keys that have rules, which silently emptied the payload
+            // of every create event - the record's actual fields were thrown
+            // away before SyncService ever saw them. The payload's real shape is
+            // checked per-event there, against the Store/Update request rules.
             'events.*.payload' => ['required', 'array'],
-            'events.*.payload.id' => ['nullable', 'string'],
-            'events.*.payload.clientUuid' => ['nullable', 'string'],
         ];
     }
 

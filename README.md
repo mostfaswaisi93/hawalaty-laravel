@@ -445,6 +445,25 @@ Mobile/SPA clients work offline and reconcile through two endpoints, both handle
 
 **Every event gets its own transaction**, not one for the batch, so a single bad event lands in `failed[]` while the rest of the batch still applies.
 
+### The browser also works offline
+
+The web app takes orders with no connection, and pages already visited stay readable. Scope stops there on purpose: a queued *edit* needs conflict resolution that a shop counter gains nothing from, so editing and the configuration screens still require the network.
+
+| Piece | Role |
+|-------|------|
+| [`resources/js/offline.js`](resources/js/offline.js) | The IndexedDB queue, the flush, and the sign-out wipe |
+| [`public/sw.js`](public/sw.js) | Service worker: network-first for pages, cache-first for hashed build assets |
+| [`Web\SyncController`](app/Http/Controllers/Web/SyncController.php) | `POST /sync/push` - the drain the page posts to |
+
+Four decisions behind it:
+
+- **`POST /sync/push` is a separate, session-authed route** rather than the API one. The page is authenticated by a cookie; calling `/api/v1/sync/push` would mean keeping a Sanctum token in the browser, an XSS-readable credential worth far more than the queue it would serve. Both controllers call the same `SyncService`, so they cannot diverge.
+- **The permission is checked on arrival.** Having been offline when an order was written is not a way around a permission the member does not hold.
+- **IndexedDB, not `localStorage`.** A queued order has to survive a tab crash and a phone dying mid-shift; `localStorage` is synchronous (it would block the order screen on every write) and shares a small origin-wide cap.
+- **`sw.js` is served from `/public` and not built by Vite.** A hashed filename would register as a *new* worker on every deploy while the old one kept serving - the URL a worker registers from has to be stable.
+
+The service worker never answers a POST from cache: an order must reach the server or fail loudly enough for the page to queue it. `/login`, `/logout`, `/sync` and `/api` are never cached, so a cached shell can never show a signed-out page to someone signed in, or a stale CSRF token that fails every later post. Signing out clears both the queue and the cache.
+
 ### Addressing a record the server has never seen
 
 An update or delete must say which record it means, and a record created offline has no server id yet. So a client may name either:
@@ -518,7 +537,7 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (911 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (918 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
 - **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`. Both files must keep identical key sets, in the same order - enforced by [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php).
 - Where a label is composed from a **tenant-supplied word**, use a placeholder (`__('إضافة :label', ['label' => $naming->item()])`) rather than gluing on a fixed adjective. Arabic adjectives agree in gender, so `":label جديدة"` is broken for every masculine noun the tenant might choose.
 
@@ -634,7 +653,7 @@ php artisan test
 composer test
 ```
 
-**312 tests, 4 534 assertions.**
+**318 tests, 4 582 assertions.**
 
 Platform tests run against an **in-memory SQLite** database (`phpunit.xml`). Tenant tests do not, and cannot: `database/migrations/tenant` uses MySQL-only DDL, and `RefreshDatabase` only ever runs `database/migrations` anyway. [`TenantTestCase`](tests/TenantTestCase.php) therefore points the `tenant` connection at a **dedicated, disposable MySQL database**, migrates it once, and wraps each test in a transaction it rolls back - the same isolation `RefreshDatabase` gives, done by hand because `migrate:fresh` has to target a non-default connection.
 
@@ -646,6 +665,7 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Tenant/BalanceServiceTest`](tests/Feature/Tenant/BalanceServiceTest.php), [`SalaryServiceTest`](tests/Feature/Tenant/SalaryServiceTest.php) | In-vs-out per account; a salary payment writing both an expense and a salary record atomically |
 | [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, LIKE-wildcard escaping, soft-deleted rows staying hidden, permission gating |
 | [`Tenant/SyncServiceTest`](tests/Feature/Tenant/SyncServiceTest.php) | Convergence: resends applying once, one bad event not taking the batch down, editing a record created offline, deleting what is already gone |
+| [`Tenant/OfflineOrderQueueTest`](tests/Feature/Tenant/OfflineOrderQueueTest.php) | The browser's drain over HTTP: the permission gate, idempotency, and an unfixable payload coming back as failed rather than being retried forever |
 | [`Tenant/CustomerServiceTest`](tests/Feature/Tenant/CustomerServiceTest.php) | Phone-as-identity, including that a blank name never blanks a known one |
 | [`Tenant/CatalogNamingTest`](tests/Feature/Tenant/CatalogNamingTest.php) | Tenant catalog wording and icon fallback |
 | [`Tenant/RoleServiceTest`](tests/Feature/Tenant/RoleServiceTest.php), [`TeamServiceTest`](tests/Feature/Tenant/TeamServiceTest.php), [`RolePageTest`](tests/Feature/Tenant/RolePageTest.php) | Permissions, the last-owner guard, and the roles UI |

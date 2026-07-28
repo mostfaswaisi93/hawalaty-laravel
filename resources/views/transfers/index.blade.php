@@ -381,17 +381,17 @@
                  * is checked by the same rules as one posted online - the server
                  * still recomputes the amount from the catalogue either way.
                  */
+                /**
+                 * Keys that do not apply are OMITTED, never sent as null.
+                 * `changeMethod` and friends are validated with Rule::in without
+                 * `nullable`, which passes over an absent key but rejects an
+                 * explicit null - so sending nulls made every cash order without
+                 * change fail validation on arrival, hours after it was taken.
+                 */
                 orderPayload() {
-                    return {
+                    const payload = {
                         customer: this.customer.trim(),
-                        customerPhone: this.customerPhone.trim() || null,
                         paymentMethod: this.paymentMethod,
-                        hasChange: this.paymentMethod === 'cash' ? this.hasChange : false,
-                        changeMethod: this.hasChange ? this.changeMethod : null,
-                        changeBankId: this.hasChange && this.changeMethod === 'bank' ? this.changeBankId : null,
-                        changeAmount: this.hasChange ? this.changeAmount : null,
-                        bankId: this.paymentMethod === 'bank' ? this.bankId : null,
-                        transferredAmount: this.paymentMethod === 'bank' ? this.transferredAmount : null,
                         items: this.cart.map(l => ({
                             itemId: l.id,
                             name: l.name,
@@ -399,6 +399,23 @@
                             price: l.price,
                         })),
                     };
+
+                    if (this.customerPhone.trim()) payload.customerPhone = this.customerPhone.trim();
+
+                    if (this.paymentMethod === 'cash') {
+                        payload.hasChange = this.hasChange;
+
+                        if (this.hasChange) {
+                            payload.changeMethod = this.changeMethod;
+                            payload.changeAmount = this.changeAmount;
+                            if (this.changeMethod === 'bank') payload.changeBankId = this.changeBankId;
+                        }
+                    } else {
+                        payload.bankId = this.bankId;
+                        payload.transferredAmount = this.transferredAmount;
+                    }
+
+                    return payload;
                 },
 
                 resetOrder() {
