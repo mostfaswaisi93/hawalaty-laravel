@@ -24,7 +24,9 @@
   - [Tenant provisioning](#tenant-provisioning)
 - [Features](#features)
   - [Tenant workspace](#tenant-workspace)
+  - [Catalog naming](#catalog-naming)
   - [Super Admin platform](#super-admin-platform)
+  - [Partner clearing (المقاصة)](#partner-clearing-المقاصة)
 - [Domain model](#domain-model)
 - [Tech stack](#tech-stack)
 - [Requirements](#requirements)
@@ -37,6 +39,8 @@
 - [Offline sync](#offline-sync)
 - [WhatsApp order notifications](#whatsapp-order-notifications)
 - [Localization](#localization)
+  - [RTL notes](#rtl-notes)
+- [Design system](#design-system)
 - [Project structure](#project-structure)
 - [Testing](#testing)
 - [Code style](#code-style)
@@ -160,19 +164,37 @@ If any step fails, it performs best-effort cleanup - dropping the database and u
 | **Dashboard** | Revenue tile, weekly-activity chart, recent transactions |
 | **Transfers** | Record transactions (cash or bank/wallet), with line items, change handling, and a status (completed / pending / failed) |
 | **History & receipts** | Searchable transaction history and printable **PDF receipts** (DomPDF) |
-| **Customers** | Customer directory linked to transactions |
+| **Customers** | Customer directory. Identity is the **phone number**, not the name - two walk-ins called "أحمد" are two customers, and the same phone is always the same person however the name is spelled that day |
 | **Banks & wallets** | Manage banks and e-wallets used for transfers. Each carries an optional **WhatsApp number** (`banks.phone`, stored in E.164) that receives an automatic Arabic message whenever a bank/wallet order is created - see [WhatsApp order notifications](#whatsapp-order-notifications) |
-| **Menu** | Product catalog: categories + items, with import/export |
+| **Catalog** | Categories + entries with prices, per-entry icons, and CSV import/export. **Not assumed to be food** - see [Catalog naming](#catalog-naming) |
 | **Expenses** | Track outgoings per bank/date |
-| **Reports** | Aggregated reporting with export |
+| **Balance** (`/balance`) | Money in (completed orders) vs money out (expenses, with salaries as a subtotal), per account and in total |
+| **Reports** | Aggregated reporting with CSV/PDF export and a year-long activity heatmap |
 | **Constants** | Custom, user-defined lookup lists and items |
-| **Team** | Team members, roles, and per-permission access |
-| **Devices** | Registered client devices (for API/sync) |
+| **Team & payroll** | Team members with a daily or monthly **salary**. Paying one writes an expense **and** a salary record in a single transaction, so it lands in Expenses, Balance and Reports at once, against the account it actually came out of |
+| **Roles** (`/roles`) | Create roles and tick the permissions they hold, described in plain language rather than by key |
+| **Devices** | Registered client devices (for API/sync), with a per-package limit and revocation |
 | **Activity log** | Read-only audit trail of tenant actions |
-| **Settings** | Self-service profile & password |
-| **Notifications & Search** | In-app notification center and global search |
+| **Settings** | Self-service profile & password, plus the catalog wording |
+| **Notifications & Search** | In-app notification center, and a global search with keyboard navigation (`Ctrl`/`⌘`+`K`, arrows, `Enter`) |
 | **Sync** | Offline `push` / `pull` endpoints for mobile clients |
 | **Help** | In-app help / usage guide page (`/help`) |
+
+Every list backed by a table is paginated, with a per-page control whose choice is remembered.
+
+#### Catalog naming
+
+The catalog ships worded as a restaurant menu - "قائمة الطعام", "فئة", "صنف" - because that is the common case, **not** because the app assumes food. A fruit shop, a fuel station and a hardware store run the same screens, and none of them sell "أصناف طعام".
+
+Three labels are therefore the tenant's own, set from Settings and stored in `tenant_settings`:
+
+| Key | Means | Default |
+|-----|-------|---------|
+| `catalog_label` | the section itself | `قائمة الطعام` |
+| `catalog_category_label` | one grouping, singular | `فئة` |
+| `catalog_item_label` | one entry, singular | `صنف` |
+
+Resolved once per request by [`CatalogNaming`](app/Services/Tenant/CatalogNaming.php), which falls back to the defaults if the table is unreachable so a missing label can never take a page down. Each category and entry also carries an **icon** chosen from a trade-grouped whitelist ([`CatalogIcons`](app/Services/Tenant/CatalogIcons.php)); an entry with no icon falls back to its category's, then to a neutral glyph.
 
 ### Super Admin platform
 
@@ -187,19 +209,39 @@ The Super Admin portal is a **full server-rendered Blade UI** under `/admin/*` (
 | **Partners** | `/admin/partners` | Business partners and their profit-share percentage (CRUD) |
 | **Payments** | `/admin/payments` | Record a customer payment - credits the box **and** renews the license atomically |
 | **Finance** | `/admin/finance` | Consolidated summary (box balances, partner shares), plus the withdrawal and platform-expense forms |
+| **Settlements** | `/admin/settlements`, `/admin/settlements/{id}` | Partner clearing (**المقاصة**) - see below |
 | **Backups** | `/admin/backups` | On-demand platform/tenant backups (download / delete) |
 | **Activity log** | `/admin/logs` | Platform-wide read-only audit trail |
-| **Settings** | `/admin/settings` | Key/value platform settings |
+| **Settings** | `/admin/settings` | Typed platform settings |
 
 > Withdrawals and platform expenses have no page of their own - both are forms on `/admin/finance`, since both exist to move money out of a box.
+
+#### Partner clearing (المقاصة)
+
+A settlement closes a period and states what each partner is owed. The arithmetic lives in one place, [`SettlementService`](app/Services/Admin/SettlementService.php):
+
+```
+distributable   = payments − expenses
+entitlement(i)  = distributable × percentage(i)
+net(i)          = entitlement(i) − drawn(i)
+retained        = distributable − Σ entitlement        (the residual)
+```
+
+Three decisions worth knowing:
+
+- **Withdrawals are not subtracted from `distributable`.** They are distributions *of* profit, not a cost of earning it; subtracting them would pay partners twice for the same money. They are netted per partner as `drawn` instead.
+- **`retained` is computed as the residual**, not as `distributable × (1 − Σ pct)`. That makes `Σ entitlement + retained == distributable` exact, so a rounding remainder can never go missing.
+- **Period windows are half-open, `[start, end)`.** `expenses.date` is a date cast stored as a datetime string; an inclusive `BETWEEN` upper bound silently dropped every row on the final day of the period.
+
+A run is created as a **draft** (one open draft at a time), reviewed, then **confirmed**. Confirmed runs are immutable, and each line snapshots the partner's name and percentage so a later edit to the partner never rewrites a statement that has already been agreed.
 
 ## Domain model
 
 Primary keys are **ULIDs** across the app. Financial tenant models use **soft deletes** so historical records (and the names they reference) survive deletion.
 
-**Platform models** ([`app/Models`](app/Models)): `Admin`, `Package`, `License`, `DatabaseConnection`, `Box`, `Partner`, `Withdrawal`, `Payment`, `Expense`, `Setting`, `ActivityLog`, `Backup`, and `TenantPersonalAccessToken` - Sanctum's token model made connection-aware, so one registered class serves both the platform `mysql` connection (for `Admin` tokens) and the per-request `tenant` connection (for team-member tokens).
+**Platform models** ([`app/Models`](app/Models)): `Admin`, `Package`, `License`, `DatabaseConnection`, `Box`, `Partner`, `Withdrawal`, `Payment`, `Expense`, `Setting`, `Settlement`, `SettlementLine`, `ActivityLog`, `Backup`, and `TenantPersonalAccessToken` - Sanctum's token model made connection-aware, so one registered class serves both the platform `mysql` connection (for `Admin` tokens) and the per-request `tenant` connection (for team-member tokens).
 
-**Tenant models** ([`app/Models/Tenant`](app/Models/Tenant)): `TeamMember`, `Role`, `Permission`, `Transfer`, `TransferLineItem`, `Customer`, `Bank`, `MenuCategory`, `MenuItem`, `Expense`, `ConstantList`, `ConstantListItem`, `Device`, `SyncEvent`, `AuditLog`.
+**Tenant models** ([`app/Models/Tenant`](app/Models/Tenant)): `TeamMember`, `Role`, `Permission`, `Transfer`, `TransferLineItem`, `Customer`, `Bank`, `MenuCategory`, `MenuItem`, `Expense`, `SalaryPayment`, `ConstantList`, `ConstantListItem`, `TenantSetting`, `Device`, `SyncEvent`, `AuditLog`.
 
 **Key enums** ([`app/Enums`](app/Enums)):
 
@@ -212,6 +254,8 @@ Primary keys are **ULIDs** across the app. Financial tenant models use **soft de
 | `BankType` | `bank`, `wallet` |
 | `RoleKey` | `owner`, `manager`, `staff` |
 | `PermissionKey` | the 7 keys listed above |
+| `SalaryPeriod` | `daily`, `monthly` |
+| `SettlementStatus` | `draft`, `confirmed` |
 | `SyncOperation` | `create`, `update`, `delete` |
 | `Backup*` / `Audit*` | backup status/trigger and audit action/category/entity types |
 
@@ -362,11 +406,18 @@ All endpoints live under the `/api/v1` prefix (see [`routes/api.php`](routes/api
 
 ```
 GET/POST/PUT/DELETE  /api/v1/transfers
+GET                  /api/v1/transfers/{id}/receipt      → application/pdf
 GET                  /api/v1/dashboard/stats, /api/v1/dashboard/weekly-activity
+GET                  /api/v1/customers, /api/v1/customers/{id}
+GET                  /api/v1/notifications
+POST                 /api/v1/notifications/{id}/read, /api/v1/notifications/read-all
+GET                  /api/v1/search?q=
 … /banks  /menu-items  /menu-categories  /expenses  /constant-lists
 … /team   /roles       /devices          /activity-log  /reports
 POST /api/v1/sync/push        GET /api/v1/sync/pull
 ```
+
+`/search` returns the same four groups as the header search and honours the **same permission rules** - banks and catalog entries only appear for a member who may manage them. Both surfaces call one [`SearchService`](app/Services/Tenant/SearchService.php); they used to be separate copies, which is how they drifted.
 
 **Admin / platform routes** - require an admin Sanctum token and the `admin` middleware, and **never** the `X-License-Code` header:
 
@@ -375,8 +426,11 @@ GET/POST/PUT/DELETE  /api/v1/admin/packages
 GET/POST … suspend|activate|change-package  /api/v1/admin/licenses
 … /boxes  /partners  /withdrawals  /payments  /expenses  /settings
 GET /api/v1/admin/finance/summary
+GET/POST/DELETE + preview|confirm  /api/v1/admin/settlements
 GET/POST/DELETE + download  /api/v1/admin/backups
 ```
+
+`GET /api/v1/admin/settlements/preview` returns the live, uncommitted position for the open period without writing anything. A run refused by the *state* rather than the payload - a draft already exists, or the period ends before the open period starts - returns **422 with a message**, so a client can tell it apart from a validation failure.
 
 ## Offline sync
 
@@ -444,8 +498,49 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (484 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
-- **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`. Both files must keep identical key sets.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (909 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`. Both files must keep identical key sets, in the same order - enforced by [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php).
+- Where a label is composed from a **tenant-supplied word**, use a placeholder (`__('إضافة :label', ['label' => $naming->item()])`) rather than gluing on a fixed adjective. Arabic adjectives agree in gender, so `":label جديدة"` is broken for every masculine noun the tenant might choose.
+
+### RTL notes
+
+Two mistakes account for most directional bugs in this codebase, both already fixed but easy to reintroduce:
+
+- **`dir` on a block element also sets `text-align`.** Putting `dir="ltr"` on a `<td>` to keep a phone number or amount readable left-aligns the whole cell while its `<th>` stays start-aligned, and the column stops lining up. Put the `dir` on an inner inline `<span>` instead.
+- **Directional glyphs need `rtl:-scale-x-100`.** Arrows, `send`, `logout` and `north_east` point the wrong way in RTL otherwise.
+
+## Design system
+
+Everything lives in [`resources/css/app.css`](resources/css/app.css). **Tailwind CSS v4 is configured in CSS, not JavaScript** - there is no `tailwind.config.js`, and adding one will not be read.
+
+If your editor flags `Unknown at rule @custom-variant` or `@source`, that is the CSS language server not knowing Tailwind v4 syntax. The build is correct; point the editor at the Tailwind CSS IntelliSense extension or silence `css.lint.unknownAtRules`.
+
+**Colour is two-layered.** Raw `R G B` triples are declared as `--c-<name>` under `:root` and again under `.dark`, then mapped once inside `@theme`:
+
+```css
+:root { --c-primary: 0 35 111; }
+.dark { --c-primary: 182 196 255; }
+@theme { --color-primary: rgb(var(--c-primary)); }
+```
+
+One utility name (`text-primary`) therefore follows the theme with no `dark:` variant at the call site. A few tokens are **deliberately fixed** and do not invert - `--c-primary-container`, `--c-secondary-container` and the `--c-sidebar*` family - because they are always a dark surface carrying light text.
+
+**The dark variant is redefined, and this line is load-bearing:**
+
+```css
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+Tailwind v4 defaults `dark:` to `@media (prefers-color-scheme: dark)`. This app toggles a `.dark` class, so without that line **every `dark:` utility silently does nothing** - the utility compiles, the class lands in the HTML, and the colour never changes. That was a real bug: status-pill text measured **1.62:1** against its background in dark mode and **11.75:1** after the fix.
+
+**Icon fonts are ligature-based.** `<span class="material-symbols-outlined">search</span>` renders an icon because the font maps the *word* `search` to a glyph - so before the font loads, the page shows the literal word. The guard hides icons until the font is ready:
+
+```css
+.material-symbols-outlined { visibility: hidden; }
+html.icons-ready .material-symbols-outlined { visibility: visible; }
+```
+
+The rule is intentionally **unlayered**, because Google ships `.material-symbols-outlined` unlayered and a layered rule would lose the cascade. On navigation the flag is read synchronously from `sessionStorage` and applied before first paint; going through `document.fonts.load()` (a promise, resolved *after* a paint) left one visibly iconless frame on every page change even though the font was already in cache.
 
 ## Project structure
 
@@ -457,8 +552,8 @@ app/
 ├── Http/
 │   ├── Controllers/
 │   │   ├── Api/V1/       # REST API (tenant) + Api/V1/Admin (platform)
-│   │   └── Web/          # Blade web app (tenant + Auth); Web/Admin/ is the full
-│   │                     #   Super Admin portal (10 controllers + Concerns/HasPerPage)
+│   │   └── Web/          # Blade web app (tenant + Auth) + Concerns/HasPerPage;
+│   │                     #   Web/Admin/ is the full Super Admin portal
 │   ├── Middleware/       # tenant.header, tenant.session, admin (EnsureAdmin), SetLocale
 │   ├── Requests/         # FormRequests: Admin/*, Tenant/*, Web/*, Auth/*
 │   └── Resources/        # API JSON resources: Admin/*, Tenant/*
@@ -488,13 +583,13 @@ resources/
 routes/                   # web.php, api.php, console.php
 ```
 
-### Shared admin table conventions
+### Shared table conventions
 
-Every paginated Super Admin table is built from two Blade components plus a controller trait:
+Every paginated table in the app - tenant **and** Super Admin, 14 controllers - is built from two Blade components plus one controller trait:
 
 | Piece | Role |
 |-------|------|
-| [`Concerns\HasPerPage`](app/Http/Controllers/Web/Admin/Concerns/HasPerPage.php) | Resolves `?per_page=`, **whitelisted to 10 / 50 / 100** - a crafted value can never request an unbounded page size |
+| [`Web\Concerns\HasPerPage`](app/Http/Controllers/Web/Concerns/HasPerPage.php) | Resolves `?per_page=`, **whitelisted to 10 / 50 / 100** - a crafted value can never request an unbounded page size |
 | [`<x-per-page>`](resources/views/components/per-page.blade.php) | The 10 / 50 / 100 selector. Auto-submits on change and re-emits every active filter as a hidden input (except `per_page` / `page`), so changing page size preserves filters and resets to page 1 |
 | [`<x-table-footer>`](resources/views/components/table-footer.blade.php) | Combines the selector with a themed paginator built from the paginator's own methods rather than `->links()`, so it matches the design system in light/dark and under RTL |
 
@@ -517,16 +612,27 @@ php artisan test
 composer test
 ```
 
-Tests run against an **in-memory SQLite** database (`phpunit.xml`), so no MySQL instance is needed to run the suite - the MySQL requirement applies to running the app, not the tests.
+**294 tests, 4 479 assertions.**
+
+Platform tests run against an **in-memory SQLite** database (`phpunit.xml`). Tenant tests do not, and cannot: `database/migrations/tenant` uses MySQL-only DDL, and `RefreshDatabase` only ever runs `database/migrations` anyway. [`TenantTestCase`](tests/TenantTestCase.php) therefore points the `tenant` connection at a **dedicated, disposable MySQL database**, migrates it once, and wraps each test in a transaction it rolls back - the same isolation `RefreshDatabase` gives, done by hand because `migrate:fresh` has to target a non-default connection.
+
+So running the full suite needs MySQL reachable; `--testsuite=Unit` and the platform feature tests do not.
 
 | Suite | Covers |
 |-------|--------|
-| [`tests/Feature/Admin/AdminPagesTest.php`](tests/Feature/Admin/AdminPagesTest.php) | Every Super Admin page renders and is guarded; the CRUD and payment→box→license money flow |
-| [`tests/Feature/WhatsApp/WhatsAppSenderTest.php`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) | The send guard matrix, both drivers, and every failure path |
-| [`tests/Unit/WhatsApp/PhoneNumberTest.php`](tests/Unit/WhatsApp/PhoneNumberTest.php) | E.164 normalisation |
-| [`tests/Unit/WhatsApp/NewOrderMessageTest.php`](tests/Unit/WhatsApp/NewOrderMessageTest.php) | Arabic new-order message formatting |
-
-> **Tenant-database tests are not possible.** `RefreshDatabase` only runs `database/migrations` (the platform schema); `database/migrations/tenant` uses MySQL-only DDL and cannot run on SQLite. Tenant-model tests therefore use **unsaved** models with relations set explicitly, so nothing touches the `tenant` connection.
+| [`Tenant/TransferServiceTest`](tests/Feature/Tenant/TransferServiceTest.php), [`ExpenseServiceTest`](tests/Feature/Tenant/ExpenseServiceTest.php), [`BankServiceTest`](tests/Feature/Tenant/BankServiceTest.php) | The money paths: order creation and totals, expense windows, bank deletion safety |
+| [`Tenant/BalanceServiceTest`](tests/Feature/Tenant/BalanceServiceTest.php), [`SalaryServiceTest`](tests/Feature/Tenant/SalaryServiceTest.php) | In-vs-out per account; a salary payment writing both an expense and a salary record atomically |
+| [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, LIKE-wildcard escaping, soft-deleted rows staying hidden, permission gating |
+| [`Tenant/CustomerServiceTest`](tests/Feature/Tenant/CustomerServiceTest.php) | Phone-as-identity, including that a blank name never blanks a known one |
+| [`Tenant/CatalogNamingTest`](tests/Feature/Tenant/CatalogNamingTest.php) | Tenant catalog wording and icon fallback |
+| [`Tenant/RoleServiceTest`](tests/Feature/Tenant/RoleServiceTest.php), [`TeamServiceTest`](tests/Feature/Tenant/TeamServiceTest.php), [`RolePageTest`](tests/Feature/Tenant/RolePageTest.php) | Permissions, the last-owner guard, and the roles UI |
+| [`Tenant/HttpLayerSmokeTest`](tests/Feature/Tenant/HttpLayerSmokeTest.php) | Every tenant page renders, is permission-guarded, and exposes a working paginator with a whitelisted page size |
+| [`PublicPagesTest`](tests/Feature/PublicPagesTest.php) | The public pages, plus a structural check that **no public route renders a tenant-guard view without `tenant.session`** - the bug that 500'd `/help` |
+| [`Admin/AdminPagesTest`](tests/Feature/Admin/AdminPagesTest.php) | Every Super Admin page renders and is guarded; the payment→box→license money flow |
+| [`Admin/SettlementTest`](tests/Feature/Admin/SettlementTest.php) | Clearing arithmetic, the rounding residual, period boundaries, and confirmed runs being immutable |
+| [`Api/TenantApiCoverageTest`](tests/Feature/Api/TenantApiCoverageTest.php) | The customer, notification, search and receipt endpoints, plus the `X-License-Code` requirement |
+| [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | `ar.json` and `en.json` hold the same keys in the same order, and every Arabic key maps to itself |
+| [`WhatsApp/WhatsAppSenderTest`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) + the two unit tests | The send guard matrix, both drivers, E.164 normalisation, Arabic message formatting |
 
 ```bash
 php artisan test --testsuite=Unit
