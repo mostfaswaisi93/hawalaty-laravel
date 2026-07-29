@@ -13,7 +13,21 @@
          and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
-    <link rel="apple-touch-icon" href="/favicon.svg">
+    {{-- PNG, not SVG: iOS ignores SVG for the home screen. --}}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    {{-- The manifest belongs here too, not only on the signed-in shell: the
+         login page is the first thing anyone opens, and a browser only offers
+         to install from a page that declares one.
+
+         Excluded on /admin/*, which shares this shell for its own login. The
+         manifest's start_url is the TENANT dashboard, so offering an install
+         there would put the wrong app on a platform operator's home screen. --}}
+    @unless (request()->is('admin/*'))
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="mobile-web-app-capable" content="yes">
+    @endunless
+    <meta name="theme-color" content="#00236f">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">

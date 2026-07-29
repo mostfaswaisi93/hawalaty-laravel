@@ -114,10 +114,25 @@
     <title>@yield('title', __('حوالاتي'))</title>
 
     {{-- No favicon was declared anywhere, so browsers fell back to probing /favicon.ico
-         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
+         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>.
+
+         favicon.ico was a ZERO-BYTE file while still being linked here: a browser
+         honouring it got an empty 200, which draws a blank icon and can beat the
+         SVG. It now holds a real 32px image.
+
+         apple-touch-icon must be a PNG - iOS ignores SVG for the home screen and
+         would have fallen back to a screenshot of the page. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
-    <link rel="apple-touch-icon" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    {{-- Installable to a home screen: this runs on a shop tablet all day, and
+         standalone display drops the browser chrome that has no use there. --}}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#00236f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">

@@ -164,6 +164,62 @@ class ViewMarkupTest extends TestCase
     }
 
     /**
+     * Every icon a shell links must exist and hold real bytes.
+     *
+     * `public/favicon.ico` sat at ZERO BYTES while three layouts linked it with
+     * rel="icon". A browser honouring that link gets an empty 200 and draws a
+     * blank icon - and it can beat the SVG that was working. Nothing failed;
+     * the tab simply looked wrong, which is why it survived a favicon fix.
+     */
+    public function test_every_linked_icon_exists_and_is_not_empty(): void
+    {
+        $missing = [];
+
+        foreach ($this->templates() as $rel => $src) {
+            if (! preg_match_all('/(?:href|content)="(\/[\w.\-]+\.(?:ico|svg|png|webmanifest))"/', $src, $m)) {
+                continue;
+            }
+
+            foreach (array_unique($m[1]) as $path) {
+                $file = public_path(ltrim($path, '/'));
+
+                if (! file_exists($file)) {
+                    $missing[] = "{$rel}: {$path} does not exist";
+                } elseif (filesize($file) === 0) {
+                    $missing[] = "{$rel}: {$path} is an empty file";
+                }
+            }
+        }
+
+        $this->assertSame([], $missing);
+    }
+
+    /** An install needs a parseable manifest naming icons that are really there. */
+    public function test_the_web_manifest_is_valid(): void
+    {
+        $path = public_path('manifest.webmanifest');
+        $this->assertFileExists($path);
+
+        $manifest = json_decode((string) file_get_contents($path), true);
+        $this->assertIsArray($manifest, 'manifest.webmanifest is not valid JSON.');
+
+        foreach (['name', 'start_url', 'display', 'theme_color', 'icons'] as $key) {
+            $this->assertArrayHasKey($key, $manifest, "manifest is missing `{$key}`.");
+        }
+
+        // Chrome will not offer an install without a 192px and a 512px icon.
+        $sizes = array_column($manifest['icons'], 'sizes');
+        $this->assertContains('192x192', $sizes);
+        $this->assertContains('512x512', $sizes);
+
+        foreach ($manifest['icons'] as $icon) {
+            $file = public_path(ltrim($icon['src'], '/'));
+            $this->assertFileExists($file, "manifest icon {$icon['src']} is missing.");
+            $this->assertGreaterThan(0, filesize($file), "manifest icon {$icon['src']} is empty.");
+        }
+    }
+
+    /**
      * Blade comments stripped: a comment that discusses `<label>` or shows an
      * `id="..."` example is prose, not markup, and counting it produced false
      * findings while this was being written.
