@@ -32,8 +32,21 @@ class TenantPersonalAccessToken extends PersonalAccessToken
      */
     protected $table = 'personal_access_tokens';
 
+    /**
+     * The platform side returns the app's CONFIGURED default rather than the
+     * literal string 'mysql'.
+     *
+     * Naming the connection hardcoded the deployment into the model: it is
+     * correct only while the platform connection happens to be called `mysql`,
+     * and breaks silently the moment `DB_CONNECTION` is anything else - which
+     * is exactly what the test environment is. Admin token creation could
+     * therefore never be exercised: `createToken()` went looking for a MySQL
+     * server and a database literally named ":memory:". The tenant side still
+     * names `tenant` explicitly, because that connection is built per request
+     * by ResolveTenantConnection and is never the default.
+     */
     public function getConnectionName()
     {
-        return app()->bound('currentLicense') ? 'tenant' : 'mysql';
+        return app()->bound('currentLicense') ? 'tenant' : config('database.default');
     }
 }
