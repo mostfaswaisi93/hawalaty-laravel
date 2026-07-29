@@ -444,6 +444,19 @@ POST /api/v1/sync/push        GET /api/v1/sync/pull
 
 `/search` returns the same four groups as the header search and honours the **same permission rules** - banks and catalog entries only appear for a member who may manage them. Both surfaces call one [`SearchService`](app/Services/Tenant/SearchService.php); they used to be separate copies, which is how they drifted.
 
+### Search terms
+
+Every search box on every list page goes through the `whereSearch` macro registered in [`AppServiceProvider`](app/Providers/AppServiceProvider.php), backed by [`SearchTerm`](app/Support/SearchTerm.php).
+
+The point is that a search box should answer the question that was typed into it. Each page used to build its own `"%{$search}%"`. Bindings kept that injection-safe, which is why it never looked wrong - but `%` and `_` remained **wildcards** inside the pattern, so the query quietly widened: `abu_ali@x.com` also matched `abuXali@x.com`, and a lone `%` returned the whole table through a box that is supposed to require two real characters.
+
+Two details are load-bearing:
+
+- **The escape character is `!`, not backslash.** A backslash has to be written `'\\'` in MySQL and `'\'` in SQLite, so the SQL text would differ per driver - on a codebase that runs MySQL for tenants and SQLite for the platform suite. `!` is literal in both.
+- **The macro is not called `whereLike`.** Laravel 13 ships a native `whereLike()`, which compiles to a bare `LIKE ?` with no ESCAPE clause and passes the value through untouched - so it has the same hole, *and* a macro of that name would be shadowed by the real method and silently never run.
+
+The OR-group is always parenthesised, so a term spread across three columns cannot escape its own condition and swallow the status and date filters beside it.
+
 **Admin / platform routes** - require an admin Sanctum token and the `admin` middleware, and **never** the `X-License-Code` header:
 
 ```
@@ -739,7 +752,8 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 |-------|--------|
 | [`Tenant/TransferServiceTest`](tests/Feature/Tenant/TransferServiceTest.php), [`ExpenseServiceTest`](tests/Feature/Tenant/ExpenseServiceTest.php), [`BankServiceTest`](tests/Feature/Tenant/BankServiceTest.php) | The money paths: order creation and totals, expense windows, bank deletion safety |
 | [`Tenant/BalanceServiceTest`](tests/Feature/Tenant/BalanceServiceTest.php), [`SalaryServiceTest`](tests/Feature/Tenant/SalaryServiceTest.php) | In-vs-out per account; a salary payment writing both an expense and a salary record atomically |
-| [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, LIKE-wildcard escaping, soft-deleted rows staying hidden, permission gating |
+| [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, soft-deleted rows staying hidden, permission gating |
+| [`Tenant/SearchEscapingTest`](tests/Feature/Tenant/SearchEscapingTest.php) | `%` and `_` treated as literals on real rows, the escape character searchable for itself, the OR-group not swallowing a neighbouring filter |
 | [`Tenant/SyncServiceTest`](tests/Feature/Tenant/SyncServiceTest.php) | Convergence: resends applying once, one bad event not taking the batch down, editing a record created offline, deleting what is already gone |
 | [`Tenant/OfflineOrderQueueTest`](tests/Feature/Tenant/OfflineOrderQueueTest.php) | The browser's drain over HTTP: the permission gate, idempotency, and an unfixable payload coming back as failed rather than being retried forever |
 | [`Tenant/CustomerServiceTest`](tests/Feature/Tenant/CustomerServiceTest.php) | Phone-as-identity, including that a blank name never blanks a known one |
