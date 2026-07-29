@@ -38,6 +38,7 @@
 - [Scheduled tasks](#scheduled-tasks)
 - [REST API](#rest-api)
 - [Offline sync](#offline-sync)
+  - [Installable to a home screen](#installable-to-a-home-screen)
 - [WhatsApp order notifications](#whatsapp-order-notifications)
 - [Localization](#localization)
   - [RTL notes](#rtl-notes)
@@ -487,6 +488,18 @@ Four decisions behind it:
 
 The service worker never answers a POST from cache: an order must reach the server or fail loudly enough for the page to queue it. `/login`, `/logout`, `/sync` and `/api` are never cached, so a cached shell can never show a signed-out page to someone signed in, or a stale CSRF token that fails every later post. Signing out clears both the queue and the cache.
 
+### Installable to a home screen
+
+[`public/manifest.webmanifest`](public/manifest.webmanifest) puts the workspace on a shop tablet's home screen in `standalone` display, which is where the offline queue already earns its keep — the browser chrome has no use at a counter.
+
+- **Declared on the tenant shells including the login page**, because a browser only offers to install from a page that carries a manifest, and the login page is the first thing anyone opens.
+- **Not declared on `/admin/*`**, which shares the guest shell for its own login. `start_url` is the tenant dashboard, so an install from the platform console would put the wrong app on an operator's home screen.
+- **`apple-touch-icon` is a PNG.** iOS ignores SVG for the home screen and falls back to a screenshot of the page.
+
+The icons are redrawn from `favicon.svg`'s own geometry with GD rather than rasterised, since Imagick with librsvg is not available here.
+
+> `public/favicon.ico` was a **zero-byte file** that three layouts linked with `rel="icon"`. A browser honouring that link gets an empty `200`, draws a blank icon, and can beat the SVG that was working — which is how it survived an earlier favicon fix. `ViewMarkupTest` now fails on any linked icon that is missing or empty.
+
 **A session that dies mid-shift must not look like a successful push.** The flush posts with `redirect: 'manual'`, because a timed-out session redirects `/sync/push` to `/login` and the default `follow` turns that into a `200` HTML response — `response.ok` would be true, and the queue would survive only because `JSON.parse` chokes on markup. Orders kept by an exception rather than by design is one login route away from a flush that reports success with nothing sent, hiding a dead session while orders pile up. With `manual`, a redirect arrives opaque (status `0`, not ok) and is refused outright; the response envelope is then checked to actually be the sync engine's before any order is treated as delivered.
 
 ### Addressing a record the server has never seen
@@ -710,7 +723,7 @@ php artisan test
 composer test
 ```
 
-**352 tests, 7 231 assertions.**
+**365 tests, 7 269 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
@@ -740,6 +753,7 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag, and each shell offers a working skip link |
 | [`Tenant/RouteAuthorizationTest`](tests/Feature/Tenant/RouteAuthorizationTest.php) | **Every tenant route that writes checks a permission** — `auth:tenant` only proves someone is signed in, and a hidden nav item is not access control |
 | [`Tenant/QueryBudgetTest`](tests/Feature/Tenant/QueryBudgetTest.php) | The main pages cost the **same number of queries at 5 rows as at 25** — an N+1 is invisible to every other kind of test |
+| [`ErrorPagesTest`](tests/Feature/ErrorPagesTest.php) | All five custom error views **render**, each offers a way back, and they survive the database being the thing that broke — asserting a status code never reaches these templates |
 | [`WhatsApp/WhatsAppSenderTest`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) + the two unit tests | The send guard matrix, both drivers, E.164 normalisation, Arabic message formatting |
 
 ```bash
