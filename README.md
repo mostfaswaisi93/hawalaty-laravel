@@ -723,7 +723,7 @@ php artisan test
 composer test
 ```
 
-**365 tests, 7 269 assertions.**
+**449 tests, 7 417 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
@@ -749,6 +749,9 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Admin/AdminPagesTest`](tests/Feature/Admin/AdminPagesTest.php) | Every Super Admin page renders and is guarded; the payment→box→license money flow |
 | [`Admin/SettlementTest`](tests/Feature/Admin/SettlementTest.php) | Clearing arithmetic, the rounding residual, period boundaries, and confirmed runs being immutable |
 | [`Api/TenantApiCoverageTest`](tests/Feature/Api/TenantApiCoverageTest.php) | The customer, notification, search and receipt endpoints, plus the `X-License-Code` requirement |
+| [`Api/TenantApiSmokeTest`](tests/Feature/Api/TenantApiSmokeTest.php) | All 15 tenant read endpoints, requested **with data present**, each answering JSON and refusing a guest |
+| [`Api/TenantApiWriteTest`](tests/Feature/Api/TenantApiWriteTest.php) | The write paths land, and a member without the permission is refused — the API has no hidden nav item to rely on |
+| [`Api/AdminApiSmokeTest`](tests/Feature/Api/AdminApiSmokeTest.php) | All 13 platform read endpoints, and that each refuses a **tenant** token — both guards issue Sanctum tokens against the same table |
 | [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | **Every `__()` string in the codebase has a catalog entry** (a missing one silently shows Arabic to English users), both files sorted and identical, no English value left as Arabic |
 | [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag, and each shell offers a working skip link |
 | [`Tenant/RouteAuthorizationTest`](tests/Feature/Tenant/RouteAuthorizationTest.php) | **Every tenant route that writes checks a permission** — `auth:tenant` only proves someone is signed in, and a hidden nav item is not access control |
