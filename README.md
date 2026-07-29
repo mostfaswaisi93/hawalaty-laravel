@@ -723,7 +723,7 @@ php artisan test
 composer test
 ```
 
-**449 tests, 7 417 assertions.**
+**468 tests, 7 460 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
@@ -752,6 +752,8 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Api/TenantApiSmokeTest`](tests/Feature/Api/TenantApiSmokeTest.php) | All 15 tenant read endpoints, requested **with data present**, each answering JSON and refusing a guest |
 | [`Api/TenantApiWriteTest`](tests/Feature/Api/TenantApiWriteTest.php) | The write paths land, and a member without the permission is refused — the API has no hidden nav item to rely on |
 | [`Api/AdminApiSmokeTest`](tests/Feature/Api/AdminApiSmokeTest.php) | All 13 platform read endpoints, and that each refuses a **tenant** token — both guards issue Sanctum tokens against the same table |
+| [`Api/ApiAuthTest`](tests/Feature/Api/ApiAuthTest.php) | Every login refusal, the 6/minute throttle, and that logout **revokes** the token rather than merely answering politely |
+| [`Tenant/CatalogTransferTest`](tests/Feature/Tenant/CatalogTransferTest.php) | CSV export/import over HTTP, including that a name a spreadsheet would execute is neutralised **on the route**, not only in the service |
 | [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | **Every `__()` string in the codebase has a catalog entry** (a missing one silently shows Arabic to English users), both files sorted and identical, no English value left as Arabic |
 | [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag, and each shell offers a working skip link |
 | [`Tenant/RouteAuthorizationTest`](tests/Feature/Tenant/RouteAuthorizationTest.php) | **Every tenant route that writes checks a permission** — `auth:tenant` only proves someone is signed in, and a hidden nav item is not access control |
