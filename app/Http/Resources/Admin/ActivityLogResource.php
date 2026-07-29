@@ -2,13 +2,14 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Controllers must eager-load `admin` before returning this resource.
  *
- * @mixin \App\Models\ActivityLog
+ * @mixin ActivityLog
  */
 class ActivityLogResource extends JsonResource
 {

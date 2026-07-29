@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Models\Partner;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Partner
+ * @mixin Partner
  */
 class PartnerResource extends JsonResource
 {

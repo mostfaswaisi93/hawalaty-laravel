@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\Bank;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Shapes App\Models\Tenant\Bank to match the Angular `Bank` interface in
  * D:\Angular\Hawalaty\src\app\data\banks.ts exactly.
  *
- * @mixin \App\Models\Tenant\Bank
+ * @mixin Bank
  */
 class BankResource extends JsonResource
 {

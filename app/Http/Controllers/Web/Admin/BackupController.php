@@ -69,7 +69,7 @@ class BackupController extends Controller
             'created_at' => $model->created_at?->toIso8601String(),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-        return response()->streamDownload(fn () => print($snapshot), "backup-{$model->id}.json");
+        return response()->streamDownload(fn () => print ($snapshot), "backup-{$model->id}.json");
     }
 
     public function destroy(string $backup): RedirectResponse

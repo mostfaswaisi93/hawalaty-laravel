@@ -66,9 +66,9 @@ class BankService
 
     /**
      * @throws ValidationException if the bank has any expense or transfer
-     *         history - deleting it would silently destroy or orphan
-     *         financial records. Direct the caller to deactivate it
-     *         instead (the `active` toggle already exists for this).
+     *                             history - deleting it would silently destroy or orphan
+     *                             financial records. Direct the caller to deactivate it
+     *                             instead (the `active` toggle already exists for this).
      */
     public function delete(Bank $bank): void
     {

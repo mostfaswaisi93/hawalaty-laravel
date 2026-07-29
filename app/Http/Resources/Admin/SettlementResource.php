@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Models\Settlement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Settlement
+ * @mixin Settlement
  */
 class SettlementResource extends JsonResource
 {

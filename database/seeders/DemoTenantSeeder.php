@@ -62,7 +62,7 @@ class DemoTenantSeeder extends Seeder
                 return; // provisioning failed - a hint was already printed
             }
         } else {
-            $this->command->info("Demo tenant «".self::BUSINESS_NAME."» already exists (license {$license->license_code}).");
+            $this->command->info('Demo tenant «'.self::BUSINESS_NAME."» already exists (license {$license->license_code}).");
         }
 
         TenantConnectionResolver::resolve($license->license_code);
@@ -108,7 +108,7 @@ class DemoTenantSeeder extends Seeder
                 'packageId' => $package->id,
             ]);
 
-            $this->command->info("Provisioned demo tenant «".self::BUSINESS_NAME."» (license {$license->license_code}).");
+            $this->command->info('Provisioned demo tenant «'.self::BUSINESS_NAME."» (license {$license->license_code}).");
 
             return $license;
         } catch (Throwable $e) {

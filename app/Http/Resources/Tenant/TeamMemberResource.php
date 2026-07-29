@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\TeamMember;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,7 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * resource. `tenantId` is intentionally omitted - no tenant_id column
  * exists anywhere in tenant space, see BACKEND_PROMPT.md section 4.
  *
- * @mixin \App\Models\Tenant\TeamMember
+ * @mixin TeamMember
  */
 class TeamMemberResource extends JsonResource
 {

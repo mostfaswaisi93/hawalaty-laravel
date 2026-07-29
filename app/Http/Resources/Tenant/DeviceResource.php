@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\Device;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +19,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * resource is built - it is NOT a real database column, see
  * Device::isCurrent().
  *
- * @mixin \App\Models\Tenant\Device
+ * @mixin Device
  */
 class DeviceResource extends JsonResource
 {

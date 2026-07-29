@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\ResolveTenantConnection;
 use App\Http\Middleware\ResolveTenantConnectionFromSession;
 use App\Http\Middleware\SetLocale;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -108,7 +109,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // This pins tenant.header immediately ahead of auth:sanctum in the
         // priority list so it always resolves the `tenant` connection first.
         $middleware->prependToPriorityList(
-            before: \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            before: AuthenticatesRequests::class,
             prepend: ResolveTenantConnection::class,
         );
 
@@ -128,7 +129,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // it gets carried along with (and stays ahead of) auth:tenant during
         // that same reordering pass.
         $middleware->prependToPriorityList(
-            before: \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            before: AuthenticatesRequests::class,
             prepend: ResolveTenantConnectionFromSession::class,
         );
     })

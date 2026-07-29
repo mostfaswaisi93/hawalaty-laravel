@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Controllers/Services must eager-load `box` and `partner` before returning
  * this resource.
  *
- * @mixin \App\Models\Withdrawal
+ * @mixin Withdrawal
  */
 class WithdrawalResource extends JsonResource
 {

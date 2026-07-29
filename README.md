@@ -48,6 +48,7 @@
   - [Shared table conventions](#shared-table-conventions)
   - [Accessible names are not optional](#accessible-names-are-not-optional)
 - [Testing](#testing)
+- [Continuous integration](#continuous-integration)
 - [Code style](#code-style)
 - [License](#license)
 
@@ -766,14 +767,29 @@ php artisan test --testsuite=Unit
 php artisan test tests/Feature/Admin/AdminPagesTest.php
 ```
 
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs Pint, the front-end build and the full suite on every push to `main` and on every pull request.
+
+It exists because **a guard nobody runs is not a guard**. Several suites here catch defects that render perfectly and pass every other check — a missing translation key, a `<label>` naming nothing, a write route with no permission check, an N+1, a `<main>` that cannot take focus. None of them bind unless they run unprompted.
+
+Two things the workflow needs:
+
+- **A real MySQL server**, because `database/migrations/tenant` uses MySQL-only DDL and cannot run on sqlite. `TenantTestCase` creates its own `hawalaty_testing_tenant` database on first use, so only the *server* has to exist; the platform half of the suite stays on sqlite.
+- **The `bcmath` extension**, which is required rather than optional: the box-balance guard and the settlement reconciliation compare money as decimal **strings**, never floats.
+
+The build runs *before* the tests. `TranslationFilesTest` reads the source, so a build failure would otherwise ship a broken page no PHP test can see.
+
 ## Code style
 
-Formatting is enforced with **Laravel Pint**:
+Formatting is enforced with **Laravel Pint** — and, since CI runs `--test`, that is now literally true rather than aspirational:
 
 ```bash
 ./vendor/bin/pint        # fix
-./vendor/bin/pint --test # check only
+./vendor/bin/pint --test # check only, and what CI runs
 ```
+
+> `--dirty` only inspects files you changed, which is convenient locally and hides drift. Twenty-nine files had never conformed; they were formatted in one pass when CI was added, with the suite green either side to show the change was import extraction and spacing, nothing behavioural.
 
 ## License
 
