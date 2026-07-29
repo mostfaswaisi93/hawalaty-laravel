@@ -31,13 +31,7 @@ class BankService
 
     private function query(?string $search = null): Builder
     {
-        $query = Bank::query();
-
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        return $query;
+        return Bank::query()->whereSearch('name', $search);
     }
 
     public function create(array $data): Bank

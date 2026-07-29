@@ -25,12 +25,7 @@ class LicenseService
     {
         $query = License::query()->with('package');
 
-        if ($search) {
-            $query->where(function ($inner) use ($search) {
-                $inner->where('customer_name', 'like', "%{$search}%")
-                    ->orWhere('license_code', 'like', "%{$search}%");
-            });
-        }
+        $query->whereSearch(['customer_name', 'license_code'], $search);
 
         if ($status) {
             $query->where('status', $status);

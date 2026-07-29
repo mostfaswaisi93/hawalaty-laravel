@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Models\TenantPersonalAccessToken;
 use App\Settings\PlatformSettings;
+use App\Support\SearchTerm;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
@@ -58,6 +60,35 @@ class AppServiceProvider extends ServiceProvider
         // added explicitly. See BACKEND_PROMPT.md section 7.
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Every list page's search box, in one place. Each one used to build
+        // its own "%{$search}%" and OR-group by hand; see SearchTerm for why
+        // that answered the wrong question, and why the escape character is
+        // `!`. Registered on the QUERY builder so it reaches Eloquent too, by
+        // Eloquent\Builder::__call forwarding.
+        //
+        // The OR-group is always parenthesised: without it, a term OR'd across
+        // three columns would escape its own condition and swallow the status
+        // and date filters sitting beside it.
+        Builder::macro('whereSearch', function (array|string $columns, ?string $term) {
+            $term = trim((string) $term);
+
+            if ($term === '') {
+                return $this;
+            }
+
+            $pattern = SearchTerm::pattern($term);
+            $grammar = $this->getGrammar();
+
+            return $this->where(function ($query) use ($columns, $pattern, $grammar) {
+                foreach ((array) $columns as $column) {
+                    $query->orWhereRaw(
+                        $grammar->wrap($column)." like ? escape '".SearchTerm::ESCAPE."'",
+                        [$pattern],
+                    );
+                }
+            });
         });
 
         // Policy auto-discovery for models under App\Models\Tenant\* WAS

@@ -28,16 +28,7 @@ class TeamService
 
     private function query(?string $search = null): Builder
     {
-        $query = TeamMember::query()->with('role');
-
-        if ($search) {
-            $query->where(function ($inner) use ($search) {
-                $inner->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        return $query;
+        return TeamMember::query()->with('role')->whereSearch(['name', 'email'], $search);
     }
 
     public function create(array $data): TeamMember
