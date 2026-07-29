@@ -260,6 +260,10 @@ Primary keys are **ULIDs** across the app. Financial tenant models use **soft de
 
 **Platform models** ([`app/Models`](app/Models)): `Admin`, `Package`, `License`, `DatabaseConnection`, `Box`, `Partner`, `Withdrawal`, `Payment`, `Expense`, `Setting`, `Settlement`, `SettlementLine`, `ActivityLog`, `Backup`, and `TenantPersonalAccessToken` - Sanctum's token model made connection-aware, so one registered class serves both the platform `mysql` connection (for `Admin` tokens) and the per-request `tenant` connection (for team-member tokens).
 
+**Append-only logs are indexed on `created_at`.** Both `activity_logs` (platform) and `audit_log` (tenant) grow for the life of the account and are read exclusively in `created_at DESC` order — the log pages, their API twins, and the two dashboards' "latest N". Without an index that is a full scan plus a filesort on every page load: free on demo data, unbounded on a real account.
+
+`activity_logs` carries `created_at` plus a composite `(admin_id, created_at)`, since its filter narrows by admin and still sorts by date. `audit_log` carries `created_at` and `category` as two separate indexes.
+
 **Tenant models** ([`app/Models/Tenant`](app/Models/Tenant)): `TeamMember`, `Role`, `Permission`, `Transfer`, `TransferLineItem`, `Customer`, `Bank`, `MenuCategory`, `MenuItem`, `Expense`, `SalaryPayment`, `ConstantList`, `ConstantListItem`, `TenantSetting`, `Device`, `SyncEvent`, `AuditLog`.
 
 **Key enums** ([`app/Enums`](app/Enums)):
@@ -558,7 +562,7 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 032 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 033 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
 - **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`.
 - **Both files are sorted with plain `SORT_STRING`** and must hold identical key sets. That is mechanical on purpose: they were previously ordered by a collation nothing could reproduce, which made every insertion a judgement call.
 
@@ -689,6 +693,9 @@ Enforced by [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php), because a cont
 - **A placeholder is not a name.** Filter inputs and `<select>`s need `aria-label`; a first option reading "كل الحالات" says what the default is, never what the control filters.
 - **A dialog needs `aria-labelledby`** and should move focus to its first field when it opens.
 - **Ids must be unique per render.** A component used twice on one page — the icon picker is, once for a category and once for an entry — has to derive its ids from something instance-specific. A duplicate id is worse than none: the label points at whichever copy the browser saw first.
+- **Every shell starts with a skip link.** All three put a sidebar and header ahead of the page, so reaching content by keyboard meant tabbing past ~30 controls on every load. [`<x-skip-link>`](resources/views/components/skip-link.blade.php) is the first thing in the tab order and hidden until focused.
+
+> **`<main>` carries `tabindex="-1"`, and that is not decoration.** A `<main>` is not focusable by default: without it the browser scrolls to the target but leaves focus where it was, so the next Tab returns to the navigation just skipped. A skip link that only moves the viewport is worse than none, because it looks like it worked.
 ```blade
 <x-table-footer :paginator="$rows" :perPage="$perPage" />
 ```
@@ -703,7 +710,7 @@ php artisan test
 composer test
 ```
 
-**344 tests, 7 192 assertions.**
+**352 tests, 7 231 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
@@ -730,7 +737,9 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Admin/SettlementTest`](tests/Feature/Admin/SettlementTest.php) | Clearing arithmetic, the rounding residual, period boundaries, and confirmed runs being immutable |
 | [`Api/TenantApiCoverageTest`](tests/Feature/Api/TenantApiCoverageTest.php) | The customer, notification, search and receipt endpoints, plus the `X-License-Code` requirement |
 | [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | **Every `__()` string in the codebase has a catalog entry** (a missing one silently shows Arabic to English users), both files sorted and identical, no English value left as Arabic |
-| [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag |
+| [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag, and each shell offers a working skip link |
+| [`Tenant/RouteAuthorizationTest`](tests/Feature/Tenant/RouteAuthorizationTest.php) | **Every tenant route that writes checks a permission** — `auth:tenant` only proves someone is signed in, and a hidden nav item is not access control |
+| [`Tenant/QueryBudgetTest`](tests/Feature/Tenant/QueryBudgetTest.php) | The main pages cost the **same number of queries at 5 rows as at 25** — an N+1 is invisible to every other kind of test |
 | [`WhatsApp/WhatsAppSenderTest`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) + the two unit tests | The send guard matrix, both drivers, E.164 normalisation, Arabic message formatting |
 
 ```bash
