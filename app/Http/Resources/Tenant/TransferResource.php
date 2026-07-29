@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\Transfer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,7 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `date` has no dedicated column - it maps to `created_at`, formatted as a
  * plain ISO date to match the mock data shape ("2026-07-01").
  *
- * @mixin \App\Models\Tenant\Transfer
+ * @mixin Transfer
  */
 class TransferResource extends JsonResource
 {
@@ -24,13 +25,18 @@ class TransferResource extends JsonResource
             'id' => (string) $this->id,
             'customer' => $this->customer,
             'date' => $this->created_at?->toDateString(),
-            'status' => $this->status->value,
+            // Null-safe on both enums, deliberately. They are never null on a
+            // fully loaded order - but a PARTIAL one (a narrowed ->select that
+            // omits the column) used to take the whole response down with a
+            // 500 over a single field. One odd row degrading to null is a
+            // smaller failure than an entire list disappearing.
+            'status' => $this->status?->value,
 
             'items' => TransferLineItemResource::collection($this->whenLoaded('lineItems')),
             'amount' => (float) $this->amount,
             'itemName' => $this->item_name,
 
-            'paymentMethod' => $this->payment_method->value,
+            'paymentMethod' => $this->payment_method?->value,
 
             // --- Cash scenario ---
             'hasChange' => $this->has_change,
