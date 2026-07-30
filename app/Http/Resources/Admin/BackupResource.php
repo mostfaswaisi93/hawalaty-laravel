@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Models\Backup;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Shapes App\Models\Backup to match the Angular `Backup` interface in
  * D:\Angular\Hawalaty\src\app\data\backups.ts.
  *
- * @mixin \App\Models\Backup
+ * @mixin Backup
  */
 class BackupResource extends JsonResource
 {

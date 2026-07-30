@@ -66,13 +66,7 @@ class MenuService
 
     public function listItems(?string $search = null): Collection
     {
-        $query = MenuItem::query()->with('menuCategory');
-
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        return $query->get();
+        return MenuItem::query()->with('menuCategory')->whereSearch('name', $search)->get();
     }
 
     public function createItem(array $data): MenuItem

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\ConstantList;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `string[]` shape. Controllers must eager-load `items` before returning
  * this resource.
  *
- * @mixin \App\Models\Tenant\ConstantList
+ * @mixin ConstantList
  */
 class ConstantListResource extends JsonResource
 {

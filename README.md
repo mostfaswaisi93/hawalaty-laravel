@@ -38,14 +38,17 @@
 - [Scheduled tasks](#scheduled-tasks)
 - [REST API](#rest-api)
 - [Offline sync](#offline-sync)
+  - [Installable to a home screen](#installable-to-a-home-screen)
 - [WhatsApp order notifications](#whatsapp-order-notifications)
 - [Localization](#localization)
   - [RTL notes](#rtl-notes)
+  - [Time reads left to right, in every chart](#time-reads-left-to-right-in-every-chart)
 - [Design system](#design-system)
 - [Project structure](#project-structure)
   - [Shared table conventions](#shared-table-conventions)
   - [Accessible names are not optional](#accessible-names-are-not-optional)
 - [Testing](#testing)
+- [Continuous integration](#continuous-integration)
 - [Code style](#code-style)
 - [License](#license)
 
@@ -259,6 +262,10 @@ Primary keys are **ULIDs** across the app. Financial tenant models use **soft de
 
 **Platform models** ([`app/Models`](app/Models)): `Admin`, `Package`, `License`, `DatabaseConnection`, `Box`, `Partner`, `Withdrawal`, `Payment`, `Expense`, `Setting`, `Settlement`, `SettlementLine`, `ActivityLog`, `Backup`, and `TenantPersonalAccessToken` - Sanctum's token model made connection-aware, so one registered class serves both the platform `mysql` connection (for `Admin` tokens) and the per-request `tenant` connection (for team-member tokens).
 
+**Append-only logs are indexed on `created_at`.** Both `activity_logs` (platform) and `audit_log` (tenant) grow for the life of the account and are read exclusively in `created_at DESC` order — the log pages, their API twins, and the two dashboards' "latest N". Without an index that is a full scan plus a filesort on every page load: free on demo data, unbounded on a real account.
+
+`activity_logs` carries `created_at` plus a composite `(admin_id, created_at)`, since its filter narrows by admin and still sorts by date. `audit_log` carries `created_at` and `category` as two separate indexes.
+
 **Tenant models** ([`app/Models/Tenant`](app/Models/Tenant)): `TeamMember`, `Role`, `Permission`, `Transfer`, `TransferLineItem`, `Customer`, `Bank`, `MenuCategory`, `MenuItem`, `Expense`, `SalaryPayment`, `ConstantList`, `ConstantListItem`, `TenantSetting`, `Device`, `SyncEvent`, `AuditLog`.
 
 **Key enums** ([`app/Enums`](app/Enums)):
@@ -437,6 +444,19 @@ POST /api/v1/sync/push        GET /api/v1/sync/pull
 
 `/search` returns the same four groups as the header search and honours the **same permission rules** - banks and catalog entries only appear for a member who may manage them. Both surfaces call one [`SearchService`](app/Services/Tenant/SearchService.php); they used to be separate copies, which is how they drifted.
 
+### Search terms
+
+Every search box on every list page goes through the `whereSearch` macro registered in [`AppServiceProvider`](app/Providers/AppServiceProvider.php), backed by [`SearchTerm`](app/Support/SearchTerm.php).
+
+The point is that a search box should answer the question that was typed into it. Each page used to build its own `"%{$search}%"`. Bindings kept that injection-safe, which is why it never looked wrong - but `%` and `_` remained **wildcards** inside the pattern, so the query quietly widened: `abu_ali@x.com` also matched `abuXali@x.com`, and a lone `%` returned the whole table through a box that is supposed to require two real characters.
+
+Two details are load-bearing:
+
+- **The escape character is `!`, not backslash.** A backslash has to be written `'\\'` in MySQL and `'\'` in SQLite, so the SQL text would differ per driver - on a codebase that runs MySQL for tenants and SQLite for the platform suite. `!` is literal in both.
+- **The macro is not called `whereLike`.** Laravel 13 ships a native `whereLike()`, which compiles to a bare `LIKE ?` with no ESCAPE clause and passes the value through untouched - so it has the same hole, *and* a macro of that name would be shadowed by the real method and silently never run.
+
+The OR-group is always parenthesised, so a term spread across three columns cannot escape its own condition and swallow the status and date filters beside it.
+
 **Admin / platform routes** - require an admin Sanctum token and the `admin` middleware, and **never** the `X-License-Code` header:
 
 ```
@@ -481,6 +501,18 @@ Four decisions behind it:
 - **`sw.js` is served from `/public` and not built by Vite.** A hashed filename would register as a *new* worker on every deploy while the old one kept serving - the URL a worker registers from has to be stable.
 
 The service worker never answers a POST from cache: an order must reach the server or fail loudly enough for the page to queue it. `/login`, `/logout`, `/sync` and `/api` are never cached, so a cached shell can never show a signed-out page to someone signed in, or a stale CSRF token that fails every later post. Signing out clears both the queue and the cache.
+
+### Installable to a home screen
+
+[`public/manifest.webmanifest`](public/manifest.webmanifest) puts the workspace on a shop tablet's home screen in `standalone` display, which is where the offline queue already earns its keep — the browser chrome has no use at a counter.
+
+- **Declared on the tenant shells including the login page**, because a browser only offers to install from a page that carries a manifest, and the login page is the first thing anyone opens.
+- **Not declared on `/admin/*`**, which shares the guest shell for its own login. `start_url` is the tenant dashboard, so an install from the platform console would put the wrong app on an operator's home screen.
+- **`apple-touch-icon` is a PNG.** iOS ignores SVG for the home screen and falls back to a screenshot of the page.
+
+The icons are redrawn from `favicon.svg`'s own geometry with GD rather than rasterised, since Imagick with librsvg is not available here.
+
+> `public/favicon.ico` was a **zero-byte file** that three layouts linked with `rel="icon"`. A browser honouring that link gets an empty `200`, draws a blank icon, and can beat the SVG that was working — which is how it survived an earlier favicon fix. `ViewMarkupTest` now fails on any linked icon that is missing or empty.
 
 **A session that dies mid-shift must not look like a successful push.** The flush posts with `redirect: 'manual'`, because a timed-out session redirects `/sync/push` to `/login` and the default `follow` turns that into a `200` HTML response — `response.ok` would be true, and the queue would survive only because `JSON.parse` chokes on markup. Orders kept by an exception rather than by design is one login route away from a flush that reports success with nothing sent, hiding a dead session while orders pile up. With `manual`, a redirect arrives opaque (status `0`, not ok) and is refused outright; the response envelope is then checked to actually be the sync engine's before any order is treated as delivered.
 
@@ -557,7 +589,7 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 - Language is switched via `GET /locale/{ar|en}` and stored in the session.
 - The [`SetLocale`](app/Http/Middleware/SetLocale.php) middleware applies the chosen locale to every web request, setting `<html lang>` / `dir` and the font. Arabic is the default.
-- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 032 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
+- Strings resolve through `__()` against the JSON catalogs [`lang/ar.json`](lang/ar.json) + [`lang/en.json`](lang/en.json) (1 033 keys each), plus `lang/{ar,en}/validation.php` for localized validation messages.
 - **The translation keys are the Arabic source strings.** `lang/ar.json` is an identity map (key === value) that exists to enumerate the catalog, while `lang/en.json` maps each Arabic key to its English translation - so Blade calls e.g. `__('حفظ')`.
 - **Both files are sorted with plain `SORT_STRING`** and must hold identical key sets. That is mechanical on purpose: they were previously ordered by a collation nothing could reproduce, which made every insertion a judgement call.
 
@@ -571,10 +603,21 @@ The UI is **Arabic-first (RTL)** and bilingual (Arabic / English):
 
 ### RTL notes
 
-Two mistakes account for most directional bugs in this codebase, both already fixed but easy to reintroduce:
+Three mistakes account for most directional bugs in this codebase, all already fixed but easy to reintroduce:
 
 - **`dir` on a block element also sets `text-align`.** Putting `dir="ltr"` on a `<td>` to keep a phone number or amount readable left-aligns the whole cell while its `<th>` stays start-aligned, and the column stops lining up. Put the `dir` on an inner inline `<span>` instead.
 - **Directional glyphs need `rtl:-scale-x-100`.** Arrows, `send`, `logout` and `north_east` point the wrong way in RTL otherwise.
+- **A time axis runs oldest-left, and `dir="ltr"` must cover the whole chart.** See below.
+
+#### Time reads left to right, in every chart
+
+Three charts plot time — the activity heatmap, the dashboard's weekly bars, and the reports' daily revenue — and all three are pinned `dir="ltr"` even in the Arabic UI. Letting them inherit RTL flips the axis, and a trend that reads right-to-left is not what anyone expects from a chart; it is the same reasoning that already keeps every date, phone number and amount `dir="ltr"`.
+
+**Pin the whole chart, not one row of it.** The weekly chart once had its bars and its day captions as two sibling rows with `dir="ltr"` on only the bars. The bars ran oldest-left, the captions still ran oldest-right, and every bar was labelled with the wrong day — an order placed on a Monday displayed under Thursday. Nothing errored and the page looked plausible.
+
+The fix was structural rather than corrective: each caption now lives **inside** the column it belongs to, so `dir` can only ever apply to both together. For the reports chart the attribute sits on the wrapper rather than the scroller, which also keeps the scroll-affordance gradient on the edge that actually overflows.
+
+> **A test that reads source order cannot catch this.** Both layouts emit the days oldest-first, because the loop does; the flip happens in CSS at render time. The first attempt at this guard asserted exactly that and passed against the broken markup. [`HttpLayerSmokeTest`](tests/Feature/Tenant/HttpLayerSmokeTest.php) now asserts the structural property instead — each caption precedes the next column's bar — verified by reproducing the mirrored layout and watching it fail.
 
 ## Design system
 
@@ -661,7 +704,7 @@ Every paginated table in the app - tenant **and** Super Admin, 14 controllers - 
 | [`Web\Concerns\HasPerPage`](app/Http/Controllers/Web/Concerns/HasPerPage.php) | Resolves `?per_page=`, **whitelisted to 10 / 50 / 100** - a crafted value can never request an unbounded page size |
 | [`<x-per-page>`](resources/views/components/per-page.blade.php) | The 10 / 50 / 100 selector. Auto-submits on change and re-emits every active filter as a hidden input (except `per_page` / `page`), so changing page size preserves filters and resets to page 1 |
 | [`<x-table-footer>`](resources/views/components/table-footer.blade.php) | Combines the selector with a themed paginator built from the paginator's own methods rather than `->links()`, so it matches the design system in light/dark and under RTL |
-| [`<x-keep-per-page>`](resources/views/components/keep-per-page.blade.php) | Goes inside every GET **filter** form. The selector already re-emits active filters when it submits; without this the reverse never happened, so choosing 100-per-page and then searching silently dropped back to 10 |
+| [`<x-keep-per-page>`](resources/views/components/keep-per-page.blade.php) | Goes inside every GET **filter** form, tenant and admin alike. The selector already re-emits active filters when it submits; without this the reverse never happened, so choosing 100-per-page and then searching silently dropped back to 10 |
 
 The controller must call `->withQueryString()` so page links keep the active filters and `per_page`:
 
@@ -677,6 +720,9 @@ Enforced by [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php), because a cont
 - **A placeholder is not a name.** Filter inputs and `<select>`s need `aria-label`; a first option reading "كل الحالات" says what the default is, never what the control filters.
 - **A dialog needs `aria-labelledby`** and should move focus to its first field when it opens.
 - **Ids must be unique per render.** A component used twice on one page — the icon picker is, once for a category and once for an entry — has to derive its ids from something instance-specific. A duplicate id is worse than none: the label points at whichever copy the browser saw first.
+- **Every shell starts with a skip link.** All three put a sidebar and header ahead of the page, so reaching content by keyboard meant tabbing past ~30 controls on every load. [`<x-skip-link>`](resources/views/components/skip-link.blade.php) is the first thing in the tab order and hidden until focused.
+
+> **`<main>` carries `tabindex="-1"`, and that is not decoration.** A `<main>` is not focusable by default: without it the browser scrolls to the target but leaves focus where it was, so the next Tab returns to the navigation just skipped. A skip link that only moves the viewport is worse than none, because it looks like it worked.
 ```blade
 <x-table-footer :paginator="$rows" :perPage="$perPage" />
 ```
@@ -691,7 +737,7 @@ php artisan test
 composer test
 ```
 
-**343 tests, 7 170 assertions.**
+**468 tests, 7 460 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
@@ -706,7 +752,8 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 |-------|--------|
 | [`Tenant/TransferServiceTest`](tests/Feature/Tenant/TransferServiceTest.php), [`ExpenseServiceTest`](tests/Feature/Tenant/ExpenseServiceTest.php), [`BankServiceTest`](tests/Feature/Tenant/BankServiceTest.php) | The money paths: order creation and totals, expense windows, bank deletion safety |
 | [`Tenant/BalanceServiceTest`](tests/Feature/Tenant/BalanceServiceTest.php), [`SalaryServiceTest`](tests/Feature/Tenant/SalaryServiceTest.php) | In-vs-out per account; a salary payment writing both an expense and a salary record atomically |
-| [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, LIKE-wildcard escaping, soft-deleted rows staying hidden, permission gating |
+| [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, soft-deleted rows staying hidden, permission gating |
+| [`Tenant/SearchEscapingTest`](tests/Feature/Tenant/SearchEscapingTest.php) | `%` and `_` treated as literals on real rows, the escape character searchable for itself, the OR-group not swallowing a neighbouring filter |
 | [`Tenant/SyncServiceTest`](tests/Feature/Tenant/SyncServiceTest.php) | Convergence: resends applying once, one bad event not taking the batch down, editing a record created offline, deleting what is already gone |
 | [`Tenant/OfflineOrderQueueTest`](tests/Feature/Tenant/OfflineOrderQueueTest.php) | The browser's drain over HTTP: the permission gate, idempotency, and an unfixable payload coming back as failed rather than being retried forever |
 | [`Tenant/CustomerServiceTest`](tests/Feature/Tenant/CustomerServiceTest.php) | Phone-as-identity, including that a blank name never blanks a known one |
@@ -717,8 +764,16 @@ So running the full suite needs MySQL reachable; `--testsuite=Unit` and the plat
 | [`Admin/AdminPagesTest`](tests/Feature/Admin/AdminPagesTest.php) | Every Super Admin page renders and is guarded; the payment→box→license money flow |
 | [`Admin/SettlementTest`](tests/Feature/Admin/SettlementTest.php) | Clearing arithmetic, the rounding residual, period boundaries, and confirmed runs being immutable |
 | [`Api/TenantApiCoverageTest`](tests/Feature/Api/TenantApiCoverageTest.php) | The customer, notification, search and receipt endpoints, plus the `X-License-Code` requirement |
+| [`Api/TenantApiSmokeTest`](tests/Feature/Api/TenantApiSmokeTest.php) | All 15 tenant read endpoints, requested **with data present**, each answering JSON and refusing a guest |
+| [`Api/TenantApiWriteTest`](tests/Feature/Api/TenantApiWriteTest.php) | The write paths land, and a member without the permission is refused — the API has no hidden nav item to rely on |
+| [`Api/AdminApiSmokeTest`](tests/Feature/Api/AdminApiSmokeTest.php) | All 13 platform read endpoints, and that each refuses a **tenant** token — both guards issue Sanctum tokens against the same table |
+| [`Api/ApiAuthTest`](tests/Feature/Api/ApiAuthTest.php) | Every login refusal, the 6/minute throttle, and that logout **revokes** the token rather than merely answering politely |
+| [`Tenant/CatalogTransferTest`](tests/Feature/Tenant/CatalogTransferTest.php) | CSV export/import over HTTP, including that a name a spreadsheet would execute is neutralised **on the route**, not only in the service |
 | [`TranslationFilesTest`](tests/Feature/TranslationFilesTest.php) | **Every `__()` string in the codebase has a catalog entry** (a missing one silently shows Arabic to English users), both files sorted and identical, no English value left as Arabic |
-| [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag |
+| [`ViewMarkupTest`](tests/Feature/ViewMarkupTest.php) | **Every `<label>` names a control**, every `for` matches exactly one `id`, no id duplicated or written outside a tag, and each shell offers a working skip link |
+| [`Tenant/RouteAuthorizationTest`](tests/Feature/Tenant/RouteAuthorizationTest.php) | **Every tenant route that writes checks a permission** — `auth:tenant` only proves someone is signed in, and a hidden nav item is not access control |
+| [`Tenant/QueryBudgetTest`](tests/Feature/Tenant/QueryBudgetTest.php) | The main pages cost the **same number of queries at 5 rows as at 25** — an N+1 is invisible to every other kind of test |
+| [`ErrorPagesTest`](tests/Feature/ErrorPagesTest.php) | All five custom error views **render**, each offers a way back, and they survive the database being the thing that broke — asserting a status code never reaches these templates |
 | [`WhatsApp/WhatsAppSenderTest`](tests/Feature/WhatsApp/WhatsAppSenderTest.php) + the two unit tests | The send guard matrix, both drivers, E.164 normalisation, Arabic message formatting |
 
 ```bash
@@ -726,14 +781,29 @@ php artisan test --testsuite=Unit
 php artisan test tests/Feature/Admin/AdminPagesTest.php
 ```
 
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs Pint, the front-end build and the full suite on every push to `main` and on every pull request.
+
+It exists because **a guard nobody runs is not a guard**. Several suites here catch defects that render perfectly and pass every other check — a missing translation key, a `<label>` naming nothing, a write route with no permission check, an N+1, a `<main>` that cannot take focus. None of them bind unless they run unprompted.
+
+Two things the workflow needs:
+
+- **A real MySQL server**, because `database/migrations/tenant` uses MySQL-only DDL and cannot run on sqlite. `TenantTestCase` creates its own `hawalaty_testing_tenant` database on first use, so only the *server* has to exist; the platform half of the suite stays on sqlite.
+- **The `bcmath` extension**, which is required rather than optional: the box-balance guard and the settlement reconciliation compare money as decimal **strings**, never floats.
+
+The build runs *before* the tests. `TranslationFilesTest` reads the source, so a build failure would otherwise ship a broken page no PHP test can see.
+
 ## Code style
 
-Formatting is enforced with **Laravel Pint**:
+Formatting is enforced with **Laravel Pint** — and, since CI runs `--test`, that is now literally true rather than aspirational:
 
 ```bash
 ./vendor/bin/pint        # fix
-./vendor/bin/pint --test # check only
+./vendor/bin/pint --test # check only, and what CI runs
 ```
+
+> `--dirty` only inspects files you changed, which is convenient locally and hides drift. Twenty-nine files had never conformed; they were formatted in one pass when CI was added, with the suite green either side to show the change was import extraction and spacing, nothing behavioural.
 
 ## License
 

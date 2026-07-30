@@ -10,6 +10,8 @@
         </header>
 
         <form method="GET" action="{{ route('customers.index') }}" class="reveal-up relative max-w-md" style="--d:60ms">
+            {{-- Filtering must not throw away a chosen page size. --}}
+            <x-keep-per-page />
             <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الهاتف...') }}" aria-label="{{ __('بحث') }}"
                 class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />

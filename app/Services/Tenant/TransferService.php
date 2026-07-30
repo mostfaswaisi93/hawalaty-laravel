@@ -35,10 +35,7 @@ class TransferService
     {
         $query = Transfer::query()->with(['lineItems', 'bank', 'changeBank']);
 
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where('customer', 'like', "%{$search}%");
-        }
+        $query->whereSearch('customer', $filters['search'] ?? null);
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);

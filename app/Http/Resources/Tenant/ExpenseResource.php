@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * denormalized `bankName` (resolved from the bank relation, not stored).
  * Controllers must eager-load `bank` before returning this resource.
  *
- * @mixin \App\Models\Tenant\Expense
+ * @mixin Expense
  */
 class ExpenseResource extends JsonResource
 {

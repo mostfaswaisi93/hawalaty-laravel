@@ -30,14 +30,7 @@ class ActivityLogController extends Controller
 
         $query = AuditLog::query();
 
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('actor_name', 'like', "%{$search}%")
-                    ->orWhere('actor_email', 'like', "%{$search}%")
-                    ->orWhere('entity_label', 'like', "%{$search}%");
-            });
-        }
+        $query->whereSearch(['actor_name', 'actor_email', 'entity_label'], $filters['search'] ?? null);
 
         if (! empty($filters['category'])) {
             $query->where('category', $filters['category']);

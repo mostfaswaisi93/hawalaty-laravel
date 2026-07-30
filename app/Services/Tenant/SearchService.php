@@ -76,22 +76,19 @@ class SearchService
      */
     private function orders(string $query): Collection
     {
-        $like = $this->like($query);
-
         return Transfer::query()
             // Wrapped, and this matters: Transfer soft-deletes, and the global
             // scope appends `AND deleted_at IS NULL` to whatever is already
             // there. Left unwrapped, `A OR B AND deleted_at IS NULL` binds the
             // scope to the LAST branch only and deleted orders leak back out.
-            ->where(function (Builder $q) use ($like) {
-                $q->where('customer', 'like', $like)
-                    ->orWhere('item_name', 'like', $like)
-                    ->orWhere('sender_name', 'like', $like)
-                    ->orWhere('sender_phone', 'like', $like)
+            // whereSearch() parenthesises its own OR-group, and the relation
+            // branch below is added inside this same wrapper.
+            ->where(function (Builder $q) use ($query) {
+                $q->whereSearch(['customer', 'item_name', 'sender_name', 'sender_phone'], $query)
                     // `customerProfile`, not `customer`: the `customer` column
                     // holds the name typed on the order, and an attribute of
                     // that name would shadow a relation called the same thing.
-                    ->orWhereHas('customerProfile', fn (Builder $c) => $c->where('phone', 'like', $like));
+                    ->orWhereHas('customerProfile', fn (Builder $c) => $c->whereSearch('phone', $query));
             })
             ->with('customerProfile:id,phone')
             ->latest()
@@ -111,10 +108,8 @@ class SearchService
     /** @return Collection<int, array<string, mixed>> */
     private function customers(string $query): Collection
     {
-        $like = $this->like($query);
-
         return Customer::query()
-            ->where(fn (Builder $q) => $q->where('name', 'like', $like)->orWhere('phone', 'like', $like))
+            ->whereSearch(['name', 'phone'], $query)
             ->withCount('transfers')
             ->take(self::PER_GROUP)
             ->get()
@@ -129,11 +124,10 @@ class SearchService
     /** @return Collection<int, array<string, mixed>> */
     private function banks(string $query): Collection
     {
-        $like = $this->like($query);
-
         return Bank::query()
-            // Wrapped for the same soft-delete reason as orders().
-            ->where(fn (Builder $q) => $q->where('name', 'like', $like)->orWhere('code', 'like', $like))
+            // Parenthesised by whereSearch(), for the same soft-delete reason
+            // as orders().
+            ->whereSearch(['name', 'code'], $query)
             ->take(self::PER_GROUP)
             ->get()
             ->map(fn (Bank $b) => [
@@ -148,10 +142,8 @@ class SearchService
     /** @return Collection<int, array<string, mixed>> */
     private function menuItems(string $query): Collection
     {
-        $like = $this->like($query);
-
         return MenuItem::query()
-            ->where('name', 'like', $like)
+            ->whereSearch('name', $query)
             ->with('menuCategory:id,name,icon')
             ->take(self::PER_GROUP)
             ->get()
@@ -166,15 +158,5 @@ class SearchService
                 'price' => (float) $m->price,
                 'active' => (bool) $m->active,
             ]);
-    }
-
-    /**
-     * `%` and `_` are wildcards in LIKE, and `\` escapes them. Left raw, a query
-     * of "%" matches every row - a cheap way to dump the tables through a search
-     * box that is supposed to need two real characters.
-     */
-    private function like(string $query): string
-    {
-        return '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query).'%';
     }
 }

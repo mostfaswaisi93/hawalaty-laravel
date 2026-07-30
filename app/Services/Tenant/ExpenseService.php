@@ -17,11 +17,7 @@ class ExpenseService
      */
     public function list(?string $search = null, int $perPage = 20): LengthAwarePaginator
     {
-        $query = Expense::query()->with('bank');
-
-        if ($search) {
-            $query->where('description', 'like', "%{$search}%");
-        }
+        $query = Expense::query()->with('bank')->whereSearch('description', $search);
 
         return $query->latest('date')->paginate($perPage)->withQueryString();
     }

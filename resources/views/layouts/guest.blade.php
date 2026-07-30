@@ -13,7 +13,21 @@
          and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
-    <link rel="apple-touch-icon" href="/favicon.svg">
+    {{-- PNG, not SVG: iOS ignores SVG for the home screen. --}}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    {{-- The manifest belongs here too, not only on the signed-in shell: the
+         login page is the first thing anyone opens, and a browser only offers
+         to install from a page that declares one.
+
+         Excluded on /admin/*, which shares this shell for its own login. The
+         manifest's start_url is the TENANT dashboard, so offering an install
+         there would put the wrong app on a platform operator's home screen. --}}
+    @unless (request()->is('admin/*'))
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="mobile-web-app-capable" content="yes">
+    @endunless
+    <meta name="theme-color" content="#00236f">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
@@ -55,6 +69,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
+    <x-skip-link />
     <div class="page-enter flex min-h-screen flex-col bg-surface text-on-surface">
         <header class="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-inline-md shadow-sm md:px-inline-lg">
             <a href="{{ route('login') }}" class="flex items-center gap-3" title="{{ __('حوالاتي') }}">
@@ -80,7 +95,10 @@
             </div>
         </header>
 
-        <main class="w-full flex-grow pt-16 lg:grid lg:grid-cols-2">
+        {{-- Fewer controls ahead of it than the app shell, but /help renders
+             here for a guest and runs long. See layouts/app.blade.php for why
+             the target is focusable. --}}
+        <main id="main-content" tabindex="-1" class="w-full flex-grow pt-16 focus:outline-none lg:grid lg:grid-cols-2">
             @yield('content')
         </main>
 

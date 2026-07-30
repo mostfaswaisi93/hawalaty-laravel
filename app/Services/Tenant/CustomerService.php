@@ -30,12 +30,7 @@ class CustomerService
             ->withSum('transfers as total_spent', 'amount')
             ->withMax('transfers as last_order_at', 'created_at');
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-            });
-        }
+        $query->whereSearch(['name', 'phone'], $search);
 
         return $query->orderByDesc('last_order_at')->paginate($perPage)->withQueryString();
     }

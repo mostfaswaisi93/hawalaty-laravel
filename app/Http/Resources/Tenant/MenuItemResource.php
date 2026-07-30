@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * menuCategory relation's name. Controllers must eager-load `menuCategory`
  * before returning this resource.
  *
- * @mixin \App\Models\Tenant\MenuItem
+ * @mixin MenuItem
  */
 class MenuItemResource extends JsonResource
 {

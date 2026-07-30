@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Models\License;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Controllers should eager-load `package` before returning this resource so
  * `packageName` is populated (falls back to null otherwise, not an error).
  *
- * @mixin \App\Models\License
+ * @mixin License
  */
 class LicenseResource extends JsonResource
 {

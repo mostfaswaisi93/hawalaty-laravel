@@ -22,6 +22,8 @@
         {{-- date range --}}
         <form method="GET" action="{{ route('reports.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="reveal-up tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end" style="--d: 40ms">
+            {{-- Filtering must not throw away a chosen page size. --}}
+            <x-keep-per-page />
             <div class="flex-1 space-y-1.5">
                 <label for="reports-from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
                 <input id="reports-from" type="date" name="from" value="{{ $from }}" dir="ltr"
@@ -79,7 +81,13 @@
                     <p class="font-body-sm">{{ __('لا نشاط في هذه الفترة') }}</p>
                 </div>
             @else
-                <div class="relative"
+                {{-- dir="ltr" on the WRAPPER, not just the scroller: it puts the
+                     date axis oldest-left like the heatmap and the two other
+                     charts, and it keeps the scroll-affordance gradient on the
+                     same side as the overflow. Setting it on the scroller alone
+                     would leave the gradient resolving `end-0` against the page's
+                     RTL and fading the wrong edge. --}}
+                <div class="relative" dir="ltr"
                     x-data="{ overflowing: false }"
                     x-init="$nextTick(() => { overflowing = $refs.chartScroll.scrollWidth > $refs.chartScroll.clientWidth })">
                     <div x-show="overflowing" x-cloak class="pointer-events-none absolute inset-y-0 end-0 z-10 w-10 bg-gradient-to-l from-surface-container-lowest to-transparent rtl:bg-gradient-to-r"></div>

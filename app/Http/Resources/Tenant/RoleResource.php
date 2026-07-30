@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Tenant;
 
 use App\Enums\PermissionKey;
+use App\Models\Tenant\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Controllers must eager-load `permissions` before returning this
  * resource. `tenantId` is intentionally omitted (no such column exists).
  *
- * @mixin \App\Models\Tenant\Role
+ * @mixin Role
  */
 class RoleResource extends JsonResource
 {

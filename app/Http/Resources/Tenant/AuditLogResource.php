@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Tenant;
 
+use App\Models\Tenant\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * to the `created_at` column. `tenantId` is intentionally omitted (no such
  * column exists in tenant space).
  *
- * @mixin \App\Models\Tenant\AuditLog
+ * @mixin AuditLog
  */
 class AuditLogResource extends JsonResource
 {
