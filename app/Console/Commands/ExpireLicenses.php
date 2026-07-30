@@ -20,8 +20,26 @@ class ExpireLicenses extends Command
 
     public function handle(): int
     {
+        // `where`, not `whereDate`: `expired_at` is already a DATE column, so
+        // wrapping it in DATE() changes no value but does stop the index range
+        // from narrowing. Both plans still NAME licenses_status_expired_at_index
+        // - `status` alone can drive it - so `key` and `possible_keys` look
+        // identical and hide the difference. key_len is the tell: 4 with the
+        // bare column (status 1 byte + date 3), 1 with DATE() wrapped around it,
+        // meaning every row of the matching statuses is read and the date is
+        // filtered afterwards.
+        //
+        // startOfDay(), not toDateString(): the `date` cast writes the column
+        // as `Y-m-d H:i:s`, so on a driver that compares these as text (sqlite,
+        // which the test suite uses) a bare `Y-m-d` string sorts BELOW every
+        // stored value and the predicate silently matches nothing. MySQL coerces
+        // and hides it; the two drivers have to agree.
+        //
+        // `<`, not `<=`: a licence is valid THROUGH its expiry date. Expiring it
+        // on the morning of the date the customer paid for takes a day off every
+        // subscription sold.
         $licenses = License::whereIn('status', [LicenseStatus::Active, LicenseStatus::Trial])
-            ->whereDate('expired_at', '<', now()->toDateString())
+            ->where('expired_at', '<', now()->startOfDay())
             ->get();
 
         foreach ($licenses as $license) {

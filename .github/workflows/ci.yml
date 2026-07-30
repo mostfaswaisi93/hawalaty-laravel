@@ -87,9 +87,14 @@ jobs:
           done
           echo "MySQL never became available" && exit 1
 
+      # TenantTestCase reads these to find the MySQL server (and only the
+      # server - it owns the test database name itself). They used to be
+      # hardcoded there, so this block was decorative and the suite only ran on
+      # a machine whose root had no password.
       - name: Run the test suite
         run: php artisan test
         env:
           DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
           DB_USERNAME: root
           DB_PASSWORD: ''

@@ -396,7 +396,7 @@ After running `php artisan db:seed`:
 | `php artisan tenants:migrate {code}` | Run the tenant migrations against a single tenant's database |
 | `php artisan tenants:migrate --all` | Migrate every active/trial license that has a database connection |
 | `php artisan licenses:expire-overdue` | Mark overdue licenses as expired |
-| `php artisan backups:scheduled` | Run the scheduled tenant backups |
+| `php artisan backups:scheduled` | Run the scheduled backup of the **platform** database |
 | `php artisan db:seed` | Seed the platform admin, packages, and the demo tenant |
 | `composer dev` | Start server + queue + logs + Vite concurrently - ⚠️ **broken on Windows**, see [Getting started](#getting-started) |
 | `composer test` | Clear config and run the test suite |
@@ -405,7 +405,7 @@ After running `php artisan db:seed`:
 
 Defined in [`routes/console.php`](routes/console.php):
 
-- `licenses:expire-overdue` - **daily**
+- `licenses:expire-overdue` - **daily**. Flips trial/active licences past their date to `expired` and writes one `activity_logs` row each. A licence is valid **through** its expiry date, so the comparison is strictly `<`.
 - `backups:scheduled` - **daily at 02:00**
 
 In production, ensure the Laravel scheduler runs - add a single cron entry:
@@ -413,6 +413,10 @@ In production, ensure the Laravel scheduler runs - add a single cron entry:
 ```cron
 * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
 ```
+
+These two are the only code here that runs with nobody watching, which is why [`ScheduledCommandsTest`](tests/Feature/Console/ScheduledCommandsTest.php) also asserts they are still **registered** and still resolve to real commands. `Schedule::command()` takes a string, so a typo does not fail at boot - it fails silently at 02:00, and the first symptom is a customer whose licence never expired or a backup nobody took.
+
+> **Known gap: tenant databases have no scheduled backup.** `backups:scheduled` dumps the *platform* database only - the licence registry, not customer data. Looping every licence is a one-line change but needs staggering or a queue so it does not fire N `mysqldump`s at once, plus a retention policy; see the docblock on [`RunScheduledBackup`](app/Console/Commands/RunScheduledBackup.php). Until that lands, tenant data relies on whatever backs up the MySQL server itself.
 
 ## REST API
 
@@ -737,7 +741,7 @@ php artisan test
 composer test
 ```
 
-**468 tests, 7 460 assertions.**
+**492 tests, 7 503 assertions.**
 
 > Two of these suites guard against the same kind of defect: one that renders
 > perfectly, passes every other test, and is only ever noticed by a user who
@@ -748,12 +752,20 @@ Platform tests run against an **in-memory SQLite** database (`phpunit.xml`). Ten
 
 So running the full suite needs MySQL reachable; `--testsuite=Unit` and the platform feature tests do not.
 
+`TenantTestCase` finds that server through `DB_HOST` / `DB_PORT` / `DB_USERNAME` / `DB_PASSWORD`, defaulting to Laragon's `127.0.0.1` / `root` / no password - so a stock checkout needs no configuration, and a machine whose MySQL root *has* a password no longer has to patch the test case to run the suite.
+
+Two deliberate limits on that:
+
+- **`DB_DATABASE` is not read.** The harness creates and wipes `hawalaty_testing_tenant` itself, so it must never be aimed at a database you picked for something else.
+- **Put test credentials in `.env.testing`, not `.env`,** if your `.env` points at anything you care about. `APP_ENV=testing` is set by `phpunit.xml`, so Laravel prefers `.env.testing` when it exists - which keeps a suite that *creates and drops a database* pointed at a server you chose for exactly that.
+
 | Suite | Covers |
 |-------|--------|
 | [`Tenant/TransferServiceTest`](tests/Feature/Tenant/TransferServiceTest.php), [`ExpenseServiceTest`](tests/Feature/Tenant/ExpenseServiceTest.php), [`BankServiceTest`](tests/Feature/Tenant/BankServiceTest.php) | The money paths: order creation and totals, expense windows, bank deletion safety |
 | [`Tenant/BalanceServiceTest`](tests/Feature/Tenant/BalanceServiceTest.php), [`SalaryServiceTest`](tests/Feature/Tenant/SalaryServiceTest.php) | In-vs-out per account; a salary payment writing both an expense and a salary record atomically |
 | [`Tenant/SearchServiceTest`](tests/Feature/Tenant/SearchServiceTest.php) | Search across four tables: phone→orders, soft-deleted rows staying hidden, permission gating |
 | [`Tenant/SearchEscapingTest`](tests/Feature/Tenant/SearchEscapingTest.php) | `%` and `_` treated as literals on real rows, the escape character searchable for itself, the OR-group not swallowing a neighbouring filter |
+| [`Console/ScheduledCommandsTest`](tests/Feature/Console/ScheduledCommandsTest.php) | The nightly commands: still registered, still resolving to real commands, expiry boundary (valid *through* the expiry date), suspended licences not swept in, idempotent on a second run, failed backup exiting non-zero |
 | [`Tenant/SyncServiceTest`](tests/Feature/Tenant/SyncServiceTest.php) | Convergence: resends applying once, one bad event not taking the batch down, editing a record created offline, deleting what is already gone |
 | [`Tenant/OfflineOrderQueueTest`](tests/Feature/Tenant/OfflineOrderQueueTest.php) | The browser's drain over HTTP: the permission gate, idempotency, and an unfixable payload coming back as failed rather than being retried forever |
 | [`Tenant/CustomerServiceTest`](tests/Feature/Tenant/CustomerServiceTest.php) | Phone-as-identity, including that a blank name never blanks a known one |

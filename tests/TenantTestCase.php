@@ -62,15 +62,39 @@ abstract class TenantTestCase extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * Where the MySQL server is, for both the connection and the CREATE
+     * DATABASE below.
+     *
+     * These were hardcoded to 127.0.0.1/root/no-password, which is the Laragon
+     * default and therefore worked on the machine it was written on and nowhere
+     * else: anyone whose MySQL root has a password could not run the tenant
+     * half of the suite at all, and the DB_* variables CI sets were doing
+     * nothing. The old values remain the defaults, so a Laragon checkout still
+     * needs no configuration.
+     *
+     * `DB_DATABASE` is deliberately NOT read - the tenant database is created
+     * and wiped by this harness, so it must never be pointed at a database the
+     * developer chose for something else.
+     *
+     * @return array{host: string, port: string, username: string, password: string}
+     */
+    private function serverCredentials(): array
+    {
+        return [
+            'host' => (string) env('DB_HOST', '127.0.0.1'),
+            'port' => (string) env('DB_PORT', '3306'),
+            'username' => (string) env('DB_USERNAME', 'root'),
+            'password' => (string) env('DB_PASSWORD', ''),
+        ];
+    }
+
     private function pointTenantConnectionAtTestDatabase(): void
     {
         config(['database.connections.'.self::CONNECTION => [
+            ...$this->serverCredentials(),
             'driver' => 'mysql',
-            'host' => '127.0.0.1',
-            'port' => '3306',
             'database' => self::DATABASE,
-            'username' => 'root',
-            'password' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
@@ -82,7 +106,9 @@ abstract class TenantTestCase extends TestCase
 
     private function createTestDatabaseIfMissing(): void
     {
-        $pdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '');
+        ['host' => $host, 'port' => $port, 'username' => $username, 'password' => $password] = $this->serverCredentials();
+
+        $pdo = new PDO("mysql:host={$host};port={$port}", $username, $password);
         $pdo->exec('CREATE DATABASE IF NOT EXISTS `'.self::DATABASE.'` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
     }
 
