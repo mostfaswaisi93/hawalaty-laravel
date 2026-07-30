@@ -15,7 +15,7 @@
             default => 'bg-error',
         };
         $statusLabel = fn ($status) => match ($status->value) {
-            'completed' => __('مكتملة'),
+            'completed' => __('مستلمة'),
             'pending' => __('قيد الانتظار'),
             default => __('فاشلة'),
         };
@@ -54,7 +54,7 @@
                 <label for="history-status" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الحالة') }}</label>
                 <select id="history-status" name="status" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                     <option value="">{{ __('الكل') }}</option>
-                    <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>{{ __('مكتملة') }}</option>
+                    <option value="completed" @selected(($filters['status'] ?? '') === 'completed')>{{ __('مستلمة') }}</option>
                     <option value="pending" @selected(($filters['status'] ?? '') === 'pending')>{{ __('قيد الانتظار') }}</option>
                     <option value="failed" @selected(($filters['status'] ?? '') === 'failed')>{{ __('فاشلة') }}</option>
                 </select>

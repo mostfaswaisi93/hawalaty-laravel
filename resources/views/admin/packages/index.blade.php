@@ -9,9 +9,9 @@
             mode: 'add',
             submitting: false,
             confirmOpen: false, confirmMessage: '', confirmFormId: null,
-            form: { id: '', name: '{{ old('name', '') }}', price: '{{ old('price', '') }}', deviceLimit: '{{ old('deviceLimit', '') }}', features: '' },
-            openAdd() { this.mode = 'add'; this.submitting = false; this.form = { id: '', name: '', price: '', deviceLimit: '', features: '' }; this.open = true; },
-            openEdit(pkg) { this.mode = 'edit'; this.submitting = false; this.form = { ...pkg }; this.open = true; },
+            form: { id: '', name: '{{ old('name', '') }}', price: '{{ old('price', '') }}', deviceLimit: '{{ old('deviceLimit', '') }}', features: '', featureKeys: @js(old('featureKeys', [])) },
+            openAdd() { this.mode = 'add'; this.submitting = false; this.form = { id: '', name: '', price: '', deviceLimit: '', features: '', featureKeys: [] }; this.open = true; },
+            openEdit(pkg) { this.mode = 'edit'; this.submitting = false; this.form = { featureKeys: [], ...pkg }; this.open = true; },
         }">
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -33,7 +33,15 @@
         @else
             <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($packages as $package)
-                    @php $featuresText = implode("\n", $package->features ?? []); @endphp
+                    {{-- المفاتيح المعروفة تُملأ في الصناديق، وما تبقّى يعود إلى
+                         مربّع النص الحر — وإلا فقد المستخدم مزاياه المخصّصة عند
+                         أول عملية تعديل. --}}
+                    @php
+                        $allFeatures = $package->features ?? [];
+                        $knownKeys = array_column(\App\Enums\PackageFeature::cases(), 'value');
+                        $featureKeys = array_values(array_intersect($allFeatures, $knownKeys));
+                        $featuresText = implode("\n", array_values(array_diff($allFeatures, $knownKeys)));
+                    @endphp
                     <div class="tonal-elevation flex flex-col rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
                         <div class="flex items-start justify-between">
                             <div>
@@ -41,7 +49,7 @@
                                 <p class="mt-1 font-numeral-lg text-numeral-lg font-bold text-primary"><span dir="ltr">{{ number_format($package->price, 2) }} ₪</span></p>
                             </div>
                             <div class="flex items-center gap-1">
-                                <button type="button" @click="openEdit(@js(['id' => $package->id, 'name' => $package->name, 'price' => (float) $package->price, 'deviceLimit' => $package->device_limit, 'features' => $featuresText]))"
+                                <button type="button" @click="openEdit(@js(['id' => $package->id, 'name' => $package->name, 'price' => (float) $package->price, 'deviceLimit' => $package->device_limit, 'features' => $featuresText, 'featureKeys' => $featureKeys]))"
                                     class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}">
                                     <span class="material-symbols-outlined !text-xl">edit</span>
                                 </button>
@@ -105,9 +113,31 @@
                             <input id="package-device-limit" type="number" min="0" name="deviceLimit" x-model="form.deviceLimit" required dir="ltr" placeholder="0" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
+                    {{-- المزايا التي يبني عليها التطبيق فعليًا: تُعرض كصناديق
+                         اختيار حتى لا يُكتب المفتاح يدويًا، وخطأ حرف واحد
+                         ("whatsap") يترك الميزة مقفلة دون أي رسالة خطأ. --}}
                     <div class="space-y-1.5">
-                        <label for="package-features" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المميزات (سطر لكل ميزة)') }}</label>
-                        <textarea id="package-features" name="features" x-model="form.features" rows="4" placeholder="{{ __('ميزة في كل سطر') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary"></textarea>
+                        <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المزايا المفعَّلة') }}</span>
+                        <div class="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                            @foreach (\App\Enums\PackageFeature::cases() as $feature)
+                                <label class="flex cursor-pointer items-start gap-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 transition-colors hover:bg-surface-container"
+                                       title="{{ $feature->description() }}">
+                                    <input type="checkbox" name="featureKeys[]" value="{{ $feature->value }}"
+                                           :checked="form.featureKeys.includes('{{ $feature->value }}')"
+                                           @change="$event.target.checked ? form.featureKeys.push('{{ $feature->value }}') : form.featureKeys = form.featureKeys.filter(k => k !== '{{ $feature->value }}')"
+                                           class="mt-0.5 size-4 shrink-0 rounded border-outline-variant text-primary focus:ring-primary" />
+                                    <span class="min-w-0">
+                                        <span class="block font-body-sm font-bold text-on-surface">{{ $feature->label() }}</span>
+                                        <span class="block font-body-sm text-body-sm text-on-surface-variant">{{ $feature->description() }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="package-features" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مزايا إضافية (سطر لكل ميزة)') }}</label>
+                        <textarea id="package-features" name="features" x-model="form.features" rows="3" placeholder="{{ __('نص حر يظهر على بطاقة الباقة') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary"></textarea>
                     </div>
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
                         <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>

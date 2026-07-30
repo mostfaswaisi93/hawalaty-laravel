@@ -34,6 +34,14 @@ use Throwable;
 class WhatsAppSender
 {
     /**
+     * Credentials come from the tenant's own `tenant_settings`, falling back
+     * to config/.env. Each business owns its own Meta app and its own bill,
+     * so one global set of credentials in .env would let one tenant send from
+     * - and be billed for - another's number.
+     */
+    public function __construct(private readonly WhatsAppSettings $settings) {}
+
+    /**
      * Applies every "should this order notify at all?" rule, then sends.
      */
     public function sendNewOrder(Transfer $transfer): WhatsAppResult
@@ -76,7 +84,16 @@ class WhatsAppSender
             return WhatsAppResult::skipped('duplicate');
         }
 
-        $result = $this->send($bank->phone, NewOrderMessage::build($transfer));
+        $link = OrderConfirmationLink::for($transfer);
+
+        // forVariables() matches the configured template's {{n}} count (one
+        // flattened line for a single-parameter template, the full field set
+        // otherwise); build() is the human-readable rendering the log driver prints.
+        $result = $this->send(
+            $bank->phone,
+            NewOrderMessage::forVariables($transfer, $link, $this->settings->variableCount()),
+            NewOrderMessage::build($transfer, $link),
+        );
 
         // Do not let a failure poison the key against a later manual resend.
         if (! $result->sent) {
@@ -88,14 +105,21 @@ class WhatsAppSender
 
     /**
      * Primitives only - no Eloquent, no tenant connection.
+     *
+     * @param  array<int, string>  $parameters  one value per {{n}} in the approved
+     *                                           template, in order (see NewOrderMessage::parameters).
+     * @param  string|null  $readable  the human-readable rendering for the log
+     *                                 driver; defaults to the parameters joined.
      */
-    public function send(string $rawPhone, string $body): WhatsAppResult
+    public function send(string $rawPhone, array $parameters, ?string $readable = null): WhatsAppResult
     {
-        if (! config('whatsapp.enabled', true)) {
+        if (! $this->settings->enabled()) {
             return WhatsAppResult::skipped('disabled');
         }
 
-        $to = PhoneNumber::toE164($rawPhone);
+        // مفتاح دولة المستأجر، لا الافتراضي العام: رقم مسجَّل عند ميتا بـ +970
+        // يرفضه الخادم إن أعدنا كتابته إلى +972 (الخطأ 131030).
+        $to = PhoneNumber::toE164($rawPhone, $this->settings->countryCode());
 
         if ($to === null) {
             Log::warning('WhatsApp number could not be normalised.', ['phone' => PhoneNumber::mask($rawPhone)]);
@@ -105,10 +129,10 @@ class WhatsAppSender
 
         // An unrecognised driver falls through to `log` rather than throwing: a
         // typo in .env must not break order creation.
-        return match (config('whatsapp.driver', 'log')) {
-            'cloud' => $this->sendViaCloud($to, $body),
+        return match ($this->settings->driver()) {
+            'cloud' => $this->sendViaCloud($to, $parameters),
             'null' => WhatsAppResult::sent(),
-            default => $this->sendViaLog($to, $body),
+            default => $this->sendViaLog($to, $readable ?? implode("\n", $parameters)),
         };
     }
 
@@ -116,15 +140,15 @@ class WhatsAppSender
      * Meta WhatsApp Cloud API. Always sends an approved TEMPLATE: free-form text
      * to a number that never messaged us first is rejected with error 131047.
      */
-    private function sendViaCloud(string $to, string $body): WhatsAppResult
+    private function sendViaCloud(string $to, array $parameters): WhatsAppResult
     {
-        $token = (string) config('whatsapp.token');
-        $phoneNumberId = (string) config('whatsapp.phone_number_id');
+        $token = (string) $this->settings->get(WhatsAppSettings::TOKEN);
+        $phoneNumberId = (string) $this->settings->get(WhatsAppSettings::PHONE_NUMBER_ID);
 
         if (blank($token) || blank($phoneNumberId)) {
             Log::warning('WhatsApp cloud driver is selected but not configured; falling back to the log driver.');
 
-            return $this->sendViaLog($to, $body);
+            return $this->sendViaLog($to, implode("\n", $parameters));
         }
 
         $url = rtrim((string) config('whatsapp.base_url'), '/')
@@ -144,13 +168,18 @@ class WhatsAppSender
                     'to' => PhoneNumber::toWireFormat($to),
                     'type' => 'template',
                     'template' => [
-                        'name' => config('whatsapp.template.new_order'),
-                        'language' => ['code' => config('whatsapp.template.language')],
+                        'name' => $this->settings->get(WhatsAppSettings::TEMPLATE_NEW_ORDER),
+                        'language' => ['code' => $this->settings->get(WhatsAppSettings::TEMPLATE_LANGUAGE)],
                         'components' => [[
                             'type' => 'body',
-                            // Exactly one positional parameter - a count mismatch
-                            // against the approved template returns error 132000.
-                            'parameters' => [['type' => 'text', 'text' => $body]],
+                            // One positional parameter per {{n}} in the approved
+                            // template, IN ORDER. A count mismatch returns error
+                            // 132000; a newline inside any value returns 132018 -
+                            // NewOrderMessage::parameters() guarantees single lines.
+                            'parameters' => array_map(
+                                fn (string $value) => ['type' => 'text', 'text' => $value],
+                                array_values($parameters),
+                            ),
                         ]],
                     ],
                 ]);

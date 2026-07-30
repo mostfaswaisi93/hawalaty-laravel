@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\LicenseStatus;
+use App\Enums\PackageFeature;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,20 @@ class License extends Model
     public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
+    }
+
+    /**
+     * Whether this license's package grants a capability.
+     *
+     * A license with no package resolves to false: a capability must be sold
+     * deliberately, so an unreadable/absent package closes the gate rather than
+     * opening it.
+     */
+    public function hasFeature(PackageFeature|string $feature): bool
+    {
+        $key = $feature instanceof PackageFeature ? $feature->value : $feature;
+
+        return in_array($key, (array) ($this->package?->features ?? []), true);
     }
 
     public function databaseConnection(): HasOne

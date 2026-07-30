@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Enums\PackageFeature;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Models\Package;
 use App\Services\Admin\PackageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -67,13 +69,25 @@ class PackageController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'deviceLimit' => ['required', 'integer', 'min:0'],
             'features' => ['nullable', 'string'],
+            'featureKeys' => ['nullable', 'array'],
+            'featureKeys.*' => [Rule::enum(PackageFeature::class)],
         ]);
 
-        $validated['features'] = collect(preg_split('/\r\n|\r|\n/', (string) ($validated['features'] ?? '')))
+        // العمود قائمة نصية واحدة، والنموذج يجمعها من مصدرين: صناديق المزايا
+        // التي يبني عليها التطبيق (PackageFeature)، ونص حر لبنود تسويقية لا
+        // تبوّب شيئًا. تُدمجان هنا مع إزالة التكرار حتى لا يظهر مفتاح مرتين
+        // إن كتبه أحدهم يدويًا في المربّع أيضًا.
+        $free = collect(preg_split('/\r\n|\r|\n/', (string) ($validated['features'] ?? '')))
             ->map(fn (string $line) => trim($line))
-            ->filter()
+            ->filter();
+
+        $validated['features'] = collect($validated['featureKeys'] ?? [])
+            ->merge($free)
+            ->unique()
             ->values()
             ->all();
+
+        unset($validated['featureKeys']);
 
         return $validated;
     }

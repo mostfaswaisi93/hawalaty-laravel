@@ -25,11 +25,13 @@ use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\OrderConfirmationController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
+use App\Http\Controllers\Web\WhatsAppSettingsController;
 use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
@@ -95,6 +97,16 @@ Route::middleware(['tenant.session', 'guest:tenant'])->group(function () {
 Route::get('license-inactive', function () {
     return view('auth.license-inactive');
 })->name('license.inactive');
+
+// Public, login-free bank-transfer confirmation. Opened by the account owner
+// from the WhatsApp link: no session and no X-License-Code, so the tenant is
+// selected from the license code in the path and the order is found by its
+// unguessable token (see Web\OrderConfirmationController). The POST is
+// throttled since the token is the only gate.
+Route::get('order/confirm/{license}/{token}', [OrderConfirmationController::class, 'show'])->name('order.confirm');
+Route::post('order/confirm/{license}/{token}', [OrderConfirmationController::class, 'act'])
+    ->middleware('throttle:10,1')
+    ->name('order.confirm.act');
 
 // `tenant.session` MUST run ahead of `auth:tenant` on EVERY route that uses
 // the `tenant` guard - not just the "page content" routes. Empirically
@@ -203,6 +215,13 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     // Settings (self-service profile + password)
     Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('settings/profile', [SettingsController::class, 'update'])->name('settings.profile.update');
+
+    // WhatsApp credentials. Per-tenant on purpose: each business owns its own
+    // Meta app, its own number and its own bill, so these can never live in the
+    // shared .env. Permission is enforced in the controller.
+    Route::get('settings/whatsapp', [WhatsAppSettingsController::class, 'index'])->name('whatsapp.settings');
+    Route::put('settings/whatsapp', [WhatsAppSettingsController::class, 'update'])->name('whatsapp.settings.update');
+    Route::post('settings/whatsapp/test', [WhatsAppSettingsController::class, 'test'])->name('whatsapp.settings.test');
 });
 
 /*

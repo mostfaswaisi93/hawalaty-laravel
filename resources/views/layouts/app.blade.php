@@ -44,17 +44,23 @@
                 ['href' => '/roles', 'icon' => 'admin_panel_settings', 'label' => 'الأدوار والصلاحيات', 'match' => 'roles*', 'permission' => \App\Enums\PermissionKey::TeamManage],
                 ['href' => '/devices', 'icon' => 'devices', 'label' => 'الأجهزة', 'match' => 'devices*', 'permission' => \App\Enums\PermissionKey::DevicesManage],
                 ['href' => '/activity-log', 'icon' => 'fact_check', 'label' => 'سجل النشاطات', 'match' => 'activity-log*', 'permission' => null],
-                ['href' => '/settings', 'icon' => 'settings', 'label' => 'الإعدادات', 'match' => 'settings*', 'permission' => null],
+                ['href' => '/settings', 'icon' => 'settings', 'label' => 'الإعدادات', 'match' => 'settings', 'permission' => null],
+                ['href' => '/settings/whatsapp', 'icon' => 'chat', 'label' => 'واتساب', 'match' => 'settings/whatsapp*', 'permission' => \App\Enums\PermissionKey::ConstantsManage, 'feature' => \App\Enums\PackageFeature::WhatsApp],
                 ['href' => '/help', 'icon' => 'help', 'label' => 'المساعدة', 'match' => 'help*', 'permission' => null],
             ],
         ],
     ];
 
+    // الترخيص الحالي يربطه ResolveTenantConnectionFromSession. غيابه يُغلق أي
+    // بند مشروط بميزة بدل أن يفتحه — القائمة يجب ألا تعرض ما لا تبيعه الباقة.
+    $currentLicense = app()->bound('currentLicense') ? app('currentLicense') : null;
+
     $visibleGroups = [];
     foreach ($navGroups as $group) {
         $items = array_values(array_filter(
             $group['items'],
-            fn ($item) => ! $item['permission'] || $member?->hasPermission($item['permission']),
+            fn ($item) => (! ($item['permission'] ?? null) || $member?->hasPermission($item['permission']))
+                && (! ($item['feature'] ?? null) || (bool) $currentLicense?->hasFeature($item['feature'])),
         ));
 
         if ($items !== []) {

@@ -5,6 +5,7 @@ namespace Tests\Unit\WhatsApp;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
 use App\Models\Tenant\Bank;
+use App\Models\Tenant\Customer;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
 use App\Services\WhatsApp\NewOrderMessage;
@@ -83,6 +84,49 @@ class NewOrderMessageTest extends TestCase
         $this->assertStringNotContainsString('null', $body);
     }
 
+    public function test_it_includes_the_customer_phone_when_the_profile_is_loaded(): void
+    {
+        $transfer = $this->transfer();
+        $transfer->setRelation('customerProfile', new Customer([
+            'name' => 'أحمد محمد',
+            'phone' => '+972595817016',
+        ]));
+
+        $body = NewOrderMessage::build($transfer);
+
+        // Wrapped in bidi isolates like every other Latin/numeric run, so the
+        // leading + does not jump to the wrong end of the RTL paragraph.
+        $this->assertStringContainsString("الهاتف: \u{2066}+972595817016\u{2069}", $body);
+    }
+
+    public function test_it_omits_the_phone_when_the_order_has_no_customer_profile(): void
+    {
+        // No phone on the order means customer_id - and customerProfile - is
+        // null; the message must simply drop the line, never render "الهاتف: ".
+        $body = NewOrderMessage::build($this->transfer());
+
+        $this->assertStringNotContainsString('الهاتف', $body);
+    }
+
+    public function test_it_appends_the_confirmation_link_when_one_is_passed(): void
+    {
+        $url = 'https://hawalaty.test/order/confirm/ABC123/tok_0123456789';
+
+        $body = NewOrderMessage::build($this->transfer(), $url);
+
+        $this->assertStringContainsString('لتأكيد استلام الحوالة', $body);
+        // Isolated like every other Latin run so the URL keeps its direction.
+        $this->assertStringContainsString("\u{2066}{$url}\u{2069}", $body);
+    }
+
+    public function test_it_omits_the_confirmation_link_when_none_is_passed(): void
+    {
+        $body = NewOrderMessage::build($this->transfer());
+
+        $this->assertStringNotContainsString('لتأكيد استلام الحوالة', $body);
+        $this->assertStringNotContainsString('http', $body);
+    }
+
     public function test_it_never_includes_the_sender_name_or_phone(): void
     {
         // Deliberately excluded from the notification even when captured on the
@@ -130,5 +174,128 @@ class NewOrderMessageTest extends TestCase
         $body = NewOrderMessage::build($this->transfer(['amount' => '1234.5']));
 
         $this->assertStringContainsString('1,234.50 ₪', $body);
+    }
+
+    // --- parameters(): the single-line values for the multi-variable template ---
+
+    public function test_parameters_returns_exactly_the_declared_number_of_values(): void
+    {
+        $params = NewOrderMessage::parameters($this->transfer());
+
+        $this->assertCount(NewOrderMessage::PARAM_COUNT, $params);
+    }
+
+    public function test_no_parameter_ever_contains_a_newline(): void
+    {
+        // The whole reason parameters() exists: Meta rejects a body parameter
+        // that contains a newline (error 132018). A multi-item order with a
+        // confirmation link is the case that used to break.
+        $transfer = $this->transfer();
+        $transfer->setRelation('customerProfile', new Customer(['name' => 'محمود', 'phone' => '+970599302930']));
+
+        $params = NewOrderMessage::parameters($transfer, "https://app.test/order/confirm/L/tok");
+
+        foreach ($params as $value) {
+            $this->assertStringNotContainsString("\n", $value);
+            $this->assertStringNotContainsString("\t", $value);
+            $this->assertNotSame('', $value); // Meta also rejects an empty parameter
+        }
+    }
+
+    public function test_parameters_flatten_multiple_line_items_to_one_line(): void
+    {
+        $params = NewOrderMessage::parameters($this->transfer());
+
+        // Both items must appear, joined into the single items slot ({{5}}).
+        $this->assertStringContainsString('شاورما دجاج', $params[4]);
+        $this->assertStringContainsString('عصير برتقال', $params[4]);
+        $this->assertStringNotContainsString("\n", $params[4]);
+    }
+
+    public function test_parameters_include_the_confirmation_url_when_present(): void
+    {
+        $url = 'https://app.test/order/confirm/LIC/tok_123';
+
+        $params = NewOrderMessage::parameters($this->transfer(), $url);
+
+        $this->assertStringContainsString($url, $params[7]);
+    }
+
+    public function test_parameters_use_a_dash_for_absent_optionals(): void
+    {
+        // A bare bank order: no customer profile (phone), no bank relation, no
+        // link. Those slots must be a dash, never an empty string.
+        $transfer = new Transfer([
+            'customer' => 'أحمد',
+            'status' => TransferStatus::Pending,
+            'amount' => '10.00',
+            'item_name' => 'صنف',
+            'payment_method' => PaymentMethod::Bank,
+        ]);
+        $transfer->id = '01HQZX9K2M4N6P8R0A1B2C3D4E';
+        $transfer->created_at = now();
+
+        $params = NewOrderMessage::parameters($transfer);
+
+        $this->assertSame('—', $params[3]); // phone
+        $this->assertSame('—', $params[6]); // bank
+        $this->assertSame('—', $params[7]); // link
+    }
+
+    public function test_test_parameters_match_the_template_arity(): void
+    {
+        $this->assertCount(NewOrderMessage::PARAM_COUNT, NewOrderMessage::testParameters('مرحبا'));
+        $this->assertContains('مرحبا', NewOrderMessage::testParameters('مرحبا'));
+    }
+
+    public function test_test_parameters_collapse_to_one_for_a_single_variable_template(): void
+    {
+        $params = NewOrderMessage::testParameters('مرحبا', 1);
+
+        $this->assertCount(1, $params);
+        $this->assertSame('مرحبا', $params[0]);
+    }
+
+    // --- forVariables()/singleLine(): the legacy single-parameter template ---
+
+    public function test_for_variables_returns_one_flattened_line_when_the_template_has_one(): void
+    {
+        $params = NewOrderMessage::forVariables($this->transfer(), 'https://app.test/c/tok', 1);
+
+        $this->assertCount(1, $params);
+        // Everything on the one line, and no newline (that is the 132018 trap).
+        $this->assertStringNotContainsString("\n", $params[0]);
+        $this->assertStringContainsString('أحمد محمد', $params[0]);
+        $this->assertStringContainsString('شاورما دجاج', $params[0]);
+        $this->assertStringContainsString('https://app.test/c/tok', $params[0]);
+    }
+
+    public function test_for_variables_returns_the_full_set_otherwise(): void
+    {
+        $params = NewOrderMessage::forVariables($this->transfer(), null, NewOrderMessage::PARAM_COUNT);
+
+        $this->assertCount(NewOrderMessage::PARAM_COUNT, $params);
+    }
+
+    public function test_single_line_omits_absent_optionals_rather_than_showing_a_dash(): void
+    {
+        // A bare order with no phone/bank/link must not read "الهاتف: —".
+        $transfer = new Transfer([
+            'customer' => 'أحمد',
+            'status' => TransferStatus::Pending,
+            'amount' => '10.00',
+            'item_name' => 'صنف',
+            'payment_method' => PaymentMethod::Bank,
+        ]);
+        $transfer->id = '01HQZX9K2M4N6P8R0A1B2C3D4E';
+        $transfer->created_at = now();
+
+        $line = NewOrderMessage::singleLine($transfer);
+
+        // The absent fields are dropped whole - no dangling "الهاتف: " / "البنك: "
+        // label. (The em dash itself is the field SEPARATOR, so it is present.)
+        $this->assertStringNotContainsString('الهاتف', $line);
+        $this->assertStringNotContainsString('البنك', $line);
+        $this->assertStringNotContainsString('للتأكيد', $line);
     }
 }
