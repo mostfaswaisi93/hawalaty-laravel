@@ -154,8 +154,18 @@ class TenantProvisioner
         }
 
         DB::connection('mysql')->statement("CREATE DATABASE `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        DB::connection('mysql')->statement("CREATE USER '{$dbUser}'@'%' IDENTIFIED BY '{$dbPassword}'");
-        DB::connection('mysql')->statement("GRANT ALL PRIVILEGES ON `{$dbName}`.* TO '{$dbUser}'@'%'");
+
+        // '%' وحده لا يكفي. مع skip_name_resolve=OFF يترجم الخادم عنوان
+        // 127.0.0.1 عكسياً إلى 'localhost'، وعندها يفوز أي حساب أخص على
+        // البدل — وحزم MAMP/XAMPP تأتي بمستخدم مجهول ''@'localhost' يخطف
+        // الاتصال ويُفشل المصادقة بـ:
+        //   Access denied for user 'user_xxx'@'localhost'
+        // إنشاء الحساب لكلا المضيفين يجعل التزويد يعمل عبر TCP و socket معاً.
+        foreach (['%', 'localhost', '127.0.0.1'] as $host) {
+            DB::connection('mysql')->statement("CREATE USER IF NOT EXISTS '{$dbUser}'@'{$host}' IDENTIFIED BY '{$dbPassword}'");
+            DB::connection('mysql')->statement("GRANT ALL PRIVILEGES ON `{$dbName}`.* TO '{$dbUser}'@'{$host}'");
+        }
+
         DB::connection('mysql')->statement('FLUSH PRIVILEGES');
 
         return [$dbName, $dbUser, $dbPassword];
@@ -213,10 +223,14 @@ class TenantProvisioner
         }
 
         if ($dbUser) {
-            try {
-                DB::connection('mysql')->statement("DROP USER IF EXISTS '{$dbUser}'@'%'");
-            } catch (Throwable) {
-                // best effort
+            // يجب أن يطابق مجموعة المضيفين في provisionPhysicalDatabase()،
+            // وإلا بقي حساب يتيم يمنع إعادة التزويد بنفس رمز الترخيص.
+            foreach (['%', 'localhost', '127.0.0.1'] as $host) {
+                try {
+                    DB::connection('mysql')->statement("DROP USER IF EXISTS '{$dbUser}'@'{$host}'");
+                } catch (Throwable) {
+                    // best effort
+                }
             }
         }
 

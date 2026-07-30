@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Throwable;
 
 class TransferService
@@ -114,6 +115,14 @@ class TransferService
                 'sender_name' => $data['senderName'] ?? null,
                 'sender_phone' => $data['senderPhone'] ?? null,
                 'transferred_amount' => $data['transferredAmount'] ?? null,
+                // Whoever raised the order, so the bank owner's later
+                // confirmation notifies exactly this person - null on the API/
+                // sync paths that carry no logged-in team member.
+                'created_by' => auth('tenant')->id(),
+                // Only a bank/wallet order is confirmable, so only it gets a
+                // token. 48 random chars is the unguessable credential the
+                // public confirmation link carries.
+                'confirmation_token' => ($data['paymentMethod'] ?? null) === 'bank' ? Str::random(48) : null,
             ]);
 
             foreach ($data['items'] as $item) {
@@ -129,7 +138,10 @@ class TransferService
             return $transfer;
         });
 
-        $transfer->load(['lineItems', 'bank', 'changeBank']);
+        // customerProfile is loaded for the WhatsApp notification: it carries the
+        // customer's phone, which the bank operator needs to reach them. It is
+        // null when the order captured no phone (see CustomerService::findOrCreate).
+        $transfer->load(['lineItems', 'bank', 'changeBank', 'customerProfile']);
 
         AuditLogger::record(AuditAction::Created, AuditEntityType::Order, $transfer->id, AuditCategory::Transfers);
 

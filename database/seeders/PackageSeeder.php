@@ -26,13 +26,13 @@ class PackageSeeder extends Seeder
                 'name' => 'Pro',
                 'price' => 99,
                 'device_limit' => 10,
-                'features' => ['transfers', 'menu', 'reports', 'banks', 'expenses', 'team'],
+                'features' => ['transfers', 'menu', 'reports', 'banks', 'expenses', 'team', 'whatsapp'],
             ],
             [
                 'name' => 'Enterprise',
                 'price' => 299,
                 'device_limit' => 50,
-                'features' => ['transfers', 'menu', 'reports', 'banks', 'expenses', 'team', 'devices', 'constants', 'backups'],
+                'features' => ['transfers', 'menu', 'reports', 'banks', 'expenses', 'team', 'devices', 'constants', 'backups', 'whatsapp'],
             ],
         ];
 
