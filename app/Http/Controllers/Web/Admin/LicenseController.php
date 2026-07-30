@@ -75,6 +75,17 @@ class LicenseController extends Controller
         return redirect()->back()->with('success', __('تم تفعيل الترخيص.'));
     }
 
+    public function migrate(string $license): RedirectResponse
+    {
+        try {
+            $this->service->migrate(License::findOrFail($license), auth('admin')->user());
+        } catch (Throwable $e) {
+            return redirect()->back()->with('error', __('تعذّر تشغيل الترحيلات: ').$e->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('تم تشغيل ترحيلات قاعدة البيانات بنجاح.'));
+    }
+
     public function changePackage(ChangePackageRequest $request, string $license): RedirectResponse
     {
         $this->service->changePackage(

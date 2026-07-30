@@ -12,7 +12,9 @@ use App\Models\Tenant\TeamMember;
 use App\Services\TenantProvisioner;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class LicenseService
 {
@@ -46,6 +48,33 @@ class LicenseService
     public function create(array $data, ?Admin $actor): License
     {
         return $this->provisioner->provision($data, $actor);
+    }
+
+    /**
+     * Runs the tenant schema migrations against a license's linked database on
+     * demand - the button an operator presses after creating (and linking) a
+     * cPanel database, or to roll out a newly added tenant migration to an
+     * existing account. tenants:migrate is idempotent (Laravel tracks which
+     * migrations ran), so pressing it on an up-to-date database is a safe no-op.
+     */
+    public function migrate(License $license, ?Admin $actor): void
+    {
+        if (! $license->databaseConnection) {
+            throw new RuntimeException('لا توجد قاعدة بيانات مرتبطة بهذا الترخيص.');
+        }
+
+        $exitCode = Artisan::call('tenants:migrate', ['code' => $license->license_code]);
+
+        if ($exitCode !== 0) {
+            throw new RuntimeException('فشلت الترحيلات: '.trim(Artisan::output()));
+        }
+
+        ActivityLog::create([
+            'admin_id' => $actor?->id,
+            'action' => 'migrated',
+            'entity_type' => 'license',
+            'entity_label' => $license->customer_name,
+        ]);
     }
 
     /**

@@ -146,7 +146,7 @@
                 <x-modal-close on-close="open = false" />
                 <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
                     <h3 class="font-headline-md text-headline-md">{{ __('إنشاء ترخيص جديد') }}</h3>
-                    <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('سيُنشئ النظام قاعدة بيانات مستقلّة وحساب مالك للعميل.') }}</p>
+                    <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('أنشئ قاعدة بيانات للعميل في cPanel أولاً، ثم أدخل بياناتها هنا لربطها وترحيل جداولها.') }}</p>
                 </div>
                 <form method="POST" action="{{ route('admin.licenses.store') }}" class="grid grid-cols-1 gap-4 p-6 md:grid-cols-2" @submit="submitting = true">
                     @csrf
@@ -179,6 +179,37 @@
                         <label for="admin-licenses-password" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('كلمة مرور المالك') }}</label>
                         <input id="admin-licenses-password" type="password" name="password" required dir="ltr" placeholder="{{ __('8 أحرف على الأقل، حروف وأرقام') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
+
+                    {{-- قاعدة بيانات العميل: يُنشئها المشغّل في cPanel ثم تُربط هنا (الاستضافة
+                         المشتركة لا تسمح بإنشاء قاعدة بيانات من داخل التطبيق). --}}
+                    <div class="md:col-span-2">
+                        <div class="mt-2 flex items-center gap-2 border-t border-outline-variant/60 pt-4">
+                            <span class="material-symbols-outlined !text-xl text-primary">database</span>
+                            <h4 class="font-body-lg font-bold text-on-surface">{{ __('قاعدة بيانات العميل (cPanel)') }}</h4>
+                        </div>
+                        <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('أنشئ القاعدة والمستخدم وامنحه كامل الصلاحيات عليها في cPanel، ثم أدخل البيانات. سيتم اختبار الاتصال وترحيل الجداول تلقائياً.') }}</p>
+                    </div>
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label for="admin-licenses-db-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم قاعدة البيانات') }}</label>
+                        <input id="admin-licenses-db-name" name="dbName" value="{{ old('dbName') }}" required dir="ltr" placeholder="cpaneluser_hawalaty" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="admin-licenses-db-username" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مستخدم قاعدة البيانات') }}</label>
+                        <input id="admin-licenses-db-username" name="dbUsername" value="{{ old('dbUsername') }}" required dir="ltr" placeholder="cpaneluser_dbuser" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="admin-licenses-db-password" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('كلمة مرور قاعدة البيانات') }}</label>
+                        <input id="admin-licenses-db-password" type="password" name="dbPassword" required dir="ltr" autocomplete="new-password" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="admin-licenses-db-host" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المضيف (اختياري)') }}</label>
+                        <input id="admin-licenses-db-host" name="dbHost" value="{{ old('dbHost') }}" dir="ltr" placeholder="127.0.0.1" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="admin-licenses-db-port" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المنفذ (اختياري)') }}</label>
+                        <input id="admin-licenses-db-port" type="number" name="dbPort" value="{{ old('dbPort') }}" dir="ltr" placeholder="3306" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                    </div>
+
                     <div class="-mx-6 -mb-6 mt-6 flex justify-end gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4 md:col-span-2">
                         <button type="button" @click="open = false" class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container" title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50" x-text="submitting ? '{{ __('جارٍ الإنشاء...') }}' : '{{ __('إنشاء') }}'"></button>

@@ -89,8 +89,30 @@
                             <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المضيف') }}</dt>
                             <dd class="mt-1 font-body-lg" dir="ltr">{{ $connection->host }}:{{ $connection->port }}</dd>
                         </div>
+                        <div>
+                            <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مستخدم قاعدة البيانات') }}</dt>
+                            <dd class="mt-1 font-body-lg" dir="ltr">{{ $connection->username }}</dd>
+                        </div>
                     @endif
                 </dl>
+
+                {{-- Run tenant migrations on demand against the linked database. --}}
+                @if ($connection)
+                    <div class="mt-6 flex flex-col gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="font-body-lg font-bold text-on-surface">{{ __('ترحيل قاعدة البيانات') }}</h3>
+                            <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('يُنشئ الجداول الناقصة حسب باقة العميل. آمن للتكرار — لا يمسّ البيانات الموجودة.') }}</p>
+                        </div>
+                        <form method="POST" action="{{ route('admin.licenses.migrate', $license->id) }}"
+                            x-data @submit.prevent="if (confirm('{{ __('تشغيل ترحيلات قاعدة البيانات لهذا الترخيص؟') }}')) $el.submit()">
+                            @csrf
+                            <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('تشغيل الترحيلات') }}">
+                                <span class="material-symbols-outlined !text-xl">database</span>
+                                {{ __('تشغيل الترحيلات') }}
+                            </button>
+                        </form>
+                    </div>
+                @endif
 
                 {{-- Change package --}}
                 <form method="POST" action="{{ route('admin.licenses.change-package', $license->id) }}" class="mt-6 flex flex-col gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-end">

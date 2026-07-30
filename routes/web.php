@@ -249,6 +249,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('licenses/{license}', [AdminLicenseController::class, 'show'])->name('licenses.show');
         Route::post('licenses/{license}/suspend', [AdminLicenseController::class, 'suspend'])->name('licenses.suspend');
         Route::post('licenses/{license}/activate', [AdminLicenseController::class, 'activate'])->name('licenses.activate');
+        // Runs the tenant schema migrations against the license's linked cPanel database.
+        Route::post('licenses/{license}/migrate', [AdminLicenseController::class, 'migrate'])->name('licenses.migrate');
         Route::post('licenses/{license}/change-package', [AdminLicenseController::class, 'changePackage'])->name('licenses.change-package');
 
         // Packages

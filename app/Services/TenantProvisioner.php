@@ -55,8 +55,16 @@ class TenantProvisioner
 
         $license = null;
         $connection = null;
+        // Only set in AUTO mode, so cleanup() DROPs only a database THIS class
+        // created - never the operator's own cPanel database in link mode.
         $dbName = null;
         $dbUser = null;
+
+        // Link mode: the operator created the database in cPanel (shared hosting
+        // forbids CREATE DATABASE from the app) and is linking its credentials.
+        // Absent -> fall back to creating the database automatically, which is
+        // what self-service signup and a full-privilege host still use.
+        $linkMode = filled($data['dbName'] ?? null);
 
         try {
             $license = DB::transaction(fn () => License::create([
@@ -68,16 +76,31 @@ class TenantProvisioner
                 'customer_balance' => 0,
             ]));
 
-            [$dbName, $dbUser, $dbPassword] = $this->provisionPhysicalDatabase($license->license_code);
+            if ($linkMode) {
+                $connection = DB::transaction(fn () => DatabaseConnection::create([
+                    'license_id' => $license->id,
+                    'host' => filled($data['dbHost'] ?? null) ? $data['dbHost'] : '127.0.0.1',
+                    'port' => (int) ($data['dbPort'] ?? 0) ?: 3306,
+                    'database_name' => $data['dbName'],
+                    'username' => $data['dbUsername'],
+                    'password' => $data['dbPassword'],
+                ]));
 
-            $connection = DB::transaction(fn () => DatabaseConnection::create([
-                'license_id' => $license->id,
-                'host' => '127.0.0.1',
-                'port' => 3306,
-                'database_name' => $dbName,
-                'username' => $dbUser,
-                'password' => $dbPassword,
-            ]));
+                // Fail fast with a clear message if the credentials or grants
+                // are wrong, BEFORE migrating against an unreachable database.
+                $this->assertConnectable($connection);
+            } else {
+                [$dbName, $dbUser, $dbPassword] = $this->provisionPhysicalDatabase($license->license_code);
+
+                $connection = DB::transaction(fn () => DatabaseConnection::create([
+                    'license_id' => $license->id,
+                    'host' => '127.0.0.1',
+                    'port' => 3306,
+                    'database_name' => $dbName,
+                    'username' => $dbUser,
+                    'password' => $dbPassword,
+                ]));
+            }
 
             $exitCode = Artisan::call('tenants:migrate', ['code' => $license->license_code]);
 
@@ -169,6 +192,38 @@ class TenantProvisioner
         DB::connection('mysql')->statement('FLUSH PRIVILEGES');
 
         return [$dbName, $dbUser, $dbPassword];
+    }
+
+    /**
+     * Proves the operator-supplied credentials actually reach the database
+     * BEFORE any migration is attempted, so a typo or a missing GRANT in cPanel
+     * surfaces as one clear message instead of a half-migrated database. Uses a
+     * throwaway `tenant_probe` connection so the live `tenant` config is left
+     * untouched, and never echoes the raw PDO error (it leaks host/user and is
+     * not actionable to the operator).
+     */
+    protected function assertConnectable(DatabaseConnection $connection): void
+    {
+        config(['database.connections.tenant_probe' => [
+            'driver' => 'mysql',
+            'host' => $connection->host,
+            'port' => $connection->port,
+            'database' => $connection->database_name,
+            'username' => $connection->username,
+            'password' => $connection->password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ]]);
+
+        try {
+            DB::connection('tenant_probe')->select('SELECT 1');
+        } catch (Throwable) {
+            throw new RuntimeException('تعذّر الاتصال بقاعدة البيانات المُدخَلة. تأكّد من اسم القاعدة والمستخدم وكلمة المرور ومنح كامل الصلاحيات للمستخدم على القاعدة في cPanel.');
+        } finally {
+            DB::purge('tenant_probe');
+        }
     }
 
     /**
