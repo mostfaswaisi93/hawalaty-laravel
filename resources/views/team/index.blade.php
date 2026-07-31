@@ -23,7 +23,26 @@
             openEdit(member) { this.mode = 'edit'; this.submitting = false; this.form = { ...member, password: '' }; this.open = true; },
             payOpen: false, rateOpen: false,
             target: { id: '', name: '', amount: '', period: 'monthly' },
-            openPay(m) { this.submitting = false; this.target = { id: m.id, name: m.name, amount: m.amount || '', period: m.period || 'monthly' }; this.payOpen = true; },
+            {{-- Payroll picks the account the salary LEAVES the same way the
+                 order form picks where money arrives - see partials/_account-picker. --}}
+            accounts: {{ \Illuminate\Support\Js::from($accounts->map(fn ($a) => [
+                'id' => $a->id,
+                'kind' => $a->kind->value,
+                'holder' => $a->holder_name,
+                'institution' => $a->institutionName() ?? '',
+                'type' => $a->typeName() ?? '',
+                'currency' => $a->currency?->symbol ?? '',
+            ])->values()) }},
+            payTarget: 'cash',
+            payAccountId: '',
+            accountById(id) { return this.accounts.find(a => a.id === id) || null; },
+            accountsOfKind(kind) { return this.accounts.filter(a => a.kind === kind); },
+            get paySymbol() { return this.accountById(this.payAccountId)?.currency || '₪'; },
+            setPayTarget(kind) {
+                this.payTarget = kind;
+                if (this.accountById(this.payAccountId)?.kind !== kind) this.payAccountId = '';
+            },
+            openPay(m) { this.submitting = false; this.payTarget = 'cash'; this.payAccountId = ''; this.target = { id: m.id, name: m.name, amount: m.amount || '', period: m.period || 'monthly' }; this.payOpen = true; },
             openRate(m) { this.submitting = false; this.target = { id: m.id, name: m.name, amount: m.amount || '', period: m.period || 'monthly' }; this.rateOpen = true; },
         }">
 
@@ -88,9 +107,9 @@
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-1">
                                         <button type="button" @click="openPay(@js(['id' => $m->id, 'name' => $m->name, 'amount' => $m->salary_amount, 'period' => $m->salary_period?->value]))"
-                                            @disabled($banks->isEmpty())
+                                            @disabled($accounts->isEmpty())
                                             class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-success-container/30 hover:text-success disabled:cursor-not-allowed disabled:opacity-40"
-                                            aria-label="{{ __('صرف راتب') }}" title="{{ $banks->isEmpty() ? __('أضِف حساباً أولاً') : __('صرف راتب') }}">
+                                            aria-label="{{ __('صرف راتب') }}" title="{{ $accounts->isEmpty() ? __('أضِف حساباً أولاً') : __('صرف راتب') }}">
                                             <span class="material-symbols-outlined !text-xl">payments</span>
                                         </button>
                                         <button type="button" @click="openRate(@js(['id' => $m->id, 'name' => $m->name, 'amount' => $m->salary_amount, 'period' => $m->salary_period?->value]))"
@@ -234,22 +253,40 @@
                 <form method="POST" :action="'/team/' + target.id + '/salary/pay'" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
-                        <label for="pay-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ (₪)') }}</label>
+                        <label for="pay-amount" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المبلغ') }} <span dir="ltr" x-text="'(' + paySymbol + ')'"></span></label>
                         <input id="pay-amount" type="number" step="0.01" min="0.01" name="amount" x-model="target.amount" required dir="ltr" placeholder="0.00"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         @error('amount')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label for="pay-bank" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من حساب') }}</label>
-                        <select id="pay-bank" name="bankId" required
-                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                            <option value="" disabled selected>{{ __('اختر...') }}</option>
-                            @foreach ($banks as $bank)
-                                <option value="{{ $bank->id }}">{{ $bank->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('bankId')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                    <div class="space-y-2">
+                        <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('صُرِف من') }}</span>
+
+                        <div class="grid grid-cols-3 gap-2 rounded-xl bg-surface-container p-1">
+                            <template x-for="opt in [
+                                { key: 'cash', icon: 'payments', label: '{{ __('نقدي') }}' },
+                                { key: 'bank', icon: 'account_balance', label: '{{ __('بنك') }}' },
+                                { key: 'wallet', icon: 'account_balance_wallet', label: '{{ __('محفظة') }}' },
+                            ]" :key="opt.key">
+                                <button type="button" @click="setPayTarget(opt.key)"
+                                    class="flex flex-col items-center justify-center gap-1 rounded-lg py-2.5 font-body-sm font-bold transition-all"
+                                    :class="payTarget === opt.key ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'"
+                                    :aria-pressed="payTarget === opt.key ? 'true' : 'false'">
+                                    <span class="material-symbols-outlined !text-xl" x-text="opt.icon"></span>
+                                    <span x-text="opt.label"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        @include('partials._account-picker', [
+                            'model' => 'payAccountId',
+                            'inputName' => 'accountId',
+                            'listExpr' => 'accountsOfKind(payTarget)',
+                            'id' => 'salary',
+                            'empty' => __('لا توجد حسابات من هذا النوع. أنشئ حساباً أولاً من صفحة الحسابات.'),
+                        ])
+
+                        @error('accountId')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">

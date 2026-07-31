@@ -31,7 +31,7 @@ class SalaryService
     /**
      * Records a salary payment and the expense that carries the money movement.
      *
-     * @param  array{amount: numeric-string|float, bankId: string, paidFor?: ?string, period?: ?string, notes?: ?string}  $data
+     * @param  array{amount: numeric-string|float, accountId: string, paidFor?: ?string, period?: ?string, notes?: ?string}  $data
      */
     public function pay(TeamMember $member, array $data): SalaryPayment
     {
@@ -48,7 +48,7 @@ class SalaryService
             $expense = Expense::create([
                 'description' => $this->describe($member, $period, $paidFor),
                 'amount' => $data['amount'],
-                'bank_id' => $data['bankId'],
+                'account_id' => $data['accountId'],
                 'date' => $paidFor->toDateString(),
             ]);
 
@@ -68,7 +68,7 @@ class SalaryService
                 AuditCategory::Expenses,
             );
 
-            return $payment->load(['teamMember', 'expense.bank']);
+            return $payment->load(['teamMember', 'expense.account']);
         });
     }
 
@@ -78,7 +78,7 @@ class SalaryService
     public function history(?string $memberId = null, int $perPage = 20): LengthAwarePaginator
     {
         return SalaryPayment::query()
-            ->with(['teamMember', 'expense.bank'])
+            ->with(['teamMember', 'expense.account'])
             ->when($memberId, fn ($q) => $q->where('team_member_id', $memberId))
             ->latest('paid_for')
             ->latest()

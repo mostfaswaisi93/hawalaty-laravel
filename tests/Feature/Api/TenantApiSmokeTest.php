@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\ConstantList;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
@@ -39,10 +39,10 @@ class TenantApiSmokeTest extends TenantApiTestCase
      */
     private function seedSomethingOfEverything(): void
     {
-        $bank = Bank::factory()->create(['name' => 'بنك فلسطين', 'code' => 'PAL']);
+        $bank = Account::factory()->create(['holder_name' => 'بنك فلسطين']);
         $category = MenuCategory::create(['name' => 'مشاوي', 'position' => 0]);
         MenuItem::factory()->create(['name' => 'شاورما', 'menu_category_id' => $category->id, 'price' => '20.00']);
-        Transfer::factory()->create(['customer' => 'أحمد', 'bank_id' => $bank->id]);
+        Transfer::factory()->create(['customer' => 'أحمد', 'account_id' => $bank->id]);
 
         $list = ConstantList::create(['key' => 'suppliers', 'title' => 'الموردون']);
         $list->items()->create(['value' => 'مورد أول', 'position' => 0]);
@@ -56,7 +56,6 @@ class TenantApiSmokeTest extends TenantApiTestCase
             'dashboard weekly' => ['/api/v1/dashboard/weekly-activity'],
             'transfers' => ['/api/v1/transfers'],
             'history' => ['/api/v1/history'],
-            'banks' => ['/api/v1/banks'],
             'menu items' => ['/api/v1/menu-items'],
             'menu categories' => ['/api/v1/menu-categories'],
             'expenses' => ['/api/v1/expenses'],

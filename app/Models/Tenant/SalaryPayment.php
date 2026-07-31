@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * was paid and for which period.
  *
  * The paying account is deliberately NOT duplicated here; it is read through
- * `expense->bank`, so the two can never drift apart.
+ * `expense->account`, so the two can never drift apart.
  */
 #[Fillable(['team_member_id', 'expense_id', 'amount', 'period', 'paid_for', 'notes'])]
 class SalaryPayment extends Model
@@ -54,8 +54,8 @@ class SalaryPayment extends Model
     }
 
     /** The account the money actually left, via the expense. */
-    public function bank(): ?Bank
+    public function account(): ?Account
     {
-        return $this->expense?->bank;
+        return $this->expense?->account;
     }
 }

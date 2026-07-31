@@ -33,10 +33,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // The public-facing pages all print the support address, which used to
         // be the hardcoded literal `support@hawalaty.test` in five places. It is
-        // now the `support_email` platform setting. Scoped to these four views
+        // now the `support_email` platform setting. Scoped to the public views
         // rather than shared globally so the settings table is not touched on
         // every render of every page.
-        View::composer(['welcome', 'privacy', 'terms', 'help.index'], function ($view) {
+        View::composer(['welcome', 'privacy', 'terms', 'security', 'help.index'], function ($view) {
             $settings = app(PlatformSettings::class);
 
             $view->with([
@@ -93,14 +93,14 @@ class AppServiceProvider extends ServiceProvider
 
         // Policy auto-discovery for models under App\Models\Tenant\* WAS
         // verified via a real authorization call
-        // (Gate::getPolicyFor(App\Models\Tenant\Bank::class)) to correctly
-        // resolve App\Policies\Tenant\BankPolicy - and every other tenant
+        // (Gate::getPolicyFor(App\Models\Tenant\Account::class)) to correctly
+        // resolve App\Policies\Tenant\AccountPolicy - and every other tenant
         // policy - with NO explicit Gate::policy() registration needed.
         // Reason: Illuminate\Auth\Access\Gate::guessPolicyName() replaces
         // "\Models\" with "\Policies\" ANYWHERE it occurs in the model's
         // namespace, not just as the first segment, so
-        // App\Models\Tenant\Bank correctly guesses
-        // App\Policies\Tenant\BankPolicy among its candidates. Explicit
+        // App\Models\Tenant\Account correctly guesses
+        // App\Policies\Tenant\AccountPolicy among its candidates. Explicit
         // registration was tested and found unnecessary; left out here
         // rather than added as dead defensive code.
     }

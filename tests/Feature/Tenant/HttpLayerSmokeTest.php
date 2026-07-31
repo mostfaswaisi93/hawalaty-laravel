@@ -57,7 +57,9 @@ class HttpLayerSmokeTest extends TenantTestCase
                 'hasChange' => '0',
                 'items' => [['itemId' => $item->id, 'quantity' => 1, 'name' => $item->name, 'price' => (string) $item->price]],
             ])
-            ->assertRedirect(route('transfers.index'));
+            // A created order lands on its own confirmation page, where the
+            // operator either prints it or starts the next one.
+            ->assertRedirect(route('transfers.created', \App\Models\Tenant\Transfer::firstOrFail()->id));
     }
 
     public function test_guest_is_redirected_to_login(): void
@@ -98,7 +100,7 @@ class HttpLayerSmokeTest extends TenantTestCase
     /**
      * Every tenant page carrying a table, hit for real.
      *
-     * These exist because the pagination sweep broke `/banks` and `/expenses`
+     * These exist because the pagination sweep broke `/accounts` and `/expenses`
      * with a 500 that no test caught - the controllers called `$this->perPage()`
      * before the trait was applied. A compile check cannot see that; only
      * issuing the request can.
@@ -108,7 +110,7 @@ class HttpLayerSmokeTest extends TenantTestCase
     public static function tablePages(): array
     {
         return [
-            'banks' => ['/banks', 'banks'],
+            'accounts' => ['/accounts', 'accounts'],
             'customers' => ['/customers', 'customers'],
             'expenses' => ['/expenses', 'expenses'],
             'history' => ['/history', 'transfers'],
@@ -139,7 +141,7 @@ class HttpLayerSmokeTest extends TenantTestCase
     public static function paginatedPages(): array
     {
         return [
-            'banks' => ['/banks', 'banks'],
+            'accounts' => ['/accounts', 'accounts'],
             'customers' => ['/customers', 'customers'],
             'expenses' => ['/expenses', 'expenses'],
             'history' => ['/history', 'transfers'],

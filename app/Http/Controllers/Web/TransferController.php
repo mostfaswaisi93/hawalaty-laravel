@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Web;
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Transfer\StoreTransferRequest;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Customer;
+use App\Models\Tenant\Transfer;
 use App\Models\Tenant\MenuCategory;
 use App\Services\Tenant\TransferService;
 use Illuminate\Http\RedirectResponse;
@@ -40,8 +41,26 @@ class TransferController extends Controller
             ->filter(fn (MenuCategory $category) => $category->menuItems->isNotEmpty())
             ->values();
 
-        $banks = Bank::query()->where('active', true)->where('type', 'bank')->orderBy('name')->get(['id', 'name']);
-        $wallets = Bank::query()->where('active', true)->where('type', 'wallet')->orderBy('name')->get(['id', 'name']);
+        // Phase 2d: the order form now picks an ACCOUNT, not a legacy bank. Both
+        // kinds come down in one list with the fields the picker shows (holder,
+        // institution, type, currency); the form filters by `kind` client-side.
+        $accounts = Account::query()
+            ->where('active', true)
+            ->with(['currency', 'bankName', 'walletName', 'accountType', 'walletType', 'cashBox'])
+            ->orderBy('holder_name')
+            ->get()
+            ->map(fn (Account $account) => [
+                'id' => $account->id,
+                'kind' => $account->kind->value,
+                'holder' => $account->holder_name,
+                'institution' => $account->institutionName(),
+                'type' => $account->typeName(),
+                'currency' => $account->currency?->symbol,
+                'iban' => $account->iban,
+                'walletPhone' => $account->wallet_phone,
+            ])
+            ->values();
+
         $customerNames = Customer::query()->orderBy('name')->pluck('name');
 
         // Handed to Alpine as a JSON blob (x-data="orderBuilder(...)") so the
@@ -62,8 +81,7 @@ class TransferController extends Controller
 
         return view('transfers.index', [
             'categories' => $categories,
-            'banks' => $banks,
-            'wallets' => $wallets,
+            'accounts' => $accounts,
             'menuJson' => $menuJson,
             'customerNames' => $customerNames,
         ]);
@@ -77,8 +95,29 @@ class TransferController extends Controller
             abort(403);
         }
 
-        $this->service->create($request->validated());
+        $transfer = $this->service->create($request->validated());
 
-        return redirect()->route('transfers.index')->with('success', __('تم إنشاء الطلب بنجاح.'));
+        // Straight to the confirmation, not back to an empty form: the operator's
+        // next move is always either "print it" or "take the next order", and
+        // both are one tap from there.
+        return redirect()->route('transfers.created', $transfer->id);
+    }
+
+    /**
+     * The just-created order, with its two follow-up actions. A page rather
+     * than a flash message because the receipt has to be reachable AFTER the
+     * order is made - a toast that scrolls away takes the print link with it.
+     */
+    public function created(string $transfer): View|RedirectResponse
+    {
+        $member = auth('tenant')->user();
+
+        if (! $member?->hasPermission(PermissionKey::TransfersCreate)) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('transfers.created', [
+            'order' => Transfer::with(['lineItems', 'account.currency'])->findOrFail($transfer),
+        ]);
     }
 }

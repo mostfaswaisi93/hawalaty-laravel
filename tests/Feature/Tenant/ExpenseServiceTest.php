@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use App\Services\Tenant\ExpenseService;
 use Tests\TenantTestCase;
@@ -21,26 +21,26 @@ class ExpenseServiceTest extends TenantTestCase
 
     public function test_create_persists_an_expense_and_loads_its_bank(): void
     {
-        $bank = Bank::factory()->create(['name' => 'بنك الرياض']);
+        $bank = Account::factory()->create(['holder_name' => 'بنك الرياض']);
 
         $expense = $this->service()->create([
             'description' => 'فاتورة كهرباء',
             'amount' => '150.00',
-            'bankId' => $bank->id,
+            'accountId' => $bank->id,
             'date' => '2026-07-01',
         ]);
 
         $this->assertSame('فاتورة كهرباء', $expense->description);
         $this->assertSame('150.00', $expense->amount);
-        $this->assertSame($bank->id, $expense->bank_id);
-        $this->assertSame('بنك الرياض', $expense->bank->name);
+        $this->assertSame($bank->id, $expense->account_id);
+        $this->assertSame('بنك الرياض', $expense->account->holder_name);
     }
 
     public function test_update_changes_only_the_given_fields(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $expense = Expense::factory()->create([
-            'bank_id' => $bank->id,
+            'account_id' => $bank->id,
             'description' => 'مصروف قديم',
             'amount' => '20.00',
         ]);
@@ -49,13 +49,13 @@ class ExpenseServiceTest extends TenantTestCase
 
         $this->assertSame('مصروف جديد', $updated->description);
         $this->assertSame('20.00', $updated->amount);
-        $this->assertSame($bank->id, $updated->bank_id);
+        $this->assertSame($bank->id, $updated->account_id);
     }
 
     public function test_delete_soft_deletes_the_expense(): void
     {
-        $bank = Bank::factory()->create();
-        $expense = Expense::factory()->create(['bank_id' => $bank->id]);
+        $bank = Account::factory()->create();
+        $expense = Expense::factory()->create(['account_id' => $bank->id]);
 
         $this->service()->delete($expense);
 
@@ -68,8 +68,8 @@ class ExpenseServiceTest extends TenantTestCase
 
     public function test_bank_relation_still_resolves_after_the_bank_is_soft_deleted(): void
     {
-        $bank = Bank::factory()->create(['name' => 'بنك محذوف']);
-        $expense = Expense::factory()->create(['bank_id' => $bank->id]);
+        $bank = Account::factory()->create(['holder_name' => 'بنك محذوف']);
+        $expense = Expense::factory()->create(['account_id' => $bank->id]);
 
         // Bypasses BankService::delete()'s history guard on purpose - this
         // test targets the withTrashed() relation, not the guard.
@@ -77,16 +77,16 @@ class ExpenseServiceTest extends TenantTestCase
 
         $reloaded = Expense::find($expense->id);
 
-        $this->assertNotNull($reloaded->bank);
-        $this->assertSame('بنك محذوف', $reloaded->bank->name);
+        $this->assertNotNull($reloaded->account);
+        $this->assertSame('بنك محذوف', $reloaded->account->holder_name);
     }
 
     public function test_list_filters_by_description_substring_and_paginates(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
-        Expense::factory()->count(25)->create(['bank_id' => $bank->id, 'description' => 'مصروف عام']);
-        Expense::factory()->create(['bank_id' => $bank->id, 'description' => 'إيجار المحل']);
+        Expense::factory()->count(25)->create(['account_id' => $bank->id, 'description' => 'مصروف عام']);
+        Expense::factory()->create(['account_id' => $bank->id, 'description' => 'إيجار المحل']);
 
         $all = $this->service()->list();
         $this->assertCount(20, $all->items());

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
@@ -41,45 +41,6 @@ class TenantApiWriteTest extends TenantApiTestCase
         return $member;
     }
 
-    // --- banks ------------------------------------------------------------
-
-    public function test_a_bank_can_be_created_updated_and_deleted(): void
-    {
-        $this->actAsOwner();
-
-        $this->postJson('/api/v1/banks', [
-            'name' => 'بنك القدس',
-            'type' => 'bank',
-            'code' => 'QUDS',
-            'active' => true,
-        ])->assertCreated();
-
-        $bank = Bank::sole();
-        $this->assertSame('بنك القدس', $bank->name);
-
-        $this->putJson("/api/v1/banks/{$bank->id}", [
-            'name' => 'بنك القدس - المركز',
-            'type' => 'bank',
-            'code' => 'QUDS',
-            'active' => true,
-        ])->assertOk();
-
-        $this->assertSame('بنك القدس - المركز', $bank->fresh()->name);
-
-        $this->deleteJson("/api/v1/banks/{$bank->id}")->assertNoContent();
-        $this->assertSame(0, Bank::count());
-    }
-
-    public function test_a_member_without_the_permission_cannot_create_a_bank(): void
-    {
-        $this->actAsPowerless();
-
-        $this->postJson('/api/v1/banks', ['name' => 'x', 'type' => 'bank', 'code' => 'X', 'active' => true])
-            ->assertForbidden();
-
-        $this->assertSame(0, Bank::count());
-    }
-
     // --- catalogue --------------------------------------------------------
 
     public function test_a_catalogue_entry_can_be_created_and_priced(): void
@@ -114,12 +75,12 @@ class TenantApiWriteTest extends TenantApiTestCase
     public function test_an_expense_can_be_recorded_and_removed(): void
     {
         $this->actAsOwner();
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
         $this->postJson('/api/v1/expenses', [
             'description' => 'كهرباء',
             'amount' => '120.00',
-            'bankId' => $bank->id,
+            'accountId' => $bank->id,
             'date' => '2026-03-01',
         ])->assertCreated();
 

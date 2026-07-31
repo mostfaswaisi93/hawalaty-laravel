@@ -4,7 +4,7 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuItem;
 use App\Services\Tenant\TransferService;
@@ -106,17 +106,17 @@ class TransferServiceTest extends TenantTestCase
     {
         Notification::fake();
 
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $item = MenuItem::factory()->create();
 
         $transfer = app(TransferService::class)->create([
             'customer' => 'ليان أحمد',
             'paymentMethod' => PaymentMethod::Bank,
-            'bankId' => $bank->id,
+            'accountId' => $bank->id,
             'items' => [['itemId' => $item->id, 'quantity' => 1]],
         ]);
 
-        $this->assertSame($bank->id, $transfer->bank_id);
+        $this->assertSame($bank->id, $transfer->account_id);
     }
 
     public function test_transaction_rollback_isolates_state_between_tests_a(): void

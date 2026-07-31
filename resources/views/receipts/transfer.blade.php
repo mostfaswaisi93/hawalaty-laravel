@@ -40,7 +40,11 @@
 <body>
     <div class="receipt">
         <div class="center">
-            <div class="business-name">{{ $businessName }}</div>
+            @if ($logo)
+                <img src="{{ $logo }}" alt="{{ $businessName }}" style="max-height: 18mm; max-width: 60mm;" />
+            @else
+                <div class="business-name">{{ $businessName }}</div>
+            @endif
             <div class="muted">{{ __('إيصال طلب') }}</div>
         </div>
 
@@ -62,10 +66,10 @@
             <div class="label">{{ __('طريقة الدفع') }}</div>
             <div class="value">{{ $order->payment_method->value === 'cash' ? __('نقدي') : __('تحويل بنكي') }}</div>
         </div>
-        @if ($order->payment_method->value === 'bank' && $order->bank)
+        @if ($order->payment_method->value === 'bank' && $order->account)
             <div class="row">
                 <div class="label">{{ __('البنك') }}</div>
-                <div class="value">{{ $order->bank->name }}</div>
+                <div class="value">{{ $order->account->label() }}</div>
             </div>
         @endif
         <div class="row">
@@ -82,7 +86,7 @@
             @foreach ($order->lineItems as $line)
                 <div class="item-row">
                     <div class="item-name">{{ $line->name }}</div>
-                    <div class="item-detail" dir="ltr">×{{ $line->quantity }} &nbsp;&nbsp; {{ number_format($line->quantity * $line->price, 2) }} ₪</div>
+                    <div class="item-detail" dir="ltr">×{{ $line->quantity }} &nbsp;&nbsp; {{ number_format($line->quantity * $line->price, 2) }} {{ $symbol }}</div>
                 </div>
             @endforeach
             <div class="divider"></div>
@@ -92,12 +96,12 @@
             <table>
                 <tr class="total-row">
                     <td>{{ __('الإجمالي') }}</td>
-                    <td class="amount-cell"><span dir="ltr">{{ number_format($order->amount, 2) }} ₪</span></td>
+                    <td class="amount-cell"><span dir="ltr">{{ number_format($order->amount, 2) }} {{ $symbol }}</span></td>
                 </tr>
                 @if ($order->has_change && $order->change_amount)
                     <tr>
                         <td class="muted">{{ __('الباقي') }}</td>
-                        <td class="muted amount-cell"><span dir="ltr">{{ number_format($order->change_amount, 2) }} ₪</span></td>
+                        <td class="muted amount-cell"><span dir="ltr">{{ number_format($order->change_amount, 2) }} {{ $symbol }}</span></td>
                     </tr>
                 @endif
             </table>

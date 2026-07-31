@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Web;
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
+use App\Http\Controllers\Web\Concerns\ListsAccounts;
 use App\Http\Requests\Tenant\Expense\StoreExpenseRequest;
 use App\Http\Requests\Tenant\Expense\UpdateExpenseRequest;
 use App\Models\Tenant\Expense;
-use App\Services\Tenant\BankService;
 use App\Services\Tenant\ExpenseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,11 +16,10 @@ use Illuminate\View\View;
 
 class ExpenseController extends Controller
 {
-    use HasPerPage;
+    use HasPerPage, ListsAccounts;
 
     public function __construct(
         private readonly ExpenseService $service,
-        private readonly BankService $banks,
     ) {}
 
     public function index(Request $request): View|RedirectResponse
@@ -34,9 +33,7 @@ class ExpenseController extends Controller
 
         return view('expenses.index', [
             'expenses' => $this->service->list($search, $perPage),
-            // Unpaginated on purpose: this feeds the "bank" select in the
-            // expense form, where a page of 20 would hide the rest.
-            'banks' => $this->banks->list(),
+            'accounts' => $this->activeAccounts(),
             'search' => $search,
             'perPage' => $perPage,
         ]);

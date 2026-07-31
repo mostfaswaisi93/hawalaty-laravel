@@ -8,8 +8,8 @@ use Illuminate\Validation\Rule;
 /**
  * Body shape mirrors the Angular `Transfer` interface's writable fields
  * (D:\Angular\Hawalaty\src\app\data\transfers.ts): customer, items[], plus
- * the cash-scenario fields (hasChange/changeMethod/changeBankId/
- * changeAmount) or bank-scenario fields (bankId/senderName/senderPhone/
+ * the cash-scenario fields (hasChange/changeMethod/changeAccountId/
+ * changeAmount) or transfer-scenario fields (accountId/senderName/senderPhone/
  * transferredAmount) depending on paymentMethod. `amount` is intentionally
  * NOT accepted here - TransferService computes it server-side from the line
  * items. `items.*.price`/`items.*.name` are validated as present here for a
@@ -42,19 +42,29 @@ class StoreTransferRequest extends FormRequest
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
 
+            // Clamped to the line-item subtotal in TransferService - a discount
+            // bigger than the order would drive `amount` negative.
+            'discount' => ['nullable', 'numeric', 'min:0'],
+
             'paymentMethod' => ['required', Rule::in(['cash', 'bank'])],
 
             // --- Cash scenario ---
             'hasChange' => ['required_if:paymentMethod,cash', 'boolean'],
             'changeMethod' => ['required_if:hasChange,1', Rule::in(['cash', 'bank'])],
-            'changeBankId' => ['nullable', 'required_if:changeMethod,bank', 'string', 'exists:tenant.banks,id'],
+            'changeAccountId' => ['nullable', 'required_if:changeMethod,bank', 'string', 'exists:tenant.accounts,id'],
             'changeAmount' => ['nullable', 'required_if:hasChange,1', 'numeric', 'min:0'],
 
             // --- Bank/wallet transfer scenario ---
-            'bankId' => ['nullable', 'required_if:paymentMethod,bank', 'string', 'exists:tenant.banks,id'],
+            // The account the money landed in. Which of bank/wallet it was is
+            // carried by that account's own `kind`, not by a second field.
+            'accountId' => ['nullable', 'required_if:paymentMethod,bank', 'string', 'exists:tenant.accounts,id'],
             'senderName' => ['nullable', 'string', 'max:255'],
             'senderPhone' => ['nullable', 'string', 'max:30'],
             'transferredAmount' => ['nullable', 'required_if:paymentMethod,bank', 'numeric', 'min:0'],
+            // The slip's own reference. Unique: the same reference twice means
+            // the same transfer was booked twice.
+            'referenceNumber' => ['nullable', 'required_if:paymentMethod,bank', 'string', 'max:100', Rule::unique('tenant.transfers', 'reference_number')],
         ];
     }
+
 }

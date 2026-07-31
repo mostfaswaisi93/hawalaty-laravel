@@ -3,7 +3,7 @@
 namespace Tests\Feature\Tenant;
 
 use App\Enums\SalaryPeriod;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\SalaryPayment;
 use App\Models\Tenant\TeamMember;
@@ -36,12 +36,12 @@ class SalaryServiceTest extends TenantTestCase
 
     public function test_paying_a_salary_creates_a_matching_expense_on_the_chosen_account(): void
     {
-        $bank = Bank::factory()->create(['name' => 'بنك فلسطين']);
+        $bank = Account::factory()->create(['holder_name' => 'بنك فلسطين']);
         $member = $this->member(['name' => 'يوسف النجّار']);
 
         $payment = $this->service()->pay($member, [
             'amount' => '1500.00',
-            'bankId' => $bank->id,
+            'accountId' => $bank->id,
             'paidFor' => '2026-07-01',
         ]);
 
@@ -52,7 +52,7 @@ class SalaryServiceTest extends TenantTestCase
         $expense = $payment->expense;
         $this->assertNotNull($expense, 'A salary payment without an expense is invisible to the books.');
         $this->assertSame('1500.00', $expense->amount);
-        $this->assertSame($bank->id, $expense->bank_id, 'The salary did not record which account it left.');
+        $this->assertSame($bank->id, $expense->account_id, 'The salary did not record which account it left.');
         $this->assertSame('2026-07-01', $expense->date->toDateString());
         $this->assertStringContainsString('يوسف النجّار', $expense->description);
     }
@@ -60,11 +60,11 @@ class SalaryServiceTest extends TenantTestCase
     /** It has to be countable as an ordinary expense, with no special-casing. */
     public function test_the_salary_shows_up_in_the_expense_totals(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member();
 
-        Expense::create(['description' => 'كهرباء', 'amount' => '200.00', 'bank_id' => $bank->id, 'date' => '2026-07-05']);
-        $this->service()->pay($member, ['amount' => '800.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-05']);
+        Expense::create(['description' => 'كهرباء', 'amount' => '200.00', 'account_id' => $bank->id, 'date' => '2026-07-05']);
+        $this->service()->pay($member, ['amount' => '800.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-05']);
 
         $this->assertSame(2, Expense::count());
         $this->assertSame('1000.00', number_format((float) Expense::sum('amount'), 2, '.', ''));
@@ -78,7 +78,7 @@ class SalaryServiceTest extends TenantTestCase
         try {
             $this->service()->pay($member, [
                 'amount' => '500.00',
-                'bankId' => '01000000000000000000000000',
+                'accountId' => '01000000000000000000000000',
                 'paidFor' => '2026-07-01',
             ]);
             $this->fail('Expected the invalid bank reference to fail.');
@@ -96,12 +96,12 @@ class SalaryServiceTest extends TenantTestCase
      */
     public function test_the_submitted_amount_wins_over_the_members_rate(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member(['salary_amount' => '1000.00', 'salary_period' => SalaryPeriod::Monthly]);
 
         $payment = $this->service()->pay($member, [
             'amount' => '1250.00',
-            'bankId' => $bank->id,
+            'accountId' => $bank->id,
             'paidFor' => '2026-07-01',
         ]);
 
@@ -111,10 +111,10 @@ class SalaryServiceTest extends TenantTestCase
 
     public function test_raising_the_rate_later_does_not_rewrite_a_paid_salary(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member(['salary_amount' => '1000.00', 'salary_period' => SalaryPeriod::Monthly]);
 
-        $payment = $this->service()->pay($member, ['amount' => '1000.00', 'bankId' => $bank->id, 'paidFor' => '2026-06-01']);
+        $payment = $this->service()->pay($member, ['amount' => '1000.00', 'accountId' => $bank->id, 'paidFor' => '2026-06-01']);
 
         $member->update(['salary_amount' => '1800.00']);
 
@@ -124,10 +124,10 @@ class SalaryServiceTest extends TenantTestCase
 
     public function test_the_period_falls_back_to_the_members_own_cycle(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member(['salary_amount' => '90.00', 'salary_period' => SalaryPeriod::Daily]);
 
-        $payment = $this->service()->pay($member, ['amount' => '90.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-10']);
+        $payment = $this->service()->pay($member, ['amount' => '90.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-10']);
 
         $this->assertSame(SalaryPeriod::Daily, $payment->period);
         // A daily payment names the day; a monthly one names the month.
@@ -136,38 +136,38 @@ class SalaryServiceTest extends TenantTestCase
 
     public function test_total_paid_covers_the_window_inclusively_at_both_ends(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member();
 
-        $this->service()->pay($member, ['amount' => '100.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-01']);
-        $this->service()->pay($member, ['amount' => '200.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-31']);
-        $this->service()->pay($member, ['amount' => '999.00', 'bankId' => $bank->id, 'paidFor' => '2026-08-01']);
+        $this->service()->pay($member, ['amount' => '100.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-01']);
+        $this->service()->pay($member, ['amount' => '200.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-31']);
+        $this->service()->pay($member, ['amount' => '999.00', 'accountId' => $bank->id, 'paidFor' => '2026-08-01']);
 
         $this->assertSame(300.0, $this->service()->totalPaid('2026-07-01', '2026-07-31'));
     }
 
     public function test_history_is_newest_first_and_carries_the_paying_account(): void
     {
-        $bank = Bank::factory()->create(['name' => 'جوال باي']);
+        $bank = Account::factory()->create(['holder_name' => 'جوال باي']);
         $member = $this->member();
 
-        $this->service()->pay($member, ['amount' => '100.00', 'bankId' => $bank->id, 'paidFor' => '2026-06-01']);
-        $this->service()->pay($member, ['amount' => '200.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-01']);
+        $this->service()->pay($member, ['amount' => '100.00', 'accountId' => $bank->id, 'paidFor' => '2026-06-01']);
+        $this->service()->pay($member, ['amount' => '200.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-01']);
 
         $page = $this->service()->history();
         $first = $page->getCollection()->first();
 
         $this->assertSame('200.00', $first->amount);
-        $this->assertSame('جوال باي', $first->expense->bank->name);
+        $this->assertSame('جوال باي', $first->expense->account->holder_name);
     }
 
     /** Deleting the expense must not leave a payment claiming someone was paid. */
     public function test_force_deleting_the_expense_removes_its_salary_payment(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member();
 
-        $payment = $this->service()->pay($member, ['amount' => '300.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-01']);
+        $payment = $this->service()->pay($member, ['amount' => '300.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-01']);
 
         $payment->expense->forceDelete();
 
@@ -177,23 +177,23 @@ class SalaryServiceTest extends TenantTestCase
     /** Soft-deleting it keeps the record, which is what an audit trail needs. */
     public function test_soft_deleting_the_expense_keeps_the_payment_readable(): void
     {
-        $bank = Bank::factory()->create(['name' => 'بنك القدس']);
+        $bank = Account::factory()->create(['holder_name' => 'بنك القدس']);
         $member = $this->member();
 
-        $payment = $this->service()->pay($member, ['amount' => '300.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-01']);
+        $payment = $this->service()->pay($member, ['amount' => '300.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-01']);
         $payment->expense->delete();
 
         $fresh = $payment->fresh();
         $this->assertNotNull($fresh);
-        $this->assertSame('بنك القدس', $fresh->expense->bank->name);
+        $this->assertSame('بنك القدس', $fresh->expense->account->holder_name);
     }
 
     public function test_paid_for_defaults_to_today_when_omitted(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = $this->member();
 
-        $payment = $this->service()->pay($member, ['amount' => '50.00', 'bankId' => $bank->id]);
+        $payment = $this->service()->pay($member, ['amount' => '50.00', 'accountId' => $bank->id]);
 
         $this->assertSame(Carbon::today()->toDateString(), $payment->paid_for->toDateString());
     }
@@ -202,11 +202,11 @@ class SalaryServiceTest extends TenantTestCase
     {
         $roles = $this->seedStandardRoles();
         $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
-        Bank::factory()->create();
+        Account::factory()->create();
 
         $this->actingAs($owner, 'tenant')->get('/team')
             ->assertOk()
-            ->assertViewHas('banks')
+            ->assertViewHas('accounts')
             ->assertViewHas('salaryHistory')
             ->assertSee(__('الراتب'));
     }
@@ -216,12 +216,12 @@ class SalaryServiceTest extends TenantTestCase
         $roles = $this->seedStandardRoles();
         $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
         $staff = TeamMember::factory()->create(['role_id' => $roles['staff']->id]);
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
         $this->actingAs($owner, 'tenant')
             ->post("/team/{$staff->id}/salary/pay", [
                 'amount' => '1200.00',
-                'bankId' => $bank->id,
+                'accountId' => $bank->id,
                 'paidFor' => '2026-07-01',
                 'period' => 'monthly',
             ])
@@ -229,7 +229,7 @@ class SalaryServiceTest extends TenantTestCase
 
         $this->assertSame(1, SalaryPayment::count());
         $this->assertSame(1, Expense::count());
-        $this->assertSame($bank->id, Expense::first()->bank_id);
+        $this->assertSame($bank->id, Expense::first()->account_id);
     }
 
     /** A future-dated salary would silently skew every report it lands in. */
@@ -237,12 +237,12 @@ class SalaryServiceTest extends TenantTestCase
     {
         $roles = $this->seedStandardRoles();
         $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
         $this->actingAs($owner, 'tenant')
             ->post("/team/{$owner->id}/salary/pay", [
                 'amount' => '100.00',
-                'bankId' => $bank->id,
+                'accountId' => $bank->id,
                 'paidFor' => Carbon::today()->addMonth()->toDateString(),
             ])
             ->assertSessionHasErrors('paidFor');

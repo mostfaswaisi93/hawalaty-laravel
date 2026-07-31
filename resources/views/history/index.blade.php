@@ -19,6 +19,22 @@
             'pending' => __('قيد الانتظار'),
             default => __('فاشلة'),
         };
+
+        /**
+         * How the money came in, as a badge. `payment_method` only knows
+         * cash-vs-transfer, so bank and wallet are told apart by the KIND of the
+         * account it landed in - the same distinction the order form offers.
+         */
+        $channel = function ($t) {
+            if ($t->payment_method->value === 'cash') {
+                return ['icon' => 'payments', 'label' => __('نقدي'), 'class' => 'bg-success-container text-success dark:bg-success-container/15'];
+            }
+
+            return $t->account?->kind->value === 'wallet'
+                ? ['icon' => 'account_balance_wallet', 'label' => __('محفظة'), 'class' => 'bg-secondary-container/25 text-secondary']
+                : ['icon' => 'account_balance', 'label' => __('بنك'), 'class' => 'bg-primary/10 text-primary'];
+        };
+
         $hasFilters = ! empty($filters);
     @endphp
 
@@ -126,8 +142,18 @@
                                         {{ $statusLabel($t->status) }}
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-body-sm text-on-surface-variant">
-                                    {{ $t->payment_method->value === 'cash' ? __('نقدي') : ($t->bank?->name ?? __('تحويل بنكي')) }}
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    @php $ch = $channel($t); @endphp
+                                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $ch['class'] }}">
+                                        <span class="material-symbols-outlined !text-base">{{ $ch['icon'] }}</span>
+                                        {{ $ch['label'] }}
+                                    </span>
+                                    @if ($t->account)
+                                        <span class="mt-1 block max-w-[220px] truncate text-[11px] text-on-surface-variant" title="{{ $t->account->label() }}">{{ $t->account->label() }}</span>
+                                    @endif
+                                    @if ($t->reference_number)
+                                        <span class="mt-0.5 block font-numeral-lg text-[11px] text-outline" dir="ltr" title="{{ __('الرقم المرجعي للمعاملة') }}">#{{ $t->reference_number }}</span>
+                                    @endif
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-end font-bold text-primary">
                                     <span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span>
@@ -147,18 +173,21 @@
                                  container itself belongs to the shared table component. --}}
                             <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
+                                @php $ch = $channel($t); @endphp
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                        <span class="material-symbols-outlined !text-xl">{{ $t->payment_method->value === 'cash' ? 'payments' : 'account_balance' }}</span>
+                                    <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full {{ $ch['class'] }}">
+                                        <span class="material-symbols-outlined !text-xl">{{ $ch['icon'] }}</span>
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-body-sm font-bold">{{ $t->customer }}</p>
-                                        <p class="truncate text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
+                                        <p class="truncate text-[11px] text-on-surface-variant">
+                                            {{ $ch['label'] }}@if ($t->account) · {{ $t->account->label() }}@endif
+                                        </p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>
                                 <div class="mt-2.5 flex items-center justify-between gap-2 ps-[52px]">
-                                    <span class="truncate text-[11px] text-on-surface-variant">{{ $t->item_name ?: '-' }} · {{ $t->created_at->translatedFormat('j M') }}</span>
+                                    <span class="truncate text-[11px] text-on-surface-variant">{{ $t->item_name ?: '-' }} · {{ $t->created_at->translatedFormat('j M') }}@if ($t->reference_number) · <span dir="ltr">#{{ $t->reference_number }}</span>@endif</span>
                                     <div class="flex flex-shrink-0 items-center gap-2">
                                         <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold {{ $statusPill($t->status) }}">
                                             <span class="h-1.5 w-1.5 rounded-full {{ $statusDot($t->status) }}"></span>

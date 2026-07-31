@@ -5,8 +5,8 @@
 @section('content')
     @php
         $actionLabels = ['created' => __('إنشاء'), 'updated' => __('تعديل'), 'deleted' => __('حذف'), 'loggedIn' => __('تسجيل دخول'), 'signedOut' => __('تسجيل خروج')];
-        $categoryLabels = ['auth' => __('المصادقة'), 'team' => __('الفريق'), 'banks' => __('البنوك'), 'menu' => __('القائمة'), 'expenses' => __('المصروفات'), 'constants' => __('الثوابت'), 'devices' => __('الأجهزة'), 'transfers' => __('الحوالات')];
-        $entityLabels = ['expense' => __('مصروف'), 'bank' => __('بنك'), 'menuItem' => __('عنصر قائمة'), 'constant' => __('ثابت'), 'device' => __('جهاز'), 'order' => __('حوالة'), 'teamMember' => __('عضو فريق'), 'role' => __('دور')];
+        $categoryLabels = ['auth' => __('المصادقة'), 'team' => __('الفريق'), 'banks' => __('البنوك'), 'menu' => __('القائمة'), 'expenses' => __('المصروفات'), 'constants' => __('الثوابت'), 'devices' => __('الأجهزة'), 'transfers' => __('الحوالات'), 'catalogs' => __('الكتالوجات')];
+        $entityLabels = ['expense' => __('مصروف'), 'bank' => __('بنك'), 'menuItem' => __('عنصر قائمة'), 'constant' => __('ثابت'), 'device' => __('جهاز'), 'order' => __('حوالة'), 'teamMember' => __('عضو فريق'), 'role' => __('دور'), 'catalog' => __('كتالوج')];
         $actionPill = fn ($v) => match ($v) {
             'created' => 'bg-success-container text-success dark:bg-success-container/15',
             'deleted' => 'bg-error-container text-error dark:bg-error/15',

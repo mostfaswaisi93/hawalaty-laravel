@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
+use App\Http\Controllers\Web\Concerns\ListsAccounts;
 use App\Http\Requests\Tenant\TeamMember\StoreTeamMemberRequest;
 use App\Http\Requests\Tenant\TeamMember\UpdateTeamMemberRequest;
 use App\Http\Requests\Web\Team\PaySalaryRequest;
 use App\Http\Requests\Web\Team\UpdateSalaryRequest;
 use App\Models\Tenant\TeamMember;
-use App\Services\Tenant\BankService;
 use App\Services\Tenant\RoleService;
 use App\Services\Tenant\SalaryService;
 use App\Services\Tenant\TeamService;
@@ -21,13 +21,12 @@ use Illuminate\View\View;
 
 class TeamController extends Controller
 {
-    use HasPerPage;
+    use HasPerPage, ListsAccounts;
 
     public function __construct(
         private readonly TeamService $service,
         private readonly RoleService $roles,
         private readonly SalaryService $salaries,
-        private readonly BankService $banks,
     ) {}
 
     public function index(Request $request): View|RedirectResponse
@@ -44,7 +43,7 @@ class TeamController extends Controller
             'roles' => $this->roles->list(),
             // Unpaginated: this fills the "paid from" select on the salary form,
             // where a page of 20 would hide accounts.
-            'banks' => $this->banks->list(),
+            'accounts' => $this->activeAccounts(),
             'salaryHistory' => $this->salaries->history(perPage: 10),
             'search' => $search,
             'perPage' => $perPage,

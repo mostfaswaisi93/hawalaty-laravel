@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
@@ -131,18 +131,18 @@ class SearchEscapingTest extends TenantTestCase
     /**
      * The OR-group has to be wrapped, or it escapes its own condition and
      * swallows whatever filter sits beside it. Here the term matches both rows
-     * but only one is active: unwrapped, `name LIKE x OR code LIKE x AND active`
-     * binds `active` to the last branch and the inactive row leaks back out.
+     * but only one is active: unwrapped, `holder_name LIKE x OR iban LIKE x AND
+     * active` binds `active` to the last branch and the inactive row leaks out.
      */
     public function test_the_or_group_does_not_swallow_a_neighbouring_filter(): void
     {
-        Bank::factory()->create(['name' => 'بنك الراجحي', 'code' => 'RJHI', 'active' => true]);
-        Bank::factory()->create(['name' => 'بنك الأهلي', 'code' => 'NCBK', 'active' => false]);
+        Account::factory()->create(['holder_name' => 'بنك الراجحي', 'active' => true]);
+        Account::factory()->create(['holder_name' => 'بنك الأهلي', 'active' => false]);
 
-        $matches = Bank::query()
-            ->whereSearch(['name', 'code'], 'بنك')
+        $matches = Account::query()
+            ->whereSearch(['holder_name', 'iban'], 'بنك')
             ->where('active', true)
-            ->pluck('name');
+            ->pluck('holder_name');
 
         $this->assertSame(['بنك الراجحي'], $matches->all());
     }

@@ -55,7 +55,12 @@
                         <p class="{{ $hint }}">{{ __('ابدأ بـ «تسجيل فقط» للتجربة - تظهر الرسالة في السجل دون إرسالها فعليًا.') }}</p>
                     </div>
 
-                    <label class="flex items-center gap-3 rounded-xl bg-surface-container-low p-3">
+                    {{-- Wrapping label, so the checkbox needs no `for`/`id` pair -
+                         but it does need `cursor-pointer`, which is both the
+                         affordance for a clickable row and the marker
+                         ViewMarkupTest uses to tell this pattern apart from a
+                         label that names nothing. --}}
+                    <label class="flex cursor-pointer items-center gap-3 rounded-xl bg-surface-container-low p-3">
                         <input type="checkbox" name="enabled" value="1" class="h-5 w-5 rounded"
                                @checked(old('enabled', $values['whatsapp_enabled']) == '1') />
                         <span class="font-body-sm text-body-sm text-on-surface">{{ __('تفعيل إشعارات واتساب') }}</span>

@@ -3,7 +3,7 @@
 namespace App\Services\Tenant;
 
 use App\Enums\PermissionKey;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\TeamMember;
@@ -121,21 +121,30 @@ class SearchService
             ]);
     }
 
-    /** @return Collection<int, array<string, mixed>> */
+    /**
+     * Accounts, still surfaced under the "banks" group the UI already knows.
+     * Searched by the account holder AND by the institution's name, since an
+     * operator looks for either ("سامي" or "بنك فلسطين").
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
     private function banks(string $query): Collection
     {
-        return Bank::query()
+        return Account::query()
+            ->with(['bankName', 'walletName'])
             // Parenthesised by whereSearch(), for the same soft-delete reason
             // as orders().
-            ->whereSearch(['name', 'code'], $query)
+            ->whereSearch('holder_name', $query)
+            ->orWhereHas('bankName', fn ($q) => $q->whereSearch('name', $query))
+            ->orWhereHas('walletName', fn ($q) => $q->whereSearch('name', $query))
             ->take(self::PER_GROUP)
             ->get()
-            ->map(fn (Bank $b) => [
-                'id' => $b->id,
-                'name' => $b->name,
-                'code' => $b->code,
-                'type' => $b->type->value,
-                'active' => (bool) $b->active,
+            ->map(fn (Account $a) => [
+                'id' => $a->id,
+                'name' => $a->holder_name,
+                'code' => $a->institutionName() ?? '',
+                'type' => $a->kind->value,
+                'active' => (bool) $a->active,
             ]);
     }
 

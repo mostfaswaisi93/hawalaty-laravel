@@ -4,7 +4,11 @@
 
 @section('content')
     <div class="page-enter"
-        x-data="orderBuilder({{ $menuJson }}, {{ \Illuminate\Support\Js::from($banks) }}, {{ \Illuminate\Support\Js::from($wallets) }})">
+        x-data="orderBuilder({{ $menuJson }}, {{ \Illuminate\Support\Js::from($accounts) }}, {{ \Illuminate\Support\Js::from([
+            ['key' => 'cash', 'icon' => 'payments', 'label' => __('نقدي')],
+            ['key' => 'bank', 'icon' => 'account_balance', 'label' => __('بنك')],
+            ['key' => 'wallet', 'icon' => 'account_balance_wallet', 'label' => __('محفظة')],
+        ]) }})">
 
         <header class="mb-8">
             <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('طلب جديد') }}</h1>
@@ -177,26 +181,67 @@
                             </p>
                         </div>
 
-                        {{-- payment method segmented --}}
+                        {{-- ══ payment channel: cash / bank / wallet ══
+                             `payTarget` is a UI-only three-way choice. What the server
+                             receives is still paymentMethod cash|bank - a wallet order
+                             IS a transfer, distinguished by the chosen account's kind. --}}
                         <div class="space-y-2">
                             <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</span>
-                            <div class="grid grid-cols-2 gap-2 rounded-xl bg-surface-container p-1">
-                                <label class="flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 font-body-sm font-bold transition-all"
-                                    :class="paymentMethod === 'cash' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'">
-                                    <input type="radio" name="paymentMethod" value="cash" x-model="paymentMethod" class="sr-only" />
-                                    <span class="material-symbols-outlined !text-xl">payments</span>
-                                    {{ __('نقدي') }}
-                                </label>
-                                <label class="flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 font-body-sm font-bold transition-all"
-                                    :class="paymentMethod === 'bank' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'">
-                                    <input type="radio" name="paymentMethod" value="bank" x-model="paymentMethod" class="sr-only" />
-                                    <span class="material-symbols-outlined !text-xl">account_balance</span>
-                                    {{ __('تحويل بنكي') }}
-                                </label>
+                            <input type="hidden" name="paymentMethod" :value="paymentMethod" />
+                            <div class="grid grid-cols-3 gap-2 rounded-xl bg-surface-container p-1">
+                                <template x-for="opt in payTargets" :key="opt.key">
+                                    <button type="button" @click="payTarget = opt.key"
+                                        class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg py-2.5 font-body-sm font-bold transition-all"
+                                        :class="payTarget === opt.key ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'"
+                                        :aria-pressed="payTarget === opt.key ? 'true' : 'false'">
+                                        <span class="material-symbols-outlined !text-xl" x-text="opt.icon"></span>
+                                        <span x-text="opt.label"></span>
+                                    </button>
+                                </template>
                             </div>
                         </div>
 
                         {{-- ── CASH scenario ── --}}
+                        <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-4">
+                            {{-- Which drawer took the money. Optional: a shop that
+                                 never set a cash box up still takes cash orders. --}}
+                            <div class="space-y-2">
+                                <span class="block font-body-sm text-on-surface-variant">{{ __('اختر الصندوق النقدي') }}</span>
+                                @include('partials._account-picker', [
+                                    'model' => 'accountId',
+                                    'inputName' => 'accountId',
+                                    'listExpr' => "accountsOfKind('cash')",
+                                    'id' => 'cashbox',
+                                    'empty' => __('لا توجد صناديق نقدية. أضِف صندوقاً من الكتالوجات ثم افتح له حساباً.'),
+                                ])
+                            </div>
+
+                        </div>
+
+                        {{-- Invoice total, then the discount, then whatever the chosen
+                             payment method needs. The total shown is already net of the
+                             discount, and it is the ceiling for the transferred amount. --}}
+                        <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-2">
+                            <span class="block font-body-sm text-on-surface-variant">{{ __('إجمالي الفاتورة') }}</span>
+                            <div class="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                                <span class="font-body-lg font-bold text-on-surface" dir="ltr"><span x-text="fmt(subtotal)"></span> <span x-text="currencySymbol"></span></span>
+                            </div>
+                        </div>
+
+                        <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-2">
+                            <label for="transfers-discount-cash" class="block font-body-sm text-on-surface-variant">{{ __('الخصم (اختياري)') }}</label>
+                            <input id="transfers-discount-cash" type="number" step="0.01" min="0" :max="subtotal" name="discount" :disabled="paymentMethod !== 'cash'" x-model="discount" dir="ltr" placeholder="0.00"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            @error('discount')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-2">
+                            <span class="block font-body-sm text-on-surface-variant">{{ __('المبلغ بعد الخصم') }}</span>
+                            <div class="rounded-xl border border-primary/40 bg-primary/5 px-4 py-3">
+                                <span class="font-body-lg font-bold text-primary" dir="ltr"><span x-text="fmt(total)"></span> <span x-text="currencySymbol"></span></span>
+                            </div>
+                        </div>
+
                         <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-4">
                             <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3">
                                 <span class="font-body-sm font-bold text-on-surface">{{ __('يوجد باقٍ للعميل؟') }}</span>
@@ -219,14 +264,14 @@
                                 </div>
 
                                 <div x-show="changeMethod === 'bank'" x-cloak class="space-y-2">
-                                    <label for="transfers-change-bank-id" class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
-                                    <select id="transfers-change-bank-id" name="changeBankId" x-model="changeBankId"
-                                        class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                                        <option value="">{{ __('اختر...') }}</option>
-                                        <template x-for="b in allBanks" :key="b.id">
-                                            <option :value="b.id" x-text="b.name"></option>
-                                        </template>
-                                    </select>
+                                    <span class="block font-body-sm text-on-surface-variant">{{ __('الحساب المستلِم للباقي') }}</span>
+                                    @include('partials._account-picker', [
+                                        'model' => 'changeAccountId',
+                                        'inputName' => 'changeAccountId',
+                                        'listExpr' => 'accounts',
+                                        'id' => 'change',
+                                        'empty' => __('لا توجد حسابات. أنشئ حساباً أولاً من صفحة الحسابات.'),
+                                    ])
                                 </div>
 
                                 <div class="space-y-2">
@@ -237,39 +282,85 @@
                             </div>
                         </div>
 
-                        {{-- ── BANK scenario ── --}}
+                        {{-- ── BANK / WALLET scenario ── --}}
                         <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-4">
                             <div class="space-y-2">
-                                <label for="transfers-bank-id" class="block font-body-sm text-on-surface-variant">{{ __('البنك / المحفظة') }}</label>
-                                <select id="transfers-bank-id" name="bankId" x-model="bankId"
-                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
-                                    <option value="">{{ __('اختر...') }}</option>
-                                    <optgroup label="{{ __('البنوك') }}">
-                                        <template x-for="b in banks" :key="b.id">
-                                            <option :value="b.id" x-text="b.name"></option>
-                                        </template>
-                                    </optgroup>
-                                    <optgroup label="{{ __('المحافظ') }}">
-                                        <template x-for="b in wallets" :key="b.id">
-                                            <option :value="b.id" x-text="b.name"></option>
-                                        </template>
-                                    </optgroup>
-                                </select>
+                                <span class="block font-body-sm text-on-surface-variant"
+                                    x-text="payTarget === 'wallet' ? '{{ __('اختر المحفظة') }}' : '{{ __('اختر الحساب البنكي') }}'"></span>
+                                @include('partials._account-picker', [
+                                    'model' => 'accountId',
+                                    'inputName' => 'accountId',
+                                    'listExpr' => 'accountsOfKind(payTarget)',
+                                    'id' => 'main',
+                                    'empty' => __('لا توجد حسابات من هذا النوع. أنشئ حساباً أولاً من صفحة الحسابات.'),
+                                ])
                             </div>
+                        </div>
+
+                        {{-- Invoice total, then the discount, then whatever the chosen
+                             payment method needs. The total shown is already net of the
+                             discount, and it is the ceiling for the transferred amount. --}}
+                        <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-2">
+                            <span class="block font-body-sm text-on-surface-variant">{{ __('إجمالي الفاتورة') }}</span>
+                            <div class="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                                <span class="font-body-lg font-bold text-on-surface" dir="ltr"><span x-text="fmt(subtotal)"></span> <span x-text="currencySymbol"></span></span>
+                            </div>
+                        </div>
+
+                        <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-2">
+                            <label for="transfers-discount-bank" class="block font-body-sm text-on-surface-variant">{{ __('الخصم (اختياري)') }}</label>
+                            <input id="transfers-discount-bank" type="number" step="0.01" min="0" :max="subtotal" name="discount" :disabled="paymentMethod !== 'bank'" x-model="discount" dir="ltr" placeholder="0.00"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            @error('discount')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-2">
+                            <span class="block font-body-sm text-on-surface-variant">{{ __('المبلغ بعد الخصم') }}</span>
+                            <div class="rounded-xl border border-primary/40 bg-primary/5 px-4 py-3">
+                                <span class="font-body-lg font-bold text-primary" dir="ltr"><span x-text="fmt(total)"></span> <span x-text="currencySymbol"></span></span>
+                            </div>
+                        </div>
+
+                        <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-4">
                             {{-- "sender name" / "sender phone" were removed from this form: the
                                  operator does not need to re-key who paid, and neither field is
                                  used by the WhatsApp order notification. The columns remain on
                                  `transfers` so historical orders keep their values, and the API
                                  still accepts both for backwards compatibility. --}}
                             <div class="space-y-2">
-                                <label for="transfers-transferred-amount" class="block font-body-sm text-on-surface-variant">{{ __('المبلغ المُحوَّل (₪)') }}</label>
-                                <input id="transfers-transferred-amount" type="number" step="0.01" min="0" name="transferredAmount" x-model="transferredAmount" dir="ltr" placeholder="0.00"
+                                {{-- The account's own symbol: the accounting side is multi-currency. --}}
+                                <label for="transfers-transferred-amount" class="block font-body-sm text-on-surface-variant">
+                                    {{ __('المبلغ المُحوَّل') }} <span dir="ltr">(<span x-text="currencySymbol"></span>)</span>
+                                </label>
+                                <input id="transfers-transferred-amount" type="number" step="0.01" min="0" :max="total" name="transferredAmount" x-model="transferredAmount" dir="ltr" placeholder="0.00"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            </div>
+
+                            {{-- The slip's reference. Unique across the tenant: the same
+                                 reference twice means the same transfer was booked twice. --}}
+                            <div class="space-y-2">
+                                <label for="transfers-reference" class="block font-body-sm text-on-surface-variant">{{ __('الرقم المرجعي للمعاملة') }}</label>
+                                <input id="transfers-reference" name="referenceNumber" x-model="referenceNumber" dir="ltr" maxlength="100" placeholder="TRX-000123"
+                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                                @error('referenceNumber')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                             </div>
                         </div>
 
                         {{-- total + submit --}}
                         <div class="border-t border-outline-variant/50 pt-4">
+                            {{-- The breakdown only appears once there is a discount to explain. --}}
+                            <template x-if="(parseFloat(discount) || 0) > 0">
+                                <div class="mb-2 space-y-1">
+                                    <div class="flex items-center justify-between font-body-sm text-on-surface-variant">
+                                        <span>{{ __('المجموع الفرعي') }}</span>
+                                        <span dir="ltr"><span x-text="fmt(subtotal)"></span> ₪</span>
+                                    </div>
+                                    <div class="flex items-center justify-between font-body-sm text-error">
+                                        <span>{{ __('الخصم') }}</span>
+                                        <span dir="ltr">−<span x-text="fmt(parseFloat(discount) || 0)"></span> ₪</span>
+                                    </div>
+                                </div>
+                            </template>
                             <div class="mb-4 flex items-end justify-between">
                                 <span class="font-body-lg text-on-surface-variant">{{ __('الإجمالي') }}</span>
                                 <span class="font-display-lg text-3xl font-bold text-primary" dir="ltr"><span x-text="fmt(total)"></span> ₪</span>
@@ -297,21 +388,24 @@
     </div>
 
     <script>
-        window.orderBuilder = function (menu, banks, wallets) {
+        window.orderBuilder = function (menu, accounts, payTargets) {
             return {
-                menu: menu, banks: banks, wallets: wallets,
+                menu: menu, accounts: accounts, payTargets: payTargets,
                 search: '',
                 activeCat: menu.length ? menu[0].id : null,
                 cart: [],
                 customer: '',
                 customerPhone: '',
-                paymentMethod: 'cash',
+                // The UI's three-way choice: cash | bank | wallet.
+                payTarget: 'cash',
                 hasChange: false,
                 changeMethod: 'cash',
-                changeBankId: '',
+                changeAccountId: '',
                 changeAmount: '',
-                bankId: '',
+                accountId: '',
                 transferredAmount: '',
+                referenceNumber: '',
+                discount: '',
                 submitting: false,
                 queued: false,
                 queueFailed: false,
@@ -320,17 +414,32 @@
                     // Reset the fields of the scenario the user just left so a
                     // stale value never gets submitted (required_if rules key
                     // off the *submitted* value, not what is visible).
-                    this.$watch('paymentMethod', () => {
+                    this.$watch('discount', () => {
+                        if (this.paymentMethod === 'bank') this.transferredAmount = this.total.toFixed(2);
+                    });
+
+                    this.$watch('payTarget', () => {
                         this.hasChange = false;
                         this.changeMethod = 'cash';
-                        this.changeBankId = '';
+                        this.changeAccountId = '';
                         this.changeAmount = '';
-                        this.bankId = '';
+                        this.accountId = '';
                         this.transferredAmount = this.paymentMethod === 'bank' ? this.total.toFixed(2) : '';
                     });
                 },
 
-                get allBanks() { return this.banks.concat(this.wallets); },
+                /**
+                 * What the SERVER is told. Bank and wallet are both transfers -
+                 * `transfers.payment_method` is cash|bank - and which of the two
+                 * it was is carried by the chosen account's own `kind`.
+                 */
+                get paymentMethod() { return this.payTarget === 'cash' ? 'cash' : 'bank'; },
+
+                accountsOfKind(kind) { return this.accounts.filter(a => a.kind === kind); },
+                accountById(id) { return this.accounts.find(a => a.id === id) || null; },
+
+                /** The chosen account's symbol, for the amount labels. */
+                get currencySymbol() { return this.accountById(this.accountId)?.currency || '₪'; },
 
                 get filteredItems() {
                     const term = this.search.trim();
@@ -345,7 +454,9 @@
                     return out;
                 },
 
-                get total() { return this.cart.reduce((sum, l) => sum + l.price * l.qty, 0); },
+                get subtotal() { return this.cart.reduce((sum, l) => sum + l.price * l.qty, 0); },
+                /** What the customer owes: the subtotal less any discount, never below zero. */
+                get total() { return Math.max(this.subtotal - (parseFloat(this.discount) || 0), 0); },
                 get itemCount() { return this.cart.reduce((sum, l) => sum + l.qty, 0); },
 
                 qtyOf(id) { const l = this.cart.find(c => c.id === id); return l ? l.qty : 0; },
@@ -367,11 +478,12 @@
                 get canSubmit() {
                     if (!this.customer.trim() || !this.cart.length) return false;
                     if (this.paymentMethod === 'bank') {
-                        if (!this.bankId || !this.transferredAmount) return false;
+                        if (!this.accountId || !this.transferredAmount) return false;
+                        if (!this.referenceNumber.trim()) return false;
                     }
                     if (this.paymentMethod === 'cash' && this.hasChange) {
                         if (this.changeAmount === '' || this.changeAmount === null) return false;
-                        if (this.changeMethod === 'bank' && !this.changeBankId) return false;
+                        if (this.changeMethod === 'bank' && !this.changeAccountId) return false;
                     }
                     return true;
                 },
@@ -400,6 +512,8 @@
                         })),
                     };
 
+                    if (this.discount !== '' && parseFloat(this.discount) > 0) payload.discount = this.discount;
+
                     if (this.customerPhone.trim()) payload.customerPhone = this.customerPhone.trim();
 
                     if (this.paymentMethod === 'cash') {
@@ -408,11 +522,12 @@
                         if (this.hasChange) {
                             payload.changeMethod = this.changeMethod;
                             payload.changeAmount = this.changeAmount;
-                            if (this.changeMethod === 'bank') payload.changeBankId = this.changeBankId;
+                            if (this.changeMethod === 'bank') payload.changeAccountId = this.changeAccountId;
                         }
                     } else {
-                        payload.bankId = this.bankId;
+                        payload.accountId = this.accountId;
                         payload.transferredAmount = this.transferredAmount;
+                        payload.referenceNumber = this.referenceNumber.trim();
                     }
 
                     return payload;
@@ -424,10 +539,12 @@
                     this.customerPhone = '';
                     this.hasChange = false;
                     this.changeMethod = 'cash';
-                    this.changeBankId = '';
+                    this.changeAccountId = '';
                     this.changeAmount = '';
-                    this.bankId = '';
+                    this.accountId = '';
                     this.transferredAmount = '';
+                    this.referenceNumber = '';
+                    this.discount = '';
                     this.submitting = false;
                 },
 

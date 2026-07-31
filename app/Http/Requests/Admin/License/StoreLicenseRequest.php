@@ -25,6 +25,8 @@ class StoreLicenseRequest extends FormRequest
             'businessName' => ['required', 'string', 'max:255'],
             'ownerName' => ['required', 'string', 'max:255'],
             'ownerEmail' => ['required', 'email', 'max:255'],
+            // Both are printed on the tenant's receipts.
+            'address' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()],
             'packageId' => ['nullable', 'string', 'exists:packages,id'],

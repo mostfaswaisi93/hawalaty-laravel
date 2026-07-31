@@ -2,6 +2,12 @@
 
 @section('title', __('شروط الخدمة - حوالاتي'))
 
+@php
+    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call there.
+    $metaDescription = __('شروط استخدام منصّة حوالاتي: الاشتراك والباقات، مسؤوليات الحساب، ملكية البيانات، وحدود المسؤولية.');
+    $metaRobots = 'index, follow';
+@endphp
+
 @section('content')
     <section class="page-enter mx-auto w-full max-w-4xl px-inline-md py-16 md:px-inline-lg lg:col-span-2">
 

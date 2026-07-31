@@ -4,7 +4,8 @@
     // reads as part of حوالاتي, not a bolted-on page. Bilingual via ?lang.
     $t = fn (string $ar, string $en) => $lang === 'en' ? $en : $ar;
     $rtl = $lang !== 'en';
-    $money = fn ($v) => number_format((float) $v, 2) . ' ₪';
+    $symbol = $transfer->account?->currency?->symbol ?? '₪';
+    $money = fn ($v) => number_format((float) $v, 2).' '.$symbol;
     $orderNo = '#' . strtoupper(substr((string) $transfer->id, -8));
     $phone = $transfer->customerProfile?->phone;
     $decided = $transfer->confirmationDecided();
@@ -26,25 +27,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="apple-touch-icon" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
-
-    {{-- Reveals the icons only once the ligature font is confirmed - same guard as layouts/guest. --}}
-    <script>
-        (function () {
-            var html = document.documentElement;
-            var face = '24px "Material Symbols Outlined"';
-            var remember = function () { try { sessionStorage.setItem('iconsReady', '1'); } catch (e) {} };
-            var reveal = function () { html.classList.add('icons-ready'); };
-            try { if (sessionStorage.getItem('iconsReady') === '1') { reveal(); return; } } catch (e) {}
-            if (!document.fonts || !document.fonts.load) { reveal(); return; }
-            if (document.fonts.check(face)) { reveal(); remember(); return; }
-            document.fonts.load(face).then(function () { if (document.fonts.check(face)) { reveal(); remember(); } });
-        })();
-    </script>
-    <noscript><style>.material-symbols-outlined{visibility:visible}</style></noscript>
+    <x-fonts />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -90,7 +73,8 @@
                                     [$t('التاريخ', 'Date'), $num(($transfer->created_at ?? now())->format('Y-m-d H:i')), true],
                                     [$t('العميل', 'Customer'), e($transfer->customer), false],
                                     filled($phone) ? [$t('هاتف العميل', 'Customer phone'), $num($phone), true] : null,
-                                    $transfer->bank ? [$t('البنك / المحفظة', 'Bank / Wallet'), e($transfer->bank->name), false] : null,
+                                    $transfer->account ? [$t('الحساب', 'Account'), e($transfer->account->label()), false] : null,
+                                    filled($transfer->reference_number) ? [$t('الرقم المرجعي', 'Reference number'), $num($transfer->reference_number), true] : null,
                                     filled($transfer->transferred_amount) ? [$t('المبلغ المُحوَّل', 'Transferred amount'), $num($money($transfer->transferred_amount)), true] : null,
                                 ]);
                             @endphp
@@ -111,18 +95,50 @@
                         <div class="mt-4 rounded-2xl bg-surface-container-low p-4">
                             <h2 class="mb-2 text-xs font-bold uppercase tracking-wide text-on-surface-variant">{{ $t('الأصناف', 'Items') }}</h2>
                             @if ($items)
-                                <ul class="space-y-1.5">
-                                    @foreach ($items as $line)
-                                        <li class="flex items-center justify-between gap-3 text-sm">
-                                            <span class="text-on-surface">{{ $line->name }} <span class="text-on-surface-variant">×<span dir="ltr">{{ $line->quantity }}</span></span></span>
-                                            <span dir="ltr" class="font-medium text-on-surface">{{ $money($line->quantity * (float) $line->price) }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                {{-- The same columns as the printed invoice - the run-together
+                                     "×1" and the price read as one number in a plain list. Ruled
+                                     and tinted rather than hairline black: this one is read on a
+                                     screen, not burned onto a thermal roll. --}}
+                                <div class="overflow-x-auto rounded-xl border border-outline-variant/70 bg-surface">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="bg-surface-container text-xs text-on-surface-variant">
+                                                <th class="px-3 py-2 text-start font-bold">{{ $t('الصنف', 'Item') }}</th>
+                                                <th class="w-16 px-2 py-2 text-center font-bold">{{ $t('كمية', 'Qty') }}</th>
+                                                <th class="w-24 px-2 py-2 text-end font-bold">{{ $t('السعر', 'Price') }}</th>
+                                                <th class="w-28 px-3 py-2 text-end font-bold">{{ $t('المجموع', 'Total') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-outline-variant/50">
+                                            @foreach ($items as $line)
+                                                <tr>
+                                                    <td class="px-3 py-2 text-on-surface">{{ $line->name }}</td>
+                                                    <td class="px-2 py-2 text-center text-on-surface-variant" dir="ltr">{{ $line->quantity }}</td>
+                                                    <td class="px-2 py-2 text-end text-on-surface-variant" dir="ltr">{{ $money($line->price) }}</td>
+                                                    <td class="px-3 py-2 text-end font-bold text-on-surface" dir="ltr">{{ $money($line->quantity * (float) $line->price) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             @else
                                 <p class="text-sm text-on-surface">{{ $transfer->item_name }}</p>
                             @endif
-                            <div class="mt-3 flex items-center justify-between border-t border-outline-variant/60 pt-3">
+                            @if ($transfer->discount > 0)
+                                <div class="mt-3 space-y-1.5 border-t border-outline-variant/60 pt-3">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-on-surface-variant">{{ $t('المجموع الفرعي', 'Subtotal') }}</span>
+                                        <span dir="ltr" class="font-medium text-on-surface">{{ $money($items ? $items->sum(fn ($line) => $line->quantity * (float) $line->price) : $transfer->amount + $transfer->discount) }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-on-surface-variant">{{ $t('الخصم', 'Discount') }}</span>
+                                        <span dir="ltr" class="font-medium text-error">− {{ $money($transfer->discount) }}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex items-center justify-between border-t border-outline-variant/60 pt-3">
+                            @else
+                                <div class="mt-3 flex items-center justify-between border-t border-outline-variant/60 pt-3">
+                            @endif
                                 <span class="font-bold text-on-surface">{{ $t('الإجمالي', 'Total') }}</span>
                                 <span dir="ltr" class="text-lg font-extrabold text-primary">{{ $money($transfer->amount) }}</span>
                             </div>

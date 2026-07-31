@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\Tenant\ sub-namespace for consistency. See BACKEND_PROMPT.md
  * section 4 and D:\Angular\Hawalaty\src\app\data\expenses.ts.
  */
-#[Fillable(['description', 'amount', 'bank_id', 'date'])]
+#[Fillable(['description', 'amount', 'account_id', 'date'])]
 class Expense extends Model
 {
     use HasFactory, HasUlids, SoftDeletes;
@@ -35,10 +35,10 @@ class Expense extends Model
         ];
     }
 
-    // withTrashed(): a soft-deleted bank must still show its name on
-    // historical expenses instead of silently going null.
-    public function bank(): BelongsTo
+    // withTrashed(): a retired account must still show its name on historical
+    // expenses instead of silently going null.
+    public function account(): BelongsTo
     {
-        return $this->belongsTo(Bank::class)->withTrashed();
+        return $this->belongsTo(Account::class)->withTrashed();
     }
 }

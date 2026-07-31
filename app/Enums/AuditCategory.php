@@ -12,4 +12,6 @@ enum AuditCategory: string
     case Constants = 'constants';
     case Devices = 'devices';
     case Transfers = 'transfers';
+    case Catalogs = 'catalogs';
+    case Accounts = 'accounts';
 }

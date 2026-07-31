@@ -2,9 +2,11 @@
 
 namespace Tests\Unit\WhatsApp;
 
+use App\Enums\AccountKind;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
+use App\Models\Tenant\BankName;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
@@ -22,7 +24,15 @@ class NewOrderMessageTest extends TestCase
 {
     private function transfer(array $attributes = [], bool $withLineItems = true): Transfer
     {
-        $bank = new Bank(['name' => 'بنك فلسطين', 'code' => 'BOP', 'phone' => '+972595817016']);
+        // `kind` decides which institution relation label() reads, so it is as
+        // load-bearing here as the relation itself. Both are set explicitly: a
+        // lazy load would reach for the tenant connection.
+        $account = new Account([
+            'kind' => AccountKind::Bank,
+            'holder_name' => 'أحمد',
+            'whatsapp_phone' => '+972595817016',
+        ]);
+        $account->setRelation('bankName', new BankName(['name' => 'بنك فلسطين']));
 
         $transfer = new Transfer(array_merge([
             'customer' => 'أحمد محمد',
@@ -37,7 +47,7 @@ class NewOrderMessageTest extends TestCase
         $transfer->id = '01HQZX9K2M4N6P8R0A1B2C3D4E';
         $transfer->created_at = now();
 
-        $transfer->setRelation('bank', $bank);
+        $transfer->setRelation('account', $account);
         $transfer->setRelation('lineItems', $withLineItems ? new Collection([
             new TransferLineItem(['name' => 'شاورما دجاج', 'quantity' => 2, 'price' => '30.00']),
             new TransferLineItem(['name' => 'عصير برتقال', 'quantity' => 1, 'price' => '12.00']),

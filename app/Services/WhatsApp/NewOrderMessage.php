@@ -75,8 +75,8 @@ class NewOrderMessage
 
         // relationLoaded() guards a lazy load: this can run from a context whose
         // `tenant` connection is no longer pointed anywhere useful.
-        if ($transfer->relationLoaded('bank') && $transfer->bank) {
-            $lines[] = 'البنك: '.$transfer->bank->name;
+        if (filled($destination = self::destinationName($transfer))) {
+            $lines[] = 'البنك: '.$destination;
         }
 
         // `sender_name` / `sender_phone` are deliberately NOT included: the
@@ -168,9 +168,24 @@ class NewOrderMessage
             filled($phone) ? self::isolate(self::oneLine($phone)) : self::DASH,
             self::orDash(self::itemsSummary($transfer)),
             self::money($transfer->amount),
-            self::orDash($transfer->relationLoaded('bank') && $transfer->bank ? $transfer->bank->name : null),
+            self::orDash(self::destinationName($transfer)),
             filled($confirmUrl) ? self::isolate(self::oneLine($confirmUrl)) : self::DASH,
         ];
+    }
+
+    /**
+     * What to call the place the money went: the chosen Account, named
+     * "<institution> - <holder>" so the recipient recognises which of their
+     * accounts this is.
+     *
+     * relationLoaded() guards a lazy load - this can run from a context whose
+     * `tenant` connection is no longer pointed anywhere useful.
+     */
+    private static function destinationName(Transfer $transfer): ?string
+    {
+        return $transfer->relationLoaded('account') && $transfer->account
+            ? $transfer->account->label()
+            : null;
     }
 
     /**

@@ -15,7 +15,6 @@ use App\Http\Controllers\Api\V1\Admin\SettingController;
 use App\Http\Controllers\Api\V1\Admin\SettlementController as AdminSettlementController;
 use App\Http\Controllers\Api\V1\Admin\WithdrawalController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
-use App\Http\Controllers\Api\V1\BankController;
 use App\Http\Controllers\Api\V1\ConstantListController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -74,10 +73,6 @@ Route::prefix('v1')->group(function () {
         // can never become a way to read around a permission.
         Route::get('search', [SearchController::class, 'index']);
 
-        Route::get('banks', [BankController::class, 'index']);
-        Route::post('banks', [BankController::class, 'store']);
-        Route::put('banks/{bank}', [BankController::class, 'update']);
-        Route::delete('banks/{bank}', [BankController::class, 'destroy']);
 
         Route::get('menu-items', [MenuItemController::class, 'index']);
         Route::post('menu-items', [MenuItemController::class, 'store']);

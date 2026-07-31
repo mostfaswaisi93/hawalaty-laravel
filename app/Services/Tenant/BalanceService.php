@@ -5,7 +5,7 @@ namespace App\Services\Tenant;
 use App\Enums\ChangeMethod;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\SalaryPayment;
 use App\Models\Tenant\Transfer;
@@ -24,9 +24,9 @@ use Illuminate\Support\Carbon;
  *       so payroll is legible, never added on top.
  *
  * PER ACCOUNT
- * A bank-paid order credits its bank; a cash order credits the cash drawer,
- * which has no `banks` row and is therefore reported as its own synthetic line.
- * Expenses always carry a bank, so they debit it directly.
+ * A transfer order credits the account it landed in; a cash order credits the
+ * cash drawer, which has no `accounts` row and is reported as its own synthetic
+ * line. Expenses always name an account, so they debit it directly.
  *
  * CHANGE IS NOT REVENUE, AND IS NOT SUBTRACTED FROM IT. `transfers.amount` is the
  * order total, computed server-side from the line items - it is never the tender.
@@ -51,7 +51,7 @@ use Illuminate\Support\Carbon;
  */
 class BalanceService
 {
-    /** Synthetic account id for cash, which has no `banks` row. */
+    /** Synthetic account id for cash, which has no `accounts` row. */
     public const CASH = '__cash__';
 
     /**
@@ -115,7 +115,7 @@ class BalanceService
     }
 
     /**
-     * One row per account - every bank/wallet plus the cash drawer - with what
+     * One row per account - every bank/wallet account plus the cash drawer - with what
      * moved in, what moved out, and the difference.
      *
      * Accounts with no movement at all are dropped: a statement listing twenty
@@ -127,21 +127,21 @@ class BalanceService
     {
         [$start, $end] = $this->window($from, $to);
 
-        $inByBank = Transfer::query()
+        $inByAccount = Transfer::query()
             ->where('status', TransferStatus::Completed->value)
             ->where('payment_method', PaymentMethod::Bank->value)
-            ->whereNotNull('bank_id')
+            ->whereNotNull('account_id')
             ->where('created_at', '>=', $start)->where('created_at', '<', $end)
-            ->groupBy('bank_id')
-            ->selectRaw('bank_id, SUM(amount) as total')
-            ->pluck('total', 'bank_id');
+            ->groupBy('account_id')
+            ->selectRaw('account_id, SUM(amount) as total')
+            ->pluck('total', 'account_id');
 
-        $outByBank = Expense::query()
+        $outByAccount = Expense::query()
             ->where('date', '>=', $start->toDateString())
             ->where('date', '<', $end->toDateString())
-            ->groupBy('bank_id')
-            ->selectRaw('bank_id, SUM(amount) as total')
-            ->pluck('total', 'bank_id');
+            ->groupBy('account_id')
+            ->selectRaw('account_id, SUM(amount) as total')
+            ->pluck('total', 'account_id');
 
         $cashIn = (float) Transfer::query()
             ->where('status', TransferStatus::Completed->value)
@@ -154,36 +154,41 @@ class BalanceService
         // Both legs of any change that crossed accounts - see the class docblock.
         foreach ($this->crossAccountChange($start, $end) as $leg) {
             // The account that handed the change over is down by it...
-            if ($leg['fromBankId'] === null) {
+            if ($leg['fromAccountId'] === null) {
                 $cashOut += $leg['amount'];
             } else {
-                $outByBank[$leg['fromBankId']] = (float) ($outByBank[$leg['fromBankId']] ?? 0) + $leg['amount'];
+                $outByAccount[$leg['fromAccountId']] = (float) ($outByAccount[$leg['fromAccountId']] ?? 0) + $leg['amount'];
             }
 
             // ...and the account that took the payment received that much more
             // than the order was worth, because the customer over-tendered.
-            if ($leg['toBankId'] === null) {
+            if ($leg['toAccountId'] === null) {
                 $cashIn += $leg['amount'];
             } else {
-                $inByBank[$leg['toBankId']] = (float) ($inByBank[$leg['toBankId']] ?? 0) + $leg['amount'];
+                $inByAccount[$leg['toAccountId']] = (float) ($inByAccount[$leg['toAccountId']] ?? 0) + $leg['amount'];
             }
         }
 
         $rows = [];
 
-        // withTrashed: a retired bank must still show the money that moved
+        // withTrashed: a retired account must still show the money that moved
         // through it during the period, or the rows will not sum to the total.
-        foreach (Bank::withTrashed()->orderBy('name')->get() as $bank) {
-            $in = round((float) ($inByBank[$bank->id] ?? 0), 2);
-            $out = round((float) ($outByBank[$bank->id] ?? 0), 2);
+        $accounts = Account::withTrashed()
+            ->with(['bankName', 'walletName'])
+            ->orderBy('holder_name')
+            ->get();
+
+        foreach ($accounts as $account) {
+            $in = round((float) ($inByAccount[$account->id] ?? 0), 2);
+            $out = round((float) ($outByAccount[$account->id] ?? 0), 2);
 
             if ($in === 0.0 && $out === 0.0) {
                 continue;
             }
 
             $rows[] = [
-                'id' => (string) $bank->id,
-                'name' => $bank->name,
+                'id' => (string) $account->id,
+                'name' => $account->label(),
                 'isCash' => false,
                 'in' => $in,
                 'out' => $out,
@@ -198,7 +203,7 @@ class BalanceService
                 'isCash' => true,
                 'in' => round($cashIn, 2),
                 // An expense can never be booked against cash - every expense
-                // names a bank - so the only way the drawer pays out is change.
+                // names an account - so the only way the drawer pays out is change.
                 'out' => round($cashOut, 2),
                 'net' => round($cashIn - $cashOut, 2),
             ]);
@@ -213,9 +218,9 @@ class BalanceService
      * out: it nets to zero, and booking both legs would only inflate the gross
      * figures without changing anyone's balance.
      *
-     * A null bank id means the cash drawer.
+     * A null account id means the cash drawer.
      *
-     * @return array<int, array{amount: float, fromBankId: ?string, toBankId: ?string}>
+     * @return array<int, array{amount: float, fromAccountId: ?string, toAccountId: ?string}>
      */
     private function crossAccountChange(Carbon $start, Carbon $end): array
     {
@@ -224,13 +229,13 @@ class BalanceService
             ->where('created_at', '>=', $start)->where('created_at', '<', $end)
             ->whereNotNull('change_amount')
             ->where('change_amount', '>', 0)
-            ->get(['payment_method', 'bank_id', 'change_method', 'change_bank_id', 'change_amount']);
+            ->get(['payment_method', 'account_id', 'change_method', 'change_account_id', 'change_amount']);
 
         $legs = [];
 
         foreach ($orders as $order) {
-            $to = $order->payment_method === PaymentMethod::Bank ? $order->bank_id : null;
-            $from = $order->change_method === ChangeMethod::Bank ? $order->change_bank_id : null;
+            $to = $order->payment_method === PaymentMethod::Bank ? $order->account_id : null;
+            $from = $order->change_method === ChangeMethod::Bank ? $order->change_account_id : null;
 
             // Same account (including cash-to-cash): nothing moved between them.
             if ($from === $to) {
@@ -239,8 +244,8 @@ class BalanceService
 
             $legs[] = [
                 'amount' => (float) $order->change_amount,
-                'fromBankId' => $from,
-                'toBankId' => $to,
+                'fromAccountId' => $from,
+                'toAccountId' => $to,
             ];
         }
 

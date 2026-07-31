@@ -4,10 +4,14 @@ namespace Tests\Feature\WhatsApp;
 
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
-use App\Models\Tenant\Bank;
+use App\Enums\AccountKind;
+use App\Models\Tenant\Account;
+use App\Models\Tenant\BankName;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
+use App\Services\WhatsApp\NewOrderMessage;
 use App\Services\WhatsApp\WhatsAppSender;
+use App\Services\WhatsApp\WhatsAppSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -27,12 +31,25 @@ class WhatsAppSenderTest extends TestCase
 {
     private function sender(): WhatsAppSender
     {
-        return new WhatsAppSender;
+        return new WhatsAppSender(app(WhatsAppSettings::class));
     }
 
-    private function transfer(array $attributes = [], Bank|false|null $bank = null): Transfer
+    /** An unsaved account with its institution relation set, so nothing lazy-loads. */
+    private function account(?string $whatsapp): Account
     {
-        $bank ??= new Bank(['name' => 'بنك فلسطين', 'code' => 'BOP', 'phone' => '+972595817016']);
+        $account = new Account([
+            'kind' => AccountKind::Bank,
+            'holder_name' => 'أحمد',
+            'whatsapp_phone' => $whatsapp,
+        ]);
+        $account->setRelation('bankName', new BankName(['name' => 'بنك فلسطين']));
+
+        return $account;
+    }
+
+    private function transfer(array $attributes = [], Account|false|null $account = null): Transfer
+    {
+        $account ??= $this->account('+972595817016');
 
         $transfer = new Transfer(array_merge([
             'customer' => 'أحمد محمد',
@@ -46,8 +63,8 @@ class WhatsAppSenderTest extends TestCase
         $transfer->id = (string) Str::ulid();
         $transfer->created_at = now();
 
-        // setRelation even for null: otherwise ->bank would try to lazy-load.
-        $transfer->setRelation('bank', $bank === false ? null : $bank);
+        // setRelation even for null: otherwise ->account would try to lazy-load.
+        $transfer->setRelation('account', $account === false ? null : $account);
         $transfer->setRelation('lineItems', new Collection([
             new TransferLineItem(['name' => 'شاورما دجاج', 'quantity' => 2, 'price' => '30.00']),
         ]));
@@ -72,7 +89,7 @@ class WhatsAppSenderTest extends TestCase
     {
         Http::fake();
 
-        $result = $this->sender()->sendNewOrder($this->transfer(bank: false));
+        $result = $this->sender()->sendNewOrder($this->transfer(account: false));
 
         $this->assertSame('no_bank', $result->errorCode);
         Http::assertNothingSent();
@@ -82,10 +99,10 @@ class WhatsAppSenderTest extends TestCase
     {
         Http::fake();
 
-        $bank = new Bank(['name' => 'بنك قديم', 'code' => 'OLD', 'phone' => '+972595817016']);
-        $bank->deleted_at = now();
+        $account = $this->account('+972595817016');
+        $account->deleted_at = now();
 
-        $result = $this->sender()->sendNewOrder($this->transfer(bank: $bank));
+        $result = $this->sender()->sendNewOrder($this->transfer(account: $account));
 
         $this->assertSame('bank_deleted', $result->errorCode);
         Http::assertNothingSent();
@@ -96,7 +113,7 @@ class WhatsAppSenderTest extends TestCase
         Http::fake();
 
         $result = $this->sender()->sendNewOrder(
-            $this->transfer(bank: new Bank(['name' => 'بنك', 'code' => 'X', 'phone' => null]))
+            $this->transfer(account: $this->account(null))
         );
 
         $this->assertSame('no_number', $result->errorCode);
@@ -108,7 +125,7 @@ class WhatsAppSenderTest extends TestCase
         Http::fake();
 
         $result = $this->sender()->sendNewOrder(
-            $this->transfer(bank: new Bank(['name' => 'بنك', 'code' => 'X', 'phone' => 'not-a-number']))
+            $this->transfer(account: $this->account('not-a-number'))
         );
 
         $this->assertSame('unnormalisable', $result->errorCode);
@@ -191,10 +208,12 @@ class WhatsAppSenderTest extends TestCase
                 && $request->hasHeader('Authorization', 'Bearer test-token')
                 // Digits only - Meta rejects a leading '+' in `to`.
                 && $body['to'] === '972595817016'
-                // Free-form text would be rejected with error 131047, because a
-                // bank's number never opens a 24h customer-initiated window.
+                // Free-form text would be rejected with error 131047, because an
+                // account's number never opens a 24h customer-initiated window.
                 && $body['type'] === 'template'
-                && count($body['template']['components'][0]['parameters']) === 1;
+                // One value per {{n}} in the approved template; a mismatch is
+                // Meta error 132000.
+                && count($body['template']['components'][0]['parameters']) === NewOrderMessage::PARAM_COUNT;
         });
     }
 

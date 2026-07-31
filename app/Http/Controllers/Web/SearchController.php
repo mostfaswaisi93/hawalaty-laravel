@@ -44,7 +44,8 @@ class SearchController extends Controller
                 'url' => route('customers.show', $c['id']),
             ]),
             'banks' => $results['banks']->map(fn (array $b) => $b + [
-                'url' => route('banks.index', ['search' => $b['name']]),
+                // Straight to the account's own page - it has one now.
+                'url' => route('accounts.show', $b['id']),
             ]),
             // The catalogue page has no search filter, so this uses the row's
             // own anchor - the result lands on the entry rather than at the top

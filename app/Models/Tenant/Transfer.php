@@ -14,10 +14,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'customer', 'customer_id', 'status', 'amount', 'item_name', 'payment_method',
-    'has_change', 'change_method', 'change_bank_id', 'change_amount',
-    'bank_id', 'sender_name', 'sender_phone', 'transferred_amount',
+    'customer', 'customer_id', 'status', 'amount', 'discount', 'item_name', 'payment_method',
+    'has_change', 'change_method', 'change_amount',
+    'sender_name', 'sender_phone', 'transferred_amount', 'reference_number',
     'confirmation_token', 'confirmed_at', 'confirmation_action', 'created_by',
+    'account_id', 'change_account_id',
 ])]
 class Transfer extends Model
 {
@@ -33,6 +34,7 @@ class Transfer extends Model
         return [
             'status' => TransferStatus::class,
             'amount' => 'decimal:2',
+            'discount' => 'decimal:2',
             'payment_method' => PaymentMethod::class,
             'has_change' => 'boolean',
             'change_method' => ChangeMethod::class,
@@ -52,16 +54,17 @@ class Transfer extends Model
         return $this->confirmed_at !== null;
     }
 
-    // withTrashed(): a soft-deleted bank must still show its name on
-    // historical transfers instead of silently going null.
-    public function bank(): BelongsTo
+    // The Account this order posts to. withTrashed(): a deactivated or retired
+    // account must still name itself on historical orders instead of silently
+    // going null.
+    public function account(): BelongsTo
     {
-        return $this->belongsTo(Bank::class)->withTrashed();
+        return $this->belongsTo(Account::class)->withTrashed();
     }
 
-    public function changeBank(): BelongsTo
+    public function changeAccount(): BelongsTo
     {
-        return $this->belongsTo(Bank::class, 'change_bank_id')->withTrashed();
+        return $this->belongsTo(Account::class, 'change_account_id')->withTrashed();
     }
 
     public function lineItems(): HasMany

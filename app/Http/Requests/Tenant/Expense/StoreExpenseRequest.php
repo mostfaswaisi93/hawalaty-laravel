@@ -18,12 +18,12 @@ class StoreExpenseRequest extends FormRequest
         return [
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0'],
-            // "tenant." prefix is required - a bare exists:banks,id
+            // "tenant." prefix is required - a bare exists:accounts,id
             // resolves against the app's DEFAULT connection (platform),
             // not the dynamic `tenant` connection ResolveTenantConnection
             // configured for this request. Verified via a real 500 error
             // during this task's curl testing before this fix.
-            'bankId' => ['required', 'string', 'exists:tenant.banks,id'],
+            'accountId' => ['required', 'string', 'exists:tenant.accounts,id'],
             'date' => ['required', 'date'],
         ];
     }

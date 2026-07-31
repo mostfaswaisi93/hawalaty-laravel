@@ -112,6 +112,8 @@
                     ];
                 @endphp
 
+                @include('settings._logo')
+
                 <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6 lg:col-span-2" style="--d:90ms">
                     <div class="mb-5 flex items-center justify-between gap-3">
                         <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('معلومات النشاط') }}</h2>

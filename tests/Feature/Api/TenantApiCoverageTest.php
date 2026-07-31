@@ -4,7 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Enums\PaymentMethod;
 use App\Http\Middleware\ResolveTenantConnection;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
@@ -143,7 +143,7 @@ class TenantApiCoverageTest extends TenantApiTestCase
      */
     public function test_search_hides_banks_and_catalogue_from_a_member_without_those_permissions(): void
     {
-        Bank::factory()->create(['name' => 'بنك فلسطين']);
+        Account::factory()->create(['holder_name' => 'بنك فلسطين']);
         $category = MenuCategory::create(['name' => 'مشاوي', 'position' => 0]);
         MenuItem::factory()->create(['name' => 'بنك برجر', 'menu_category_id' => $category->id]);
 
@@ -161,7 +161,7 @@ class TenantApiCoverageTest extends TenantApiTestCase
     public function test_search_shows_banks_and_catalogue_to_a_member_who_may_manage_them(): void
     {
         $this->actAsOwner();
-        Bank::factory()->create(['name' => 'بنك فلسطين']);
+        Account::factory()->create(['holder_name' => 'بنك فلسطين']);
         $category = MenuCategory::create(['name' => 'مشاوي', 'position' => 0]);
         MenuItem::factory()->create(['name' => 'بنك برجر', 'menu_category_id' => $category->id]);
 

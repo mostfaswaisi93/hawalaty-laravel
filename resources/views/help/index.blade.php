@@ -8,6 +8,13 @@
 
 @section('title', __('مركز المساعدة - حوالاتي'))
 
+@php
+    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call
+    // there. Ignored under layouts.app, which is behind auth and has no SEO.
+    $metaDescription = __('أجوبة سريعة عن استخدام حوالاتي: إنشاء الطلبات، الحسابات والمحافظ، الفريق والصلاحيات، التقارير، والعمل بدون إنترنت.');
+    $metaRobots = 'index, follow';
+@endphp
+
 @section('content')
     {{--
         The width cap is applied ONLY under the guest shell, whose <main> has no

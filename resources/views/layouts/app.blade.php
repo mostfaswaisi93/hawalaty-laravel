@@ -29,7 +29,8 @@
         [
             'label' => 'الإدارة',
             'items' => [
-                ['href' => '/banks', 'icon' => 'account_balance', 'label' => 'البنوك والمحافظ', 'match' => 'banks*', 'permission' => \App\Enums\PermissionKey::BanksManage],
+                ['href' => '/accounts', 'icon' => 'wallet', 'label' => 'الحسابات', 'match' => 'accounts*', 'permission' => \App\Enums\PermissionKey::BanksManage],
+                ['href' => '/catalogs', 'icon' => 'category', 'label' => 'الكتالوجات', 'match' => 'catalogs*', 'permission' => \App\Enums\PermissionKey::BanksManage],
                 ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
@@ -139,43 +140,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
-    {{-- display=block, NOT swap: with swap the browser paints the fallback immediately, and an icon font's fallback is the ligature's literal text - that is the "restaurant_menu" leaking on first load. --}}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
-
-    {{-- Reveals the icons only once the ligature font is CONFIRMED available.
-         Without this, a blocked or offline Google Fonts leaves every icon
-         rendered as its own name. See the .material-symbols-outlined rule in
-         app.css. --}}
-    <script>
-        (function () {
-            var html = document.documentElement;
-            var face = '24px "Material Symbols Outlined"';
-            var remember = function () { try { sessionStorage.setItem('iconsReady', '1'); } catch (e) {} };
-            var reveal = function () { html.classList.add('icons-ready'); };
-
-            // Proven loaded earlier this session -> reveal BEFORE the first
-            // paint. This is the path almost every navigation takes, and it is
-            // what keeps the icons from flashing in on each page.
-            try {
-                if (sessionStorage.getItem('iconsReady') === '1') { reveal(); return; }
-            } catch (e) {}
-
-            if (!document.fonts || !document.fonts.load) { reveal(); return; }
-
-            // Stylesheet already parsed and the face is available: still synchronous.
-            if (document.fonts.check(face)) { reveal(); remember(); return; }
-
-            // Genuine cold load - this is the only case that waits.
-            document.fonts.load(face).then(function () {
-                if (document.fonts.check(face)) { reveal(); remember(); }
-            });
-        })();
-    </script>
-    {{-- JS off: better a visible ligature than no icons at all. --}}
-    <noscript><style>.material-symbols-outlined{visibility:visible}</style></noscript>
+    <x-fonts />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -453,6 +418,10 @@
                                 </button>
                             </template>
                         </div>
+                        <a href="{{ route('notifications.index') }}" @click="open = false"
+                            class="block border-t border-outline-variant/60 p-3 text-center font-body-sm font-bold text-primary transition-colors hover:bg-surface-container-low">
+                            {{ __('عرض كل الإشعارات') }}
+                        </a>
                     </div>
                 </div>
 

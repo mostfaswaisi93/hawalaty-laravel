@@ -9,7 +9,7 @@ class DashboardService
 {
     public function stats(): array
     {
-        $recentTransfers = Transfer::with(['lineItems', 'bank', 'changeBank'])
+        $recentTransfers = Transfer::with(['lineItems', 'account'])
             ->latest()
             ->take(5)
             ->get();

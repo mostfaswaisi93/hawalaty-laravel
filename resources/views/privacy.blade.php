@@ -2,6 +2,12 @@
 
 @section('title', __('سياسة الخصوصية - حوالاتي'))
 
+@php
+    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call there.
+    $metaDescription = __('سياسة خصوصية حوالاتي: ما الذي يُجمع من بيانات، ولماذا، ومن يستطيع الوصول إليه، وكيف تطلب نسخة منها أو حذفها.');
+    $metaRobots = 'index, follow';
+@endphp
+
 @section('content')
     @php
         // [icon, heading, intro paragraph, bullet points]

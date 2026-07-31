@@ -9,8 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * Shapes App\Models\Tenant\Expense to match the Angular `Expense` interface
  * in D:\Angular\Hawalaty\src\app\data\expenses.ts exactly, including the
- * denormalized `bankName` (resolved from the bank relation, not stored).
- * Controllers must eager-load `bank` before returning this resource.
+ * denormalized `accountName` (resolved from the account relation, not stored).
+ * Controllers must eager-load `account` before returning this resource.
  *
  * @mixin Expense
  */
@@ -22,8 +22,8 @@ class ExpenseResource extends JsonResource
             'id' => (string) $this->id,
             'description' => $this->description,
             'amount' => (float) $this->amount,
-            'bankId' => (string) $this->bank_id,
-            'bankName' => $this->bank?->name,
+            'accountId' => (string) $this->account_id,
+            'accountName' => $this->account?->holder_name,
             'date' => $this->date?->toDateString(),
         ];
     }

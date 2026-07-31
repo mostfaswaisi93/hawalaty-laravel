@@ -17,7 +17,7 @@ class ExpenseService
      */
     public function list(?string $search = null, int $perPage = 20): LengthAwarePaginator
     {
-        $query = Expense::query()->with('bank')->whereSearch('description', $search);
+        $query = Expense::query()->with(['account.bankName', 'account.walletName', 'account.currency'])->whereSearch('description', $search);
 
         return $query->latest('date')->paginate($perPage)->withQueryString();
     }
@@ -27,11 +27,11 @@ class ExpenseService
         $expense = Expense::create([
             'description' => $data['description'],
             'amount' => $data['amount'],
-            'bank_id' => $data['bankId'],
+            'account_id' => $data['accountId'],
             'date' => $data['date'],
         ]);
 
-        $expense->load('bank');
+        $expense->load(['account.bankName', 'account.walletName', 'account.currency']);
 
         AuditLogger::record(AuditAction::Created, AuditEntityType::Expense, $expense->description, AuditCategory::Expenses);
 
@@ -48,15 +48,15 @@ class ExpenseService
         if (array_key_exists('amount', $data)) {
             $update['amount'] = $data['amount'];
         }
-        if (array_key_exists('bankId', $data)) {
-            $update['bank_id'] = $data['bankId'];
+        if (array_key_exists('accountId', $data)) {
+            $update['account_id'] = $data['accountId'];
         }
         if (array_key_exists('date', $data)) {
             $update['date'] = $data['date'];
         }
 
         $expense->update($update);
-        $expense->load('bank');
+        $expense->load(['account.bankName', 'account.walletName', 'account.currency']);
 
         AuditLogger::record(AuditAction::Updated, AuditEntityType::Expense, $expense->description, AuditCategory::Expenses);
 

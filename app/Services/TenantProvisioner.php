@@ -43,7 +43,7 @@ class TenantProvisioner
     protected const TRIAL_DAYS = 14;
 
     /**
-     * @param  array{businessName:string, ownerName:string, ownerEmail:string, phone?:string, password:string, packageId?:string}  $data
+     * @param  array{businessName:string, ownerName:string, ownerEmail:string, address?:string, phone?:string, password:string, packageId?:string}  $data
      *
      * @throws Throwable
      */
@@ -70,6 +70,9 @@ class TenantProvisioner
             $license = DB::transaction(fn () => License::create([
                 'license_code' => $this->generateLicenseCode(),
                 'customer_name' => $data['businessName'],
+                // Printed on every receipt this tenant issues.
+                'address' => $data['address'] ?? null,
+                'phone' => $data['phone'] ?? null,
                 'package_id' => $package->id,
                 'status' => LicenseStatus::Trial,
                 'expired_at' => now()->addDays($this->trialDays()),

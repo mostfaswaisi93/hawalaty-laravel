@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
- * Public, login-free page the bank account owner opens from the WhatsApp link
+ * Public, login-free page the account owner opens from the WhatsApp link
  * to confirm a transfer arrived - or report that it did not.
  *
  * There is no session and no X-License-Code here, so the tenant database is
@@ -94,7 +94,7 @@ class OrderConfirmationController extends Controller
         return Transfer::query()
             ->where('confirmation_token', $token)
             ->where('payment_method', PaymentMethod::Bank)
-            ->with(['lineItems', 'bank', 'customerProfile'])
+            ->with(['lineItems', 'customerProfile', 'account.bankName', 'account.walletName', 'account.cashBox', 'account.currency'])
             ->firstOrFail();
     }
 

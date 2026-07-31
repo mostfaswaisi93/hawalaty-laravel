@@ -21,7 +21,12 @@ class PublicPagesTest extends TestCase
             'landing' => ['/'],
             'privacy' => ['/privacy'],
             'terms' => ['/terms'],
+            'security' => ['/security'],
             'help' => ['/help'],
+            // Crawler-facing, and both are built from the route table - a
+            // renamed route would otherwise 500 somewhere only a bot can see.
+            'sitemap' => ['/sitemap.xml'],
+            'robots' => ['/robots.txt'],
         ];
     }
 

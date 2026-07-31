@@ -12,4 +12,6 @@ enum AuditEntityType: string
     case Order = 'order';
     case TeamMember = 'teamMember';
     case Role = 'role';
+    case Catalog = 'catalog';
+    case Account = 'account';
 }

@@ -174,7 +174,7 @@
                                         </div>
                                         <div>
                                             <p class="whitespace-nowrap text-body-sm font-bold">{{ $t->customer }}</p>
-                                            <p class="whitespace-nowrap text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
+                                            <p class="whitespace-nowrap text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->account?->label() }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -204,7 +204,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate text-body-sm font-bold">{{ $t->customer }}</p>
-                                        <p class="truncate text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->bank?->name }}</p>
+                                        <p class="truncate text-[11px] text-on-surface-variant">{{ $t->payment_method->value === 'cash' ? __('نقدي') : $t->account?->label() }}</p>
                                     </div>
                                     <p class="whitespace-nowrap font-bold text-primary"><span dir="ltr">+{{ number_format($t->amount, 2) }} ₪</span></p>
                                 </div>

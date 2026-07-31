@@ -166,6 +166,11 @@
                         <label for="admin-licenses-phone" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الهاتف (اختياري)') }}</label>
                         <input id="admin-licenses-phone" name="phone" value="{{ old('phone') }}" dir="ltr" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
+                    <div class="space-y-1.5 sm:col-span-2">
+                        <label for="admin-licenses-address" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('العنوان بالتفصيل') }}</label>
+                        <input id="admin-licenses-address" name="address" value="{{ old('address') }}" placeholder="{{ __('غزة - شارع النصر - شمال مركز رشاد الشوا') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        <p class="font-body-sm text-body-sm text-outline">{{ __('يُطبع على فواتير هذا المحل مع رقم الهاتف.') }}</p>
+                    </div>
                     <div class="space-y-1.5">
                         <label for="admin-licenses-package-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الباقة') }}</label>
                         <select id="admin-licenses-package-id" name="packageId" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">

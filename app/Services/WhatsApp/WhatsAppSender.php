@@ -11,8 +11,8 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Sends the "new order" WhatsApp message to the number stored on the bank or
- * wallet the operator selected for the order (`banks.phone`).
+ * Sends the "new order" WhatsApp message to the account the operator selected
+ * for the order, on that account's own `whatsapp_phone`.
  *
  * Two design constraints shape this class:
  *
@@ -51,25 +51,29 @@ class WhatsAppSender
             return WhatsAppResult::skipped('not_bank');
         }
 
-        $bank = $transfer->bank;
+        // The destination is the ACCOUNT the operator picked for this invoice,
+        // notified on its own whatsapp_phone.
+        $account = $transfer->account;
 
-        if (! $bank) {
-            Log::debug('WhatsApp skipped: order has no bank.', ['transferId' => $transfer->id]);
+        if (! $account) {
+            Log::debug('WhatsApp skipped: order has no account.', ['transferId' => $transfer->id]);
 
             return WhatsAppResult::skipped('no_bank');
         }
 
-        // Transfer::bank() is withTrashed(), so a retired bank still resolves.
-        if ($bank->trashed()) {
-            Log::debug('WhatsApp skipped: bank is deleted.', ['transferId' => $transfer->id, 'bankId' => $bank->id]);
+        // Transfer::account() is withTrashed(), so a retired one still resolves.
+        if ($account->trashed()) {
+            Log::debug('WhatsApp skipped: account is deleted.', ['transferId' => $transfer->id, 'accountId' => $account->id]);
 
             return WhatsAppResult::skipped('bank_deleted');
         }
 
-        // `active` is deliberately NOT checked: the operator chose this bank for
-        // this order, so flipping the flag afterwards must not suppress it.
-        if (! filled($bank->phone)) {
-            Log::debug('WhatsApp skipped: bank has no number.', ['transferId' => $transfer->id, 'bankId' => $bank->id]);
+        $phone = $account->whatsapp_phone;
+
+        // `active` is deliberately NOT checked: the operator chose this account
+        // for this order, so flipping the flag afterwards must not suppress it.
+        if (! filled($phone)) {
+            Log::debug('WhatsApp skipped: account has no number.', ['transferId' => $transfer->id, 'accountId' => $account->id]);
 
             return WhatsAppResult::skipped('no_number');
         }
@@ -90,7 +94,7 @@ class WhatsAppSender
         // flattened line for a single-parameter template, the full field set
         // otherwise); build() is the human-readable rendering the log driver prints.
         $result = $this->send(
-            $bank->phone,
+            $phone,
             NewOrderMessage::forVariables($transfer, $link, $this->settings->variableCount()),
             NewOrderMessage::build($transfer, $link),
         );

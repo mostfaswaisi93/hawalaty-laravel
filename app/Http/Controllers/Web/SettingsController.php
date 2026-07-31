@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Enums\PermissionKey;
+use App\Http\Requests\Web\Settings\UpdateLogoRequest;
 use App\Http\Requests\Web\Settings\UpdateProfileRequest;
+use App\Services\Tenant\BusinessLogo;
 use App\Services\Tenant\TeamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -16,7 +19,10 @@ use Illuminate\View\View;
  */
 class SettingsController extends Controller
 {
-    public function __construct(private readonly TeamService $service) {}
+    public function __construct(
+        private readonly TeamService $service,
+        private readonly BusinessLogo $logo,
+    ) {}
 
     public function index(): View
     {
@@ -26,6 +32,7 @@ class SettingsController extends Controller
         return view('settings.index', [
             'member' => auth('tenant')->user(),
             'license' => $license,
+            'logo' => $this->logo->dataUri(),
         ]);
     }
 
@@ -39,5 +46,33 @@ class SettingsController extends Controller
         $this->service->update(auth('tenant')->user(), $data);
 
         return redirect()->route('settings.index')->with('success', __('تم تحديث بياناتك بنجاح.'));
+    }
+
+    /**
+     * The business logo, printed at the top of every receipt. Gated on
+     * BanksManage - it is business-wide branding, not a personal preference,
+     * and that is the permission the rest of the business vocabulary uses.
+     */
+    public function updateLogo(UpdateLogoRequest $request): RedirectResponse
+    {
+        abort_unless($this->canManageBusiness(), 403);
+
+        $this->logo->put($request->file('logo'));
+
+        return redirect()->route('settings.index')->with('success', __('تم تحديث شعار المشروع.'));
+    }
+
+    public function destroyLogo(): RedirectResponse
+    {
+        abort_unless($this->canManageBusiness(), 403);
+
+        $this->logo->delete();
+
+        return redirect()->route('settings.index')->with('success', __('تم حذف الشعار.'));
+    }
+
+    private function canManageBusiness(): bool
+    {
+        return (bool) auth('tenant')->user()?->hasPermission(PermissionKey::BanksManage);
     }
 }

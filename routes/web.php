@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\ActivityLogController;
 use App\Http\Controllers\Web\Admin\ActivityLogController as AdminActivityLogController;
 use App\Http\Controllers\Web\Admin\BackupController as AdminBackupController;
 use App\Http\Controllers\Web\Admin\BoxController as AdminBoxController;
+use App\Http\Controllers\Web\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Web\Admin\FinanceController as AdminFinanceController;
 use App\Http\Controllers\Web\Admin\LicenseController as AdminLicenseController;
@@ -16,8 +18,9 @@ use App\Http\Controllers\Web\Admin\SettlementController as AdminSettlementContro
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
 use App\Http\Controllers\Web\BalanceController;
-use App\Http\Controllers\Web\BankController;
+use App\Http\Controllers\Web\CatalogController;
 use App\Http\Controllers\Web\ConstantController;
+use App\Http\Controllers\Web\ContactController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DeviceController;
@@ -28,13 +31,16 @@ use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\OrderConfirmationController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\RobotsController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
-use App\Http\Controllers\Web\WhatsAppSettingsController;
+use App\Http\Controllers\Web\SitemapController;
 use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
+use App\Http\Controllers\Web\WhatsAppSettingsController;
+use App\Http\Controllers\Web\WhatsAppWebhookController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
@@ -60,6 +66,26 @@ Route::get('locale/{locale}', function (string $locale) {
 // session - previously they were linked but had no route at all and 404'd.
 Route::view('privacy', 'privacy')->name('privacy');
 Route::view('terms', 'terms')->name('terms');
+Route::view('security', 'security')->name('security');
+
+// The landing page's contact form. GET-less on purpose: the form is a section
+// of `/`, not a page of its own, so there is nothing to render here.
+//
+// Throttled by IP as well as honeypotted (StoreContactRequest). Six an hour is
+// far above what any real enquiry needs and far below what makes a scripted
+// flood worth writing.
+Route::post('contact', [ContactController::class, 'store'])
+    ->middleware('throttle:6,60')
+    ->name('contact.store');
+
+// Search engines look for these at fixed paths, so they cannot live behind a
+// prefix or a locale segment.
+//
+// robots.txt is a ROUTE, not a file in /public, purely because the `Sitemap:`
+// directive has to be an absolute URL: a static file would have to hardcode a
+// domain, and would then be wrong on every environment except one.
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('robots.txt', RobotsController::class)->name('robots');
 
 // Help is public too, for the same reason: the guest footer links it. The view
 // carries no authenticated data and picks its own layout depending on whether a
@@ -98,6 +124,13 @@ Route::get('license-inactive', function () {
     return view('auth.license-inactive');
 })->name('license.inactive');
 
+// Meta WhatsApp Cloud API webhook - single public callback (verification GET +
+// inbound POST). No auth/session: Meta authenticates via the verify token and
+// the app-secret signature (see Web\WhatsAppWebhookController). CSRF-exempt in
+// bootstrap/app.php.
+Route::get('webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->name('webhooks.whatsapp.verify');
+Route::post('webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->name('webhooks.whatsapp.receive');
+
 // Public, login-free bank-transfer confirmation. Opened by the account owner
 // from the WhatsApp link: no session and no X-License-Code, so the tenant is
 // selected from the license code in the path and the order is found by its
@@ -127,6 +160,8 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
 
     Route::get('transfers', [TransferController::class, 'index'])->name('transfers.index');
     Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
+    // Where a freshly created order lands: print it, or start the next one.
+    Route::get('transfers/{transfer}/created', [TransferController::class, 'created'])->name('transfers.created')->whereUlid('transfer');
 
     // Drain for orders taken while the connection was down. Session-authed on
     // purpose - see Web\SyncController for why it does not reuse the API route.
@@ -147,11 +182,26 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
-    // Banks & wallets
-    Route::get('banks', [BankController::class, 'index'])->name('banks.index');
-    Route::post('banks', [BankController::class, 'store'])->name('banks.store');
-    Route::put('banks/{bank}', [BankController::class, 'update'])->name('banks.update');
-    Route::delete('banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
+    // Reference catalogs (Phase 2a) - the six lists the accounting redesign is
+    // built on: currencies, bank names, wallet names, account types, wallet
+    // types, cash boxes. One controller, keyed by the {catalog} segment; the
+    // constraint keeps it from swallowing unrelated /catalogs/* paths.
+    $catalogKeys = 'currencies|banks|wallets|account-types|wallet-types|cash-boxes';
+    Route::get('catalogs', [CatalogController::class, 'index'])->name('catalogs.index');
+    Route::post('catalogs/{catalog}', [CatalogController::class, 'store'])->name('catalogs.store')->where('catalog', $catalogKeys);
+    Route::put('catalogs/{catalog}/{id}', [CatalogController::class, 'update'])->name('catalogs.update')->where('catalog', $catalogKeys);
+    Route::delete('catalogs/{catalog}/{id}', [CatalogController::class, 'destroy'])->name('catalogs.destroy')->where('catalog', $catalogKeys);
+
+    // Accounts + ledger (Phase 2b). `create` is declared before `{account}` and
+    // the id is constrained to a ULID so the two never collide.
+    Route::get('accounts', [AccountController::class, 'index'])->name('accounts.index');
+    Route::get('accounts/create', [AccountController::class, 'create'])->name('accounts.create');
+    Route::post('accounts', [AccountController::class, 'store'])->name('accounts.store');
+    Route::get('accounts/{account}', [AccountController::class, 'show'])->name('accounts.show')->whereUlid('account');
+    Route::get('accounts/{account}/edit', [AccountController::class, 'edit'])->name('accounts.edit')->whereUlid('account');
+    Route::put('accounts/{account}', [AccountController::class, 'update'])->name('accounts.update')->whereUlid('account');
+    Route::delete('accounts/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy')->whereUlid('account');
+    Route::post('accounts/{account}/entries', [AccountController::class, 'storeEntry'])->name('accounts.entries.store')->whereUlid('account');
 
     // Menu - categories + items
     Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
@@ -215,6 +265,9 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     // Settings (self-service profile + password)
     Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('settings/profile', [SettingsController::class, 'update'])->name('settings.profile.update');
+    // The business logo printed on receipts.
+    Route::post('settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.logo.update');
+    Route::delete('settings/logo', [SettingsController::class, 'destroyLogo'])->name('settings.logo.destroy');
 
     // WhatsApp credentials. Per-tenant on purpose: each business owns its own
     // Meta app, its own number and its own bill, so these can never live in the
@@ -294,6 +347,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('backups', [AdminBackupController::class, 'store'])->name('backups.store');
         Route::get('backups/{backup}/download', [AdminBackupController::class, 'download'])->name('backups.download');
         Route::delete('backups/{backup}', [AdminBackupController::class, 'destroy'])->name('backups.destroy');
+
+        // Landing-page enquiries. Read and delete only - a lead is answered by
+        // email, never edited here.
+        Route::get('contact-messages', [AdminContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::post('contact-messages/{message}/read', [AdminContactMessageController::class, 'markRead'])->name('contact-messages.read');
+        Route::delete('contact-messages/{message}', [AdminContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
 
         // Activity log (read-only)
         Route::get('logs', [AdminActivityLogController::class, 'index'])->name('logs.index');

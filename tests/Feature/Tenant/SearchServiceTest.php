@@ -3,7 +3,7 @@
 namespace Tests\Feature\Tenant;
 
 use App\Enums\PermissionKey;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
@@ -91,19 +91,24 @@ class SearchServiceTest extends TenantTestCase
         $transfer = Transfer::factory()->create(['customer' => 'مطلوب حذفه']);
         $transfer->delete();
 
-        $bank = Bank::factory()->create(['name' => 'بنك محذوف', 'code' => 'DEL']);
+        $bank = Account::factory()->create(['holder_name' => 'بنك محذوف']);
         $bank->delete();
 
         $this->assertCount(0, $this->service->search('مطلوب', $this->owner)['orders']);
         $this->assertCount(0, $this->service->search('محذوف', $this->owner)['banks']);
-        $this->assertCount(0, $this->service->search('DEL', $this->owner)['banks']);
     }
 
-    public function test_a_bank_is_found_by_its_code(): void
+    /**
+     * An operator looks for the INSTITUTION as often as the holder ("بنك
+     * فلسطين", not "سامي"), so the account is reachable by either.
+     */
+    public function test_an_account_is_found_by_its_institution_name(): void
     {
-        Bank::factory()->create(['name' => 'بنك فلسطين', 'code' => 'PALS']);
+        $bankName = \App\Models\Tenant\BankName::factory()->create(['name' => 'بنك فلسطين']);
+        Account::factory()->create(['holder_name' => 'سامي نبهان', 'bank_name_id' => $bankName->id]);
 
-        $this->assertCount(1, $this->service->search('PALS', $this->owner)['banks']);
+        $this->assertCount(1, $this->service->search('فلسطين', $this->owner)['banks']);
+        $this->assertCount(1, $this->service->search('سامي', $this->owner)['banks']);
     }
 
     /** A catalogue hit carries the icon the catalogue page would draw. */
@@ -120,7 +125,7 @@ class SearchServiceTest extends TenantTestCase
 
     public function test_banks_and_catalogue_are_hidden_without_the_permission(): void
     {
-        Bank::factory()->create(['name' => 'بنك فلسطين']);
+        Account::factory()->create(['holder_name' => 'بنك فلسطين']);
         $category = MenuCategory::create(['name' => 'مشاوي', 'position' => 0]);
         MenuItem::factory()->create(['name' => 'بنك برجر', 'menu_category_id' => $category->id]);
 

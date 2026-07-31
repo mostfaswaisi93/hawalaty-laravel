@@ -19,7 +19,7 @@ class UpdateExpenseRequest extends FormRequest
             'description' => ['sometimes', 'required', 'string', 'max:255'],
             'amount' => ['sometimes', 'required', 'numeric', 'min:0'],
             // See StoreExpenseRequest for why "tenant." is required here.
-            'bankId' => ['sometimes', 'required', 'string', 'exists:tenant.banks,id'],
+            'accountId' => ['sometimes', 'required', 'string', 'exists:tenant.accounts,id'],
             'date' => ['sometimes', 'required', 'date'],
         ];
     }

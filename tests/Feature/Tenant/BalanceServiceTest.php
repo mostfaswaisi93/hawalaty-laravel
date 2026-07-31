@@ -5,7 +5,7 @@ namespace Tests\Feature\Tenant;
 use App\Enums\ChangeMethod;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
@@ -40,11 +40,11 @@ class BalanceServiceTest extends TenantTestCase
 
     public function test_net_is_completed_income_minus_expenses(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
         $this->order(['amount' => '300.00']);
         $this->order(['amount' => '200.00']);
-        Expense::create(['description' => 'كهرباء', 'amount' => '120.00', 'bank_id' => $bank->id, 'date' => '2026-07-12']);
+        Expense::create(['description' => 'كهرباء', 'amount' => '120.00', 'account_id' => $bank->id, 'date' => '2026-07-12']);
 
         $s = $this->service()->summary('2026-07-01', '2026-07-31');
 
@@ -83,11 +83,11 @@ class BalanceServiceTest extends TenantTestCase
      */
     public function test_salaries_are_a_subtotal_of_the_outflow_not_an_addition(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $member = TeamMember::factory()->create(['role_id' => $this->seedStandardRoles()['staff']->id]);
 
-        Expense::create(['description' => 'إيجار', 'amount' => '300.00', 'bank_id' => $bank->id, 'date' => '2026-07-05']);
-        app(SalaryService::class)->pay($member, ['amount' => '700.00', 'bankId' => $bank->id, 'paidFor' => '2026-07-06']);
+        Expense::create(['description' => 'إيجار', 'amount' => '300.00', 'account_id' => $bank->id, 'date' => '2026-07-05']);
+        app(SalaryService::class)->pay($member, ['amount' => '700.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-06']);
 
         $s = $this->service()->summary('2026-07-01', '2026-07-31');
 
@@ -113,17 +113,17 @@ class BalanceServiceTest extends TenantTestCase
 
     public function test_a_bank_order_credits_its_bank_and_cash_credits_the_drawer(): void
     {
-        $bank = Bank::factory()->create(['name' => 'بنك فلسطين']);
+        $bank = Account::factory()->create(['holder_name' => 'بنك فلسطين']);
 
-        $this->order(['amount' => '250.00', 'payment_method' => PaymentMethod::Bank, 'bank_id' => $bank->id]);
+        $this->order(['amount' => '250.00', 'payment_method' => PaymentMethod::Bank, 'account_id' => $bank->id]);
         $this->order(['amount' => '90.00']); // cash
-        Expense::create(['description' => 'صيانة', 'amount' => '40.00', 'bank_id' => $bank->id, 'date' => '2026-07-15']);
+        Expense::create(['description' => 'صيانة', 'amount' => '40.00', 'account_id' => $bank->id, 'date' => '2026-07-15']);
 
         $rows = collect($this->service()->byAccount('2026-07-01', '2026-07-31'))->keyBy('name');
 
-        $this->assertSame(250.0, $rows['بنك فلسطين']['in']);
-        $this->assertSame(40.0, $rows['بنك فلسطين']['out']);
-        $this->assertSame(210.0, $rows['بنك فلسطين']['net']);
+        $this->assertSame(250.0, $rows[$bank->label()]['in']);
+        $this->assertSame(40.0, $rows[$bank->label()]['out']);
+        $this->assertSame(210.0, $rows[$bank->label()]['net']);
 
         $this->assertSame(90.0, $rows[__('نقدي')]['in']);
         $this->assertTrue($rows[__('نقدي')]['isCash']);
@@ -132,26 +132,26 @@ class BalanceServiceTest extends TenantTestCase
     /** Twenty idle wallets would bury the two that actually moved. */
     public function test_accounts_with_no_movement_are_omitted(): void
     {
-        Bank::factory()->create(['name' => 'ساكن']);
-        $active = Bank::factory()->create(['name' => 'متحرك']);
-        $this->order(['amount' => '100.00', 'payment_method' => PaymentMethod::Bank, 'bank_id' => $active->id]);
+        $idle = Account::factory()->create(['holder_name' => 'ساكن']);
+        $active = Account::factory()->create(['holder_name' => 'متحرك']);
+        $this->order(['amount' => '100.00', 'payment_method' => PaymentMethod::Bank, 'account_id' => $active->id]);
 
         $names = collect($this->service()->byAccount('2026-07-01', '2026-07-31'))->pluck('name');
 
-        $this->assertTrue($names->contains('متحرك'));
-        $this->assertFalse($names->contains('ساكن'));
+        $this->assertTrue($names->contains($active->label()));
+        $this->assertFalse($names->contains($idle->label()));
     }
 
     /** The per-account rows must reconcile with the headline totals. */
     public function test_account_rows_sum_to_the_headline_figures(): void
     {
-        $a = Bank::factory()->create();
-        $b = Bank::factory()->create();
+        $a = Account::factory()->create();
+        $b = Account::factory()->create();
 
-        $this->order(['amount' => '120.00', 'payment_method' => PaymentMethod::Bank, 'bank_id' => $a->id]);
-        $this->order(['amount' => '80.00', 'payment_method' => PaymentMethod::Bank, 'bank_id' => $b->id]);
+        $this->order(['amount' => '120.00', 'payment_method' => PaymentMethod::Bank, 'account_id' => $a->id]);
+        $this->order(['amount' => '80.00', 'payment_method' => PaymentMethod::Bank, 'account_id' => $b->id]);
         $this->order(['amount' => '55.00']); // cash
-        Expense::create(['description' => 'x', 'amount' => '30.00', 'bank_id' => $a->id, 'date' => '2026-07-11']);
+        Expense::create(['description' => 'x', 'amount' => '30.00', 'account_id' => $a->id, 'date' => '2026-07-11']);
 
         $s = $this->service()->summary('2026-07-01', '2026-07-31');
         $rows = $this->service()->byAccount('2026-07-01', '2026-07-31');
@@ -168,7 +168,7 @@ class BalanceServiceTest extends TenantTestCase
      */
     public function test_change_paid_from_another_account_moves_money_between_them(): void
     {
-        $wallet = Bank::factory()->create(['name' => 'محفظة']);
+        $wallet = Account::factory()->create(['holder_name' => 'محفظة']);
 
         // 100 order paid in cash; 30 of change sent back from the wallet. The
         // customer therefore handed over 130.
@@ -177,7 +177,7 @@ class BalanceServiceTest extends TenantTestCase
             'payment_method' => PaymentMethod::Cash,
             'has_change' => true,
             'change_method' => ChangeMethod::Bank,
-            'change_bank_id' => $wallet->id,
+            'change_account_id' => $wallet->id,
             'change_amount' => '30.00',
         ]);
 
@@ -186,8 +186,8 @@ class BalanceServiceTest extends TenantTestCase
         $this->assertSame(130.0, $rows[__('نقدي')]['in'], 'The drawer took the whole tender, not just the order total.');
         $this->assertSame(0.0, $rows[__('نقدي')]['out']);
 
-        $this->assertSame(30.0, $rows['محفظة']['out'], 'The wallet paid the change out and must show it.');
-        $this->assertSame(-30.0, $rows['محفظة']['net']);
+        $this->assertSame(30.0, $rows[$wallet->label()]['out'], 'The wallet paid the change out and must show it.');
+        $this->assertSame(-30.0, $rows[$wallet->label()]['net']);
     }
 
     /** Change returned to the account that paid nets to zero - do not inflate it. */
@@ -213,19 +213,19 @@ class BalanceServiceTest extends TenantTestCase
      */
     public function test_account_rows_always_net_to_the_headline_position(): void
     {
-        $bank = Bank::factory()->create();
-        $wallet = Bank::factory()->create();
+        $bank = Account::factory()->create();
+        $wallet = Account::factory()->create();
 
-        $this->order(['amount' => '200.00', 'payment_method' => PaymentMethod::Bank, 'bank_id' => $bank->id]);
+        $this->order(['amount' => '200.00', 'payment_method' => PaymentMethod::Bank, 'account_id' => $bank->id]);
         $this->order([
             'amount' => '100.00',
             'payment_method' => PaymentMethod::Cash,
             'has_change' => true,
             'change_method' => ChangeMethod::Bank,
-            'change_bank_id' => $wallet->id,
+            'change_account_id' => $wallet->id,
             'change_amount' => '30.00',
         ]);
-        Expense::create(['description' => 'x', 'amount' => '45.00', 'bank_id' => $bank->id, 'date' => '2026-07-11']);
+        Expense::create(['description' => 'x', 'amount' => '45.00', 'account_id' => $bank->id, 'date' => '2026-07-11']);
 
         $s = $this->service()->summary('2026-07-01', '2026-07-31');
         $rows = $this->service()->byAccount('2026-07-01', '2026-07-31');
@@ -242,10 +242,10 @@ class BalanceServiceTest extends TenantTestCase
      */
     public function test_movement_on_the_last_day_of_the_period_is_included(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
         $this->order(['amount' => '100.00', 'created_at' => '2026-07-31 23:59:59']);
-        Expense::create(['description' => 'آخر يوم', 'amount' => '25.00', 'bank_id' => $bank->id, 'date' => '2026-07-31']);
+        Expense::create(['description' => 'آخر يوم', 'amount' => '25.00', 'account_id' => $bank->id, 'date' => '2026-07-31']);
 
         $s = $this->service()->summary('2026-07-01', '2026-07-31');
 
@@ -255,10 +255,10 @@ class BalanceServiceTest extends TenantTestCase
 
     public function test_movement_after_the_period_is_excluded(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
 
         $this->order(['amount' => '100.00', 'created_at' => '2026-08-01 00:00:00']);
-        Expense::create(['description' => 'أغسطس', 'amount' => '25.00', 'bank_id' => $bank->id, 'date' => '2026-08-01']);
+        Expense::create(['description' => 'أغسطس', 'amount' => '25.00', 'account_id' => $bank->id, 'date' => '2026-08-01']);
 
         $s = $this->service()->summary('2026-07-01', '2026-07-31');
 

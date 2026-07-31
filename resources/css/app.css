@@ -35,15 +35,39 @@
  * theme tokens referencing them) carries over unchanged.
  */
 @theme {
-    --font-sans: 'Cairo', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-body-lg: var(--app-font), 'Cairo', 'Inter', sans-serif;
-    --font-body-sm: var(--app-font), 'Cairo', 'Inter', sans-serif;
-    --font-display-lg: var(--app-font), 'Cairo', 'Inter', sans-serif;
-    --font-display-lg-mobile: var(--app-font), 'Cairo', 'Inter', sans-serif;
-    --font-headline-md: var(--app-font), 'Cairo', 'Inter', sans-serif;
-    --font-numeral-lg: 'Inter', sans-serif;
-    --font-label-caps: 'Inter', sans-serif;
+    /*
+     * `--app-font` already ends in `system-ui, sans-serif`, so anything listed
+     * after it here is unreachable - the tokens below deliberately stop there
+     * instead of repeating a tail the browser can never get to.
+     *
+     * --font-sans is what `class="font-sans"` on <body> resolves to. It used to
+     * name Cairo first, which read as "the body font is Cairo" and was simply
+     * untrue: the `body { font-family: var(--app-font) }` rule further down is
+     * UNLAYERED, and unlayered CSS outranks the whole @layer utilities block,
+     * so the utility never won and every page rendered in Tajawal. Pointing the
+     * token at the same variable makes the two agree rather than leaving a
+     * declaration that looks decisive and is not.
+     */
+    --font-sans: var(--app-font), 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-body-lg: var(--app-font);
+    --font-body-sm: var(--app-font);
+    --font-display-lg: var(--app-font);
+    --font-display-lg-mobile: var(--app-font);
+    --font-headline-md: var(--app-font);
+
+    /*
+     * Inter FIRST, then the UI font - not Inter alone.
+     *
+     * Inter carries no Arabic block, and these two tokens were the only ones
+     * with nothing behind it but the generic `sans-serif`. Every Arabic string
+     * wearing `font-label-caps` or `font-numeral-lg` therefore dropped to the
+     * browser's default Arabic face while the text beside it stayed Tajawal:
+     * the sidebar's group headings ("عام", "الإدارة"), the same heading in the
+     * top bar, and each `<x-form-field>` label. Latin is unaffected - digits
+     * and A-Z still match Inter, which is the reason these tokens exist.
+     */
+    --font-numeral-lg: 'Inter', var(--app-font);
+    --font-label-caps: 'Inter', var(--app-font);
 
     --text-body-lg: 16px;
     --text-body-lg--line-height: 1.6;

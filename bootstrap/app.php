@@ -71,6 +71,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // request so <html dir/lang> and all __() strings follow the toggle.
         $middleware->web(append: [SetLocale::class]);
 
+        // The Meta WhatsApp webhook is a server-to-server POST with no browser
+        // session or token, so it can't carry a CSRF token - exempt it.
+        $middleware->validateCsrfTokens(except: ['webhooks/whatsapp']);
+
         $middleware->alias([
             'tenant.header' => ResolveTenantConnection::class,
             // Session-cookie equivalent of tenant.header, for the Blade web

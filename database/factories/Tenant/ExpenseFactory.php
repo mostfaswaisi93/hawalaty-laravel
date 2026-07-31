@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Tenant;
 
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +18,8 @@ class ExpenseFactory extends Factory
         return [
             'description' => fake()->sentence(3),
             'amount' => fake()->randomFloat(2, 5, 500),
-            'bank_id' => null,
+            // Required now that every expense names the account it left.
+            'account_id' => Account::factory(),
             'date' => fake()->date(),
         ];
     }

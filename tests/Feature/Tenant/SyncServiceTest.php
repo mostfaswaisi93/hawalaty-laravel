@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\SyncEvent;
@@ -167,9 +167,9 @@ class SyncServiceTest extends TenantTestCase
 
     public function test_an_expense_can_be_updated(): void
     {
-        $bank = Bank::factory()->create();
+        $bank = Account::factory()->create();
         $expense = Expense::create([
-            'description' => 'قديم', 'amount' => '50.00', 'bank_id' => $bank->id, 'date' => '2026-07-10',
+            'description' => 'قديم', 'amount' => '50.00', 'account_id' => $bank->id, 'date' => '2026-07-10',
         ]);
 
         $result = $this->service()->push(null, [

@@ -2,14 +2,19 @@
 
 namespace Database\Seeders;
 
-use App\Enums\BankType;
+use App\Enums\AccountKind;
 use App\Enums\ChangeMethod;
 use App\Enums\PaymentMethod;
 use App\Enums\RoleKey;
 use App\Enums\TransferStatus;
 use App\Models\License;
 use App\Models\Package;
-use App\Models\Tenant\Bank;
+use App\Models\Tenant\Account;
+use App\Models\Tenant\AccountType;
+use App\Models\Tenant\BankName;
+use App\Models\Tenant\Currency;
+use App\Models\Tenant\WalletName;
+use App\Models\Tenant\WalletType;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
@@ -37,7 +42,7 @@ use Throwable;
  *
  * Idempotent: the whole thing is guarded by an existence check on the demo
  * license's customer_name (so re-runs never leak orphan databases/users),
- * and the domain data is only seeded once (guarded by Bank::count()). The
+ * and the domain data is only seeded once (guarded by Account::count()). The
  * generated license code + login credentials are printed at the end.
  */
 class DemoTenantSeeder extends Seeder
@@ -68,18 +73,18 @@ class DemoTenantSeeder extends Seeder
         TenantConnectionResolver::resolve($license->license_code);
         app()->instance('currentLicense', $license);
 
-        if (Bank::count() > 0) {
+        if (Account::count() > 0) {
             $this->command->info('Demo tenant domain data already present - skipping.');
         } else {
             DB::connection('tenant')->transaction(function () {
-                $banks = $this->seedBanks();
+                $accounts = $this->seedAccounts();
                 $items = $this->seedMenu();
                 $this->seedTeam();
-                $this->seedTransfers($banks, $items);
-                $this->seedExpenses($banks);
+                $this->seedTransfers($accounts, $items);
+                $this->seedExpenses($accounts);
             });
 
-            $this->command->info('Seeded banks, menu, team, ~55 transfers and expenses for the demo tenant.');
+            $this->command->info('Seeded accounts, menu, team, ~55 transfers and expenses for the demo tenant.');
         }
 
         $this->printCredentials($license->license_code);
@@ -119,22 +124,53 @@ class DemoTenantSeeder extends Seeder
         }
     }
 
-    /** @return Collection<int, Bank> */
-    private function seedBanks(): Collection
+    /**
+     * The reference catalogs plus one account per institution. `whatsapp_phone`
+     * is the number new-order notifications are sent to, stored in E.164
+     * exactly as the account form saves it.
+     *
+     * @return Collection<int, Account>
+     */
+    private function seedAccounts(): Collection
     {
-        // `phone` is the WhatsApp number new-order notifications are sent to,
-        // so these are stored in E.164 exactly as the bank form now saves them.
-        $banks = [
-            ['name' => 'بنك فلسطين', 'type' => BankType::Bank, 'code' => 'BOP', 'phone' => '+972599000001'],
-            ['name' => 'البنك الإسلامي الفلسطيني', 'type' => BankType::Bank, 'code' => 'IBP', 'phone' => '+972599000002'],
-            ['name' => 'بنك القدس', 'type' => BankType::Bank, 'code' => 'QUDS', 'phone' => '+972599000003'],
-            ['name' => 'البنك الوطني', 'type' => BankType::Bank, 'code' => 'TNB', 'phone' => '+972599000004'],
-            ['name' => 'جوال باي', 'type' => BankType::Wallet, 'code' => 'JAWWAL', 'phone' => '+972599000005'],
-            ['name' => 'PalPay', 'type' => BankType::Wallet, 'code' => 'PALPAY', 'phone' => '+972599000006'],
-            ['name' => 'ريفلكت', 'type' => BankType::Wallet, 'code' => 'REFLECT', 'phone' => '+972595817016'],
+        $currency = Currency::create(['name' => 'شيكل', 'symbol' => '₪', 'active' => true]);
+        $accountType = AccountType::create(['name' => 'جاري', 'active' => true]);
+        $walletType = WalletType::create(['name' => 'تجارية', 'active' => true]);
+
+        $institutions = [
+            ['kind' => AccountKind::Bank, 'name' => 'بنك فلسطين', 'holder' => 'مطعم الأصيل', 'phone' => '+972599000001'],
+            ['kind' => AccountKind::Bank, 'name' => 'البنك الإسلامي الفلسطيني', 'holder' => 'مطعم الأصيل', 'phone' => '+972599000002'],
+            ['kind' => AccountKind::Bank, 'name' => 'بنك القدس', 'holder' => 'مطعم الأصيل', 'phone' => '+972599000003'],
+            ['kind' => AccountKind::Bank, 'name' => 'البنك الوطني', 'holder' => 'مطعم الأصيل', 'phone' => '+972599000004'],
+            ['kind' => AccountKind::Wallet, 'name' => 'جوال باي', 'holder' => 'مطعم الأصيل', 'phone' => '+972599000005'],
+            ['kind' => AccountKind::Wallet, 'name' => 'PalPay', 'holder' => 'مطعم الأصيل', 'phone' => '+972599000006'],
+            ['kind' => AccountKind::Wallet, 'name' => 'ريفلكت', 'holder' => 'مطعم الأصيل', 'phone' => '+972595817016'],
         ];
 
-        return collect($banks)->map(fn (array $bank) => Bank::create($bank + ['active' => true]));
+        return collect($institutions)->map(function (array $row) use ($currency, $accountType, $walletType) {
+            $isBank = $row['kind'] === AccountKind::Bank;
+
+            $institution = $isBank
+                ? BankName::create(['name' => $row['name'], 'active' => true])
+                : WalletName::create(['name' => $row['name'], 'active' => true]);
+
+            // An account may only use a currency its institution supports.
+            $institution->currencies()->attach($currency->id);
+
+            return Account::create([
+                'kind' => $row['kind']->value,
+                'bank_name_id' => $isBank ? $institution->id : null,
+                'account_type_id' => $isBank ? $accountType->id : null,
+                'wallet_name_id' => $isBank ? null : $institution->id,
+                'wallet_type_id' => $isBank ? null : $walletType->id,
+                'wallet_phone' => $isBank ? null : $row['phone'],
+                'currency_id' => $currency->id,
+                'holder_name' => $row['holder'],
+                'whatsapp_phone' => $row['phone'],
+                'balance' => 0,
+                'active' => true,
+            ]);
+        });
     }
 
     /** @return Collection<int, MenuItem> every active menu item, for building line items */
@@ -187,10 +223,10 @@ class DemoTenantSeeder extends Seeder
     }
 
     /**
-     * @param  Collection<int, Bank>  $banks
+     * @param  Collection<int, Account>  $accounts
      * @param  Collection<int, MenuItem>  $items
      */
-    private function seedTransfers(Collection $banks, Collection $items): void
+    private function seedTransfers(Collection $accounts, Collection $items): void
     {
         // Last 7 days, each with a different non-zero count and a clear peak
         // four days ago (10) so the weekly bar chart reads as real activity.
@@ -202,7 +238,7 @@ class DemoTenantSeeder extends Seeder
                 : Carbon::today()->subDays($offset)->setTime(20, 0);
 
             for ($i = 0; $i < $count; $i++) {
-                $this->makeTransfer($anchor->copy()->subMinutes($i * 9 + random_int(0, 6)), $banks, $items);
+                $this->makeTransfer($anchor->copy()->subMinutes($i * 9 + random_int(0, 6)), $accounts, $items);
             }
         }
 
@@ -211,7 +247,7 @@ class DemoTenantSeeder extends Seeder
             $anchor = Carbon::today()->subDays($offset)->setTime(19, 30);
 
             for ($i = 0; $i < 2; $i++) {
-                $this->makeTransfer($anchor->copy()->subMinutes($i * 20), $banks, $items);
+                $this->makeTransfer($anchor->copy()->subMinutes($i * 20), $accounts, $items);
             }
         }
 
@@ -227,15 +263,15 @@ class DemoTenantSeeder extends Seeder
         ];
 
         foreach ($newest as $i => [$status, $payment]) {
-            $this->makeTransfer(Carbon::now()->subMinutes($i * 2), $banks, $items, $status, $payment);
+            $this->makeTransfer(Carbon::now()->subMinutes($i * 2), $accounts, $items, $status, $payment);
         }
     }
 
     /**
-     * @param  Collection<int, Bank>  $banks
+     * @param  Collection<int, Account>  $accounts
      * @param  Collection<int, MenuItem>  $items
      */
-    private function makeTransfer(Carbon $createdAt, Collection $banks, Collection $items, ?TransferStatus $status = null, ?PaymentMethod $payment = null): void
+    private function makeTransfer(Carbon $createdAt, Collection $accounts, Collection $items, ?TransferStatus $status = null, ?PaymentMethod $payment = null): void
     {
         $customers = ['أحمد أبو ياسين', 'محمد العرّاج', 'سميرة خليل', 'يوسف النجّار', 'هبة عيّاش', 'خالد شاهين', 'رنا الطويل', 'عبدالله زيدان', 'لينا حدّاد', 'مازن قنديل', 'دعاء سلامة', 'طارق البيطار'];
 
@@ -264,7 +300,7 @@ class DemoTenantSeeder extends Seeder
                 $attributes['change_amount'] = random_int(1, 20);
             }
         } else {
-            $attributes['bank_id'] = $banks->random()->id;
+            $attributes['account_id'] = $accounts->random()->id;
             $attributes['sender_name'] = $customers[array_rand($customers)];
             $attributes['sender_phone'] = '059'.random_int(1000000, 9999999);
             $attributes['transferred_amount'] = $amount;
@@ -298,21 +334,21 @@ class DemoTenantSeeder extends Seeder
         };
     }
 
-    /** @param Collection<int, Bank> $banks */
-    private function seedExpenses(Collection $banks): void
+    /** @param Collection<int, Account> $accounts */
+    private function seedExpenses(Collection $accounts): void
     {
         $expenses = [
             ['غاز للمطبخ', 150], ['رواتب عمال', 2000], ['خضار وفواكه', 400], ['لحوم ودجاج', 1200],
             ['فاتورة كهرباء', 320], ['صيانة أفران', 180], ['أكياس وتغليف', 90], ['مياه غازية', 250],
         ];
 
-        $bankIds = $banks->pluck('id')->all();
+        $accountIds = $accounts->pluck('id')->all();
 
         foreach ($expenses as [$description, $amount]) {
             Expense::create([
                 'description' => $description,
                 'amount' => $amount,
-                'bank_id' => $bankIds[array_rand($bankIds)],
+                'account_id' => $accountIds[array_rand($accountIds)],
                 'date' => Carbon::today()->subDays(random_int(1, 13)),
             ]);
         }
