@@ -51,17 +51,11 @@
 @endphp
 <!DOCTYPE html>
 {{--
-    `collapsed` drives the desktop icon-only rail and is persisted so it
-    survives navigation. Every collapse-dependent class is gated behind `lg:`
-    - on mobile the sidebar is an overlay that must always show full labels,
-    so the collapsed state is deliberately inert below that breakpoint.
+    `collapsed` drives the desktop icon-only rail, persisted across navigation
+    and gated behind `lg:` - below that the sidebar is a full-label overlay.
 
-    `tipText`/`tipY` back a SINGLE shared, position-fixed tooltip. Per-item
-    absolutely-positioned tooltips were tried first and were wrong: the nav is
-    `overflow-y-auto`, and CSS computes the other axis of a non-visible
-    overflow to `auto` too, so tooltips sticking out past the rail both got
-    clipped and produced a horizontal scrollbar inside the sidebar. A fixed
-    element rendered outside the scroll container escapes that entirely.
+    One shared position-fixed tooltip: per-item absolute bubbles got clipped by
+    the nav's `overflow-y-auto` and added a horizontal scrollbar.
 --}}
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}"
     x-data="{
@@ -391,11 +385,8 @@
          shadows these roots, so the two never collide. --}}
     <x-confirm-modal />
 
-    {{-- The one shared sidebar tooltip. Fixed, so no ancestor's overflow can
-         clip it, and rendered LAST in the body so it also wins on DOM order -
-         page cards sit inside `.page-enter`, whose fill-mode:both animation
-         leaves a transform in place and therefore its own stacking context,
-         which was painting over the tooltip when it lived higher up. --}}
+    {{-- One shared tooltip. Fixed so no ancestor's overflow clips it, and last in
+         the body so `.page-enter`'s leftover transform cannot paint over it. --}}
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
         {{-- The translate differs per placement, so it lives in the bound style

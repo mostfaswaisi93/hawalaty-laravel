@@ -127,10 +127,8 @@ class DashboardController extends Controller
     }
 
     /**
-     * Active/trial licenses lapsing soon - the one thing on this page that
-     * needs the admin to actually do something. The window is configurable at
-     * /admin/settings (`license_expiry_warning_days`); it used to be a private
-     * const here, which meant changing it required a deploy.
+     * Active/trial licenses lapsing soon. The window is configurable at
+     * /admin/settings (`license_expiry_warning_days`).
      */
     private function expiringSoon()
     {

@@ -13,14 +13,12 @@ use Illuminate\View\View;
  * access), since front-of-house staff hand receipts to customers regardless of
  * their management permissions.
  *
- * Served as HTML, printed by the BROWSER. It used to be a dompdf PDF, which has
- * no Arabic shaping or bidi support - every Arabic receipt came out with
- * isolated letters in reverse order. The browser's text engine shapes Arabic
- * correctly, and its print dialog targets the thermal printer directly; the
- * view carries `@page { size: 80mm auto }` for the roll.
+ * Served as HTML and printed by the BROWSER, whose text engine shapes Arabic
+ * correctly - do NOT move this to dompdf, which has no Arabic shaping or bidi
+ * and renders isolated letters in reverse. The view carries
+ * `@page { size: 80mm auto }` for the thermal roll.
  *
- * Api\V1\ReceiptController still returns a PDF: a mobile client wants a file to
- * save or share, not a page to print.
+ * Api\V1\ReceiptController still returns a PDF: a mobile client wants a file.
  */
 class ReceiptController extends Controller
 {

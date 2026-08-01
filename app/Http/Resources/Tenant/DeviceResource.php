@@ -7,17 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Shapes App\Models\Tenant\Device to match the Angular `Device` interface in
- * D:\Angular\Hawalaty\src\app\data\devices.ts, with deliberate deviations:
+ * Shapes Device for the client:
  *   - `icon` maps from the `platform_icon` column.
- *   - `lastActiveAt` (a real ISO timestamp) replaces the mock's
- *     `lastActiveKey` translation-key field - the backend tracks a real
- *     timestamp, not a canned "just now / hours ago" bucket.
- *   - `locationKey` has no backend equivalent and is intentionally omitted.
+ *   - `lastActiveAt` is a real ISO timestamp, not a bucketed label.
  *
- * DeviceService must attach a transient `is_current` attribute before this
- * resource is built - it is NOT a real database column, see
- * Device::isCurrent().
+ * DeviceService MUST attach a transient `is_current` attribute before this is
+ * built - it is not a database column. See Device::isCurrent().
  *
  * @mixin Device
  */

@@ -6,19 +6,15 @@
     7 rows (Sun..Sat) x ~53 week columns using `grid-auto-flow: column`.
 
     The calendar body is pinned `dir="ltr"` even in the Arabic UI, so time runs
-    OLDEST-LEFT to NEWEST-RIGHT. Letting it inherit RTL flipped the axis, and a
-    time axis reading right-to-left is not what anyone expects from this chart -
-    it is the same reasoning that already keeps every date, phone number and
-    amount in the app `dir="ltr"`. The legend follows the same axis, so its
-    light-to-dark ramp points the same way the weeks do.
+    OLDEST-LEFT to NEWEST-RIGHT; inheriting RTL flips the axis. The legend
+    follows the same axis.
 
     Only the BODY is LTR; the heading and date range above it stay in the page
     direction so the Arabic text still reads naturally.
 
-    The columns are `1fr`, not a fixed 11px, so the grid FILLS the card. Fixed
-    cells left roughly half the width empty on a desktop, which is what made the
-    block look stranded. `aspect-square` keeps the cells square as they grow, and
-    a max-width stops them ballooning on very wide screens.
+    The columns are `1fr`, not a fixed width, so the grid FILLS the card.
+    `aspect-square` keeps the cells square as they grow, and a max-width stops
+    them ballooning on very wide screens.
 
     Month labels span their own weeks (`grid-column: span N`) instead of sitting
     in one 11px column each - Arabic month names are far wider than that, so they
@@ -126,11 +122,9 @@
         row 1   (corner)     month labels
         row 2   weekday rail day cells
 
-        Both row-2 children declare `repeat(7, 1fr)`, and they share an outer
-        grid row, so the weekday labels line up with the cell rows exactly. The
-        rail used to be a sibling flex item offset by a hand-tuned `pt-[18px]`
-        guess at the month row's height, which did not actually match - measured
-        and confirmed misaligned. Structure beats a magic number here.
+        Both row-2 children declare `repeat(7, 1fr)` and share an outer grid
+        row, so the weekday labels line up with the cell rows exactly - rather
+        than a hand-tuned padding offset.
     --}}
     <div class="overflow-x-auto" dir="ltr">
         <div class="grid min-w-[600px] gap-x-2"

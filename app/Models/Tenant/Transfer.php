@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'customer', 'customer_id', 'status', 'amount', 'discount', 'item_name', 'payment_method',
+    'customer', 'customer_id', 'status', 'amount', 'discount', 'item_name', 'notes', 'payment_method',
     'has_change', 'change_method', 'change_amount',
     'sender_name', 'sender_phone', 'transferred_amount', 'reference_number',
     'confirmation_token', 'confirmed_at', 'confirmation_action', 'created_by',

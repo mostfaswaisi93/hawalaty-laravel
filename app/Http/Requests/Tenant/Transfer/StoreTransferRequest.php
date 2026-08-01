@@ -32,6 +32,12 @@ class StoreTransferRequest extends FormRequest
             'customer' => ['required', 'string', 'max:255'],
             'customerPhone' => ['nullable', 'string', 'max:30'],
 
+            // Free text, NOT validated against the constant lists. The dropdowns
+            // are a shortcut for filling this in; a tenant may also type
+            // something no list covers, and deleting a list later must not
+            // invalidate orders that quoted it.
+            'notes' => ['nullable', 'string', 'max:500'],
+
             'items' => ['required', 'array', 'min:1'],
             // "tenant." prefix required on every exists:/unique: rule in
             // this codebase - see StoreExpenseRequest for the full

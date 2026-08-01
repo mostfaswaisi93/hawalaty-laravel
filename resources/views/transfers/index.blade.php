@@ -185,6 +185,35 @@
                             </p>
                         </div>
 
+                        {{-- Order note. Each constant list from /constants renders as a dropdown
+                             that appends its value here; the textarea stays free text, so
+                             the lists are a shortcut rather than a constraint. --}}
+                        <div class="space-y-2">
+                            <label for="orderNotes" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
+                                {{ __('ملاحظات الطلب') }} <span class="text-outline">({{ __('اختياري') }})</span>
+                            </label>
+
+                            @if ($constantLists->isNotEmpty())
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach ($constantLists as $list)
+                                        <select @change="appendNote($event.target.value); $event.target.selectedIndex = 0"
+                                            aria-label="{{ $list['title'] }}"
+                                            class="min-w-40 flex-1 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 font-body-sm text-body-sm outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                            <option value="">{{ $list['title'] }}</option>
+                                            @foreach ($list['values'] as $value)
+                                                <option value="{{ $value }}">{{ $value }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <textarea id="orderNotes" name="notes" x-model="notes" rows="2" maxlength="500"
+                                placeholder="{{ __('مثال: بدون بصل، توصيل داخل المدينة') }}"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 font-body-sm text-body-sm outline-none focus:border-transparent focus:ring-2 focus:ring-primary"></textarea>
+                            @error('notes')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+
                         {{-- ══ payment channel: cash / bank / wallet ══
                              `payTarget` is a UI-only three-way choice. What the server
                              receives is still paymentMethod cash|bank - a wallet order
@@ -400,6 +429,7 @@
                 cart: [],
                 customer: '',
                 customerPhone: '',
+                notes: '',
                 // The UI's three-way choice: cash | bank | wallet.
                 payTarget: 'cash',
                 hasChange: false,
@@ -519,6 +549,7 @@
                     if (this.discount !== '' && parseFloat(this.discount) > 0) payload.discount = this.discount;
 
                     if (this.customerPhone.trim()) payload.customerPhone = this.customerPhone.trim();
+                    if (this.notes.trim()) payload.notes = this.notes.trim();
 
                     if (this.paymentMethod === 'cash') {
                         payload.hasChange = this.hasChange;
@@ -537,10 +568,27 @@
                     return payload;
                 },
 
+                /**
+                 * Appends a value picked from one of the tenant's constant lists,
+                 * separated by "، ". Skips a value already present so picking the
+                 * same option twice does not duplicate it, and the select is reset
+                 * to its heading by the caller so it reads as an action, not a
+                 * bound field.
+                 */
+                appendNote(value) {
+                    if (! value) return;
+
+                    const current = this.notes.trim();
+                    if (current.split('، ').map(part => part.trim()).includes(value)) return;
+
+                    this.notes = current ? `${current}، ${value}` : value;
+                },
+
                 resetOrder() {
                     this.cart = [];
                     this.customer = '';
                     this.customerPhone = '';
+                    this.notes = '';
                     this.hasChange = false;
                     this.changeMethod = 'cash';
                     this.changeAccountId = '';

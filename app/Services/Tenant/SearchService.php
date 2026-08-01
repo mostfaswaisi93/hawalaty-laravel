@@ -67,10 +67,9 @@ class SearchService
     }
 
     /**
-     * Orders match on far more than the customer's name now. In a transfer app
-     * the thing to hand is usually a PHONE, and searching one used to return the
-     * customer while returning none of their orders - the phone lives on the
-     * customer row, so the order has to be reached through the relation.
+     * Orders also match on PHONE, which is usually what the operator has. The
+     * phone lives on the customer row, so the order is reached through the
+     * relation rather than matched on the order itself.
      *
      * @return Collection<int, array<string, mixed>>
      */

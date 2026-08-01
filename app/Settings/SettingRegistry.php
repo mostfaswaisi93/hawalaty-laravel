@@ -5,15 +5,9 @@ namespace App\Settings;
 /**
  * The platform settings the app actually understands.
  *
- * Before this existed, /admin/settings was a bare key/value table: an admin had
- * to already know that a key called `site_name` was meaningful, type it by
- * hand, and hope something read it. Nothing did - not one setting was consumed
- * anywhere in the codebase.
- *
- * Every entry below is DECLARED here and CONSUMED somewhere real (the consumer
- * is named in each `description`/comment). Adding a setting means adding it
- * here and reading it through PlatformSettings - the form, its validation and
- * its defaults all follow automatically.
+ * Every entry is DECLARED here and CONSUMED somewhere real (named in each
+ * `description`). Adding a setting means adding it here and reading it through
+ * PlatformSettings - form, validation and defaults follow automatically.
  *
  * Keys that exist in the database but not in this registry are not thrown away:
  * the settings page lists them in a separate "custom keys" section so nothing a
@@ -116,12 +110,9 @@ class SettingRegistry
      * The `min:`/`max:` bounds a setting already declares, as HTML input
      * attributes.
      *
-     * Read from the SAME rules the server validates with, deliberately. The
-     * settings form used to hardcode `min="1" max="365"` on every Number field -
-     * correct for the two day-count settings that existed, and silently wrong
-     * for the first Number setting added with any other range. A browser
-     * constraint that contradicts the server rule is worse than none: it blocks
-     * a value the server would have accepted, with no error to explain why.
+     * Read from the SAME rules the server validates with. A browser constraint
+     * that contradicts the server rule is worse than none: it blocks a value the
+     * server would accept, with no error to explain why.
      *
      * @param  array<string, mixed>  $definition
      * @return array{min: ?string, max: ?string}

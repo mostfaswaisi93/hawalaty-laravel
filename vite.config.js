@@ -102,19 +102,9 @@ export default defineConfig({
             /*
              * Every font is downloaded AT BUILD TIME and served from /build.
              *
-             * They used to be four <link>s to fonts.googleapis.com in each
-             * layout, which is what made a cache clear look broken: nothing was
-             * on this origin, so the first paint after the clear had no Arabic
-             * face and no icon face. Text rendered in the system fallback and
-             * reflowed when Tajawal landed, and every Material Symbols span
-             * showed its own ligature name ("dashboard", "notifications") until
-             * the icon font arrived.
-             *
-             * Self-hosting also fixes the offline story. sw.js only caches
-             * same-origin /build/ URLs (see its fetch handler), so as long as
-             * the fonts came from Google they were the one part of this PWA
-             * that could never work offline - on a shop tablet that drops
-             * connection, the whole UI degraded to ligature names.
+             * Self-hosting is required for offline: sw.js only caches
+             * same-origin /build/ URLs, so a third-party font would leave the
+             * UI showing raw ligature names on a tablet that drops connection.
              */
             fonts: [
                 /*
@@ -163,17 +153,13 @@ export default defineConfig({
                  * this font is picked by its OTHER axes.
                  *
                  * The file is the css2 response for
-                 * `opsz,wght,FILL,GRAD@24,400,0..1,0` - i.e. every axis pinned
-                 * to the value app.css already hard-codes in
-                 * `font-variation-settings`, leaving only FILL variable so
+                 * `opsz,wght,FILL,GRAD@24,400,0..1,0` - every axis pinned to what
+                 * app.css hard-codes, leaving only FILL variable so
                  * `[data-weight="fill"]` still fills the active nav icon.
                  *
-                 * That is 447 KB. The URL the layouts used to link
-                 * (`20..48,100..700,0..1,-50..200`) ships every axis fully
-                 * variable and weighs 3.9 MB - for a font that is render
-                 * blocking by design (`display: block`) and whose fallback is
-                 * the icon's own name. See resources/fonts/README.md before
-                 * replacing it.
+                 * That is 447 KB; the fully-variable URL is 3.9 MB for a font
+                 * that is render blocking by design. See
+                 * resources/fonts/README.md before replacing it.
                  */
                 local('Material Symbols Outlined', {
                     alias: 'material-symbols',

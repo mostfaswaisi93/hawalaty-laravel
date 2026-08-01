@@ -8,11 +8,9 @@
      * markup, so the wording can be reviewed in one screen and the sections
      * below stay readable as layout.
      *
-     * NOTE ON WORDING: this page used to be written for restaurants ("أدر
-     * مطعمك"), which is not what the product is - the catalogue supports a
-     * grocer, a fuel station, a workshop and a laundry just as well (see
-     * App\Services\Tenant\CatalogIcons). Every line here is written for "مشروع"
-     * instead, and the trades appear as examples rather than as the premise.
+     * WORDING: write for "مشروع", never one trade. The product serves a grocer,
+     * a fuel station, a workshop and a laundry alike, so trades appear as
+     * examples rather than as the premise.
      */
 
     // Trades the catalogue ships icons for. Shown as a marquee - concrete

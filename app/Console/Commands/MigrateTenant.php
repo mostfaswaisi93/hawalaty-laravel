@@ -11,17 +11,11 @@ use Illuminate\Support\Facades\Artisan;
 use Throwable;
 
 /**
- * `php artisan tenants:migrate {code}` / `--all` - see BACKEND_PROMPT.md
- * section 9. Runs the tenant migrations (database/migrations/tenant, NOT
- * auto-run by plain `artisan migrate`) against one or every tenant database.
+ * `php artisan tenants:migrate {code}` / `--all`. Runs database/migrations/tenant,
+ * which plain `artisan migrate` does NOT pick up.
  *
- * Reuses TenantConnectionResolver to point the dynamic `tenant` connection
- * at the right database. This works both for an existing, already-seeded
- * tenant AND for a brand-new one mid-provisioning: the resolver only
- * requires a `DatabaseConnection` row to exist (it does, TenantProvisioner
- * creates it immediately before calling this command) - it does not care
- * whether the physical database on the other end has any tables yet, which
- * is exactly the state a fresh tenant is in right before this runs.
+ * Safe to call mid-provisioning: TenantConnectionResolver only needs a
+ * `DatabaseConnection` row, not tables on the other end.
  */
 class MigrateTenant extends Command
 {

@@ -29,19 +29,14 @@ use Illuminate\Support\Carbon;
  * line. Expenses always name an account, so they debit it directly.
  *
  * CHANGE IS NOT REVENUE, AND IS NOT SUBTRACTED FROM IT. `transfers.amount` is the
- * order total, computed server-side from the line items - it is never the tender.
- * The business earned exactly that, so `change_amount` is already excluded from
- * income and subtracting it again would take the same money away twice. It is
- * reported on its own as `changeGiven`, for information.
+ * order total computed from the line items, never the tender, so `change_amount`
+ * is already excluded from income - subtracting it again would remove the same
+ * money twice. It is reported separately as `changeGiven`.
  *
- * PER ACCOUNT IT IS A DIFFERENT STORY, and this is the part that used to be
- * wrong. Change can be paid out of a DIFFERENT account than the one that took
- * the payment - cash in hand, the remainder sent to the customer's wallet. When
- * that happens the wallet really did pay money out and the drawer really did
- * take more in than the order was worth, and reporting neither leg made a real
- * movement invisible. Both legs are now booked (see `byAccount`), so an account
- * row reports MOVEMENT rather than revenue. Change that stays inside one account
- * is skipped, because paying yourself nets to zero.
+ * PER ACCOUNT it is different: change can be paid out of a DIFFERENT account
+ * than the one that took the payment, so both legs are booked (see `byAccount`)
+ * and an account row reports MOVEMENT rather than revenue. Change that stays
+ * inside one account is skipped - paying yourself nets to zero.
  *
  * The invariant that holds either way: Σ(account net) == totalIn - totalOut.
  *

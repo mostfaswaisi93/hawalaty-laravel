@@ -59,11 +59,8 @@
                     </a>
                 @endif
 
-                {{-- Mirrors the sidebar exactly: the tenant's own word and glyph,
-                     and nothing at all until the section has been named in
-                     /constants. This tile used to be hard-coded to "قائمة الطعام"
-                     with a fork-and-knife icon, so a fuel station renaming its
-                     catalogue still had a restaurant staring back from here. --}}
+                {{-- Mirrors the sidebar: the tenant's own word and glyph, and nothing
+                     at all until the section is named in /constants. --}}
                 @php $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class); @endphp
                 @if ($catalogNaming->isConfigured() && $member?->hasPermission(\App\Enums\PermissionKey::MenuManage))
                     <a href="/menu" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
@@ -107,22 +104,11 @@
                     <p class="mb-1 text-sm opacity-70">{{ __('إجمالي طلبات هذا الأسبوع') }}</p>
                     <h4 class="mb-4 text-3xl font-bold" dir="ltr">{{ $weeklyTotalCount }}</h4>
                     {{--
-                        ONE column owns its bar and its own day label.
-
-                        They used to be two sibling rows, and only the bars row
-                        carried dir="ltr" - so the bars ran oldest-left while the
-                        labels below them still ran oldest-RIGHT. The two were
-                        mirrored, and every bar was captioned with the wrong day.
-                        The rows also distributed differently (gap-2 + w-full
-                        against justify-between), so they did not even line up.
-
-                        Keeping the label inside the column makes both faults
-                        unrepresentable: a caption cannot drift from the bar it
-                        belongs to.
+                        ONE column owns its bar AND its day label, so a caption
+                        cannot drift from the bar it belongs to.
 
                         dir="ltr" because these are the last seven DAYS, oldest
-                        first - the same axis as the activity heatmap and the
-                        admin trend chart. Time reads left to right in all three.
+                        first - the same axis as the heatmap and trend chart.
                     --}}
                     <div class="mt-4 flex items-end gap-2" dir="ltr">
                         @foreach ($weeklyActivity as $day)

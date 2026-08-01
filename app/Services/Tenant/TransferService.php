@@ -111,6 +111,10 @@ class TransferService
                 'amount' => $amount - $discount,
                 'discount' => $discount,
                 'item_name' => implode('، ', $summaryParts),
+                // Whatever the order screen assembled from the tenant's constant
+                // lists, plus anything typed by hand. Stored as the text it will be
+                // printed as - see the migration for why it is not normalised.
+                'notes' => filled($data['notes'] ?? null) ? trim($data['notes']) : null,
                 'payment_method' => $data['paymentMethod'],
                 'has_change' => $data['hasChange'] ?? null,
                 'change_method' => $data['changeMethod'] ?? null,

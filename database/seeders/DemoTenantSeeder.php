@@ -37,35 +37,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * OPT-IN sample data for the tenant workspace:
+ * Opt-in sample data for the tenant workspace:
  *
  *     php artisan db:seed --class=DemoTenantSeeder
  *
- * Fills the tenant TenantSeeder provisioned with realistic Arabic trading data
- * - catalogue, accounts, team, customers, constants, cash boxes, ~59 orders,
- * expenses and payroll - so the dashboard's revenue tile, weekly-activity chart
- * and recent-orders table all have something real to draw.
+ * Fills the workspace TenantSeeder provisioned - catalogue, accounts, team,
+ * customers, constants, ~59 orders, expenses and payroll. It never provisions a
+ * tenant of its own, so a second business cannot appear beside the real one.
  *
- * It no longer provisions its own tenant. DatabaseSeeder's default run creates
- * exactly one workspace (see TenantSeeder) and this fills THAT one, so a second
- * "(تجريبي)" business can never appear beside it. If the tenant is missing it
- * says so and stops rather than inventing one.
- *
- * Idempotent, section by section - see run(). Bulk sections (orders, expenses,
- * payroll) are guarded on their own table being empty; everything with a
- * natural key dedupes row by row, so a partly-filled workspace is topped up
- * instead of being skipped or doubled.
+ * Idempotent section by section: bulk sections are guarded on their own table
+ * being empty, and anything with a natural key dedupes row by row.
  */
 class DemoTenantSeeder extends Seeder
 {
     private const OWNER_PASSWORD = TenantSeeder::OWNER_PASSWORD;
 
-    /**
-     * One list for BOTH the /customers directory and the names written onto
-     * orders. They used to be a local array inside makeTransfer(), which left
-     * the directory empty while history was full of names - a customers page
-     * listing nobody who ever ordered reads as obviously fake.
-     */
+    /** One list for BOTH the /customers directory and the names put on orders. */
     private const CUSTOMERS = [
         ['أحمد أبو ياسين', '0599100001'],
         ['محمد العرّاج', '0599100002'],
@@ -84,8 +71,7 @@ class DemoTenantSeeder extends Seeder
     /** Anchored so the "last 7 days" always includes the seeding day. */
     public function run(): void
     {
-        // Provisioning is TenantSeeder's job. Doing it here as well is what let
-        // a second business appear alongside the real one.
+        // Provisioning is TenantSeeder's job.
         $license = License::where('customer_name', TenantSeeder::BUSINESS_NAME)->first();
 
         if (! $license) {
@@ -99,20 +85,8 @@ class DemoTenantSeeder extends Seeder
         TenantConnectionResolver::resolve($license->license_code);
         app()->instance('currentLicense', $license);
 
-        /*
-         * Guarded PER SECTION, not by one `Account::count() > 0` around the
-         * whole block.
-         *
-         * That single guard meant a tenant seeded before a feature shipped could
-         * never be topped up: every later run saw accounts, said "already
-         * present" and skipped everything - so /customers, /constants and the
-         * payroll pages stayed empty on exactly the demo tenant people look at.
-         * It is the same all-or-nothing assumption that made a half-provisioned
-         * tenant unrecoverable through `db:seed` alone.
-         *
-         * Each section now fills only its own gap, so adding a feature here is
-         * picked up by a re-run instead of needing the tenant rebuilt.
-         */
+        // Guarded PER SECTION. One guard around the whole block meant a tenant
+        // seeded before a feature shipped could never be topped up.
         $filled = [];
 
         DB::connection('tenant')->transaction(function () use (&$filled) {
@@ -120,16 +94,8 @@ class DemoTenantSeeder extends Seeder
             $items = MenuItem::count() > 0 ? MenuItem::get() : tap($this->seedMenu(), fn () => $filled[] = 'menu');
             $members = $this->seedTeam($filled);
 
-            /*
-             * These three are keyed on a natural unique column, so they dedupe
-             * ROW BY ROW and need no section guard at all.
-             *
-             * A `count() === 0` guard here was wrong for the same reason the
-             * old whole-block guard was: one stray row - a list someone added by
-             * hand through /constants - would suppress the entire section for
-             * good. Worse for constants specifically, where `title` is validated
-             * unique, so a blind create() against that stray row would fail.
-             */
+            // Keyed on a natural unique column, so they dedupe row by row. A
+            // count() guard here would let one stray row suppress the section.
             $this->tally($filled, 'customers', $this->seedCustomers());
             $this->tally($filled, 'constants', $this->seedConstants());
             $this->tally($filled, 'cash boxes', $this->seedCashBoxes());
@@ -144,9 +110,8 @@ class DemoTenantSeeder extends Seeder
                 $filled[] = 'expenses';
             }
 
-            // After the expenses guard on purpose: payroll writes its OWN
-            // expense rows through SalaryService, so running it first would
-            // leave `Expense::count()` non-zero and suppress the running costs.
+            // After the expenses guard: payroll writes its own expense rows,
+            // which would otherwise suppress the running costs.
             if (SalaryPayment::count() === 0) {
                 $this->seedSalaries($members, $accounts);
                 $filled[] = 'payroll';
@@ -161,9 +126,8 @@ class DemoTenantSeeder extends Seeder
     }
 
     /**
-     * The reference catalogs plus one account per institution. `whatsapp_phone`
-     * is the number new-order notifications are sent to, stored in E.164
-     * exactly as the account form saves it.
+     * Reference catalogs plus one account per institution. `whatsapp_phone` is
+     * where new-order notifications go, in E.164.
      *
      * @return Collection<int, Account>
      */
@@ -239,14 +203,10 @@ class DemoTenantSeeder extends Seeder
     }
 
     /**
-     * Members carry a salary rate now, because without one `payable()` is false
-     * and the /team salary action - and everything in seedSalaries() - has
-     * nothing to work from.
+     * Members carry a salary rate - without one `payable()` is false and
+     * seedSalaries() has nothing to work from.
      *
-     * @return Collection<int, TeamMember>
-     */
-    /**
-     * @param  list<string>  $filled  collects a note when this actually changed something
+     * @param  list<string>  $filled  collects a note when this changed something
      * @return Collection<int, TeamMember>
      */
     private function seedTeam(array &$filled): Collection
@@ -304,8 +264,7 @@ class DemoTenantSeeder extends Seeder
     }
 
     /**
-     * The /customers directory - the same people who appear on the orders.
-     * Keyed on phone, which the schema made the customer's identity.
+     * The /customers directory, keyed on phone - the schema's identity column.
      *
      * @return int rows actually created
      */
@@ -330,11 +289,8 @@ class DemoTenantSeeder extends Seeder
     }
 
     /**
-     * The /constants page, which shipped empty. Keys mirror
-     * ConstantListService::create()'s `custom-<random>` scheme so a seeded list
-     * is indistinguishable from one the tenant added themselves.
-     */
-    /**
+     * Keys mirror ConstantListService's `custom-<random>` scheme.
+     *
      * @return int lists and items created, combined
      */
     private function seedConstants(): int

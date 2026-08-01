@@ -20,46 +20,26 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * Fills the PLATFORM console (/admin) with a coherent four-month trading
- * history: a cash box, partners, subscription payments, running costs, partner
- * draws, one closed clearing run and a small support inbox.
+ * Opt-in sample data for the admin console: a cash box, partners, four months of
+ * payments/costs/draws, one closed clearing run and a support inbox.
  *
- * WHY THIS EXISTS
- * DatabaseSeeder only ever produced the platform admin, the package catalogue
- * and one tenant. Everything the admin console is actually built to show -
- * الصناديق, الشركاء, المدفوعات, المالية, المقاصة, رسائل التواصل - came up empty
- * on a fresh install, so half the app could not be demoed or eyeballed at all.
+ *     php artisan db:seed --class=PlatformDemoSeeder
  *
- * IT GOES THROUGH THE SERVICES, NOT THE MODELS
- * `Box.box_balance` is not maintained by the models: PaymentService increments
- * it, ExpenseService and WithdrawalService decrement it (and refuse to overdraw).
- * Creating rows with `Payment::create()` would leave every box balance wrong and
- * the finance page reporting numbers that do not add up. Same reasoning as
- * DemoTenantSeeder reusing TenantProvisioner rather than hand-rolling a tenant.
+ * Goes through the SERVICES, not the models: `Box.box_balance` is maintained by
+ * PaymentService (increments) and Expense/WithdrawalService (decrement, and
+ * refuse to overdraw). Raw `Payment::create()` would leave every balance wrong.
  *
- * A consequence: the services stamp `created_at` with now(), while a clearing
- * run attributes payments and withdrawals BY `created_at` (expenses by their own
- * `date` column - see SettlementService). Every row is therefore back-dated
- * explicitly after it is created, or the whole history would land in today and
- * the settlement would have nothing to settle.
+ * Two consequences: rows are back-dated after creation because the services
+ * stamp now() while a clearing run attributes by `created_at`; and money in is
+ * recorded before money out, or the overdraw guard throws.
  *
- * ORDER MATTERS: money in before money out. ExpenseService and WithdrawalService
- * throw InsufficientBoxBalanceException rather than let a box go negative, so
- * all payments for a month are recorded before that month's costs and draws.
- *
- * Idempotent: guarded on the demo box's name, so re-running `db:seed` never
- * doubles the history. Anything already in the database (manual test rows) is
- * left untouched and simply coexists.
+ * Idempotent - guarded on the demo box's name.
  */
 class PlatformDemoSeeder extends Seeder
 {
     private const BOX_NAME = 'الصندوق الرئيسي';
 
-    /**
-     * Kept deliberately under 100% in TOTAL WITH whatever partners already
-     * exist - SettlementService refuses to run when the percentages over-allocate
-     * the period's profit, and the residual is what the platform retains.
-     */
+    /** Under 100% in total WITH any existing partners - the residual is retained. */
     private const PARTNERS = [
         ['name' => 'مصطفى سويسي', 'percentage' => 40],
         ['name' => 'شركة الأفق للتقنية', 'percentage' => 20],
@@ -107,8 +87,7 @@ class PlatformDemoSeeder extends Seeder
     }
 
     /**
-     * Four closed months plus the current one, so the finance page's monthly
-     * trend has a shape and the clearing page has a period worth settling.
+     * Four closed months plus the current one, so the trend has a shape.
      *
      * @param  \Illuminate\Support\Collection<int, License>  $licenses
      * @param  \Illuminate\Support\Collection<int, Partner>  $partners
@@ -119,14 +98,8 @@ class PlatformDemoSeeder extends Seeder
         $expenses = app(ExpenseService::class);
         $withdrawals = app(WithdrawalService::class);
 
-        /*
-         * Costs are a SHARE of what actually came in that month, never fixed
-         * figures. Most packages ship priced at 0 (Starter/Basic are free tiers),
-         * so a hard-coded 335 of monthly running costs overdrew the box on the
-         * very first month and ExpenseService - correctly - threw. Deriving them
-         * keeps this seeder working whatever PackageSeeder charges, and keeps
-         * the platform profitable, which is what makes a clearing run meaningful.
-         */
+        // Costs are a SHARE of the month's income, never fixed figures: most
+        // packages are priced at 0, so hard-coded costs overdrew the box.
         $costWeights = [
             ['استضافة الخوادم', 0.50],
             ['رسوم بوابة الرسائل', 0.30],
@@ -175,8 +148,7 @@ class PlatformDemoSeeder extends Seeder
                     continue; // not worth a line on the finance page
                 }
 
-                // Expenses carry their own back-datable `date`, which is what
-                // the clearing run reads - no created_at fix-up needed.
+                // Expenses carry their own `date`, so no created_at fix-up.
                 $expenses->create([
                     'boxId' => $box->id,
                     'description' => $description,
@@ -185,8 +157,7 @@ class PlatformDemoSeeder extends Seeder
                 ]);
             }
 
-            // --- money OUT: partner draws, skipping the open month so the
-            //     current period still shows something owed ------------------
+            // Partner draws, skipping the open month so it still shows owed.
             if ($monthsAgo === 0) {
                 continue;
             }
@@ -194,8 +165,7 @@ class PlatformDemoSeeder extends Seeder
             foreach ($partners as $i => $partner) {
                 $draw = round($income * $drawShareOfProfit * ((float) $partner->percentage / 100), 2);
 
-                // Never overdraw: the service throws rather than go negative,
-                // and rounding could still put the last draw over the edge.
+                // Never overdraw - the service throws rather than go negative.
                 if ($draw < 1 || bccomp((string) $box->fresh()->box_balance, (string) $draw, 2) < 0) {
                     continue;
                 }
@@ -216,13 +186,8 @@ class PlatformDemoSeeder extends Seeder
     }
 
     /**
-     * One CONFIRMED run closing everything up to the end of last month, which
-     * leaves the current month open - the state the clearing page is designed
-     * to be looked at in.
-     *
-     * Skipped rather than forced when it cannot run cleanly: the percentages may
-     * already over-allocate because of partners this seeder did not create, and
-     * only one draft may exist at a time.
+     * One confirmed run up to the end of last month, leaving the current one
+     * open. Skipped rather than forced if the percentages over-allocate.
      */
     private function seedSettlement(): void
     {
@@ -259,12 +224,8 @@ class PlatformDemoSeeder extends Seeder
         foreach ($messages as $i => [$name, $email, $phone, $company, $subject, $body, $plan, $read]) {
             $created = Carbon::now()->subDays($i * 2 + 1)->setTime(11, 30);
 
-            /*
-             * Matched on sender + subject rather than blindly created. This
-             * seeder's own guard is the demo box, so anything that removes the
-             * box - a re-seed after a clean-out - replays this method, and a
-             * plain create() silently doubled the inbox every time.
-             */
+            // Matched on sender + subject: the box guard replays this method
+            // after a clean-out, and plain create() doubled the inbox.
             $message = ContactMessage::firstOrCreate(
                 ['email' => $email, 'subject' => $subject],
                 [
@@ -290,11 +251,7 @@ class PlatformDemoSeeder extends Seeder
         }
     }
 
-    /**
-     * Only the keys the operator would realistically brand. The rest of
-     * SettingRegistry keeps serving its own defaults, which is what an unset
-     * key is supposed to do.
-     */
+    /** Only the keys an operator would brand; the rest keep registry defaults. */
     private function seedSettings(): void
     {
         foreach ([
@@ -306,11 +263,7 @@ class PlatformDemoSeeder extends Seeder
         }
     }
 
-    /**
-     * Rewrites `created_at` past the service's now() stamp. Done with a query
-     * builder update rather than the model so no touch/observer logic re-stamps
-     * it on the way back out.
-     */
+    /** Rewrites `created_at` past the service's now() stamp, bypassing the model. */
     private function backdate(Payment|Withdrawal $model, Carbon $when): void
     {
         DB::table($model->getTable())->where('id', $model->id)->update([

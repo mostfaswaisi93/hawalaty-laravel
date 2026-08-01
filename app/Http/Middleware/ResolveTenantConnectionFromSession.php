@@ -9,25 +9,17 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Session-cookie equivalent of App\Http\Middleware\ResolveTenantConnection -
- * see BACKEND_PROMPT.md section 8.1 and this task's report for why a
- * browser session needs its own version of the same "which tenant database"
- * chicken-and-egg problem Sanctum's header-based flow already solves.
+ * Session-cookie equivalent of ResolveTenantConnection: a browser carries no
+ * `X-License-Code` header, so the code is read from `session('license_code')`,
+ * written by TenantAuthController on login.
  *
- * A browser session carries no `X-License-Code` header, so the license code
- * is instead read from `session('license_code')` - written by
- * App\Http\Controllers\Web\Auth\TenantAuthController on successful login.
- * Register on tenant-space web route groups only, always ahead of
- * `auth:tenant` (alias: `tenant.session`), exactly like the header version
- * is always ahead of `auth:sanctum`. Never applied to `/admin/*` routes.
+ * Register on tenant-space web routes only, always AHEAD of `auth:tenant`
+ * (alias `tenant.session`). Never on `/admin/*`.
  *
- * If no license_code is in the session yet, this simply passes through -
- * the `auth:tenant` middleware immediately after it will redirect the guest
- * to the login page. If a license_code IS present but has since become
- * invalid/suspended/expired (could happen between page loads - an admin
- * suspended it, or it expired), the tenant session is torn down and the
- * user is bounced to a dedicated "license no longer active" page instead of
- * letting a stale/garbage `tenant` connection blow up the next query.
+ * No license_code yet passes through - `auth:tenant` then redirects the guest.
+ * A license that has since become invalid/suspended/expired tears the session
+ * down and bounces to the "license no longer active" page, rather than letting
+ * a stale `tenant` connection blow up the next query.
  */
 class ResolveTenantConnectionFromSession
 {

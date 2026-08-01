@@ -38,12 +38,9 @@ class CustomerService
     /**
      * The customer plus their headline figures as SQL aggregates.
      *
-     * Deliberately does NOT eager-load `transfers`: it used to, and the detail
-     * page then summed that in-memory collection for "total spent" and counted
-     * it for "order count". A regular who has placed 500 orders therefore
-     * loaded 500 transfers AND every one of their line items on every page
-     * view, just to render two numbers and a table. The list is paginated
-     * separately by transfersFor().
+     * Deliberately does NOT eager-load `transfers`: summing them in memory
+     * would load every order and line item just to render two numbers. The list
+     * is paginated separately by transfersFor().
      */
     public function find(string $id): Customer
     {
@@ -68,12 +65,9 @@ class CustomerService
      * Backfills phone onto an existing customer only if they didn't already
      * have one (never silently overwrites a previously-recorded phone).
      *
-     * The initial lookup + create is not atomic, so two concurrent orders
-     * for the same new customer name can both miss the lookup and race to
-     * create - customers.name has a unique constraint specifically to turn
-     * the losing side of that race into a catchable exception rather than a
-     * silent duplicate customer; on that exception we just re-fetch the row
-     * the winner created and fall through to the same backfill logic below.
+     * Lookup + create is not atomic, so two concurrent orders can race.
+     * customers.name is unique so the loser gets a catchable exception instead
+     * of a duplicate; that path re-fetches the winner's row and backfills.
      */
     /**
      * Resolves the customer for an order. IDENTITY IS THE PHONE NUMBER.

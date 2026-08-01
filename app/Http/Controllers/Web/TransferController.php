@@ -6,6 +6,7 @@ use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Transfer\StoreTransferRequest;
 use App\Models\Tenant\Account;
+use App\Models\Tenant\ConstantList;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\MenuCategory;
@@ -79,11 +80,31 @@ class TransferController extends Controller
             ])->values()
         );
 
+        /*
+         * The tenant's own constant lists, offered on this screen as dropdowns
+         * that fill the order's note. Empty lists are dropped - a heading with
+         * no options underneath is just clutter.
+         *
+         * Loaded here rather than in the view so the query is visible and eager,
+         * and so an account that defined no lists costs one query and renders
+         * nothing extra.
+         */
+        $constantLists = ConstantList::with(['items' => fn ($query) => $query->orderBy('position')])
+            ->orderBy('title')
+            ->get()
+            ->filter(fn (ConstantList $list) => $list->items->isNotEmpty())
+            ->map(fn (ConstantList $list) => [
+                'title' => $list->title,
+                'values' => $list->items->pluck('value')->all(),
+            ])
+            ->values();
+
         return view('transfers.index', [
             'categories' => $categories,
             'accounts' => $accounts,
             'menuJson' => $menuJson,
             'customerNames' => $customerNames,
+            'constantLists' => $constantLists,
         ]);
     }
 

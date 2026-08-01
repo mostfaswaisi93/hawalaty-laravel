@@ -10,23 +10,18 @@ use App\Models\Tenant\WalletName;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Phase 2c - moves every legacy `banks` row into the new accounts model and
- * repoints existing orders onto the new accounts.
+ * Moves legacy `banks` rows into the accounts model and repoints orders onto
+ * them. Lives outside the migration so it can be unit-tested.
  *
- * Extracted from the migration so it can be unit-tested against seeded legacy
- * data (the migration itself runs once, on an empty fresh database).
+ * Rules:
+ *  - migrated accounts are denominated in a default شيكل ₪ currency, also marked
+ *    supported on each bank/wallet;
+ *  - `banks.phone` becomes the account's `whatsapp_phone`, so notifications keep
+ *    reaching the same person;
+ *  - `transfers.bank_id` / `change_bank_id` are LEFT in place beside the new
+ *    account columns, so historical receipts are untouched.
  *
- * Decisions (confirmed with the product owner):
- *  - migrated accounts are denominated in a default شيكل ₪ currency (the app
- *    was single-currency), which is also marked supported on each migrated
- *    bank/wallet so accounts opened there afterwards can use it;
- *  - the legacy bank's WhatsApp number (banks.phone) becomes the account's
- *    whatsapp_phone, so order notifications keep reaching the same person;
- *  - the old transfers.bank_id / change_bank_id are LEFT in place beside the new
- *    account_id / change_account_id, so historical receipts are untouched.
- *
- * Idempotent: a legacy bank already migrated (matched by accounts.legacy_bank_id)
- * is skipped, and the backfill only fills nulls.
+ * Idempotent: matched on `accounts.legacy_bank_id`; the backfill only fills nulls.
  */
 class LegacyBankMigrator
 {

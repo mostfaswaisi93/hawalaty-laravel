@@ -1,32 +1,17 @@
 @php
     $member = auth('tenant')->user();
 
-    /*
-     * The catalogue is not necessarily a food menu - a bakery, a fuel station, a
-     * bookshop and a tobacconist all sell something different, and each names the
-     * section itself.
-     *
-     * `configured` decides whether it appears in the rail AT ALL. Until the owner
-     * has named it in /constants there is nothing honest to call it, so a brand
-     * new account does not carry a catalogue entry it never asked for. Its icon
-     * is chosen there too, so the glyph matches the trade instead of showing a
-     * fork and knife to a bookshop.
-     */
+    // The catalogue is named by the tenant, and `configured` keeps it out of the
+    // rail entirely until they have done so - a new account should not carry a
+    // section it never asked for. Its icon is chosen there too.
     $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class);
     $catalogLabel = $catalogNaming->catalog();
     $catalogIcon = $catalogNaming->icon();
     $catalogConfigured = $catalogNaming->isConfigured();
 
-    // Mirrors D:\Angular\Hawalaty\src\app\layout\layout.ts's `nav` array,
-    // extended with the Devices / Activity Log / Help entries this task's
-    // brief calls out explicitly (the current Angular sidebar doesn't
-    // surface those three as nav items, only as their own routes - matching
-    // the brief over the current Angular snapshot per this task's
-    // instructions). `permission: null` means always visible, exactly like
-    // Dashboard/History/Reports/Settings/Help in the Angular version.
-    // Grouped for the same reason as the admin rail: 14 flat entries are hard to
-    // scan. Groups whose every item is permission-filtered away are dropped
-    // entirely, so a Staff member never sees an empty heading.
+    // Grouped because 14 flat entries are hard to scan. `permission: null` means
+    // always visible; a group whose every item is filtered away is dropped, so a
+    // Staff member never sees an empty heading.
     $navGroups = [
         [
             'label' => 'عام',
@@ -66,8 +51,8 @@
         ],
     ];
 
-    // الترخيص الحالي يربطه ResolveTenantConnectionFromSession. غيابه يُغلق أي
-    // بند مشروط بميزة بدل أن يفتحه — القائمة يجب ألا تعرض ما لا تبيعه الباقة.
+    // Bound by ResolveTenantConnectionFromSession. A missing license CLOSES any
+    // feature-gated entry rather than opening it.
     $currentLicense = app()->bound('currentLicense') ? app('currentLicense') : null;
 
     $visibleGroups = [];
@@ -137,15 +122,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('حوالاتي'))</title>
 
-    {{-- No favicon was declared anywhere, so browsers fell back to probing /favicon.ico
-         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>.
-
-         favicon.ico was a ZERO-BYTE file while still being linked here: a browser
-         honouring it got an empty 200, which draws a blank icon and can beat the
-         SVG. It now holds a real 32px image.
-
-         apple-touch-icon must be a PNG - iOS ignores SVG for the home screen and
-         would have fallen back to a screenshot of the page. --}}
+    {{-- apple-touch-icon must be a PNG: iOS ignores SVG for the home screen. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -299,15 +276,8 @@
     <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface/85 px-inline-lg backdrop-blur">
             <div class="flex flex-1 items-center gap-3">
-                {{-- Wired even though it is `lg:hidden`: the bubble's own guard is
-                     `pointer: fine`, so this speaks to a narrow DESKTOP window (mouse)
-                     and stays silent on a touch phone, where mouseenter fires on tap
-                     and would leave the bubble with nothing to dismiss it.
-
-                     `hideTip()` on click because opening the rail slides the sidebar
-                     (z-50) over this header button (z-30) - the pointer never
-                     "leaves", so no mouseleave fires and the bubble would hang over
-                     the open menu. --}}
+                {{-- `hideTip()` on click: opening the rail slides the sidebar over this
+                     button, so no mouseleave fires and the bubble would hang. --}}
                 <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="hideTip(); sidebarOpen = !sidebarOpen"
                     @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
@@ -558,10 +528,8 @@
             </div>
         </header>
 
-        {{-- Full width on purpose. This used to be capped at max-w-[1680px] and
-             centred, which on any monitor wider than the cap plus the sidebar
-             threw ~100px of dead margin down each side of every page while the
-             tables inside were still cramped. --}}
+        {{-- Full width on purpose: a max-width cap left dead margin on wide monitors
+             while the tables inside were still cramped. --}}
         {{-- tabindex="-1" so the skip link moves FOCUS here, not just the
              viewport: a <main> is not focusable by default, and without it the
              next Tab would return to the navigation the user just skipped. --}}
@@ -577,16 +545,9 @@
          that need their own delete confirmations still include their own. --}}
     <x-confirm-modal />
 
-    {{-- The one shared tooltip for the sidebar rail and the header controls.
-         Fixed, so no ancestor's overflow can clip it - the nav is
-         `overflow-y-auto`, and CSS computes the other axis of a non-visible
-         overflow to `auto` too, so a per-item absolute bubble both got clipped
-         and produced a horizontal scrollbar inside the rail.
-
-         Rendered LAST in the body so it also wins on DOM order: page cards sit
-         inside `.page-enter`, whose fill-mode:both animation leaves a transform
-         in place and therefore its own stacking context, which paints over the
-         tooltip when it lives higher up. --}}
+    {{-- One shared tooltip. Fixed so the rail's `overflow-y-auto` cannot clip it,
+         and last in the body so `.page-enter`'s leftover transform - which makes
+         its own stacking context - cannot paint over it. --}}
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
         {{-- The translate differs per placement, so it lives in the bound style
