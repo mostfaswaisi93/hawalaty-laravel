@@ -53,6 +53,29 @@ abstract class TenantTestCase extends TestCase
         }
 
         DB::connection(self::CONNECTION)->beginTransaction();
+
+        $this->bindCurrentLicense();
+    }
+
+    /**
+     * Binds `currentLicense` the way a signed-in request always has it.
+     *
+     * Tests reach tenant routes through actingAs() rather than the login flow,
+     * so ResolveTenantConnectionFromSession never runs and nothing binds the
+     * license. EnsurePackageFeature fails CLOSED on a missing license - correct
+     * in production, but it would 403 every feature-gated route here.
+     *
+     * The package grants every feature, so a test only sees a 403 when it is
+     * deliberately testing the gate (override the binding to assert that).
+     */
+    protected function bindCurrentLicense(): void
+    {
+        $license = new \App\Models\License;
+        $license->setRelation('package', new \App\Models\Package([
+            'features' => array_column(\App\Enums\PackageFeature::cases(), 'value'),
+        ]));
+
+        app()->instance('currentLicense', $license);
     }
 
     protected function tearDown(): void

@@ -111,8 +111,10 @@
                         {{-- Trade shortcuts. One click fills the name and the icon,
                              which is the whole decision for most accounts. --}}
                         <div class="space-y-2">
-                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اختر نوع نشاطك') }}</label>
-                            <div class="flex flex-wrap gap-2">
+                            {{-- A <span>, not a <label>: this names a group of buttons,
+                                 not a form control, so it has no `for` to point at. --}}
+                            <span id="trade-presets-label" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اختر نوع نشاطك') }}</span>
+                            <div class="flex flex-wrap gap-2" role="group" aria-labelledby="trade-presets-label">
                                 @foreach ($naming->catalogPresets() as $preset)
                                     <button type="button" @click="applyPreset(@js($preset['label']), @js($preset['icon']))"
                                         class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-sm text-body-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10 hover:text-primary hover:shadow-md"
@@ -140,7 +142,12 @@
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="space-y-1.5" x-data="{ custom: {{ in_array(old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY)), array_merge([null, ''], $naming->categoryPresets()), true) ? 'false' : 'true' }} }">
                                 <label for="categoryLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الفئة') }}</label>
-                                <select x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, categoryLabel = '') : categoryLabel = $event.target.value"
+                                {{-- The <select> carries the id, so the label above names
+                                     the control the user actually operates. The
+                                     free-text alternative is only shown once "أخرى" is
+                                     picked, so it names itself with aria-label rather
+                                     than duplicating the id. --}}
+                                <select id="categoryLabel" x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, categoryLabel = '') : categoryLabel = $event.target.value"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                     <option value="">{{ __('الافتراضي') }} ({{ $naming->defaults()[\App\Services\Tenant\CatalogNaming::CATEGORY] }})</option>
                                     @foreach ($naming->categoryPresets() as $option)
@@ -149,6 +156,7 @@
                                     <option value="__other">{{ __('أخرى...') }}</option>
                                 </select>
                                 <input x-show="custom" x-cloak type="text" maxlength="24" x-model="categoryLabel"
+                                    aria-label="{{ __('مسمّى الفئة') }}"
                                     placeholder="{{ __('اكتب المسمّى') }}"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                                 <input type="hidden" name="categoryLabel" :value="categoryLabel">
@@ -157,7 +165,7 @@
 
                             <div class="space-y-1.5" x-data="{ custom: {{ in_array(old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM)), array_merge([null, ''], $naming->itemPresets()), true) ? 'false' : 'true' }} }">
                                 <label for="itemLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الصنف') }}</label>
-                                <select x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, itemLabel = '') : itemLabel = $event.target.value"
+                                <select id="itemLabel" x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, itemLabel = '') : itemLabel = $event.target.value"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                     <option value="">{{ __('الافتراضي') }} ({{ $naming->defaults()[\App\Services\Tenant\CatalogNaming::ITEM] }})</option>
                                     @foreach ($naming->itemPresets() as $option)
@@ -166,6 +174,7 @@
                                     <option value="__other">{{ __('أخرى...') }}</option>
                                 </select>
                                 <input x-show="custom" x-cloak type="text" maxlength="24" x-model="itemLabel"
+                                    aria-label="{{ __('مسمّى الصنف') }}"
                                     placeholder="{{ __('اكتب المسمّى') }}"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                                 <input type="hidden" name="itemLabel" :value="itemLabel">

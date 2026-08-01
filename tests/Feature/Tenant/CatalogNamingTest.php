@@ -33,15 +33,17 @@ class CatalogNamingTest extends TenantTestCase
 
     /**
      * The defaults go through __(), so an untouched tenant sees the app's own
-     * wording in whatever language they are viewing - "قائمة الطعام" in Arabic,
-     * "Menu" in English. Compared against the translator rather than a literal
-     * for exactly that reason.
+     * wording in whatever language they are viewing. Compared against the
+     * translator rather than a literal for exactly that reason.
+     *
+     * The default is trade-NEUTRAL: a new account must not be told it runs a
+     * restaurant before it has entered anything.
      */
     public function test_an_untouched_tenant_keeps_the_shipped_wording_in_the_active_locale(): void
     {
         $naming = $this->naming();
 
-        $this->assertSame(__('قائمة الطعام'), $naming->catalog());
+        $this->assertSame(__('قائمة الأصناف'), $naming->catalog());
         $this->assertSame(__('فئة'), $naming->category());
         $this->assertSame(__('صنف'), $naming->item());
     }
@@ -49,10 +51,10 @@ class CatalogNamingTest extends TenantTestCase
     public function test_the_default_follows_the_locale(): void
     {
         app()->setLocale('ar');
-        $this->assertSame('قائمة الطعام', (new CatalogNaming)->catalog());
+        $this->assertSame('قائمة الأصناف', (new CatalogNaming)->catalog());
 
         app()->setLocale('en');
-        $this->assertSame('Menu', (new CatalogNaming)->catalog());
+        $this->assertSame('Items', (new CatalogNaming)->catalog());
     }
 
     public function test_a_tenant_can_name_the_catalogue_in_its_own_terms(): void
@@ -75,7 +77,7 @@ class CatalogNamingTest extends TenantTestCase
         $this->assertSame('محطة الوقود', $this->naming()->catalog());
 
         $this->naming()->put([CatalogNaming::CATALOG => '   ']);
-        $this->assertSame(__('قائمة الطعام'), $this->naming()->catalog());
+        $this->assertSame(__('قائمة الأصناف'), $this->naming()->catalog());
     }
 
     public function test_labels_are_trimmed(): void
