@@ -51,9 +51,11 @@
                         <span class="material-symbols-outlined !text-xl">pause_circle</span>{{ __('تعليق') }}
                     </button>
                 @else
-                    <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}">@csrf
-                        <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('تفعيل') }}">
-                            <span class="material-symbols-outlined !text-xl">play_circle</span>{{ __('تفعيل') }}
+                    <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" x-data="{ submitting: false }" @submit="submitting = true">@csrf
+                        <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-60" title="{{ __('تفعيل') }}">
+                            <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
+                                x-text="submitting ? 'progress_activity' : 'play_circle'">play_circle</span>
+                            <span x-text="submitting ? @js(__('جارٍ التفعيل...')) : @js(__('تفعيل'))">{{ __('تفعيل') }}</span>
                         </button>
                     </form>
                 @endif
@@ -103,19 +105,31 @@
                             <h3 class="font-body-lg font-bold text-on-surface">{{ __('ترحيل قاعدة البيانات') }}</h3>
                             <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('يُنشئ الجداول الناقصة حسب باقة العميل. آمن للتكرار — لا يمسّ البيانات الموجودة.') }}</p>
                         </div>
+                        {{-- `submitting` is set inside the handler, NOT via `@submit`:
+                             this form is submitted programmatically with
+                             `$el.submit()`, which by spec fires no submit event - an
+                             `@submit` binding would simply never run. It also has to
+                             sit AFTER the confirm, so dismissing the dialog does not
+                             leave the button stuck spinning.
+
+                             This is the slowest action in the console (a full tenant
+                             migration run), so the feedback matters most here. --}}
                         <form method="POST" action="{{ route('admin.licenses.migrate', $license->id) }}"
-                            x-data @submit.prevent="if (confirm('{{ __('تشغيل ترحيلات قاعدة البيانات لهذا الترخيص؟') }}')) $el.submit()">
+                            x-data="{ submitting: false }"
+                            @submit.prevent="if (confirm('{{ __('تشغيل ترحيلات قاعدة البيانات لهذا الترخيص؟') }}')) { submitting = true; $el.submit() }">
                             @csrf
-                            <button type="submit" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('تشغيل الترحيلات') }}">
-                                <span class="material-symbols-outlined !text-xl">database</span>
-                                {{ __('تشغيل الترحيلات') }}
+                            <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-60" title="{{ __('تشغيل الترحيلات') }}">
+                                <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
+                                    x-text="submitting ? 'progress_activity' : 'database'">database</span>
+                                <span x-text="submitting ? @js(__('جارٍ التشغيل...')) : @js(__('تشغيل الترحيلات'))">{{ __('تشغيل الترحيلات') }}</span>
                             </button>
                         </form>
                     </div>
                 @endif
 
                 {{-- Change package --}}
-                <form method="POST" action="{{ route('admin.licenses.change-package', $license->id) }}" class="mt-6 flex flex-col gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-end">
+                <form method="POST" action="{{ route('admin.licenses.change-package', $license->id) }}" class="mt-6 flex flex-col gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-end"
+                    x-data="{ submitting: false }" @submit="submitting = true">
                     @csrf
                     <div class="flex-1 space-y-1.5">
                         <label for="admin-licenses-show-package-id" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تغيير الباقة') }}</label>
@@ -125,7 +139,9 @@
                             @endforeach
                         </select>
                     </div>
-                    <button type="submit" class="rounded-xl bg-surface-container px-5 py-3 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high" title="{{ __('حفظ الباقة') }}">{{ __('حفظ الباقة') }}</button>
+                    <button type="submit" :disabled="submitting" class="rounded-xl bg-surface-container px-5 py-3 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+                        x-text="submitting ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ الباقة'))"
+                        title="{{ __('حفظ الباقة') }}">{{ __('حفظ الباقة') }}</button>
                 </form>
             </x-card>
 

@@ -9,7 +9,10 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('سجل تدقيق لجميع إجراءات المشرفين (للقراءة فقط).') }}</p>
         </header>
 
-        <form method="GET" action="{{ route('admin.logs.index') }}" class="reveal-up flex gap-2" style="--d: 80ms">
+        {{-- A GET filter still costs a full page load, and the log table is the
+             heaviest query in the console - so the button reports it too. --}}
+        <form method="GET" action="{{ route('admin.logs.index') }}" class="reveal-up flex gap-2" style="--d: 80ms"
+            x-data="{ filtering: false }" @submit="filtering = true">
             {{-- Filtering must not throw away a chosen page size - see the component. --}}
             <x-keep-per-page />
             {{-- aria-label: the first option reads "كل المشرفين", which says what the
@@ -20,8 +23,9 @@
                     <option value="{{ $admin->id }}" @selected(($adminId ?? '') === $admin->id)>{{ $admin->name }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
-                <span class="material-symbols-outlined">filter_alt</span>
+            <button type="submit" :disabled="filtering" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
+                <span class="material-symbols-outlined" :class="filtering && 'animate-spin'"
+                    x-text="filtering ? 'progress_activity' : 'filter_alt'">filter_alt</span>
             </button>
         </form>
 

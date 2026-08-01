@@ -77,11 +77,15 @@
 
                                 <div class="flex flex-shrink-0 items-center gap-1">
                                     @if ($message->isUnread())
-                                        <form method="POST" action="{{ route('admin.contact-messages.read', $message->id) }}">
+                                        {{-- Scoped x-data per row: each message's button
+                                             tracks its own in-flight state. --}}
+                                        <form method="POST" action="{{ route('admin.contact-messages.read', $message->id) }}"
+                                            x-data="{ submitting: false }" @submit="submitting = true">
                                             @csrf
-                                            <button type="submit" aria-label="{{ __('تعليم كمقروءة') }}" title="{{ __('تعليم كمقروءة') }}"
-                                                class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary">
-                                                <span class="material-symbols-outlined !text-xl">mark_email_read</span>
+                                            <button type="submit" :disabled="submitting" aria-label="{{ __('تعليم كمقروءة') }}" title="{{ __('تعليم كمقروءة') }}"
+                                                class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary disabled:cursor-not-allowed disabled:opacity-60">
+                                                <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
+                                                    x-text="submitting ? 'progress_activity' : 'mark_email_read'">mark_email_read</span>
                                             </button>
                                         </form>
                                     @endif

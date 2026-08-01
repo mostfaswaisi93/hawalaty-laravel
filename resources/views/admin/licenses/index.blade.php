@@ -31,7 +31,10 @@
         </header>
 
         {{-- Filters --}}
-        <form method="GET" action="{{ route('admin.licenses.index') }}" class="reveal-up grid grid-cols-1 gap-3 md:grid-cols-4" style="--d: 80ms">
+        {{-- Its own `filtering` flag rather than the page-level `submitting`, which
+             belongs to the create-licence modal. --}}
+        <form method="GET" action="{{ route('admin.licenses.index') }}" class="reveal-up grid grid-cols-1 gap-3 md:grid-cols-4" style="--d: 80ms"
+            x-data="{ filtering: false }" @submit="filtering = true">
             {{-- Filtering must not throw away a chosen page size - see the component. --}}
             <x-keep-per-page />
             {{-- aria-label on all three: a placeholder is not an accessible name,
@@ -53,8 +56,9 @@
                         <option value="{{ $package->id }}" @selected(($packageId ?? '') === $package->id)>{{ $package->name }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
-                    <span class="material-symbols-outlined">filter_alt</span>
+                <button type="submit" :disabled="filtering" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
+                    <span class="material-symbols-outlined" :class="filtering && 'animate-spin'"
+                        x-text="filtering ? 'progress_activity' : 'filter_alt'">filter_alt</span>
                 </button>
             </div>
         </form>
@@ -89,9 +93,15 @@
                                                 <span class="material-symbols-outlined !text-xl">pause_circle</span>
                                             </button>
                                         @else
-                                            <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex">@csrf
-                                                <button type="submit" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
-                                                    <span class="material-symbols-outlined !text-xl">play_circle</span>
+                                            {{-- Row-scoped x-data, so one row's spinner does
+                                                 not light up every other row's button. The
+                                                 page-level `submitting` belongs to the create
+                                                 form and is deliberately not reused here. --}}
+                                            <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex"
+                                                x-data="{ activating: false }" @submit="activating = true">@csrf
+                                                <button type="submit" :disabled="activating" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
+                                                    <span class="material-symbols-outlined !text-xl" :class="activating && 'animate-spin'"
+                                                        x-text="activating ? 'progress_activity' : 'play_circle'">play_circle</span>
                                                 </button>
                                             </form>
                                         @endif
@@ -121,9 +131,11 @@
                                             <span class="material-symbols-outlined !text-lg">pause_circle</span>
                                         </button>
                                     @else
-                                        <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex">@csrf
-                                            <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/10 hover:text-primary" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
-                                                <span class="material-symbols-outlined !text-lg">play_circle</span>
+                                        <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex"
+                                            x-data="{ activating: false }" @submit="activating = true">@csrf
+                                            <button type="submit" :disabled="activating" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
+                                                <span class="material-symbols-outlined !text-lg" :class="activating && 'animate-spin'"
+                                                    x-text="activating ? 'progress_activity' : 'play_circle'">play_circle</span>
                                             </button>
                                         </form>
                                     @endif

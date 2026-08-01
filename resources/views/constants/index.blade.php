@@ -118,10 +118,12 @@
                                     @foreach ($list->items as $item)
                                         <span class="group inline-flex items-center gap-1.5 rounded-full bg-surface-container-high py-1.5 pe-2 ps-3 font-body-sm text-on-surface">
                                             {{ $item->value }}
-                                            <form method="POST" action="{{ route('constants.items.destroy', [$list->id, $item->id]) }}" class="inline-flex">
+                                            <form method="POST" action="{{ route('constants.items.destroy', [$list->id, $item->id]) }}" class="inline-flex"
+                                                x-data="{ removing: false }" @submit="removing = true">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" class="flex h-5 w-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-error/15 hover:text-error">
-                                                    <span class="material-symbols-outlined !text-base">close</span>
+                                                <button type="submit" :disabled="removing" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" class="flex h-5 w-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-error/15 hover:text-error disabled:cursor-not-allowed disabled:opacity-60">
+                                                    <span class="material-symbols-outlined !text-base" :class="removing && 'animate-spin'"
+                                                        x-text="removing ? 'progress_activity' : 'close'">close</span>
                                                 </button>
                                             </form>
                                         </span>
@@ -130,12 +132,14 @@
                             @endif
                         </div>
 
-                        <form method="POST" action="{{ route('constants.items.store', $list->id) }}" class="flex items-center gap-2 border-t border-outline-variant/50 p-4">
+                        <form method="POST" action="{{ route('constants.items.store', $list->id) }}" class="flex items-center gap-2 border-t border-outline-variant/50 p-4"
+                            x-data="{ adding: false }" @submit="adding = true">
                             @csrf
                             <input name="value" required placeholder="{{ __('أضِف عنصراً...') }}"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-sm outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                            <button type="submit" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container" aria-label="{{ __('إضافة عنصر') }}" title="{{ __('إضافة عنصر') }}">
-                                <span class="material-symbols-outlined">add</span>
+                            <button type="submit" :disabled="adding" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('إضافة عنصر') }}" title="{{ __('إضافة عنصر') }}">
+                                <span class="material-symbols-outlined" :class="adding && 'animate-spin'"
+                                    x-text="adding ? 'progress_activity' : 'add'">add</span>
                             </button>
                         </form>
                     </section>

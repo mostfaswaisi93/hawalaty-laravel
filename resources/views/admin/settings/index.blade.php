@@ -196,7 +196,10 @@
                 <x-modal-close on-close="customOpen = false" />
                 <h3 id="custom-setting-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md"
                     x-text="customMode === 'edit' ? @js(__('تعديل المفتاح')) : @js(__('إضافة مفتاح'))"></h3>
-                <form method="POST" action="{{ route('admin.settings.upsert') }}" class="space-y-4 p-6">
+                {{-- Reuses the page-level `submitting`: this modal and the settings
+                     form above are mutually exclusive, so they can never be in
+                     flight at the same time. --}}
+                <form method="POST" action="{{ route('admin.settings.upsert') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">
                         <label for="custom-key" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المفتاح') }}</label>
@@ -213,8 +216,9 @@
                         <button type="button" @click="customOpen = false"
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container"
                             title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
-                        <button type="submit"
-                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95"
+                        <button type="submit" :disabled="submitting"
+                            class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                            x-text="submitting ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ'))"
                             title="{{ __('حفظ') }}">{{ __('حفظ') }}</button>
                     </div>
                 </form>

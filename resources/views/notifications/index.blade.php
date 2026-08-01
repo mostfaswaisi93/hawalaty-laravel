@@ -56,11 +56,12 @@
                 </p>
             </div>
             @if ($unreadCount > 0)
-                <form method="POST" action="{{ route('notifications.read-all') }}">
+                <form method="POST" action="{{ route('notifications.read-all') }}" x-data="{ submitting: false }" @submit="submitting = true">
                     @csrf
-                    <button type="submit" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary" title="{{ __('تعليم الكل كمقروء') }}">
-                        <span class="material-symbols-outlined !text-xl">done_all</span>
-                        {{ __('تعليم الكل كمقروء') }}
+                    <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" title="{{ __('تعليم الكل كمقروء') }}">
+                        <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
+                            x-text="submitting ? 'progress_activity' : 'done_all'">done_all</span>
+                        <span x-text="submitting ? @js(__('جارٍ التعليم...')) : @js(__('تعليم الكل كمقروء'))">{{ __('تعليم الكل كمقروء') }}</span>
                     </button>
                 </form>
             @endif
@@ -110,9 +111,13 @@
                                 </a>
                             @endif
                             @if ($unread)
-                                <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
+                                {{-- Text-only link-style button, so the state shows as a
+                                     label change rather than a spinner glyph. --}}
+                                <form method="POST" action="{{ route('notifications.read', $notification->id) }}" x-data="{ submitting: false }" @submit="submitting = true">
                                     @csrf
-                                    <button type="submit" class="font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary">{{ __('تعليم كمقروء') }}</button>
+                                    <button type="submit" :disabled="submitting"
+                                        class="font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                                        x-text="submitting ? @js(__('جارٍ التعليم...')) : @js(__('تعليم كمقروء'))">{{ __('تعليم كمقروء') }}</button>
                                 </form>
                             @endif
                         </div>

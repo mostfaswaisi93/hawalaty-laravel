@@ -4,7 +4,10 @@
 
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">
-        <div class="w-full max-w-md">
+        {{-- `submitting` gates the button's spinner and its disabled state. Sign-in
+             hits the tenant connection resolver and can take a moment, and without
+             feedback the form looked inert - so it was double-submitted. --}}
+        <div class="w-full max-w-md" x-data="{ submitting: false }">
             <div class="reveal-up mb-8">
                 <h1 class="mb-2 font-display-lg text-display-lg text-primary">{{ __('مرحباً بعودتك') }}</h1>
                 <p class="font-body-lg text-on-surface-variant">{{ __('سجّل الدخول لإدارة حوالاتك') }}</p>
@@ -12,7 +15,7 @@
 
             <x-flash-messages />
 
-            <form method="POST" action="{{ route('login') }}" class="stagger space-y-5">
+            <form method="POST" action="{{ route('login') }}" class="stagger space-y-5" @submit="submitting = true">
                 @csrf
 
                 <x-form-field
@@ -66,9 +69,18 @@
 
                 <button
                     type="submit"
-                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98]" title="{{ __('تسجيل الدخول') }}">
-                    <span>{{ __('تسجيل الدخول') }}</span>
-                    <span class="material-symbols-outlined rtl:-scale-x-100">login</span>
+                    :disabled="submitting"
+                    {{-- `!opacity-60`, unlike the admin login's plain utility: this
+                         form carries `.stagger`, whose `reveal-up` runs with
+                         fill-mode:both, and an animation's value outranks a normal
+                         author declaration - so the un-flagged class dimmed nothing
+                         once the entrance had settled on opacity 1. --}}
+                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:!opacity-60" title="{{ __('تسجيل الدخول') }}">
+                    {{-- The static text stays as the element's content so it still
+                         reads correctly before Alpine hydrates. --}}
+                    <span x-text="submitting ? @js(__('جارٍ الدخول...')) : @js(__('تسجيل الدخول'))">{{ __('تسجيل الدخول') }}</span>
+                    <span class="material-symbols-outlined rtl:-scale-x-100" :class="submitting && 'animate-spin'"
+                        x-text="submitting ? 'progress_activity' : 'login'">login</span>
                 </button>
             </form>
 

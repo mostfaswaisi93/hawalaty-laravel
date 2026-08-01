@@ -136,12 +136,18 @@
 
                                         <div class="flex items-center justify-between gap-2 border-t border-outline-variant/40 pt-2">
                                             {{-- toggle active --}}
-                                            <form method="POST" action="{{ route('menu.items.update', $item->id) }}" class="inline-flex">
+                                            {{-- Row-scoped `toggling`, not the page-level
+                                                 `submitting` that drives the modals: see
+                                                 catalogs/_toggle for why a switch pulses
+                                                 instead of showing a spinner. --}}
+                                            <form method="POST" action="{{ route('menu.items.update', $item->id) }}" class="inline-flex"
+                                                x-data="{ toggling: false }" @submit="toggling = true">
                                                 @csrf @method('PUT')
                                                 <input type="hidden" name="active" value="{{ $item->active ? 0 : 1 }}">
                                                 <button type="submit" role="switch" aria-checked="{{ $item->active ? 'true' : 'false' }}"
                                                     aria-label="{{ $item->active ? __('إيقاف') : __('تفعيل') }}" title="{{ $item->active ? __('إيقاف') : __('تفعيل') }}"
-                                                    class="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors {{ $item->active ? 'bg-primary' : 'bg-surface-container-high' }}">
+                                                    :disabled="toggling" :class="toggling && 'animate-pulse opacity-60'"
+                                                    class="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed {{ $item->active ? 'bg-primary' : 'bg-surface-container-high' }}">
                                                     {{-- See banks/_toggle.blade.php - tokenised knob so it stays visible on the pale dark-mode track. --}}
                                                     <span class="absolute top-1 h-4 w-4 rounded-full shadow transition-all {{ $item->active ? 'bg-on-primary start-1' : 'bg-on-surface-variant end-1' }}"></span>
                                                 </button>

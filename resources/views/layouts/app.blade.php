@@ -376,7 +376,10 @@
 
                 {{-- notifications --}}
                 <div class="relative" x-data="notificationBell({{ auth('tenant')->user()->unreadNotifications()->count() }})" @click.outside="open = false">
-                    <button type="button" @click="toggle()" class="relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('الإشعارات') }}" title="{{ __('الإشعارات') }}">
+                    <button type="button" @click="toggle()"
+                        @mouseenter="showTipBelow($el, @js(__('الإشعارات')))" @mouseleave="hideTip()"
+                        @focus="showTipBelow($el, @js(__('الإشعارات')))" @blur="hideTip()"
+                        class="relative flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('الإشعارات') }}" title="{{ __('الإشعارات') }}">
                         <span class="material-symbols-outlined">notifications</span>
                         <span x-show="unreadCount > 0" x-cloak x-text="unreadCount > 9 ? '9+' : unreadCount"
                             class="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 font-numeral-lg text-[10px] font-bold text-on-error"></span>
@@ -437,6 +440,7 @@
                     </a>
                     <button type="button" @click="dark = !dark"
                         @mouseenter="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @mouseleave="hideTip()"
+                        @focus="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @blur="hideTip()"
                         class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
                         :aria-label="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'">
                         <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
@@ -446,6 +450,7 @@
                     <div class="relative ms-1" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
                         <button type="button" @click="open = !open"
                             @mouseenter="showTipBelow($el, @js(__('حسابي')))" @mouseleave="hideTip()"
+                            @focus="showTipBelow($el, @js(__('حسابي')))" @blur="hideTip()"
                             class="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-surface-container-high"
                             :aria-expanded="open.toString()" aria-haspopup="menu" aria-label="{{ __('حسابي') }}" title="{{ __('حسابي') }}">
                             <span class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full bg-primary-container font-bold text-on-primary-container">
@@ -523,5 +528,26 @@
     {{-- Layout-level so the sidebar's logout can reach it from any page; pages
          that need their own delete confirmations still include their own. --}}
     <x-confirm-modal />
+
+    {{-- The one shared tooltip for the sidebar rail and the header controls.
+         Fixed, so no ancestor's overflow can clip it - the nav is
+         `overflow-y-auto`, and CSS computes the other axis of a non-visible
+         overflow to `auto` too, so a per-item absolute bubble both got clipped
+         and produced a horizontal scrollbar inside the rail.
+
+         Rendered LAST in the body so it also wins on DOM order: page cards sit
+         inside `.page-enter`, whose fill-mode:both animation leaves a transform
+         in place and therefore its own stacking context, which paints over the
+         tooltip when it lives higher up. --}}
+    <div x-show="tipText !== ''" x-cloak
+        class="pointer-events-none fixed z-[90] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
+        {{-- The translate differs per placement, so it lives in the bound style
+             rather than a utility class. `side` clears whichever sidebar width is
+             active (5.5rem / 16rem); `below` centres on the header control using
+             physical left, which is already direction-correct off getBoundingClientRect. --}}
+        :style="tipPlacement === 'side'
+            ? `top:${tipTop}px; inset-inline-start:${collapsed ? '6rem' : '17rem'}; transform:translateY(-50%);`
+            : `top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"
+        x-text="tipText" role="tooltip" style="display:none"></div>
 </body>
 </html>

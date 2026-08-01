@@ -165,18 +165,37 @@
                                 {{ $t('يرجى تأكيد استلامك لهذه الحوالة في حسابك، أو الإبلاغ عن عدم وصولها.',
                                       'Please confirm you received this transfer in your account, or report that it did not arrive.') }}
                             </p>
-                            <form method="POST" action="{{ route('order.confirm.act', ['license' => $license, 'token' => $token]) }}" class="mt-4 grid gap-3">
+                            {{-- Two submitters share this form, so `pending` records
+                                 WHICH was clicked - otherwise both would spin.
+
+                                 The clicked button is never given `:disabled`: a
+                                 disabled submitter is omitted from the payload, and
+                                 it carries `action`, so the request would arrive
+                                 with no verb at all. `pointer-events-none` stops a
+                                 second click without touching serialization; only
+                                 the idle sibling is safe to truly disable. --}}
+                            <form method="POST" action="{{ route('order.confirm.act', ['license' => $license, 'token' => $token]) }}" class="mt-4 grid gap-3"
+                                x-data="{ pending: null }">
                                 @csrf
                                 <input type="hidden" name="lang" value="{{ $lang }}">
                                 <button type="submit" name="action" value="confirm"
+                                    @click="pending = 'confirm'"
+                                    :disabled="pending === 'reject'"
+                                    :class="pending && 'pointer-events-none opacity-60'"
                                     class="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-bold text-on-primary shadow-sm transition-transform active:scale-[.99]">
-                                    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
-                                    {{ $t('نعم، تم استلام الحوالة', 'Yes, transfer received') }}
+                                    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1"
+                                        :class="pending === 'confirm' && 'animate-spin'"
+                                        x-text="pending === 'confirm' ? 'progress_activity' : 'check_circle'">check_circle</span>
+                                    <span x-text="pending === 'confirm' ? @js($t('جارٍ التأكيد...', 'Confirming...')) : @js($t('نعم، تم استلام الحوالة', 'Yes, transfer received'))">{{ $t('نعم، تم استلام الحوالة', 'Yes, transfer received') }}</span>
                                 </button>
                                 <button type="submit" name="action" value="reject"
+                                    @click="pending = 'reject'"
+                                    :disabled="pending === 'confirm'"
+                                    :class="pending && 'pointer-events-none opacity-60'"
                                     class="flex w-full items-center justify-center gap-2 rounded-2xl border border-error bg-surface px-6 py-4 text-base font-bold text-error transition-colors hover:bg-error-container/40">
-                                    <span class="material-symbols-outlined">cancel</span>
-                                    {{ $t('لم تصل الحوالة', 'Transfer not received') }}
+                                    <span class="material-symbols-outlined" :class="pending === 'reject' && 'animate-spin'"
+                                        x-text="pending === 'reject' ? 'progress_activity' : 'cancel'">cancel</span>
+                                    <span x-text="pending === 'reject' ? @js($t('جارٍ الإرسال...', 'Submitting...')) : @js($t('لم تصل الحوالة', 'Transfer not received'))">{{ $t('لم تصل الحوالة', 'Transfer not received') }}</span>
                                 </button>
                             </form>
                         @endif

@@ -1,7 +1,26 @@
 @php $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar'; @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}"
-    x-data="{ dark: localStorage.getItem('theme') === 'dark' }"
+    x-data="{
+        dark: localStorage.getItem('theme') === 'dark',
+        tipText: '', tipTop: 0, tipLeft: 0,
+        // Header icons: sits below the control, horizontally centred. Uses the
+        // same styled bubble as the app and admin shells instead of the native
+        // `title` attribute, which is slow to appear and cannot be themed.
+        //
+        // Only the `below` placement exists here - this shell has no sidebar
+        // rail, so there is no `collapsed` state for a `side` tooltip to clear.
+        showTipBelow(el, text) {
+            // Mouse affordance only - on touch, mouseenter fires on tap and the
+            // bubble would linger with nothing to dismiss it.
+            if (!window.matchMedia('(pointer: fine)').matches) return;
+            const r = el.getBoundingClientRect();
+            this.tipTop = r.bottom + 10;
+            this.tipLeft = r.left + r.width / 2;
+            this.tipText = text;
+        },
+        hideTip() { this.tipText = ''; },
+    }"
     x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)"
     :class="{ dark: dark }">
 <head>
@@ -60,16 +79,22 @@
                 {{-- The locale code alone carries the meaning; the translate glyph
                      beside it was pure duplication. --}}
                 <a href="{{ route('locale.switch', $otherLocale) }}"
+                    @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
                     class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
                     aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
                     {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                 </a>
+                {{-- No `:title` here: the styled bubble already names the control,
+                     and the native tooltip would fade in on top of it. The label
+                     stays available to assistive tech via `:aria-label`. --}}
                 <button
                     type="button"
                     @click="dark = !dark"
+                    @mouseenter="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @blur="hideTip()"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                    :aria-label="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'"
-                    :title="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'">
+                    :aria-label="dark ? '{{ __('الوضع الفاتح') }}' : '{{ __('الوضع الداكن') }}'">
                     <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                 </button>
             </div>
@@ -111,5 +136,17 @@
             </div>
         </footer>
     </div>
+
+    {{-- The one shared tooltip for the header controls. Fixed, and rendered LAST
+         in the body so it wins on DOM order - the shell sits inside `.page-enter`,
+         whose fill-mode:both animation leaves a transform in place and therefore
+         its own stacking context, which would paint over a bubble declared
+         higher up. Only the `below` placement is bound; see the x-data above. --}}
+    <div x-show="tipText !== ''" x-cloak
+        class="pointer-events-none fixed z-[90] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
+        {{-- Physical `left`, which is already direction-correct off
+             getBoundingClientRect, so it centres under the control in both dirs. --}}
+        :style="`top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"
+        x-text="tipText" role="tooltip" style="display:none"></div>
 </body>
 </html>
