@@ -162,9 +162,7 @@ class BalanceServiceTest extends TenantTestCase
 
     /**
      * Change paid out of a DIFFERENT account than the one that took the payment
-     * is a real movement between two accounts. Booking neither leg - which is
-     * what used to happen - left the wallet looking untouched when it had just
-     * paid money out.
+     * is a real movement between two accounts, so BOTH legs must be booked.
      */
     public function test_change_paid_from_another_account_moves_money_between_them(): void
     {

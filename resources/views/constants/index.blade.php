@@ -27,19 +27,8 @@
             @endif
         </header>
 
-        {{--
-            What this account calls its catalogue.
-
-            The app shipped hard-coded as a restaurant - "قائمة الطعام", "فئة",
-            "صنف" - but the same software runs a fruit shop, a fuel station or a
-            hardware store, and those do not sell "أصناف طعام". These three words
-            are the tenant's to choose, and this is the page for per-account
-            constants, so it belongs here.
-        --}}
-        {{-- A SUMMARY, with the editing behind a dialog. The form used to sit open
-             on the page, which is what made the icon grid stretch across the full
-             width; a dialog also matches how every other create/edit flow in the
-             app behaves. --}}
+        {{-- What this account calls its catalogue. A summary, with the editing
+             behind a dialog - matching every other create/edit flow in the app. --}}
         {{-- State lives on this PLAIN wrapper, and the dialog is a sibling of the
              card rather than a child of it.
 

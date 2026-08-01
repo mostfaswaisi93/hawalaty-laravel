@@ -102,9 +102,8 @@ class AdminPagesTest extends TestCase
     }
 
     /**
-     * Choosing 100-per-page and then filtering used to silently drop back to
-     * the default: <x-per-page> re-emits every active filter when it submits,
-     * but the filter forms never carried the page size back the other way.
+     * Filtering must PRESERVE the chosen page size: <x-per-page> re-emits the
+     * active filters, so the filter forms have to carry the size back.
      */
     public function test_a_filter_form_carries_the_chosen_page_size(): void
     {
@@ -173,10 +172,9 @@ class AdminPagesTest extends TestCase
     }
 
     /**
-     * The page-renders case above only proves the dashboard survives an EMPTY
-     * database. This one gives every aggregate on it something to chew on -
-     * the month-bucket GROUP BY in particular, which originally shipped a
-     * MySQL-only DATE_FORMAT and 500'd the moment it ran against sqlite.
+     * The case above only proves the dashboard survives an EMPTY database. This
+     * exercises every aggregate - notably the month-bucket GROUP BY, which must
+     * not use MySQL-only syntax.
      */
     public function test_dashboard_renders_with_real_data(): void
     {

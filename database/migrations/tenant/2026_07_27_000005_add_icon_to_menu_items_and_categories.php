@@ -7,15 +7,13 @@ use Illuminate\Support\Facades\Schema;
 /**
  * An icon per catalogue entry and per category.
  *
- * With the catalogue no longer assumed to be food, a single generic glyph for
- * everything stops carrying meaning: a fruit shop wants an apple beside apples
- * and a fuel station wants a pump beside diesel. Nullable, so anything without
- * one keeps falling back to the category's icon and then to a neutral default.
+ * Nullable: an entry without one falls back to its category's icon, then to a
+ * neutral default.
  *
  * Stores a Material Symbols LIGATURE NAME (e.g. "nutrition"), not a file - the
- * icon font is already loaded on every page, so this costs no extra request and
- * inherits the theme's colour automatically. The rendering side whitelists what
- * it will draw, so a hand-edited value cannot inject markup.
+ * font is already loaded, so it costs no request and inherits theme colour. The
+ * rendering side WHITELISTS what it draws, so a hand-edited value cannot inject
+ * markup.
  */
 return new class extends Migration
 {

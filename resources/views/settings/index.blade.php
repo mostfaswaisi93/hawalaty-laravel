@@ -7,13 +7,11 @@
         Two columns from `lg` up: the form on the left, the read-only licence
         summary as a sidebar on the right.
 
-        It used to be one 768px column centred in a ~1660px content area, so
-        roughly half the viewport was empty while the page itself ran long. The
-        licence block is reference information, never edited, so it belongs
+        The licence block is reference information, never edited, so it belongs
         beside the form rather than below it.
 
-        Spacing follows one scale throughout - 6 between blocks, 5 inside a
-        form, 4 inside a row - instead of the mixed 4/5/6/8 it had.
+        Spacing follows one scale throughout: 6 between blocks, 5 inside a form,
+        4 inside a row.
     --}}
     @php
         $statusLabels = ['trial' => __('تجريبي'), 'active' => __('نشط'), 'suspended' => __('موقوف'), 'expired' => __('منتهٍ')];

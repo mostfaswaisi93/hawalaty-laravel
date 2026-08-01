@@ -58,9 +58,8 @@ class AdminSettingsApiTest extends TestCase
     }
 
     /**
-     * The gap this closes: `value` used to be validated as a loose string for
-     * every key, so the API could store "abc" in `trial_days`. The reader casts
-     * that to 0, and `now()->addDays(0)` issues a trial that is already over.
+     * `value` must be validated per key, not as a loose string: "abc" in
+     * `trial_days` casts to 0, and `addDays(0)` issues an already-expired trial.
      */
     public function test_a_registered_key_is_validated_with_its_own_rules(): void
     {

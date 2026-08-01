@@ -125,10 +125,9 @@
                                     <div id="item-{{ $item->id }}"
                                         class="flex scroll-mt-24 flex-col justify-between gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3 transition-all target:ring-2 target:ring-primary hover:border-outline-variant hover:shadow-md {{ $item->active ? '' : 'opacity-60' }}">
                                         <div class="flex items-start gap-3">
-                                            {{-- The entry's own icon, falling back to its category's and
-                                                 then to a neutral glyph. It used to be a hardcoded
-                                                 `lunch_dining`, which is wrong the moment the catalogue is
-                                                 fruit or fuel rather than food. --}}
+                                            {{-- The entry's own icon, falling back to its category's
+                                                 and then to a neutral glyph - never a food-specific
+                                                 default. --}}
                                             <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl {{ $item->active ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-outline' }}">
                                                 <span class="material-symbols-outlined">{{ $catalogIcons->resolve($item->icon, $cat->icon) }}</span>
                                             </div>

@@ -163,9 +163,7 @@ class CustomerServiceTest extends TenantTestCase
     }
 
     /**
-     * find() deliberately no longer eager-loads transfers: the detail page was
-     * loading every order (and every line item) a customer had ever placed just
-     * to render two totals and a table. It now returns SQL aggregates, and the
+     * find() must NOT eager-load transfers - it returns SQL aggregates, and the
      * orders come back paginated from transfersFor().
      */
     public function test_find_returns_aggregates_without_loading_every_transfer(): void

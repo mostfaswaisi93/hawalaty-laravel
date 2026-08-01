@@ -5,13 +5,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Phase 2c (schema half) - the columns the legacy-bank migration fills.
+ * The columns the legacy-bank migration fills.
  *
- * `transfers.account_id` / `change_account_id` are the new Account links; the
- * old `bank_id` / `change_bank_id` stay untouched beside them so historical
- * receipts keep resolving their bank name. `accounts.legacy_bank_id` records
- * which legacy bank an account was migrated from (provenance + idempotency +
- * the join used to backfill transfers). Data is moved in the next migration.
+ * `transfers.account_id` / `change_account_id` are the new Account links; the old
+ * `bank_id` / `change_bank_id` stay beside them so historical receipts keep
+ * resolving. `accounts.legacy_bank_id` gives provenance, idempotency and the
+ * backfill join. Data moves in the next migration.
  */
 return new class extends Migration
 {

@@ -66,16 +66,11 @@ abstract class TenantTestCase extends TestCase
      * Where the MySQL server is, for both the connection and the CREATE
      * DATABASE below.
      *
-     * These were hardcoded to 127.0.0.1/root/no-password, which is the Laragon
-     * default and therefore worked on the machine it was written on and nowhere
-     * else: anyone whose MySQL root has a password could not run the tenant
-     * half of the suite at all, and the DB_* variables CI sets were doing
-     * nothing. The old values remain the defaults, so a Laragon checkout still
-     * needs no configuration.
+     * Read from DB_* so a MySQL root with a password still works; the Laragon
+     * defaults mean a local checkout needs no configuration.
      *
-     * `DB_DATABASE` is deliberately NOT read - the tenant database is created
-     * and wiped by this harness, so it must never be pointed at a database the
-     * developer chose for something else.
+     * `DB_DATABASE` is deliberately NOT read - this harness CREATES AND WIPES the
+     * tenant database, so it must never point at one the developer chose.
      *
      * @return array{host: string, port: string, username: string, password: string}
      */

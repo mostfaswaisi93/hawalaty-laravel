@@ -202,12 +202,9 @@ class PlatformSettingsTest extends TestCase
     }
 
     /**
-     * The rendered `min`/`max` must come from the setting's own rules. The form
-     * used to hardcode `min="1" max="365"` on every Number field - fine for the
-     * two day-counts that existed, and silently wrong for the first Number
-     * setting added with any other range. A browser constraint that contradicts
-     * the server rule blocks a value the server would have accepted, with no
-     * error to explain it.
+     * The rendered `min`/`max` must come from the setting's own rules. A browser
+     * constraint that contradicts the server rule blocks a value the server
+     * would accept, with no error to explain it.
      */
     public function test_number_bounds_are_read_from_the_settings_own_rules(): void
     {

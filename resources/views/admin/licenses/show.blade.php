@@ -153,13 +153,10 @@
                     <ul class="divide-y divide-outline-variant/50">
                         @foreach ($recentActivity as $log)
                             <li class="py-3">
-                                {{-- WHAT happened, not only what it happened to. This
-                                     used to print `entity_label` alone, so a row read
-                                     "شاورما دجاج" with no way to tell whether it was
-                                     created, edited or deleted - and the fallback
-                                     printed the raw enum ("created") because those
-                                     codes are not translation keys. The label map is
-                                     the same one the tenant's own activity log uses. --}}
+                                {{-- WHAT happened, not only what it happened to. The
+                                     action codes are not translation keys, so they go
+                                     through the same label map the tenant's own
+                                     activity log uses. --}}
                                 <div class="flex items-center gap-2">
                                     <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold {{ $actionPill($log->action?->value) }}">
                                         {{ $actionLabels[$log->action?->value] ?? ($log->action?->value ?? '-') }}

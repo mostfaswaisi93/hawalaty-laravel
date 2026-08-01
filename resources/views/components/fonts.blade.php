@@ -2,18 +2,12 @@
     Every font the page needs, plus the guard that keeps the icon font from
     leaking its own ligature names.
 
-    One component because this used to be copy-pasted into five layouts, and the
-    copies had already drifted - the print receipt asked for a different family
-    set, and a change to the icon script had to be made in four places or in
-    none.
+    One component, so the five layouts cannot drift apart.
 
     @fonts writes <link rel="preload"> tags for the hot faces and INLINES the
-    @font-face block. Inlining matters: the old markup was a <link> to
-    fonts.googleapis.com, so the browser had to resolve a second origin, fetch a
-    stylesheet, and only then discover the font URLs - three serial round trips
-    before a single glyph could be drawn. Now the faces are in the HTML and the
-    files are on this origin, which is also the only way sw.js can cache them
-    (its fetch handler drops anything cross-origin).
+    @font-face block. Inlining avoids the three serial round trips a
+    cross-origin stylesheet costs before a glyph can be drawn, and same-origin
+    files are the only ones sw.js can cache - its fetch handler drops the rest.
 --}}
 
 @props([

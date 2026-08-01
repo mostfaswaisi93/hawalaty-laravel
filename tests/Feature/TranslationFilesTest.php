@@ -10,16 +10,12 @@ use Tests\TestCase;
 /**
  * Guards on the two JSON translation catalogues.
  *
- * The one that earns its keep is `test_every_translated_string_has_a_key`. A
- * missing key is INVISIBLE: `__()` falls back to returning the key itself, so
- * the Arabic renders perfectly for Arabic users while English users quietly get
- * Arabic too. Nothing throws, nothing is logged, and the page looks fine to
- * whoever wrote it. That is how 128 strings - most of the Super Admin portal -
- * ended up untranslated without anyone noticing.
+ * `test_every_translated_string_has_a_key` is the one that earns its keep: a
+ * missing key is INVISIBLE, because `__()` returns the key itself - Arabic
+ * renders fine while English users quietly get Arabic, with nothing logged.
  *
- * Ordering is asserted as a plain SORT_STRING sort. The files were previously
- * ordered by a collation nothing could reproduce, which made every insertion a
- * judgement call; a mechanical order is one a test can actually enforce.
+ * Ordering is asserted as a plain SORT_STRING sort, which is mechanical enough
+ * for a test to enforce.
  */
 class TranslationFilesTest extends TestCase
 {

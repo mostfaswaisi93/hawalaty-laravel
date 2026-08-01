@@ -194,10 +194,8 @@
                             <div class="relative flex h-full flex-1 items-end justify-center">
                                 <div class="grow-bar w-full max-w-8 rounded-t-lg bg-primary transition-all"
                                     style="height: {{ $payHeight }}%; --d: {{ $loop->index * 80 }}ms"></div>
-                                {{-- Printed, not hovered. The value used to live in a
-                                     `group-hover` tooltip, which no touch screen can
-                                     ever show - so on a tablet the amounts simply did
-                                     not exist. --}}
+                                {{-- Printed, not hovered: a `group-hover` tooltip is
+                                     unreachable on a touch screen. --}}
                                 @if ($month['payments'] > 0)
                                     <span class="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-numeral-lg text-[10px] font-bold text-primary"
                                         style="bottom: calc({{ $payHeight }}% + 3px)" dir="ltr">{{ number_format($month['payments'], 0) }}</span>

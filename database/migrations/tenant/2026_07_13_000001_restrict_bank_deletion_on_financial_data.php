@@ -5,16 +5,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Hardens the banks.id foreign keys so a bank with financial history can
- * never be hard-deleted at the database level: expenses.bank_id previously
- * cascade-deleted (silently destroying expense records), and
- * transfers.bank_id / change_bank_id previously nulled out (silently
- * erasing which bank a historical transfer used). Both are replaced with
- * restrictOnDelete() - the application layer (BankService::delete) checks
- * for related records first and returns a friendly validation error; this
- * constraint is the last-resort safety net if that check is ever bypassed.
- * Banks should be deactivated (the existing `active` toggle), not deleted,
- * once they have any history.
+ * restrictOnDelete() on the banks.id foreign keys, so a bank with financial
+ * history can never be hard-deleted at the database level.
+ *
+ * BankService::delete checks first and returns a friendly error; this is the
+ * last-resort net if that check is bypassed. Banks with history should be
+ * DEACTIVATED via the `active` toggle, not deleted.
  */
 return new class extends Migration
 {

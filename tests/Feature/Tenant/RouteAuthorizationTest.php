@@ -99,13 +99,9 @@ class RouteAuthorizationTest extends TestCase
     }
 
     /**
-     * Exactly one method's body, by matching braces.
-     *
-     * The first version of this took a fixed 2 000-character window after the
-     * signature, which ran straight past the closing brace into whatever came
-     * next - so a method with NO check was credited with its neighbour's. The
-     * test then passed against a controller whose `abort_unless` had been
-     * deleted, which is the only failure that matters here.
+     * Exactly one method's body, by matching braces - NOT a fixed-size window,
+     * which runs past the closing brace and credits a method with its
+     * neighbour's check.
      */
     private function methodBody(string $source, string $method): string
     {

@@ -59,8 +59,8 @@ class SearchServiceTest extends TenantTestCase
     }
 
     /**
-     * The gap that prompted this: a phone lives on the customer row, so orders
-     * used to be invisible to the single most common search in a transfer app.
+     * A phone lives on the customer row, so orders must be reached through the
+     * relation to be findable by the most common search there is.
      */
     public function test_an_order_is_found_by_its_customers_phone(): void
     {

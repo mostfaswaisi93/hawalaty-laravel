@@ -171,10 +171,8 @@ class HttpLayerSmokeTest extends TenantTestCase
     }
 
     /**
-     * The customer detail page used to eager-load EVERY transfer (and every
-     * line item) purely to sum two numbers and render a table. The figures are
-     * now SQL aggregates and the list is paginated, so both must still be right
-     * while only one page of rows is loaded.
+     * The customer detail figures are SQL aggregates and the list is paginated,
+     * so both must stay correct while only one page of rows is loaded.
      */
     public function test_the_customer_detail_page_paginates_orders_and_keeps_totals_exact(): void
     {

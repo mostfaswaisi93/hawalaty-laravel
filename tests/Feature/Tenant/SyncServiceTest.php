@@ -74,9 +74,8 @@ class SyncServiceTest extends TenantTestCase
     }
 
     /**
-     * A push with no registered device used to fail on every event: the column
-     * did not allow null and the client got a raw database error for something
-     * it had done nothing wrong to cause.
+     * A push with no registered device must succeed - the column allows null,
+     * so the client never sees a raw database error.
      */
     public function test_a_push_from_an_unregistered_device_still_applies(): void
     {

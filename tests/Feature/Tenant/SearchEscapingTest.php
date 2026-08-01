@@ -12,12 +12,9 @@ use Tests\TenantTestCase;
 /**
  * A search box has to answer the question that was typed into it.
  *
- * Every list page used to build its own "%{$search}%". Bindings made that
- * injection-safe, which is why it never looked wrong - but `%` and `_` stayed
- * WILDCARDS inside the pattern, so the query silently widened. `_` is not an
- * exotic character in the columns that get searched here; it is ordinary in
- * email addresses, and `%` typed alone dumped whole tables through a box that
- * is supposed to require two real characters.
+ * Bindings make "%{$search}%" injection-safe but leave `%` and `_` as
+ * WILDCARDS, silently widening the query - `_` is ordinary in email addresses,
+ * and `%` alone dumps whole tables through a box that requires two characters.
  *
  * These run against MySQL, on real rows, through the real query builder. A
  * string-level assertion on the pattern would pass even if the ESCAPE clause
