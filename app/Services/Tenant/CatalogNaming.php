@@ -40,6 +40,15 @@ class CatalogNaming
 
     public const ITEM = 'catalog_item_label';
 
+    public const ICON = 'catalog_icon';
+
+    /**
+     * Shown only until the tenant picks one. `category` is the most trade-neutral
+     * glyph in the set - `restaurant_menu` was the old hard-coded choice and put a
+     * fork and knife in a bookshop's sidebar.
+     */
+    public const DEFAULT_ICON = 'category';
+
     /** @var array<string, string>|null */
     private ?array $resolved = null;
 
@@ -72,6 +81,46 @@ class CatalogNaming
     public function item(): string
     {
         return $this->get(self::ITEM);
+    }
+
+    /** The Material Symbols glyph for the section, chosen alongside its name. */
+    public function icon(): string
+    {
+        $icon = $this->all()[self::ICON] ?? null;
+
+        return filled($icon) ? $icon : self::DEFAULT_ICON;
+    }
+
+    /**
+     * Has the owner actually named this section yet?
+     *
+     * The catalogue is the one part of the workspace whose very SUBJECT differs
+     * per trade - a bakery's is bread, a fuel station's is fuel grades, a
+     * bookshop's is titles. Presenting it in the sidebar before the owner has
+     * said what it is means guessing, and the guess used to be "قائمة الطعام" on
+     * every account regardless of trade.
+     *
+     * So it stays out of the navigation until it is defined in /constants. Only
+     * an explicit `catalog_label` counts: the defaults exist to keep headings
+     * readable, not to stand in for a decision nobody has made.
+     */
+    public function isConfigured(): bool
+    {
+        return filled($this->all()[self::CATALOG] ?? null);
+    }
+
+    /**
+     * The stored value with NO fallback - null when the tenant has not chosen one.
+     *
+     * Forms need this rather than get(): pre-filling a field with the default
+     * makes an unmade decision look like a made one, and saving the form would
+     * then persist the placeholder as a real choice.
+     */
+    public function raw(string $key): ?string
+    {
+        $value = $this->all()[$key] ?? null;
+
+        return filled($value) ? $value : null;
     }
 
     public function get(string $key): string
@@ -107,7 +156,9 @@ class CatalogNaming
     public function put(array $labels): void
     {
         foreach ($labels as $key => $value) {
-            if (! array_key_exists($key, $this->defaults())) {
+            // ICON is writable too, though it carries no textual default and so
+            // is not part of defaults().
+            if ($key !== self::ICON && ! array_key_exists($key, $this->defaults())) {
                 continue;
             }
 

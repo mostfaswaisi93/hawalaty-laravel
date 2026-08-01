@@ -53,9 +53,14 @@ class ConstantController extends Controller
             CatalogNaming::CATALOG => $data['catalogLabel'] ?? null,
             CatalogNaming::CATEGORY => $data['categoryLabel'] ?? null,
             CatalogNaming::ITEM => $data['itemLabel'] ?? null,
+            CatalogNaming::ICON => $data['catalogIcon'] ?? null,
         ]);
 
-        return redirect()->route('constants.index')->with('success', __('تم تحديث مسمّيات القائمة.'));
+        // Naming the section is what adds it to the sidebar, so say so - the
+        // change happens somewhere other than the page being looked at.
+        return redirect()->route('constants.index')->with('success', filled($data['catalogLabel'] ?? null)
+            ? __('تم حفظ القائمة - ستجدها الآن في القائمة الجانبية.')
+            : __('تمت إزالة القائمة من القائمة الجانبية.'));
     }
 
     public function store(StoreConstantListRequest $request): RedirectResponse

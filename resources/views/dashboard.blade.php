@@ -59,16 +59,18 @@
                     </a>
                 @endif
 
-                @if ($member?->hasPermission(\App\Enums\PermissionKey::MenuManage))
+                {{-- Mirrors the sidebar exactly: the tenant's own word and glyph,
+                     and nothing at all until the section has been named in
+                     /constants. This tile used to be hard-coded to "قائمة الطعام"
+                     with a fork-and-knife icon, so a fuel station renaming its
+                     catalogue still had a restaurant staring back from here. --}}
+                @php $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class); @endphp
+                @if ($catalogNaming->isConfigured() && $member?->hasPermission(\App\Enums\PermissionKey::MenuManage))
                     <a href="/menu" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
-                            <span class="material-symbols-outlined">restaurant_menu</span>
+                            <span class="material-symbols-outlined">{{ $catalogNaming->icon() }}</span>
                         </div>
-                        {{-- The tenant's own word, like the sidebar entry that links
-                             to the same page. This tile was left hard-coded, so a
-                             fuel station renaming its catalogue still had "قائمة
-                             الطعام" staring back at it from the dashboard. --}}
-                        <span class="text-body-sm font-bold">{{ app(\App\Services\Tenant\CatalogNaming::class)->catalog() }}</span>
+                        <span class="text-body-sm font-bold">{{ $catalogNaming->catalog() }}</span>
                     </a>
                 @endif
 

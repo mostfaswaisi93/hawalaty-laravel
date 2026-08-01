@@ -1,10 +1,21 @@
 @php
     $member = auth('tenant')->user();
 
-    // The catalogue is not necessarily a food menu - a fruit shop or a fuel
-    // station names it themselves, so the sidebar follows their wording. Falls
-    // back to the shipped default.
-    $catalogLabel = app(\App\Services\Tenant\CatalogNaming::class)->catalog();
+    /*
+     * The catalogue is not necessarily a food menu - a bakery, a fuel station, a
+     * bookshop and a tobacconist all sell something different, and each names the
+     * section itself.
+     *
+     * `configured` decides whether it appears in the rail AT ALL. Until the owner
+     * has named it in /constants there is nothing honest to call it, so a brand
+     * new account does not carry a catalogue entry it never asked for. Its icon
+     * is chosen there too, so the glyph matches the trade instead of showing a
+     * fork and knife to a bookshop.
+     */
+    $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class);
+    $catalogLabel = $catalogNaming->catalog();
+    $catalogIcon = $catalogNaming->icon();
+    $catalogConfigured = $catalogNaming->isConfigured();
 
     // Mirrors D:\Angular\Hawalaty\src\app\layout\layout.ts's `nav` array,
     // extended with the Devices / Activity Log / Help entries this task's
@@ -33,7 +44,8 @@
                 ['href' => '/catalogs', 'icon' => 'category', 'label' => 'الكتالوجات', 'match' => 'catalogs*', 'permission' => \App\Enums\PermissionKey::BanksManage],
                 // `translated` marks a label that CatalogNaming already resolved,
                 // so the rail does not put the tenant's own wording through __().
-                ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'translated' => true],
+                // `visible` keeps it out of the rail until the section is named.
+                ['href' => '/menu', 'icon' => $catalogIcon, 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'feature' => \App\Enums\PackageFeature::Menu, 'translated' => true, 'visible' => $catalogConfigured],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
                 ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
@@ -62,7 +74,10 @@
     foreach ($navGroups as $group) {
         $items = array_values(array_filter(
             $group['items'],
-            fn ($item) => (! ($item['permission'] ?? null) || $member?->hasPermission($item['permission']))
+            // `visible` defaults to true, so only an entry that opts out of being
+            // shown - today just the unnamed catalogue - has to say so.
+            fn ($item) => ($item['visible'] ?? true)
+                && (! ($item['permission'] ?? null) || $member?->hasPermission($item['permission']))
                 && (! ($item['feature'] ?? null) || (bool) $currentLicense?->hasFeature($item['feature'])),
         ));
 

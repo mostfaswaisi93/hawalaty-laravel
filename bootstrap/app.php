@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsurePackageFeature;
 use App\Http\Middleware\ResolveTenantConnection;
 use App\Http\Middleware\ResolveTenantConnectionFromSession;
 use App\Http\Middleware\SetLocale;
@@ -87,6 +88,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // auth:sanctum, NEVER with tenant.header. See
             // App\Http\Middleware\EnsureAdmin's doc comment.
             'admin' => EnsureAdmin::class,
+            // Gates a tenant route by the feature its package sells, e.g.
+            // ->middleware('package:menu'). Must sit AFTER tenant.session, which
+            // is what binds `currentLicense`. See EnsurePackageFeature.
+            'package' => EnsurePackageFeature::class,
         ]);
 
         // Laravel 11's `api` middleware group does NOT include throttle:api

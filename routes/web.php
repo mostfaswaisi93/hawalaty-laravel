@@ -204,20 +204,26 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('accounts/{account}/entries', [AccountController::class, 'storeEntry'])->name('accounts.entries.store')->whereUlid('account');
 
     // Menu - categories + items
-    Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
-    Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
-    Route::post('menu/import', [MenuController::class, 'import'])->name('menu.import');
-    Route::post('menu/categories', [MenuController::class, 'storeCategory'])->name('menu.categories.store');
-    Route::delete('menu/categories/{category}', [MenuController::class, 'destroyCategory'])->name('menu.categories.destroy');
-    Route::post('menu/items', [MenuController::class, 'storeItem'])->name('menu.items.store');
-    Route::put('menu/items/{item}', [MenuController::class, 'updateItem'])->name('menu.items.update');
-    Route::delete('menu/items/{item}', [MenuController::class, 'destroyItem'])->name('menu.items.destroy');
+    // `package:menu` is the real gate; the sidebar merely hides the entry, and a
+    // typed URL walks straight past a hidden link.
+    Route::middleware('package:menu')->group(function () {
+        Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
+        Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
+        Route::post('menu/import', [MenuController::class, 'import'])->name('menu.import');
+        Route::post('menu/categories', [MenuController::class, 'storeCategory'])->name('menu.categories.store');
+        Route::delete('menu/categories/{category}', [MenuController::class, 'destroyCategory'])->name('menu.categories.destroy');
+        Route::post('menu/items', [MenuController::class, 'storeItem'])->name('menu.items.store');
+        Route::put('menu/items/{item}', [MenuController::class, 'updateItem'])->name('menu.items.update');
+        Route::delete('menu/items/{item}', [MenuController::class, 'destroyItem'])->name('menu.items.destroy');
+    });
 
     // Expenses
-    Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
-    Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
-    Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
-    Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    Route::middleware('package:expenses')->group(function () {
+        Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+        Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    });
 
     // Reports
     // الموازنة المالية - money in vs money out per account. Read-only.
@@ -226,15 +232,31 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
-    // Constants - lists + items
+    /*
+     * Constants.
+     *
+     * Deliberately NOT gated as one block. The page carries two different things:
+     *
+     *   - naming the catalogue, which is what puts that section in the sidebar at
+     *     all. Gated on `menu`, because it configures the menu. Basic sells `menu`
+     *     without `constants`, so gating this on `constants` would leave a Basic
+     *     tenant holding a feature they could never switch on - the page that
+     *     reveals it would be shut.
+     *   - custom lists, which are the `constants` feature proper.
+     *
+     * The index itself stays ungated: it is the page where that configuring
+     * happens, and it is already behind the ConstantsManage permission.
+     */
     Route::get('constants', [ConstantController::class, 'index'])->name('constants.index');
-    // What this tenant calls its catalogue - a per-account constant, so it lives
-    // on the constants page rather than in a settings screen of its own.
-    Route::put('constants/naming', [ConstantController::class, 'updateNaming'])->name('constants.naming.update');
-    Route::post('constants', [ConstantController::class, 'store'])->name('constants.store');
-    Route::delete('constants/{list}', [ConstantController::class, 'destroy'])->name('constants.destroy');
-    Route::post('constants/{list}/items', [ConstantController::class, 'storeItem'])->name('constants.items.store');
-    Route::delete('constants/{list}/items/{item}', [ConstantController::class, 'destroyItem'])->name('constants.items.destroy');
+    Route::put('constants/naming', [ConstantController::class, 'updateNaming'])
+        ->middleware('package:menu')->name('constants.naming.update');
+
+    Route::middleware('package:constants')->group(function () {
+        Route::post('constants', [ConstantController::class, 'store'])->name('constants.store');
+        Route::delete('constants/{list}', [ConstantController::class, 'destroy'])->name('constants.destroy');
+        Route::post('constants/{list}/items', [ConstantController::class, 'storeItem'])->name('constants.items.store');
+        Route::delete('constants/{list}/items/{item}', [ConstantController::class, 'destroyItem'])->name('constants.items.destroy');
+    });
 
     // Team
     Route::get('team', [TeamController::class, 'index'])->name('team.index');

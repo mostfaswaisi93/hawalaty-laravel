@@ -17,6 +17,10 @@
 @props([
     'model',                 // Alpine expression holding the chosen ligature
     'label' => null,
+    // The field this submits as. Defaults to the catalogue's own `icon` column;
+    // the naming form on /constants posts it as `catalogIcon` instead, because
+    // there it is the SECTION's glyph rather than one entry's.
+    'name' => 'icon',
 ])
 
 @php
@@ -39,7 +43,7 @@
         {{ $label ?? __('الأيقونة') }} <span class="text-outline">({{ __('اختياري') }})</span>
     </label>
 
-    <input type="hidden" name="icon" :value="{{ $model }} || ''">
+    <input type="hidden" name="{{ $name }}" :value="{{ $model }} || ''">
 
     <button type="button" @click="pickerOpen = !pickerOpen"
         aria-labelledby="{{ $pickerId }}-label {{ $pickerId }}-value"

@@ -31,30 +31,48 @@
                     <span class="material-symbols-outlined">sell</span>
                 </span>
                 <div>
-                    <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('مسمّيات القائمة') }}</h2>
-                    <p class="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">{{ __('سمِّ ما تبيعه بلغة عملك - قائمة طعام، أصناف فاكهة، أنواع محروقات...') }}</p>
+                    <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('قائمة الأصناف') }}</h2>
+                    <p class="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">{{ __('سمِّ ما تبيعه بلغة عملك واختر أيقونته - قائمة طعام، أنواع محروقات، عناوين كتب...') }}</p>
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('constants.naming.update') }}" x-data="{ saving: false }" @submit="saving = true" class="space-y-5">
+            {{-- Says plainly what saving a name DOES, because the effect lands in
+                 the sidebar rather than on this page. --}}
+            @if (! $naming->isConfigured())
+                <div class="mb-5 flex items-start gap-3 rounded-2xl border border-secondary/30 bg-secondary-container/15 p-4">
+                    <span class="material-symbols-outlined flex-shrink-0 text-secondary">lightbulb</span>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">
+                        {{ __('لم تُنشئ قائمتك بعد. اختر لها اسماً وأيقونة واحفظ - عندها فقط تظهر في القائمة الجانبية وتبدأ بإضافة فئاتك وأصنافك.') }}
+                    </p>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('constants.naming.update') }}"
+                {{-- `pickerOpen` lives inside x-icon-picker itself, so only the
+                     chosen glyph is held here. --}}
+                x-data="{ saving: false, catalogIcon: '{{ old('catalogIcon', $naming->isConfigured() ? $naming->icon() : '') }}' }"
+                @submit="saving = true" class="space-y-5">
                 @csrf
                 @method('PUT')
 
+                {{-- Every field shows the STORED value or nothing, with the fallback
+                     as a placeholder. Pre-filling them with the defaults - which is
+                     what this form used to do - made an unmade choice look made, and
+                     any save would then have written the placeholder in as a real
+                     decision, quietly putting the section in the sidebar. --}}
                 <div class="grid gap-4 md:grid-cols-3">
                     <div class="space-y-1.5">
                         <label for="catalogLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم القائمة') }}</label>
                         <input id="catalogLabel" name="catalogLabel" maxlength="40"
-                            value="{{ old('catalogLabel', $naming->catalog()) }}"
-                            {{-- Shows the actual fallback, so the field hints what
-                                 leaving it empty gives you. --}}
-                            placeholder="{{ app(\App\Services\Tenant\CatalogNaming::class)->defaults()[\App\Services\Tenant\CatalogNaming::CATALOG] }}"
+                            value="{{ old('catalogLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATALOG)) }}"
+                            placeholder="{{ __('مثال: قائمة الطعام، المحروقات، الكتب') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         @error('catalogLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                     </div>
                     <div class="space-y-1.5">
                         <label for="categoryLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الفئة') }}</label>
                         <input id="categoryLabel" name="categoryLabel" maxlength="24"
-                            value="{{ old('categoryLabel', $naming->category()) }}"
+                            value="{{ old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY)) }}"
                             placeholder="{{ __('فئة') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         @error('categoryLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
@@ -62,11 +80,16 @@
                     <div class="space-y-1.5">
                         <label for="itemLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الصنف') }}</label>
                         <input id="itemLabel" name="itemLabel" maxlength="24"
-                            value="{{ old('itemLabel', $naming->item()) }}"
+                            value="{{ old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM)) }}"
                             placeholder="{{ __('صنف') }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         @error('itemLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                     </div>
+                </div>
+
+                <div class="md:max-w-sm">
+                    <x-icon-picker model="catalogIcon" name="catalogIcon" :label="__('أيقونة القائمة')" />
+                    @error('catalogIcon')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/50 pt-4">
