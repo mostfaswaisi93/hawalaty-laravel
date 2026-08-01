@@ -83,6 +83,8 @@
                                             x-data="{ submitting: false }" @submit="submitting = true">
                                             @csrf
                                             <button type="submit" :disabled="submitting" aria-label="{{ __('تعليم كمقروءة') }}" title="{{ __('تعليم كمقروءة') }}"
+                                                @mouseenter="showTipBelow($el, @js(__('تعليم كمقروءة')))" @mouseleave="hideTip()"
+                                                @focus="showTipBelow($el, @js(__('تعليم كمقروءة')))" @blur="hideTip()"
                                                 class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary disabled:cursor-not-allowed disabled:opacity-60">
                                                 <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'"
                                                     x-text="submitting ? 'progress_activity' : 'mark_email_read'">mark_email_read</span>

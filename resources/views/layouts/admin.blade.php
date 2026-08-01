@@ -246,7 +246,13 @@
     <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface/85 px-inline-lg backdrop-blur">
             <div class="flex min-w-0 items-center gap-3">
-                <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
+                {{-- See layouts/app.blade.php: `pointer: fine` keeps this to a narrow
+                     desktop window, and `hideTip()` on click stops the bubble hanging
+                     over the rail that is about to slide across this button. --}}
+                <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="hideTip(); sidebarOpen = !sidebarOpen"
+                    @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
+                    aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
 
@@ -391,7 +397,7 @@
          leaves a transform in place and therefore its own stacking context,
          which was painting over the tooltip when it lived higher up. --}}
     <div x-show="tipText !== ''" x-cloak
-        class="pointer-events-none fixed z-[90] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
+        class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
         {{-- The translate differs per placement, so it lives in the bound style
              rather than a utility class. `side` clears whichever sidebar width is
              active (5.5rem / 16rem); `below` centres on the header control using

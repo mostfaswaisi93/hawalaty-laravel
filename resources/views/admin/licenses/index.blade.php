@@ -56,7 +56,8 @@
                         <option value="{{ $package->id }}" @selected(($packageId ?? '') === $package->id)>{{ $package->name }}</option>
                     @endforeach
                 </select>
-                <button type="submit" :disabled="filtering" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
+                <button type="submit" :disabled="filtering" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}"
+                    @mouseenter="showTipBelow($el, @js(__('تصفية')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('تصفية')))" @blur="hideTip()">
                     <span class="material-symbols-outlined" :class="filtering && 'animate-spin'"
                         x-text="filtering ? 'progress_activity' : 'filter_alt'">filter_alt</span>
                 </button>
@@ -99,7 +100,8 @@
                                                  form and is deliberately not reused here. --}}
                                             <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex"
                                                 x-data="{ activating: false }" @submit="activating = true">@csrf
-                                                <button type="submit" :disabled="activating" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
+                                                <button type="submit" :disabled="activating" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}"
+                                                    @mouseenter="showTipBelow($el, @js(__('تفعيل')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('تفعيل')))" @blur="hideTip()">
                                                     <span class="material-symbols-outlined !text-xl" :class="activating && 'animate-spin'"
                                                         x-text="activating ? 'progress_activity' : 'play_circle'">play_circle</span>
                                                 </button>
@@ -133,7 +135,8 @@
                                     @else
                                         <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex"
                                             x-data="{ activating: false }" @submit="activating = true">@csrf
-                                            <button type="submit" :disabled="activating" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}">
+                                            <button type="submit" :disabled="activating" class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}"
+                                                @mouseenter="showTipBelow($el, @js(__('تفعيل')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('تفعيل')))" @blur="hideTip()">
                                                 <span class="material-symbols-outlined !text-lg" :class="activating && 'animate-spin'"
                                                     x-text="activating ? 'progress_activity' : 'play_circle'">play_circle</span>
                                             </button>

@@ -143,7 +143,7 @@
          its own stacking context, which would paint over a bubble declared
          higher up. Only the `below` placement is bound; see the x-data above. --}}
     <div x-show="tipText !== ''" x-cloak
-        class="pointer-events-none fixed z-[90] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
+        class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
         {{-- Physical `left`, which is already direction-correct off
              getBoundingClientRect, so it centres under the control in both dirs. --}}
         :style="`top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"

@@ -121,7 +121,8 @@
                                             <form method="POST" action="{{ route('constants.items.destroy', [$list->id, $item->id]) }}" class="inline-flex"
                                                 x-data="{ removing: false }" @submit="removing = true">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" :disabled="removing" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" class="flex h-5 w-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-error/15 hover:text-error disabled:cursor-not-allowed disabled:opacity-60">
+                                                <button type="submit" :disabled="removing" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}" class="flex h-5 w-5 items-center justify-center rounded-full text-outline transition-colors hover:bg-error/15 hover:text-error disabled:cursor-not-allowed disabled:opacity-60"
+                                                    @mouseenter="showTipBelow($el, @js(__('حذف')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('حذف')))" @blur="hideTip()">
                                                     <span class="material-symbols-outlined !text-base" :class="removing && 'animate-spin'"
                                                         x-text="removing ? 'progress_activity' : 'close'">close</span>
                                                 </button>
@@ -137,7 +138,8 @@
                             @csrf
                             <input name="value" required placeholder="{{ __('أضِف عنصراً...') }}"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-sm outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                            <button type="submit" :disabled="adding" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('إضافة عنصر') }}" title="{{ __('إضافة عنصر') }}">
+                            <button type="submit" :disabled="adding" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('إضافة عنصر') }}" title="{{ __('إضافة عنصر') }}"
+                                @mouseenter="showTipBelow($el, @js(__('إضافة عنصر')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('إضافة عنصر')))" @blur="hideTip()">
                                 <span class="material-symbols-outlined" :class="adding && 'animate-spin'"
                                     x-text="adding ? 'progress_activity' : 'add'">add</span>
                             </button>

@@ -23,7 +23,8 @@
                     <option value="{{ $admin->id }}" @selected(($adminId ?? '') === $admin->id)>{{ $admin->name }}</option>
                 @endforeach
             </select>
-            <button type="submit" :disabled="filtering" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}">
+            <button type="submit" :disabled="filtering" class="flex items-center justify-center rounded-xl bg-surface-container px-4 text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تصفية') }}" title="{{ __('تصفية') }}"
+                @mouseenter="showTipBelow($el, @js(__('تصفية')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('تصفية')))" @blur="hideTip()">
                 <span class="material-symbols-outlined" :class="filtering && 'animate-spin'"
                     x-text="filtering ? 'progress_activity' : 'filter_alt'">filter_alt</span>
             </button>

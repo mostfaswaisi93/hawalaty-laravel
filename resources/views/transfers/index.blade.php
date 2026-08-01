@@ -132,11 +132,15 @@
                                      a mis-tap destroys the line. Wider gap for the same reason. --}}
                                 <div class="flex items-center gap-2">
                                     <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}" title="{{ __('إنقاص') }}"
+                                        @mouseenter="showTipBelow($el, @js(__('إنقاص')))" @mouseleave="hideTip()"
+                                        @focus="showTipBelow($el, @js(__('إنقاص')))" @blur="hideTip()"
                                         class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error">
                                         <span class="material-symbols-outlined !text-lg" x-text="line.qty > 1 ? 'remove' : 'delete'"></span>
                                     </button>
                                     <span class="w-6 text-center font-numeral-lg font-bold text-on-surface" x-text="line.qty"></span>
                                     <button type="button" @click="inc(line)" aria-label="{{ __('زيادة') }}" title="{{ __('زيادة') }}"
+                                        @mouseenter="showTipBelow($el, @js(__('زيادة')))" @mouseleave="hideTip()"
+                                        @focus="showTipBelow($el, @js(__('زيادة')))" @blur="hideTip()"
                                         class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-on-primary">
                                         <span class="material-symbols-outlined !text-lg">add</span>
                                     </button>

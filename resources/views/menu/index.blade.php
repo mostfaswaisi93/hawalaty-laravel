@@ -40,10 +40,14 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('menu.export') }}"
+                    @mouseenter="showTipBelow($el, @js(__('تصدير CSV')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, @js(__('تصدير CSV')))" @blur="hideTip()"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تصدير CSV') }}" title="{{ __('تصدير CSV') }}">
                     <span class="material-symbols-outlined !text-xl">download</span>
                 </a>
                 <button type="button" @click="importOpen = true; submitting = false"
+                    @mouseenter="showTipBelow($el, @js(__('استيراد CSV')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, @js(__('استيراد CSV')))" @blur="hideTip()"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('استيراد CSV') }}" title="{{ __('استيراد CSV') }}">
                     <span class="material-symbols-outlined !text-xl">upload</span>
                 </button>

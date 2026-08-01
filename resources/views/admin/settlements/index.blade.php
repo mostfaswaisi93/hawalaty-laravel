@@ -208,6 +208,8 @@
                                 <td class="px-4 py-3"><x-settlement-status :status="$row->status" /></td>
                                 <td class="px-4 py-3 text-end">
                                     <a href="{{ route('admin.settlements.show', $row) }}"
+                                        @mouseenter="showTipBelow($el, @js(__('عرض التفاصيل')))" @mouseleave="hideTip()"
+                                        @focus="showTipBelow($el, @js(__('عرض التفاصيل')))" @blur="hideTip()"
                                         class="inline-flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
                                         aria-label="{{ __('عرض التفاصيل') }}" title="{{ __('عرض التفاصيل') }}">
                                         <span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_right</span>
@@ -293,6 +295,8 @@
                             class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container"
                             title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
                         <button type="submit" :disabled="submitting"
+                            @mouseenter="showTipBelow($el, @js(__('تنفيذ')))" @mouseleave="hideTip()"
+                            @focus="showTipBelow($el, @js(__('تنفيذ')))" @blur="hideTip()"
                             class="rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:opacity-50"
                             title="{{ __('تنفيذ') }}"
                             x-text="submitting ? '{{ __('جارٍ التنفيذ...') }}' : '{{ __('تنفيذ') }}'"></button>

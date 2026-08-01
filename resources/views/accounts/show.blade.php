@@ -14,7 +14,8 @@
         {{-- ══════════════ header ══════════════ --}}
         <header class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
-                <a href="{{ route('accounts.index') }}" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('رجوع') }}" title="{{ __('رجوع') }}">
+                <a href="{{ route('accounts.index') }}" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('رجوع') }}" title="{{ __('رجوع') }}"
+                    @mouseenter="showTipBelow($el, @js(__('رجوع')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('رجوع')))" @blur="hideTip()">
                     <span class="material-symbols-outlined rtl:-scale-x-100">arrow_back</span>
                 </a>
                 <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -35,6 +36,8 @@
                     </a>
                     <form id="delete-account" method="POST" action="{{ route('accounts.destroy', $account->id) }}" class="inline-flex">@csrf @method('DELETE')</form>
                     <button type="button" @click="confirmOpen = true; confirmMessage = '{{ __('هل أنت متأكد من حذف هذا الحساب؟') }}'; confirmFormId = 'delete-account'"
+                        @mouseenter="showTipBelow($el, @js(__('حذف')))" @mouseleave="hideTip()"
+                        @focus="showTipBelow($el, @js(__('حذف')))" @blur="hideTip()"
                         class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error" aria-label="{{ __('حذف') }}" title="{{ __('حذف') }}">
                         <span class="material-symbols-outlined !text-xl">delete</span>
                     </button>

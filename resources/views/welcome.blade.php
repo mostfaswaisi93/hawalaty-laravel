@@ -189,7 +189,23 @@
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}"
-    x-data="{ dark: localStorage.getItem('theme') === 'dark' }"
+    {{-- The landing page is standalone - it extends no layout, so it carries its
+         own copy of the tooltip state. Only the `below` placement: there is no
+         sidebar rail here, so no `collapsed` for a `side` bubble to clear. --}}
+    x-data="{
+        dark: localStorage.getItem('theme') === 'dark',
+        tipText: '', tipTop: 0, tipLeft: 0,
+        showTipBelow(el, text) {
+            // Mouse affordance only - on touch, mouseenter fires on tap and the
+            // bubble would linger with nothing to dismiss it.
+            if (!window.matchMedia('(pointer: fine)').matches) return;
+            const r = el.getBoundingClientRect();
+            this.tipTop = r.bottom + 10;
+            this.tipLeft = r.left + r.width / 2;
+            this.tipText = text;
+        },
+        hideTip() { this.tipText = ''; },
+    }"
     x-init="$watch('dark', v => { document.documentElement.classList.toggle('dark', v); localStorage.setItem('theme', v ? 'dark' : 'light') }); document.documentElement.classList.toggle('dark', dark)"
     :class="{ dark: dark }">
 <head>
@@ -314,6 +330,8 @@
                     {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                 </a>
                 <button type="button" @click="dark = !dark"
+                    @mouseenter="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, dark ? @js(__('الوضع الفاتح')) : @js(__('الوضع الداكن')))" @blur="hideTip()"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
                     aria-label="{{ __('تبديل المظهر') }}" title="{{ __('تبديل المظهر') }}">
                     <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
@@ -324,7 +342,14 @@
                 <a href="{{ route('signup') }}" class="hidden rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 sm:inline-block" title="{{ __('ابدأ مجاناً') }}">
                     {{ __('ابدأ مجاناً') }}
                 </a>
-                <button type="button" @click="open = !open"
+                {{-- `showTipBelow` resolves up the Alpine scope chain from this
+                     header's own `x-data` to the root one on <html>.
+
+                     `hideTip()` on click: the mobile panel drops open directly
+                     beneath this button, exactly where the bubble sits. --}}
+                <button type="button" @click="hideTip(); open = !open"
+                    @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high lg:hidden"
                     :aria-expanded="open ? 'true' : 'false'" aria-controls="mobile-menu"
                     aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
@@ -1161,5 +1186,13 @@
             });
         });
     </script>
+
+    {{-- The shared tooltip bubble, last in the body so no transformed ancestor's
+         stacking context can paint over it. z-[110] clears the sticky header
+         (z-50) and any dialog (z-[100]). --}}
+    <div x-show="tipText !== ''" x-cloak
+        class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
+        :style="`top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"
+        x-text="tipText" role="tooltip" style="display:none"></div>
 </body>
 </html>

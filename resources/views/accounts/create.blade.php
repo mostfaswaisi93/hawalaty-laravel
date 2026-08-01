@@ -45,7 +45,8 @@
         }">
 
         <header class="flex items-center gap-3">
-            <a href="{{ route('accounts.index') }}" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('رجوع') }}" title="{{ __('رجوع') }}">
+            <a href="{{ route('accounts.index') }}" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('رجوع') }}" title="{{ __('رجوع') }}"
+                @mouseenter="showTipBelow($el, @js(__('رجوع')))" @mouseleave="hideTip()" @focus="showTipBelow($el, @js(__('رجوع')))" @blur="hideTip()">
                 <span class="material-symbols-outlined rtl:-scale-x-100">arrow_back</span>
             </a>
             <div>

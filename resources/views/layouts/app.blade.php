@@ -268,7 +268,19 @@
     <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface/85 px-inline-lg backdrop-blur">
             <div class="flex flex-1 items-center gap-3">
-                <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="sidebarOpen = !sidebarOpen" aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
+                {{-- Wired even though it is `lg:hidden`: the bubble's own guard is
+                     `pointer: fine`, so this speaks to a narrow DESKTOP window (mouse)
+                     and stays silent on a touch phone, where mouseenter fires on tap
+                     and would leave the bubble with nothing to dismiss it.
+
+                     `hideTip()` on click because opening the rail slides the sidebar
+                     (z-50) over this header button (z-30) - the pointer never
+                     "leaves", so no mouseleave fires and the bubble would hang over
+                     the open menu. --}}
+                <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="hideTip(); sidebarOpen = !sidebarOpen"
+                    @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
+                    @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
+                    aria-label="{{ __('القائمة') }}" title="{{ __('القائمة') }}">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
 
@@ -307,7 +319,12 @@
                             aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}"
                             class="w-full border-none bg-transparent font-body-sm text-sm outline-none placeholder:text-outline focus:ring-0" />
                         <span x-show="loading" x-cloak class="material-symbols-outlined flex-shrink-0 animate-spin !text-lg text-outline">progress_activity</span>
-                        <button type="button" x-show="query.length" x-cloak @click="reset(); $refs.desktopSearchInput.focus()"
+                        {{-- `hideTip()` on click, because clearing empties `query` and
+                             `x-show` then pulls this button out from under the cursor -
+                             no mouseleave would ever fire and the bubble would stick. --}}
+                        <button type="button" x-show="query.length" x-cloak @click="hideTip(); reset(); $refs.desktopSearchInput.focus()"
+                            @mouseenter="showTipBelow($el, @js(__('مسح')))" @mouseleave="hideTip()"
+                            @focus="showTipBelow($el, @js(__('مسح')))" @blur="hideTip()"
                             aria-label="{{ __('مسح') }}" title="{{ __('مسح') }}"
                             class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-container-high hover:text-on-surface">
                             <span class="material-symbols-outlined !text-base">close</span>
@@ -540,7 +557,7 @@
          in place and therefore its own stacking context, which paints over the
          tooltip when it lives higher up. --}}
     <div x-show="tipText !== ''" x-cloak
-        class="pointer-events-none fixed z-[90] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
+        class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
         {{-- The translate differs per placement, so it lives in the bound style
              rather than a utility class. `side` clears whichever sidebar width is
              active (5.5rem / 16rem); `below` centres on the header control using

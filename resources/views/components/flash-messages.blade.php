@@ -37,7 +37,12 @@
             {{ $isSuccess ? 'check_circle' : 'error' }}
         </span>
         <p class="font-body-sm text-body-sm font-bold">{{ $flash }}</p>
-        <button type="button" @click="show = false"
+        {{-- Same as x-modal-close: dismissing removes the element from under the
+             cursor, so the bubble is cleared on click rather than relying on a
+             mouseleave that never fires. --}}
+        <button type="button" @click="hideTip(); show = false"
+            @mouseenter="showTipBelow($el, @js(__('إغلاق')))" @mouseleave="hideTip()"
+            @focus="showTipBelow($el, @js(__('إغلاق')))" @blur="hideTip()"
             class="-me-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full opacity-60 transition-opacity hover:opacity-100"
             aria-label="{{ __('إغلاق') }}" title="{{ __('إغلاق') }}">
             <span class="material-symbols-outlined !text-lg">close</span>
