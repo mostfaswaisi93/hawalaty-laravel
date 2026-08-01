@@ -231,20 +231,16 @@
             const style = document.createElement('style');
             document.head.appendChild(style);
 
-            // The roll is continuous: the page must be exactly as long as the
-            // receipt, or the printer feeds (and the operator tears off) a strip
-            // of blank paper after every sale.
             const fit = () => {
                 const mm = sheet.getBoundingClientRect().height * 25.4 / 96;
                 style.textContent = '@page { size: 80mm ' + Math.ceil(mm + 4) + 'mm; margin: 0; }';
             };
 
             fit();
-            // Re-measured on demand: a late web font changes the height, and
-            // Ctrl+P must get the same page as the button does.
+
             window.addEventListener('beforeprint', fit);
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
         })();
-    </script>
+</script>
 </body>
 </html>

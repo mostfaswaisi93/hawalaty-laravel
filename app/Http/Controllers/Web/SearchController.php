@@ -42,6 +42,9 @@ class SearchController extends Controller
             'menuItems' => $results['menuItems']->map(fn (array $m) => $m + [
                 'url' => route('menu.index').'#item-'.$m['id'],
             ]),
+            'teamMembers' => $results['teamMembers']->map(fn (array $t) => $t + [
+                'url' => route('team.index', ['search' => $t['name']]),
+            ]),
         ]);
     }
 }

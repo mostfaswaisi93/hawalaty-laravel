@@ -377,7 +377,7 @@
                 customer: '',
                 customerPhone: '',
                 notes: '',
-                // The UI's three-way choice: cash | bank | wallet.
+
                 payTarget: 'cash',
                 hasChange: false,
                 changeMethod: 'cash',
@@ -392,9 +392,7 @@
                 queueFailed: false,
 
                 init() {
-                    // Reset the fields of the scenario the user just left so a
-                    // stale value never gets submitted (required_if rules key
-                    // off the *submitted* value, not what is visible).
+
                     this.$watch('discount', () => {
                         if (this.paymentMethod === 'bank') this.transferredAmount = this.total.toFixed(2);
                     });
@@ -409,17 +407,11 @@
                     });
                 },
 
-                /**
-                 * What the SERVER is told. Bank and wallet are both transfers -
-                 * `transfers.payment_method` is cash|bank - and which of the two
-                 * it was is carried by the chosen account's own `kind`.
-                 */
                 get paymentMethod() { return this.payTarget === 'cash' ? 'cash' : 'bank'; },
 
                 accountsOfKind(kind) { return this.accounts.filter(a => a.kind === kind); },
                 accountById(id) { return this.accounts.find(a => a.id === id) || null; },
 
-                /** The chosen account's symbol, for the amount labels. */
                 get currencySymbol() { return this.accountById(this.accountId)?.currency || '₪'; },
 
                 get filteredItems() {
@@ -436,7 +428,7 @@
                 },
 
                 get subtotal() { return this.cart.reduce((sum, l) => sum + l.price * l.qty, 0); },
-                /** What the customer owes: the subtotal less any discount, never below zero. */
+
                 get total() { return Math.max(this.subtotal - (parseFloat(this.discount) || 0), 0); },
                 get itemCount() { return this.cart.reduce((sum, l) => sum + l.qty, 0); },
 
@@ -469,18 +461,6 @@
                     return true;
                 },
 
-                /**
-                 * Exactly what StoreTransferRequest validates, so a queued order
-                 * is checked by the same rules as one posted online - the server
-                 * still recomputes the amount from the catalogue either way.
-                 */
-                /**
-                 * Keys that do not apply are OMITTED, never sent as null.
-                 * `changeMethod` and friends are validated with Rule::in without
-                 * `nullable`, which passes over an absent key but rejects an
-                 * explicit null - so sending nulls made every cash order without
-                 * change fail validation on arrival, hours after it was taken.
-                 */
                 orderPayload() {
                     const payload = {
                         customer: this.customer.trim(),
@@ -515,13 +495,6 @@
                     return payload;
                 },
 
-                /**
-                 * Appends a value picked from one of the tenant's constant lists,
-                 * separated by "، ". Skips a value already present so picking the
-                 * same option twice does not duplicate it, and the select is reset
-                 * to its heading by the caller so it reads as an action, not a
-                 * bound field.
-                 */
                 appendNote(value) {
                     if (! value) return;
 
@@ -550,9 +523,6 @@
                 async onSubmit(e) {
                     if (!this.canSubmit) { e.preventDefault(); return; }
 
-                    // Online: let the form post normally. The offline path is a
-                    // fallback, never the default - an order that can reach the
-                    // server now should, so the kitchen sees it now.
                     if (navigator.onLine) {
                         this.submitting = true;
                         return;
@@ -567,13 +537,12 @@
                         this.resetOrder();
                         setTimeout(() => { this.queued = false; }, 6000);
                     } catch {
-                        // Storage refused - private mode, or the disk is full.
-                        // Say so rather than silently losing a sale.
+
                         this.queueFailed = true;
                         this.submitting = false;
                     }
                 },
             };
         };
-    </script>
+</script>
 @endsection

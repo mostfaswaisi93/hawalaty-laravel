@@ -4,15 +4,9 @@
     x-data="{
         dark: localStorage.getItem('theme') === 'dark',
         tipText: '', tipTop: 0, tipLeft: 0,
-        // Header icons: sits below the control, horizontally centred. Uses the
-        // same styled bubble as the app and admin shells instead of the native
-        // `title` attribute, which is slow to appear and cannot be themed.
-        //
-        // Only the `below` placement exists here - this shell has no sidebar
-        // rail, so there is no `collapsed` state for a `side` tooltip to clear.
+
         showTipBelow(el, text) {
-            // Mouse affordance only - on touch, mouseenter fires on tap and the
-            // bubble would linger with nothing to dismiss it.
+
             if (!window.matchMedia('(pointer: fine)').matches) return;
             const r = el.getBoundingClientRect();
             this.tipTop = r.bottom + 10;

@@ -111,7 +111,7 @@ Alpine.data('notificationBell', (initialUnread = 0) => ({
 const SEARCH_MIN = 2;
 const SEARCH_RECENT_KEY = 'hawalaty:recent-searches';
 const SEARCH_RECENT_MAX = 5;
-const EMPTY_RESULTS = () => ({ orders: [], customers: [], banks: [], menuItems: [] });
+const EMPTY_RESULTS = () => ({ orders: [], customers: [], banks: [], menuItems: [], teamMembers: [] });
 
 Alpine.data('globalSearch', () => ({
     query: '',
@@ -156,6 +156,7 @@ Alpine.data('globalSearch', () => ({
             ...this.results.customers,
             ...this.results.banks,
             ...this.results.menuItems,
+            ...this.results.teamMembers,
         ];
     },
 
@@ -180,6 +181,11 @@ Alpine.data('globalSearch', () => ({
                 this.results.orders.length +
                 this.results.customers.length +
                 this.results.banks.length,
+            teamMembers:
+                this.results.orders.length +
+                this.results.customers.length +
+                this.results.banks.length +
+                this.results.menuItems.length,
         };
 
         return before[group] + i;
@@ -256,6 +262,7 @@ Alpine.data('globalSearch', () => ({
                     customers: data.customers ?? [],
                     banks: data.banks ?? [],
                     menuItems: data.menuItems ?? [],
+                    teamMembers: data.teamMembers ?? [],
                 };
                 this.itemLabel = data.itemLabel ?? '';
                 this.searched = true;

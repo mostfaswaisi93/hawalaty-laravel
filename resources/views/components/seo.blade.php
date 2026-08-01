@@ -9,7 +9,7 @@
     'image' => '/og-image.jpg',
     'robots' => 'index, follow, max-image-preview:large, max-snippet:-1',
     // Schema.org graphs, as PHP arrays. One <script> per entry so an invalid
-    // one cannot take the others down with it.
+
     'schemas' => [],
 ])
 

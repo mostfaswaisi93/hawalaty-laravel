@@ -53,10 +53,7 @@
         collapsed: localStorage.getItem('adminSidebarCollapsed') === '1',
         confirmOpen: false, confirmMessage: '', confirmFormId: null, confirmTitle: '', confirmLabel: '',
         tipText: '', tipTop: 0, tipLeft: 0, tipPlacement: 'side',
-        // Sidebar rail: sits beside the item, vertically centred on it. Shown in
-        // BOTH states - essential when collapsed (no label at all), still useful
-        // when expanded because long labels are `truncate`d. Desktop only, since
-        // below lg the sidebar is a full-width overlay.
+
         showTip(el, text) {
             if (!window.matchMedia('(min-width: 1024px)').matches) return;
             const r = el.getBoundingClientRect();
@@ -64,12 +61,9 @@
             this.tipPlacement = 'side';
             this.tipText = text;
         },
-        // Header icons: sits below the control, horizontally centred. Uses the
-        // same styled bubble as the sidebar instead of the native `title`
-        // attribute, which is slow to appear and cannot be themed.
+
         showTipBelow(el, text) {
-            // Mouse affordance only - on touch, mouseenter fires on tap and the
-            // bubble would linger with nothing to dismiss it.
+
             if (!window.matchMedia('(pointer: fine)').matches) return;
             const r = el.getBoundingClientRect();
             this.tipTop = r.bottom + 10;

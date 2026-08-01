@@ -162,8 +162,7 @@
         dark: localStorage.getItem('theme') === 'dark',
         tipText: '', tipTop: 0, tipLeft: 0,
         showTipBelow(el, text) {
-            // Mouse affordance only - on touch, mouseenter fires on tap and the
-            // bubble would linger with nothing to dismiss it.
+
             if (!window.matchMedia('(pointer: fine)').matches) return;
             const r = el.getBoundingClientRect();
             this.tipTop = r.bottom + 10;
@@ -475,10 +474,7 @@
                         start() {
                             if (this.reduced) return;
                             this.stop();
-                            // Auto-advance so the section demonstrates itself to
-                            // someone who never clicks. Any interaction stops it
-                            // for good - fighting a carousel is worse than no
-                            // carousel.
+
                             this.timer = setInterval(() => { this.tab = (this.tab + 1) % {{ count($tour) }} }, 5000);
                         },
                         stop() { if (this.timer) { clearInterval(this.timer); this.timer = null } },
@@ -660,9 +656,7 @@
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg"
                 x-data="{
                     annual: false,
-                    // Two months free on the annual plan, so the yearly figure is
-                    // the monthly price times ten - written out rather than hidden
-                    // in a percentage nobody verifies.
+
                     price(monthly) { return this.annual ? monthly * 10 : monthly },
                 }">
 
@@ -1014,16 +1008,10 @@
     </footer>
 
     <script>
-        /*
-         * Everything on this page that needs script, in one listener. Kept
-         * hand-written rather than folded into Alpine: it runs once, touches no
-         * reactive state, and this way it costs nothing to parse for the pages
-         * behind the login screen.
-         */
+
         document.addEventListener('DOMContentLoaded', function () {
             var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            // ── scroll reveal ──────────────────────────────────────────────
             var revealables = document.querySelectorAll('.reveal:not(.is-visible)');
             if (!('IntersectionObserver' in window)) {
                 revealables.forEach(function (el) { el.classList.add('is-visible'); });
@@ -1038,9 +1026,6 @@
                 revealables.forEach(function (el) { io.observe(el); });
             }
 
-            // ── count-up stats ─────────────────────────────────────────────
-            // The element already renders its final value, so this only ever
-            // makes a correct number more interesting - never supplies it.
             var counters = document.querySelectorAll('.count');
             if ('IntersectionObserver' in window && !reduced) {
                 var countIo = new IntersectionObserver(function (entries) {
@@ -1057,8 +1042,7 @@
                         var step = function (now) {
                             if (started === null) started = now;
                             var p = Math.min((now - started) / duration, 1);
-                            // easeOutCubic - fast then settling, which reads as
-                            // "counting up" rather than "sliding linearly".
+
                             el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
                             if (p < 1) requestAnimationFrame(step);
                         };
@@ -1068,7 +1052,6 @@
                 counters.forEach(function (el) { countIo.observe(el); });
             }
 
-            // ── reading progress ───────────────────────────────────────────
             var bar = document.getElementById('scroll-progress');
             if (bar) {
                 var ticking = false;
@@ -1078,14 +1061,12 @@
                     ticking = false;
                 };
                 window.addEventListener('scroll', function () {
-                    // rAF-throttled: a scroll handler that writes layout on every
-                    // event is the classic way to lose a smooth-scrolling score.
+
                     if (!ticking) { ticking = true; requestAnimationFrame(paint); }
                 }, { passive: true });
                 paint();
             }
 
-            // ── plan-aware contact CTA ─────────────────────────────────────
             var planField = document.getElementById('contact-plan');
             document.querySelectorAll('.plan-cta').forEach(function (cta) {
                 cta.addEventListener('click', function () {
@@ -1095,7 +1076,7 @@
                 });
             });
         });
-    </script>
+</script>
 
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"

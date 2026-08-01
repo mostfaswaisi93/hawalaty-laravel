@@ -34,6 +34,7 @@ class SearchService
                 'customers' => collect(),
                 'banks' => collect(),
                 'menuItems' => collect(),
+                'teamMembers' => collect(),
             ];
         }
 
@@ -45,6 +46,11 @@ class SearchService
                 : collect(),
             'menuItems' => $member?->hasPermission(PermissionKey::MenuManage)
                 ? $this->menuItems($query)
+                : collect(),
+            // Gated on TeamManage: a colleague's email is not something every
+            // member should be able to enumerate through the search box.
+            'teamMembers' => $member?->hasPermission(PermissionKey::TeamManage)
+                ? $this->teamMembers($query)
                 : collect(),
         ];
     }
@@ -104,6 +110,22 @@ class SearchService
                 'code' => $a->institutionName() ?? '',
                 'type' => $a->kind->value,
                 'active' => (bool) $a->active,
+            ]);
+    }
+
+    private function teamMembers(string $query): Collection
+    {
+        return TeamMember::query()
+            ->whereSearch(['name', 'email'], $query)
+            ->with('role:id,name')
+            ->take(self::PER_GROUP)
+            ->get()
+            ->map(fn (TeamMember $t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'email' => $t->email,
+                'roleName' => $t->role?->name,
+                'active' => (bool) $t->active,
             ]);
     }
 

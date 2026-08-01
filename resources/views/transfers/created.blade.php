@@ -93,14 +93,6 @@
             const Ctx = window.AudioContext || window.webkitAudioContext;
             if (!Ctx) return;
 
-            /**
-             * A till: the drawer's short knock, then the bell.
-             *
-             * The bell is what makes it read as MONEY rather than as a generic
-             * "done" beep. Its partials are deliberately INHARMONIC (2.76x, 5.4x
-             * - not 2x, 3x): whole-number ratios sound like an organ, and it is
-             * the out-of-tune ones that the ear hears as struck metal.
-             */
             const chime = () => {
                 const ctx = new Ctx();
                 const now = ctx.currentTime;
@@ -108,12 +100,11 @@
                 out.gain.value = 0.5;
                 out.connect(ctx.destination);
 
-                // ── the drawer: a filtered noise knock ──
                 const len = Math.floor(ctx.sampleRate * 0.05);
                 const buf = ctx.createBuffer(1, len, ctx.sampleRate);
                 const data = buf.getChannelData(0);
                 for (let i = 0; i < len; i++) {
-                    // Decaying white noise - a flat burst reads as static, not a knock.
+
                     data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
                 }
                 const noise = ctx.createBufferSource();
@@ -127,7 +118,6 @@
                 noise.connect(knockFilter).connect(knockGain).connect(out);
                 noise.start(now);
 
-                // ── the bell, struck just after the knock ──
                 const strike = now + 0.045;
                 const base = 1244.5;                       // D#6 - bright, cuts through a noisy shop
                 [[1, 0.9, 1.1], [2.0, 0.5, 0.85], [2.76, 0.32, 0.7], [5.4, 0.14, 0.45]]
@@ -144,7 +134,6 @@
                         osc.stop(strike + decay + 0.05);
                     });
 
-                // A second, quieter strike a beat later - the classic two-hit "cha-ching".
                 const second = strike + 0.13;
                 [[1, 0.7, 0.9], [2.0, 0.38, 0.7], [2.76, 0.22, 0.55]]
                     .forEach(([ratio, level, decay]) => {
@@ -165,8 +154,7 @@
             try {
                 const ctx = new Ctx();
                 if (ctx.state === 'suspended') {
-                    // Autoplay policy: a fresh navigation carries no user gesture,
-                    // so wait for the next real interaction rather than failing.
+
                     ctx.close();
                     const once = () => { chime(); window.removeEventListener('pointerdown', once); };
                     window.addEventListener('pointerdown', once, { once: true });
@@ -174,7 +162,7 @@
                     ctx.close();
                     chime();
                 }
-            } catch (e) { /* audio unavailable - the page is still correct without it */ }
+            } catch (e) {  }
         })();
-    </script>
+</script>
 @endsection

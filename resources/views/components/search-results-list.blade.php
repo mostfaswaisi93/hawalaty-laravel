@@ -118,3 +118,24 @@
         </template>
     </div>
 </template>
+
+<template x-if="results.teamMembers.length">
+    <div>
+        <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('الفريق') }}</p>
+        <template x-for="(t, i) in results.teamMembers" :key="t.id">
+            <a :href="t.url" role="option" :data-result-index="indexOf('teamMembers', i)"
+                :aria-selected="cursor === indexOf('teamMembers', i)"
+                @mouseenter="cursor = indexOf('teamMembers', i)" @click="remember(query.trim())"
+                class="{{ $row }}" :class="cursor === indexOf('teamMembers', i) ? '{{ $rowActive }}' : '{{ $rowIdle }}'">
+                <span class="material-symbols-outlined flex-shrink-0 text-primary">person</span>
+                <span class="min-w-0 flex-1">
+                    <span class="block truncate font-body-sm font-bold text-on-surface">
+                        <template x-for="(p, pi) in parts(t.name)" :key="pi"><span :class="p.hit && 'text-primary underline decoration-primary/40'" x-text="p.text"></span></template>
+                    </span>
+                    <span class="block truncate text-[11px] text-on-surface-variant" dir="ltr" x-text="t.email"></span>
+                </span>
+                <span x-show="t.roleName" class="flex-shrink-0 rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant" x-text="t.roleName"></span>
+            </a>
+        </template>
+    </div>
+</template>
