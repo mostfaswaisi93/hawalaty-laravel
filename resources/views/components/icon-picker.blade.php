@@ -60,7 +60,7 @@
     </button>
 
     <div x-show="pickerOpen" x-cloak x-collapse
-        class="max-h-64 space-y-4 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-low p-3">
+        class="max-h-72 space-y-4 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-low p-3">
 
         {{-- Clearing is a first-class choice, not an absence of one. --}}
         <button type="button" @click="{{ $model }} = ''; pickerOpen = false"
@@ -71,14 +71,20 @@
 
         @foreach ($icons->groups() as $group => $names)
             <div>
-                <p class="mb-1.5 font-label-caps text-[10px] uppercase tracking-wider text-outline">{{ __($group) }}</p>
-                <div class="grid grid-cols-6 gap-1.5">
+                <p class="mb-2 font-label-caps text-[10px] uppercase tracking-wider text-outline">{{ __($group) }}</p>
+                {{-- Fixed-size tiles in a wrapping flex row, NOT `grid-cols-6` with
+                     `aspect-square`. That combination sizes each cell from the
+                     container's width, so the same picker that looked right inside
+                     a narrow modal blew up into huge empty blocks once it was put on
+                     a full-width form - the glyph stayed 20px in the middle of a
+                     250px box. A fixed tile renders identically at any width. --}}
+                <div class="flex flex-wrap gap-2">
                     @foreach ($names as $name)
                         <button type="button" @click="{{ $model }} = @js($name); pickerOpen = false"
-                            class="flex aspect-square items-center justify-center rounded-lg border border-transparent text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
-                            :class="{{ $model }} === @js($name) && '!border-primary bg-primary/10 text-primary'"
+                            class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10 hover:text-primary hover:shadow-md"
+                            :class="{{ $model }} === @js($name) && '!border-primary !bg-primary !text-on-primary shadow-md'"
                             title="{{ $name }}" aria-label="{{ $name }}">
-                            <span class="material-symbols-outlined !text-xl">{{ $name }}</span>
+                            <span class="material-symbols-outlined !text-2xl">{{ $name }}</span>
                         </button>
                     @endforeach
                 </div>

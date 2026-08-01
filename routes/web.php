@@ -258,28 +258,33 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
         Route::delete('constants/{list}/items/{item}', [ConstantController::class, 'destroyItem'])->name('constants.items.destroy');
     });
 
-    // Team
-    Route::get('team', [TeamController::class, 'index'])->name('team.index');
-    Route::post('team', [TeamController::class, 'store'])->name('team.store');
-    Route::put('team/{teamMember}', [TeamController::class, 'update'])->name('team.update');
-    Route::delete('team/{teamMember}', [TeamController::class, 'destroy'])->name('team.destroy');
+    // Team, roles and payroll all sit under the one `team` feature - they are the
+    // same capability seen from three angles.
+    Route::middleware('package:team')->group(function () {
+        Route::get('team', [TeamController::class, 'index'])->name('team.index');
+        Route::post('team', [TeamController::class, 'store'])->name('team.store');
+        Route::put('team/{teamMember}', [TeamController::class, 'update'])->name('team.update');
+        Route::delete('team/{teamMember}', [TeamController::class, 'destroy'])->name('team.destroy');
 
-    // Roles + permissions. Gated on TeamManage: inventing a role is the same
-    // power as assigning one.
-    Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
-    Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
-    Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
-    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+        // Roles + permissions. Gated on TeamManage: inventing a role is the same
+        // power as assigning one.
+        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
 
-    // Payroll. Paying a salary writes an `expenses` row in the same
-    // transaction, so it lands in المصروفات and the reports rather than being
-    // a parallel ledger nobody totals.
-    Route::put('team/{teamMember}/salary', [TeamController::class, 'updateSalary'])->name('team.salary.update');
-    Route::post('team/{teamMember}/salary/pay', [TeamController::class, 'paySalary'])->name('team.salary.pay');
+        // Payroll. Paying a salary writes an `expenses` row in the same
+        // transaction, so it lands in المصروفات and the reports rather than being
+        // a parallel ledger nobody totals.
+        Route::put('team/{teamMember}/salary', [TeamController::class, 'updateSalary'])->name('team.salary.update');
+        Route::post('team/{teamMember}/salary/pay', [TeamController::class, 'paySalary'])->name('team.salary.pay');
+    });
 
     // Devices
-    Route::get('devices', [DeviceController::class, 'index'])->name('devices.index');
-    Route::delete('devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
+    Route::middleware('package:devices')->group(function () {
+        Route::get('devices', [DeviceController::class, 'index'])->name('devices.index');
+        Route::delete('devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
+    });
 
     // Activity log (read-only)
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');

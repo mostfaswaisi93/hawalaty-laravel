@@ -3,17 +3,28 @@
 @section('title', __('الثوابت - حوالاتي'))
 
 @section('content')
+    @php
+        // Custom lists are the `constants` feature; naming the catalogue is not
+        // (see the routes file). A package without it still reaches this page to
+        // configure its section, so the list half is hidden rather than the page
+        // being shut - offering a button the route would 403 is worse than not
+        // offering it.
+        $currentLicense = app()->bound('currentLicense') ? app('currentLicense') : null;
+        $canUseCustomLists = (bool) $currentLicense?->hasFeature(\App\Enums\PackageFeature::Constants);
+    @endphp
     <div class="page-enter space-y-6" x-data="{ listOpen: {{ $errors->has('title') ? 'true' : 'false' }}, submitting: false, confirmOpen: false, confirmMessage: '', confirmFormId: null }">
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('الثوابت') }}</h1>
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('قوائم قيم جاهزة تُعيد استخدامها في عملك.') }}</p>
             </div>
-            <button type="button" @click="listOpen = true; submitting = false"
-                class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('قائمة جديدة') }}">
-                <span class="material-symbols-outlined !text-xl">add</span>
-                {{ __('قائمة جديدة') }}
-            </button>
+            @if ($canUseCustomLists)
+                <button type="button" @click="listOpen = true; submitting = false"
+                    class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95" title="{{ __('قائمة جديدة') }}">
+                    <span class="material-symbols-outlined !text-xl">add</span>
+                    {{ __('قائمة جديدة') }}
+                </button>
+            @endif
         </header>
 
         {{--
@@ -25,87 +36,185 @@
             are the tenant's to choose, and this is the page for per-account
             constants, so it belongs here.
         --}}
-        <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
-            <div class="mb-5 flex items-center gap-3">
-                <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary-container/20 text-secondary">
-                    <span class="material-symbols-outlined">sell</span>
-                </span>
-                <div>
-                    <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('قائمة الأصناف') }}</h2>
-                    <p class="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">{{ __('سمِّ ما تبيعه بلغة عملك واختر أيقونته - قائمة طعام، أنواع محروقات، عناوين كتب...') }}</p>
+        {{-- A SUMMARY, with the editing behind a dialog. The form used to sit open
+             on the page, which is what made the icon grid stretch across the full
+             width; a dialog also matches how every other create/edit flow in the
+             app behaves. --}}
+        {{-- State lives on this PLAIN wrapper, and the dialog is a sibling of the
+             card rather than a child of it.
+
+             `.reveal-up` animates with fill-mode:both, so its transform survives
+             the animation - and a transformed ancestor becomes the containing
+             block for `position: fixed`. A dialog nested inside the card was
+             therefore sized against the card instead of the viewport: the backdrop
+             stopped at the card's edges and the panel was squeezed to its width.
+             Same trap the sidebar tooltip documents for `.page-enter`. --}}
+        <div x-data="{
+                open: {{ $errors->hasAny(['catalogLabel', 'categoryLabel', 'itemLabel', 'catalogIcon']) ? 'true' : 'false' }},
+                saving: false,
+                catalogLabel: @js(old('catalogLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATALOG) ?? '')),
+                categoryLabel: @js(old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY) ?? '')),
+                itemLabel: @js(old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM) ?? '')),
+                catalogIcon: @js(old('catalogIcon', $naming->isConfigured() ? $naming->icon() : '')),
+                /*
+                 * Picking a trade fills the name AND its icon in one go. It never
+                 * overwrites a name already typed - the preset is a starting point,
+                 * not a correction.
+                 */
+                applyPreset(label, icon) {
+                    this.catalogLabel = label;
+                    if (! this.catalogIcon) { this.catalogIcon = icon; }
+                },
+            }"
+            @keydown.escape.window="open = false">
+
+            <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl {{ $naming->isConfigured() ? 'bg-primary/10 text-primary' : 'bg-secondary-container/20 text-secondary' }}">
+                        <span class="material-symbols-outlined !text-2xl">{{ $naming->isConfigured() ? $naming->icon() : 'add_circle' }}</span>
+                    </span>
+                    <div class="min-w-0">
+                        <h2 class="font-headline-md text-headline-md text-on-surface">
+                            {{ $naming->isConfigured() ? $naming->catalog() : __('لم تُنشئ قائمتك بعد') }}
+                        </h2>
+                        <p class="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">
+                            @if ($naming->isConfigured())
+                                {{ __(':category · :item', ['category' => $naming->category(), 'item' => $naming->item()]) }}
+                            @else
+                                {{ __('اختر لها اسماً وأيقونة - عندها فقط تظهر في القائمة الجانبية.') }}
+                            @endif
+                        </p>
+                    </div>
                 </div>
+
+                <button type="button" @click="open = true"
+                    class="press flex flex-shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 font-body-sm font-bold shadow-lg transition-all {{ $naming->isConfigured() ? 'border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container' : 'bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container' }}"
+                    title="{{ $naming->isConfigured() ? __('تعديل القائمة') : __('إنشاء القائمة') }}">
+                    <span class="material-symbols-outlined !text-xl">{{ $naming->isConfigured() ? 'edit' : 'add' }}</span>
+                    {{ $naming->isConfigured() ? __('تعديل القائمة') : __('إنشاء القائمة') }}
+                </button>
             </div>
 
-            {{-- Says plainly what saving a name DOES, because the effect lands in
-                 the sidebar rather than on this page. --}}
-            @if (! $naming->isConfigured())
-                <div class="mb-5 flex items-start gap-3 rounded-2xl border border-secondary/30 bg-secondary-container/15 p-4">
-                    <span class="material-symbols-outlined flex-shrink-0 text-secondary">lightbulb</span>
-                    <p class="font-body-sm text-body-sm text-on-surface-variant">
-                        {{ __('لم تُنشئ قائمتك بعد. اختر لها اسماً وأيقونة واحفظ - عندها فقط تظهر في القائمة الجانبية وتبدأ بإضافة فئاتك وأصنافك.') }}
-                    </p>
-                </div>
-            @endif
+            </section>
 
-            <form method="POST" action="{{ route('constants.naming.update') }}"
-                {{-- `pickerOpen` lives inside x-icon-picker itself, so only the
-                     chosen glyph is held here. --}}
-                x-data="{ saving: false, catalogIcon: '{{ old('catalogIcon', $naming->isConfigured() ? $naming->icon() : '') }}' }"
-                @submit="saving = true" class="space-y-5">
-                @csrf
-                @method('PUT')
+            {{-- The dialog. z-[100] matches x-modal so it clears the sticky header,
+                 and the shared tooltip at z-[110] still floats above it. Kept
+                 OUTSIDE the card above - see the note on the wrapper. --}}
+            <div x-show="open" x-cloak style="display:none" class="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="catalog-dialog-title">
+                <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity @click="open = false"></div>
 
-                {{-- Every field shows the STORED value or nothing, with the fallback
-                     as a placeholder. Pre-filling them with the defaults - which is
-                     what this form used to do - made an unmade choice look made, and
-                     any save would then have written the placeholder in as a real
-                     decision, quietly putting the section in the sidebar. --}}
-                <div class="grid gap-4 md:grid-cols-3">
-                    <div class="space-y-1.5">
-                        <label for="catalogLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم القائمة') }}</label>
-                        <input id="catalogLabel" name="catalogLabel" maxlength="40"
-                            value="{{ old('catalogLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATALOG)) }}"
-                            placeholder="{{ __('مثال: قائمة الطعام، المحروقات، الكتب') }}"
-                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                        @error('catalogLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                <div class="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                    x-show="open"
+                    x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+
+                    <x-modal-close on-close="open = false" />
+
+                    <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
+                        <h3 id="catalog-dialog-title" class="font-headline-md text-headline-md">{{ __('قائمة الأصناف') }}</h3>
+                        <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">{{ __('سمِّ ما تبيعه بلغة عملك واختر أيقونته.') }}</p>
                     </div>
-                    <div class="space-y-1.5">
-                        <label for="categoryLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الفئة') }}</label>
-                        <input id="categoryLabel" name="categoryLabel" maxlength="24"
-                            value="{{ old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY)) }}"
-                            placeholder="{{ __('فئة') }}"
-                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                        @error('categoryLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
-                    </div>
-                    <div class="space-y-1.5">
-                        <label for="itemLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الصنف') }}</label>
-                        <input id="itemLabel" name="itemLabel" maxlength="24"
-                            value="{{ old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM)) }}"
-                            placeholder="{{ __('صنف') }}"
-                            class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
-                        @error('itemLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
-                    </div>
-                </div>
 
-                <div class="md:max-w-sm">
-                    <x-icon-picker model="catalogIcon" name="catalogIcon" :label="__('أيقونة القائمة')" />
-                    @error('catalogIcon')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
-                </div>
+                    <form method="POST" action="{{ route('constants.naming.update') }}" @submit="saving = true" class="space-y-5 p-6">
+                        @csrf
+                        @method('PUT')
 
-                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/50 pt-4">
-                    <p class="font-body-sm text-body-sm text-outline">{{ __('اترك الحقل فارغاً للعودة إلى التسمية الافتراضية.') }}</p>
-                    <button type="submit" :disabled="saving"
-                        class="press flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container disabled:opacity-50"
-                        title="{{ __('حفظ المسمّيات') }}">
-                        <span class="material-symbols-outlined !text-xl" :class="saving && 'animate-spin'"
-                            x-text="saving ? 'progress_activity' : 'save'">save</span>
-                        {{ __('حفظ المسمّيات') }}
-                    </button>
-                </div>
-            </form>
-        </section>
+                        {{-- Trade shortcuts. One click fills the name and the icon,
+                             which is the whole decision for most accounts. --}}
+                        <div class="space-y-2">
+                            <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اختر نوع نشاطك') }}</label>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($naming->catalogPresets() as $preset)
+                                    <button type="button" @click="applyPreset(@js($preset['label']), @js($preset['icon']))"
+                                        class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-sm text-body-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10 hover:text-primary hover:shadow-md"
+                                        :class="catalogLabel === @js($preset['label']) && '!border-primary bg-primary/10 font-bold text-primary'">
+                                        <span class="material-symbols-outlined !text-xl">{{ $preset['icon'] }}</span>
+                                        {{ $preset['label'] }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
 
-        @if ($lists->isEmpty())
+                        <div class="space-y-1.5">
+                            <label for="catalogLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم القائمة') }}</label>
+                            {{-- Bound to the same property the shortcuts write, so a
+                                 preset shows up here and stays editable. --}}
+                            <input id="catalogLabel" name="catalogLabel" maxlength="40" x-model="catalogLabel"
+                                placeholder="{{ __('مثال: قائمة الطعام، المحروقات، الكتب') }}"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            @error('catalogLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        {{-- Real <select>s: these two are grammar words with a handful
+                             of sensible answers, so a list beats a blank box. "أخرى"
+                             swaps in a text input for anything not covered. --}}
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="space-y-1.5" x-data="{ custom: {{ in_array(old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY)), array_merge([null, ''], $naming->categoryPresets()), true) ? 'false' : 'true' }} }">
+                                <label for="categoryLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الفئة') }}</label>
+                                <select x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, categoryLabel = '') : categoryLabel = $event.target.value"
+                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                    <option value="">{{ __('الافتراضي') }} ({{ $naming->defaults()[\App\Services\Tenant\CatalogNaming::CATEGORY] }})</option>
+                                    @foreach ($naming->categoryPresets() as $option)
+                                        <option value="{{ $option }}" @selected(old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY)) === $option)>{{ $option }}</option>
+                                    @endforeach
+                                    <option value="__other">{{ __('أخرى...') }}</option>
+                                </select>
+                                <input x-show="custom" x-cloak type="text" maxlength="24" x-model="categoryLabel"
+                                    placeholder="{{ __('اكتب المسمّى') }}"
+                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                                <input type="hidden" name="categoryLabel" :value="categoryLabel">
+                                @error('categoryLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+
+                            <div class="space-y-1.5" x-data="{ custom: {{ in_array(old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM)), array_merge([null, ''], $naming->itemPresets()), true) ? 'false' : 'true' }} }">
+                                <label for="itemLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الصنف') }}</label>
+                                <select x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, itemLabel = '') : itemLabel = $event.target.value"
+                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                    <option value="">{{ __('الافتراضي') }} ({{ $naming->defaults()[\App\Services\Tenant\CatalogNaming::ITEM] }})</option>
+                                    @foreach ($naming->itemPresets() as $option)
+                                        <option value="{{ $option }}" @selected(old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM)) === $option)>{{ $option }}</option>
+                                    @endforeach
+                                    <option value="__other">{{ __('أخرى...') }}</option>
+                                </select>
+                                <input x-show="custom" x-cloak type="text" maxlength="24" x-model="itemLabel"
+                                    placeholder="{{ __('اكتب المسمّى') }}"
+                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                                <input type="hidden" name="itemLabel" :value="itemLabel">
+                                @error('itemLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+
+                        <div>
+                            <x-icon-picker model="catalogIcon" name="catalogIcon" :label="__('أيقونة القائمة')" />
+                            @error('catalogIcon')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div class="-mx-6 -mb-6 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
+                            <p class="font-body-sm text-body-sm text-outline">{{ __('أفرغ الاسم لإزالة القائمة من القائمة الجانبية.') }}</p>
+                            <div class="flex items-center gap-3">
+                                <button type="button" @click="open = false"
+                                    class="rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container"
+                                    title="{{ __('إلغاء') }}">{{ __('إلغاء') }}</button>
+                                <button type="submit" :disabled="saving"
+                                    class="press flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container disabled:cursor-not-allowed disabled:opacity-50"
+                                    title="{{ __('حفظ') }}">
+                                    <span class="material-symbols-outlined !text-xl" :class="saving && 'animate-spin'"
+                                        x-text="saving ? 'progress_activity' : 'save'">save</span>
+                                    <span x-text="saving ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ'))">{{ __('حفظ') }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @if (! $canUseCustomLists)
+            <div class="reveal-scale tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-16 text-center">
+                <span class="material-symbols-outlined !text-5xl text-outline/60">lock</span>
+                <p class="font-body-lg text-on-surface-variant">{{ __('القوائم المخصّصة غير متاحة في باقتك الحالية.') }}</p>
+            </div>
+        @elseif ($lists->isEmpty())
             <div class="reveal-scale tonal-elevation flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                 <span class="material-symbols-outlined !text-5xl text-outline/60">tune</span>
                 <p class="font-body-lg text-on-surface-variant">{{ __('لا توجد قوائم بعد') }}</p>

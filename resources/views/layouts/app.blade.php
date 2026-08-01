@@ -46,7 +46,7 @@
                 // so the rail does not put the tenant's own wording through __().
                 // `visible` keeps it out of the rail until the section is named.
                 ['href' => '/menu', 'icon' => $catalogIcon, 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'feature' => \App\Enums\PackageFeature::Menu, 'translated' => true, 'visible' => $catalogConfigured],
-                ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
+                ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage, 'feature' => \App\Enums\PackageFeature::Expenses],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
                 ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
             ],
@@ -55,9 +55,9 @@
             'label' => 'النظام',
             'items' => [
                 ['href' => '/constants', 'icon' => 'tune', 'label' => 'الثوابت', 'match' => 'constants*', 'permission' => \App\Enums\PermissionKey::ConstantsManage],
-                ['href' => '/team', 'icon' => 'group', 'label' => 'الفريق', 'match' => 'team*', 'permission' => \App\Enums\PermissionKey::TeamManage],
-                ['href' => '/roles', 'icon' => 'admin_panel_settings', 'label' => 'الأدوار والصلاحيات', 'match' => 'roles*', 'permission' => \App\Enums\PermissionKey::TeamManage],
-                ['href' => '/devices', 'icon' => 'devices', 'label' => 'الأجهزة', 'match' => 'devices*', 'permission' => \App\Enums\PermissionKey::DevicesManage],
+                ['href' => '/team', 'icon' => 'group', 'label' => 'الفريق', 'match' => 'team*', 'permission' => \App\Enums\PermissionKey::TeamManage, 'feature' => \App\Enums\PackageFeature::Team],
+                ['href' => '/roles', 'icon' => 'admin_panel_settings', 'label' => 'الأدوار والصلاحيات', 'match' => 'roles*', 'permission' => \App\Enums\PermissionKey::TeamManage, 'feature' => \App\Enums\PackageFeature::Team],
+                ['href' => '/devices', 'icon' => 'devices', 'label' => 'الأجهزة', 'match' => 'devices*', 'permission' => \App\Enums\PermissionKey::DevicesManage, 'feature' => \App\Enums\PackageFeature::Devices],
                 ['href' => '/activity-log', 'icon' => 'fact_check', 'label' => 'سجل النشاطات', 'match' => 'activity-log*', 'permission' => null],
                 ['href' => '/settings', 'icon' => 'settings', 'label' => 'الإعدادات', 'match' => 'settings', 'permission' => null],
                 ['href' => '/settings/whatsapp', 'icon' => 'chat', 'label' => 'واتساب', 'match' => 'settings/whatsapp*', 'permission' => \App\Enums\PermissionKey::ConstantsManage, 'feature' => \App\Enums\PackageFeature::WhatsApp],

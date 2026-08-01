@@ -65,6 +65,47 @@ class CatalogNaming
         ];
     }
 
+    /**
+     * Ready-made wordings offered in the naming dialog, each paired with the icon
+     * that trade would reach for.
+     *
+     * A blank text box asks the owner to invent a name for a concept they have not
+     * met yet; a short list of trades they recognise gets them to a correct answer
+     * in one click. Free text stays available - this is a shortcut, not a
+     * whitelist, and the stored value is still whatever they typed.
+     *
+     * @return array<int, array{label: string, icon: string}>
+     */
+    public function catalogPresets(): array
+    {
+        return [
+            ['label' => __('قائمة الطعام'), 'icon' => 'restaurant_menu'],
+            ['label' => __('المخبوزات'), 'icon' => 'bakery_dining'],
+            ['label' => __('المحروقات'), 'icon' => 'local_gas_station'],
+            ['label' => __('الخضار والفواكه'), 'icon' => 'nutrition'],
+            ['label' => __('البقالة'), 'icon' => 'storefront'],
+            ['label' => __('الكتب والقرطاسية'), 'icon' => 'menu_book'],
+            ['label' => __('السجائر والتبغ'), 'icon' => 'smoking_rooms'],
+            ['label' => __('الملابس'), 'icon' => 'checkroom'],
+            ['label' => __('الإلكترونيات'), 'icon' => 'smartphone'],
+            ['label' => __('الأدوية'), 'icon' => 'pill'],
+            ['label' => __('قطع الغيار'), 'icon' => 'build'],
+            ['label' => __('الخدمات'), 'icon' => 'home_repair_service'],
+        ];
+    }
+
+    /** @return array<int, string> singular words for one grouping */
+    public function categoryPresets(): array
+    {
+        return [__('فئة'), __('نوع'), __('قسم'), __('مجموعة'), __('تصنيف')];
+    }
+
+    /** @return array<int, string> singular words for one entry */
+    public function itemPresets(): array
+    {
+        return [__('صنف'), __('منتج'), __('خدمة'), __('سلعة'), __('عنصر')];
+    }
+
     /** The section's own name, e.g. "قائمة الطعام" or "أصناف الفاكهة". */
     public function catalog(): string
     {
@@ -139,8 +180,12 @@ class CatalogNaming
         }
 
         try {
+            // ICON is listed explicitly: it is a stored key like the others but
+            // carries no textual fallback, so it is absent from defaults(). Keying
+            // this query off defaults() alone silently never loaded it - the icon
+            // saved fine and then always read back as the default.
             return $this->resolved = TenantSetting::query()
-                ->whereIn('key', array_keys($this->defaults()))
+                ->whereIn('key', [...array_keys($this->defaults()), self::ICON])
                 ->pluck('value', 'key')
                 ->all();
         } catch (Throwable) {
