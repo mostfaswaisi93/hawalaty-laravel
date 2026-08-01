@@ -9,6 +9,14 @@
 @section('title', __('مركز المساعدة - حوالاتي'))
 
 @php
+    // The catalogue's name in THIS tenant's words, so the help text matches the
+    // sidebar the reader is looking at. Safe for the signed-out case too: with no
+    // tenant connection the service falls back to its neutral defaults rather
+    // than throwing (see CatalogNaming::all()).
+    $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class);
+@endphp
+
+@php
     // Read by layouts.guest through get_defined_vars() - see the <x-seo> call
     // there. Ignored under layouts.app, which is behind auth and has no SEO.
     $metaDescription = __('أجوبة سريعة عن استخدام حوالاتي: إنشاء الطلبات، الحسابات والمحافظ، الفريق والصلاحيات، التقارير، والعمل بدون إنترنت.');
@@ -54,7 +62,7 @@
                     ['/transfers', 'add_shopping_cart', __('طلب جديد'), __('أنشئ طلباً واحسب المجموع تلقائياً')],
                     ['/history', 'receipt_long', __('السجل'), __('تصفّح وابحث في كل طلباتك')],
                     ['/banks', 'account_balance', __('البنوك والمحافظ'), __('أدر وسائل الدفع')],
-                    ['/menu', 'restaurant_menu', __('قائمة الطعام'), __('نظّم الفئات والأصناف')],
+                    ['/menu', 'restaurant_menu', $catalogNaming->catalog(), __('نظّم الفئات والأصناف')],
                     ['/reports', 'assessment', __('التقارير'), __('تابع إيراداتك ونشاطك')],
                     ['/team', 'group', __('الفريق'), __('ادعُ موظفين وامنح صلاحيات')],
                 ] as [$href, $icon, $title, $desc])
@@ -78,7 +86,10 @@
                 @foreach ([
                     [__('كيف أنشئ طلباً جديداً؟'), __('من «طلب جديد»، اختر الأصناف من القائمة لتُضاف إلى السلة، حدّد اسم العميل وطريقة الدفع (نقدي أو تحويل بنكي)، ثم اضغط «إنشاء الطلب». يُحسب الإجمالي تلقائياً من الأصناف.')],
                     [__('كيف أضيف بنكاً أو محفظة؟'), __('من «البنوك والمحافظ» اضغط «إضافة»، أدخل الاسم والنوع (بنك/محفظة) والرمز واختيارياً الهاتف. يمكنك تفعيل أو إيقاف أي وسيلة دفع في أي وقت من مفتاح الحالة.')],
-                    [__('كيف أنظّم قائمة الطعام؟'), __('من «قائمة الطعام» أنشئ فئة أولاً (مثل: المشاوي)، ثم أضِف الأصناف إليها مع أسعارها. يمكنك إخفاء أي صنف مؤقتاً بإيقاف «متاح للطلب» دون حذفه.')],
+                    {{-- Worded through the tenant's own labels, and the example is
+                         left generic: "المشاوي" only makes sense to a restaurant,
+                         and this same answer is read by a fuel station. --}}
+                    [__('كيف أنظّم :catalog؟', ['catalog' => $catalogNaming->catalog()]), __('من «:catalog» أنشئ :category أولاً، ثم أضِف :items إليها مع أسعارها. يمكنك إخفاء أي :item مؤقتاً بإيقاف «متاح للطلب» دون حذفه.', ['catalog' => $catalogNaming->catalog(), 'category' => $catalogNaming->category(), 'items' => __('الأصناف'), 'item' => $catalogNaming->item()])],
                     [__('ما الفرق بين الأدوار؟'), __('المالك يملك كل الصلاحيات. المدير يملك كل الصلاحيات عدا إدارة الفريق. الموظف يمكنه إنشاء الطلبات فقط. يمكنك تعيين الدور المناسب لكل عضو من صفحة «الفريق».')],
                     [__('ماذا تعني حالات الطلب؟'), __('«مكتملة» أي تم استلام الدفع وإنهاء الطلب، «قيد الانتظار» أي جديد لم يُنجَز بعد، و«فاشلة» أي أُلغي أو تعذّر إتمامه.')],
                     [__('كيف أتابع إيراداتي؟'), __('لوحة التحكم تعرض إجمالي الإيرادات ونشاط الأسبوع وأحدث الطلبات. وصفحة «التقارير» تعطيك تفصيلاً أعمق لأداء عملك.')],

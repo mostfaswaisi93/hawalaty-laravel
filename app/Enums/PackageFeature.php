@@ -34,7 +34,10 @@ enum PackageFeature: string
     {
         return match ($this) {
             self::Transfers => __('الطلبات والحوالات'),
-            self::Menu => __('قائمة الطعام'),
+            // Platform-side wording, so it cannot use the tenant's own label -
+            // one package is sold to a bakery and a fuel station alike. Kept
+            // trade-neutral for the same reason CatalogNaming's default is.
+            self::Menu => __('قائمة الأصناف'),
             self::Reports => __('التقارير'),
             self::Banks => __('البنوك والمحافظ'),
             self::Expenses => __('المصروفات'),

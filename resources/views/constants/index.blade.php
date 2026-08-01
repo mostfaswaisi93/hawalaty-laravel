@@ -45,7 +45,9 @@
                         <label for="catalogLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم القائمة') }}</label>
                         <input id="catalogLabel" name="catalogLabel" maxlength="40"
                             value="{{ old('catalogLabel', $naming->catalog()) }}"
-                            placeholder="{{ __('قائمة الطعام') }}"
+                            {{-- Shows the actual fallback, so the field hints what
+                                 leaving it empty gives you. --}}
+                            placeholder="{{ app(\App\Services\Tenant\CatalogNaming::class)->defaults()[\App\Services\Tenant\CatalogNaming::CATALOG] }}"
                             class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         @error('catalogLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                     </div>

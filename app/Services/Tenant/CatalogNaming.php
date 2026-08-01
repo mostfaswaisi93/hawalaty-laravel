@@ -18,8 +18,15 @@ use Throwable;
  *   - `category` one grouping, singular  ("فئة" / "نوع")
  *   - `item`     one entry, singular     ("صنف" / "منتج")
  *
- * The restaurant wording remains the DEFAULT, so existing tenants see no change
- * until they choose otherwise.
+ * The DEFAULTS are trade-neutral. "قائمة الطعام" used to be the fallback, which
+ * meant a brand-new account was told it ran a restaurant before it had entered
+ * anything - a fuel station signing up saw a food menu in its sidebar. The
+ * generic wording says what the section IS (a list of the things you sell)
+ * without naming a trade, and any tenant that wants "قائمة الطعام" back types it
+ * once in /constants.
+ *
+ * Renaming the fallback changes nothing that was explicitly chosen: a tenant who
+ * already saved a label has a row in `tenant_settings`, and that row still wins.
  *
  * Resolved once per request (the labels appear in the sidebar of every page) and
  * degrades to the defaults if the table is unreachable - a missing label must
@@ -40,7 +47,10 @@ class CatalogNaming
     public function defaults(): array
     {
         return [
-            self::CATALOG => __('قائمة الطعام'),
+            // "قائمة الأصناف", not "قائمة الطعام": neutral across a bakery, a
+            // fuel station and a workshop alike. `فئة`/`صنف` were already
+            // trade-neutral and are left as they were.
+            self::CATALOG => __('قائمة الأصناف'),
             self::CATEGORY => __('فئة'),
             self::ITEM => __('صنف'),
         ];

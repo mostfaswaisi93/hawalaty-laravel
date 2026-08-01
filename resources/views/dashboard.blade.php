@@ -64,7 +64,11 @@
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
                             <span class="material-symbols-outlined">restaurant_menu</span>
                         </div>
-                        <span class="text-body-sm font-bold">{{ __('قائمة الطعام') }}</span>
+                        {{-- The tenant's own word, like the sidebar entry that links
+                             to the same page. This tile was left hard-coded, so a
+                             fuel station renaming its catalogue still had "قائمة
+                             الطعام" staring back at it from the dashboard. --}}
+                        <span class="text-body-sm font-bold">{{ app(\App\Services\Tenant\CatalogNaming::class)->catalog() }}</span>
                     </a>
                 @endif
 

@@ -10,12 +10,19 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      *
-     * Order matters: the platform admin + package catalog must exist before
-     * DemoTenantSeeder provisions a tenant (License.package_id is a required
-     * FK, and the demo owner logs into the admin-less tenant space), and
-     * PlatformDemoSeeder runs LAST because its payments are recorded against
-     * whatever licenses exist by then. Every step is idempotent so `db:seed`
-     * can be re-run safely.
+     * The default run is deliberately MINIMAL: the platform admin, the package
+     * catalogue, and one provisioned tenant to work in. Nothing invents
+     * business data.
+     *
+     * Order matters - the admin and the packages must exist before TenantSeeder
+     * provisions anything, because License.package_id is a required FK.
+     *
+     * Sample data is opt-in, never part of this run:
+     *
+     *     php artisan db:seed --class=DemoTenantSeeder     # catalogue, team, orders, expenses
+     *     php artisan db:seed --class=PlatformDemoSeeder   # boxes, partners, payments, clearing
+     *
+     * Every step is idempotent, so `db:seed` can be re-run safely.
      */
     public function run(): void
     {
@@ -28,8 +35,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             PackageSeeder::class,
-            DemoTenantSeeder::class,
-            PlatformDemoSeeder::class,
+            TenantSeeder::class,
         ]);
     }
 }

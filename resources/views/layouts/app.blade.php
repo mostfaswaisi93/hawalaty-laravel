@@ -31,7 +31,9 @@
             'items' => [
                 ['href' => '/accounts', 'icon' => 'wallet', 'label' => 'الحسابات', 'match' => 'accounts*', 'permission' => \App\Enums\PermissionKey::BanksManage],
                 ['href' => '/catalogs', 'icon' => 'category', 'label' => 'الكتالوجات', 'match' => 'catalogs*', 'permission' => \App\Enums\PermissionKey::BanksManage],
-                ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage],
+                // `translated` marks a label that CatalogNaming already resolved,
+                // so the rail does not put the tenant's own wording through __().
+                ['href' => '/menu', 'icon' => 'restaurant_menu', 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'translated' => true],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
                 ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
@@ -195,16 +197,30 @@
                 <div class="mx-3 hidden border-t border-sidebar-border" :class="collapsed ? 'lg:mt-3 lg:block' : 'lg:hidden'"></div>
 
                 @foreach ($group['items'] as $item)
-                    @php $isActive = request()->is($item['match']); @endphp
+                    @php
+                        $isActive = request()->is($item['match']);
+
+                        /*
+                         * Nav labels are Arabic source strings that need translating,
+                         * EXCEPT the catalogue entry: that one is already resolved by
+                         * CatalogNaming, which returns either a translated default or
+                         * the tenant's OWN wording. Running the tenant's wording back
+                         * through __() meant a shop that named its section
+                         * "قائمة الطعام" saw the sidebar say "Menu" in English while
+                         * the dashboard tile beside it kept the Arabic - the label is
+                         * their words, not a key to look up.
+                         */
+                        $label = ($item['translated'] ?? false) ? $item['label'] : __($item['label']);
+                    @endphp
                     <a
                         href="{{ $item['href'] }}"
                         @if ($isActive) aria-current="page" @endif
-                        @mouseenter="showTip($el, @js(__($item['label'])))" @mouseleave="hideTip()"
-                        @focus="showTip($el, @js(__($item['label'])))" @blur="hideTip()"
+                        @mouseenter="showTip($el, @js($label))" @mouseleave="hideTip()"
+                        @focus="showTip($el, @js($label))" @blur="hideTip()"
                         class="flex items-center gap-3 rounded-lg border-s-4 px-4 py-3 font-body-lg text-body-lg transition-all duration-200 {{ $isActive ? 'border-sidebar-accent bg-sidebar-active font-bold text-white' : 'border-transparent text-on-sidebar-muted hover:bg-sidebar-hover hover:text-on-sidebar' }}"
                         :class="collapsed && 'lg:justify-center lg:gap-0 lg:px-0'">
                         <span class="material-symbols-outlined flex-shrink-0 {{ $item['icon'] === 'send' ? 'rtl:-scale-x-100' : '' }}" @if ($isActive) data-weight="fill" @endif>{{ $item['icon'] }}</span>
-                        <span class="truncate" :class="collapsed && 'lg:hidden'">{{ __($item['label']) }}</span>
+                        <span class="truncate" :class="collapsed && 'lg:hidden'">{{ $label }}</span>
                     </a>
                 @endforeach
             @endforeach

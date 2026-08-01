@@ -9,7 +9,6 @@ use App\Enums\RoleKey;
 use App\Enums\SalaryPeriod;
 use App\Enums\TransferStatus;
 use App\Models\License;
-use App\Models\Package;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\AccountType;
 use App\Models\Tenant\BankName;
@@ -31,38 +30,35 @@ use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
 use App\Services\Tenant\SalaryService;
 use App\Services\TenantConnectionResolver;
-use App\Services\TenantProvisioner;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Throwable;
 
 /**
- * Provisions ONE fully-working demo tenant (a Palestinian restaurant) and
- * fills it with realistic Arabic data so the dashboard's revenue tile,
- * weekly-activity chart and recent-orders table all look real.
+ * OPT-IN sample data for the tenant workspace:
  *
- * It reuses App\Services\TenantProvisioner - the exact same service the
- * signup flow uses - so it creates a real License + physical MySQL database
- * + user, runs the tenant migrations, and seeds the baseline
- * permissions/roles/owner, then adds the demo domain rows on top.
+ *     php artisan db:seed --class=DemoTenantSeeder
  *
- * Idempotent: the whole thing is guarded by an existence check on the demo
- * license's customer_name (so re-runs never leak orphan databases/users),
- * and the domain data is only seeded once (guarded by Account::count()). The
- * generated license code + login credentials are printed at the end.
+ * Fills the tenant TenantSeeder provisioned with realistic Arabic trading data
+ * - catalogue, accounts, team, customers, constants, cash boxes, ~59 orders,
+ * expenses and payroll - so the dashboard's revenue tile, weekly-activity chart
+ * and recent-orders table all have something real to draw.
+ *
+ * It no longer provisions its own tenant. DatabaseSeeder's default run creates
+ * exactly one workspace (see TenantSeeder) and this fills THAT one, so a second
+ * "(تجريبي)" business can never appear beside it. If the tenant is missing it
+ * says so and stops rather than inventing one.
+ *
+ * Idempotent, section by section - see run(). Bulk sections (orders, expenses,
+ * payroll) are guarded on their own table being empty; everything with a
+ * natural key dedupes row by row, so a partly-filled workspace is topped up
+ * instead of being skipped or doubled.
  */
 class DemoTenantSeeder extends Seeder
 {
-    private const BUSINESS_NAME = 'مطعم البركة (تجريبي)';
-
-    private const OWNER_NAME = 'أحمد البركة';
-
-    private const OWNER_EMAIL = 'owner@demo.test';
-
-    private const OWNER_PASSWORD = 'password';
+    private const OWNER_PASSWORD = TenantSeeder::OWNER_PASSWORD;
 
     /**
      * One list for BOTH the /customers directory and the names written onto
@@ -88,17 +84,17 @@ class DemoTenantSeeder extends Seeder
     /** Anchored so the "last 7 days" always includes the seeding day. */
     public function run(): void
     {
-        $license = License::where('customer_name', self::BUSINESS_NAME)->first();
+        // Provisioning is TenantSeeder's job. Doing it here as well is what let
+        // a second business appear alongside the real one.
+        $license = License::where('customer_name', TenantSeeder::BUSINESS_NAME)->first();
 
         if (! $license) {
-            $license = $this->provisionTenant();
+            $this->command->warn('Tenant «'.TenantSeeder::BUSINESS_NAME.'» does not exist yet - run `php artisan db:seed` first.');
 
-            if (! $license) {
-                return; // provisioning failed - a hint was already printed
-            }
-        } else {
-            $this->command->info('Demo tenant «'.self::BUSINESS_NAME."» already exists (license {$license->license_code}).");
+            return;
         }
+
+        $this->command->info('Filling «'.TenantSeeder::BUSINESS_NAME."» (license {$license->license_code}) with sample data.");
 
         TenantConnectionResolver::resolve($license->license_code);
         app()->instance('currentLicense', $license);
@@ -160,44 +156,8 @@ class DemoTenantSeeder extends Seeder
         });
 
         $this->command->info($filled === []
-            ? 'Demo tenant domain data already complete - nothing to add.'
-            : 'Demo tenant: seeded '.implode(', ', $filled).'.');
-
-        $this->printCredentials($license->license_code);
-    }
-
-    private function provisionTenant(): ?License
-    {
-        $package = Package::where('name', 'Pro')->first() ?? Package::orderBy('price')->first();
-
-        if (! $package) {
-            $this->command->warn('No package found - run PackageSeeder first. Skipping demo tenant.');
-
-            return null;
-        }
-
-        try {
-            /** @var TenantProvisioner $provisioner */
-            $provisioner = app(TenantProvisioner::class);
-
-            $license = $provisioner->provision([
-                'businessName' => self::BUSINESS_NAME,
-                'ownerName' => self::OWNER_NAME,
-                'ownerEmail' => self::OWNER_EMAIL,
-                'phone' => '0599123456',
-                'password' => self::OWNER_PASSWORD,
-                'packageId' => $package->id,
-            ]);
-
-            $this->command->info('Provisioned demo tenant «'.self::BUSINESS_NAME."» (license {$license->license_code}).");
-
-            return $license;
-        } catch (Throwable $e) {
-            $this->command->error('Failed to provision the demo tenant: '.$e->getMessage());
-            $this->command->warn('The DB user in your .env needs CREATE DATABASE / CREATE USER / GRANT privileges (Laragon root has them).');
-
-            return null;
-        }
+            ? 'Sample data already complete - nothing to add.'
+            : 'Seeded '.implode(', ', $filled).'.');
     }
 
     /**
@@ -618,13 +578,4 @@ class DemoTenantSeeder extends Seeder
         }
     }
 
-    private function printCredentials(string $licenseCode): void
-    {
-        $this->command->newLine();
-        $this->command->getOutput()->writeln('  <fg=black;bg=green> بيانات دخول المستأجر التجريبي / DEMO TENANT LOGIN </>');
-        $this->command->line("  رمز الترخيص / License code : <info>{$licenseCode}</info>");
-        $this->command->line('  البريد / Email             : <info>'.self::OWNER_EMAIL.'</info>');
-        $this->command->line('  كلمة المرور / Password     : <info>'.self::OWNER_PASSWORD.'</info>');
-        $this->command->newLine();
-    }
 }
