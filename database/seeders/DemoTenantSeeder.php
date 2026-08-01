@@ -6,28 +6,37 @@ use App\Enums\AccountKind;
 use App\Enums\ChangeMethod;
 use App\Enums\PaymentMethod;
 use App\Enums\RoleKey;
+use App\Enums\SalaryPeriod;
 use App\Enums\TransferStatus;
 use App\Models\License;
 use App\Models\Package;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\AccountType;
 use App\Models\Tenant\BankName;
+use App\Models\Tenant\CashBox;
+use App\Models\Tenant\ConstantList;
+use App\Models\Tenant\ConstantListItem;
 use App\Models\Tenant\Currency;
+use App\Models\Tenant\Customer;
+use App\Models\Tenant\TenantSetting;
 use App\Models\Tenant\WalletName;
 use App\Models\Tenant\WalletType;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\Role;
+use App\Models\Tenant\SalaryPayment;
 use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
+use App\Services\Tenant\SalaryService;
 use App\Services\TenantConnectionResolver;
 use App\Services\TenantProvisioner;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -55,6 +64,27 @@ class DemoTenantSeeder extends Seeder
 
     private const OWNER_PASSWORD = 'password';
 
+    /**
+     * One list for BOTH the /customers directory and the names written onto
+     * orders. They used to be a local array inside makeTransfer(), which left
+     * the directory empty while history was full of names - a customers page
+     * listing nobody who ever ordered reads as obviously fake.
+     */
+    private const CUSTOMERS = [
+        ['أحمد أبو ياسين', '0599100001'],
+        ['محمد العرّاج', '0599100002'],
+        ['سميرة خليل', '0599100003'],
+        ['يوسف النجّار', '0599100004'],
+        ['هبة عيّاش', '0599100005'],
+        ['خالد شاهين', '0599100006'],
+        ['رنا الطويل', '0599100007'],
+        ['عبدالله زيدان', '0599100008'],
+        ['لينا حدّاد', '0599100009'],
+        ['مازن قنديل', '0599100010'],
+        ['دعاء سلامة', '0599100011'],
+        ['طارق البيطار', '0599100012'],
+    ];
+
     /** Anchored so the "last 7 days" always includes the seeding day. */
     public function run(): void
     {
@@ -73,19 +103,65 @@ class DemoTenantSeeder extends Seeder
         TenantConnectionResolver::resolve($license->license_code);
         app()->instance('currentLicense', $license);
 
-        if (Account::count() > 0) {
-            $this->command->info('Demo tenant domain data already present - skipping.');
-        } else {
-            DB::connection('tenant')->transaction(function () {
-                $accounts = $this->seedAccounts();
-                $items = $this->seedMenu();
-                $this->seedTeam();
-                $this->seedTransfers($accounts, $items);
-                $this->seedExpenses($accounts);
-            });
+        /*
+         * Guarded PER SECTION, not by one `Account::count() > 0` around the
+         * whole block.
+         *
+         * That single guard meant a tenant seeded before a feature shipped could
+         * never be topped up: every later run saw accounts, said "already
+         * present" and skipped everything - so /customers, /constants and the
+         * payroll pages stayed empty on exactly the demo tenant people look at.
+         * It is the same all-or-nothing assumption that made a half-provisioned
+         * tenant unrecoverable through `db:seed` alone.
+         *
+         * Each section now fills only its own gap, so adding a feature here is
+         * picked up by a re-run instead of needing the tenant rebuilt.
+         */
+        $filled = [];
 
-            $this->command->info('Seeded accounts, menu, team, ~55 transfers and expenses for the demo tenant.');
-        }
+        DB::connection('tenant')->transaction(function () use (&$filled) {
+            $accounts = Account::count() > 0 ? Account::get() : tap($this->seedAccounts(), fn () => $filled[] = 'accounts');
+            $items = MenuItem::count() > 0 ? MenuItem::get() : tap($this->seedMenu(), fn () => $filled[] = 'menu');
+            $members = $this->seedTeam($filled);
+
+            /*
+             * These three are keyed on a natural unique column, so they dedupe
+             * ROW BY ROW and need no section guard at all.
+             *
+             * A `count() === 0` guard here was wrong for the same reason the
+             * old whole-block guard was: one stray row - a list someone added by
+             * hand through /constants - would suppress the entire section for
+             * good. Worse for constants specifically, where `title` is validated
+             * unique, so a blind create() against that stray row would fail.
+             */
+            $this->tally($filled, 'customers', $this->seedCustomers());
+            $this->tally($filled, 'constants', $this->seedConstants());
+            $this->tally($filled, 'cash boxes', $this->seedCashBoxes());
+
+            if (Transfer::count() === 0) {
+                $this->seedTransfers($accounts, $items);
+                $filled[] = 'transfers';
+            }
+
+            if (Expense::count() === 0) {
+                $this->seedExpenses($accounts);
+                $filled[] = 'expenses';
+            }
+
+            // After the expenses guard on purpose: payroll writes its OWN
+            // expense rows through SalaryService, so running it first would
+            // leave `Expense::count()` non-zero and suppress the running costs.
+            if (SalaryPayment::count() === 0) {
+                $this->seedSalaries($members, $accounts);
+                $filled[] = 'payroll';
+            }
+
+            $this->seedTenantSettings(); // updateOrCreate - idempotent by itself
+        });
+
+        $this->command->info($filled === []
+            ? 'Demo tenant domain data already complete - nothing to add.'
+            : 'Demo tenant: seeded '.implode(', ', $filled).'.');
 
         $this->printCredentials($license->license_code);
     }
@@ -202,23 +278,211 @@ class DemoTenantSeeder extends Seeder
         return $allItems;
     }
 
-    private function seedTeam(): void
+    /**
+     * Members carry a salary rate now, because without one `payable()` is false
+     * and the /team salary action - and everything in seedSalaries() - has
+     * nothing to work from.
+     *
+     * @return Collection<int, TeamMember>
+     */
+    /**
+     * @param  list<string>  $filled  collects a note when this actually changed something
+     * @return Collection<int, TeamMember>
+     */
+    private function seedTeam(array &$filled): Collection
     {
         $manager = Role::where('key', RoleKey::Manager->value)->first();
         $staff = Role::where('key', RoleKey::Staff->value)->first();
 
         $members = [
-            ['name' => 'سميرة خليل', 'email' => 'manager@demo.test', 'role_id' => $manager?->id],
-            ['name' => 'يوسف النجّار', 'email' => 'staff1@demo.test', 'role_id' => $staff?->id],
-            ['name' => 'هبة عيّاش', 'email' => 'staff2@demo.test', 'role_id' => $staff?->id],
+            ['name' => 'سميرة خليل', 'email' => 'manager@demo.test', 'role_id' => $manager?->id, 'salary_amount' => 2800, 'salary_period' => SalaryPeriod::Monthly->value],
+            ['name' => 'يوسف النجّار', 'email' => 'staff1@demo.test', 'role_id' => $staff?->id, 'salary_amount' => 1900, 'salary_period' => SalaryPeriod::Monthly->value],
+            ['name' => 'هبة عيّاش', 'email' => 'staff2@demo.test', 'role_id' => $staff?->id, 'salary_amount' => 120, 'salary_period' => SalaryPeriod::Daily->value],
         ];
+
+        $touched = false;
+        $result = collect();
 
         foreach ($members as $member) {
             if (! $member['role_id']) {
                 continue;
             }
 
-            TeamMember::create($member + ['password' => self::OWNER_PASSWORD, 'active' => true]);
+            $existing = TeamMember::where('email', $member['email'])->first();
+
+            if (! $existing) {
+                $result->push(TeamMember::create($member + ['password' => self::OWNER_PASSWORD, 'active' => true]));
+                $touched = true;
+
+                continue;
+            }
+
+            /*
+             * Backfill the rate onto members seeded before `salary_amount`
+             * existed. Without it `payable()` stays false, so the /team payroll
+             * action and seedSalaries() below both have nothing to act on - the
+             * feature would look broken on the very tenant used to demo it.
+             * Only the empty case is written; a rate someone edited by hand is
+             * left alone.
+             */
+            if ($existing->salary_amount === null) {
+                $existing->forceFill([
+                    'salary_amount' => $member['salary_amount'],
+                    'salary_period' => $member['salary_period'],
+                ])->save();
+                $touched = true;
+            }
+
+            $result->push($existing);
+        }
+
+        if ($touched) {
+            $filled[] = 'team';
+        }
+
+        return $result;
+    }
+
+    /**
+     * The /customers directory - the same people who appear on the orders.
+     * Keyed on phone, which the schema made the customer's identity.
+     *
+     * @return int rows actually created
+     */
+    private function seedCustomers(): int
+    {
+        $created = 0;
+
+        foreach (self::CUSTOMERS as [$name, $phone]) {
+            $customer = Customer::firstOrCreate(['phone' => $phone], ['name' => $name]);
+            $created += $customer->wasRecentlyCreated ? 1 : 0;
+        }
+
+        return $created;
+    }
+
+    /** Records a section in the run summary only when it changed something. */
+    private function tally(array &$filled, string $label, int $created): void
+    {
+        if ($created > 0) {
+            $filled[] = "{$label} ({$created})";
+        }
+    }
+
+    /**
+     * The /constants page, which shipped empty. Keys mirror
+     * ConstantListService::create()'s `custom-<random>` scheme so a seeded list
+     * is indistinguishable from one the tenant added themselves.
+     */
+    /**
+     * @return int lists and items created, combined
+     */
+    private function seedConstants(): int
+    {
+        $lists = [
+            'طرق التوصيل' => ['استلام من المطعم', 'توصيل داخل المدينة', 'توصيل خارج المدينة', 'تطبيق توصيل'],
+            'ملاحظات الطلب' => ['بدون بصل', 'حار إضافي', 'بدون مايونيز', 'تغليف هدية', 'مستعجل'],
+            'أسباب الإلغاء' => ['العميل ألغى', 'الصنف غير متوفر', 'خطأ في الطلب', 'تأخر التوصيل'],
+        ];
+
+        $created = 0;
+
+        foreach ($lists as $title => $values) {
+            // Matched on title because that is what the app validates unique.
+            // The generated key mirrors ConstantListService::create()'s
+            // `custom-<random>` scheme, so a seeded list is indistinguishable
+            // from one the tenant added themselves.
+            $list = ConstantList::firstOrCreate(
+                ['title' => $title],
+                ['key' => 'custom-'.Str::lower(Str::random(10))],
+            );
+
+            $created += $list->wasRecentlyCreated ? 1 : 0;
+
+            // Items are filled per VALUE, so an existing but empty list - one
+            // added through the UI and never populated - is completed rather
+            // than left half-made.
+            foreach ($values as $position => $value) {
+                $item = ConstantListItem::firstOrCreate(
+                    ['constant_list_id' => $list->id, 'value' => $value],
+                    ['position' => $position + 1],
+                );
+
+                $created += $item->wasRecentlyCreated ? 1 : 0;
+            }
+        }
+
+        return $created;
+    }
+
+    /**
+     * Cash drawers, one per shift point - the /accounts cash side.
+     *
+     * @return int rows actually created
+     */
+    private function seedCashBoxes(): int
+    {
+        $created = 0;
+
+        foreach (['الصندوق الرئيسي', 'صندوق الكاشير', 'صندوق التوصيل'] as $name) {
+            $box = CashBox::firstOrCreate(['name' => $name], ['active' => true]);
+            $created += $box->wasRecentlyCreated ? 1 : 0;
+        }
+
+        return $created;
+    }
+
+    /**
+     * Three months of payroll, through SalaryService so each payment is paired
+     * with the Expense row that actually moves the money - creating
+     * SalaryPayment alone would show wages on /team that /expenses never saw.
+     *
+     * @param  Collection<int, TeamMember>  $members
+     * @param  Collection<int, Account>  $accounts
+     */
+    private function seedSalaries(Collection $members, Collection $accounts): void
+    {
+        if ($members->isEmpty() || $accounts->isEmpty()) {
+            return;
+        }
+
+        $service = app(SalaryService::class);
+        $accountId = $accounts->first()->id;
+
+        foreach ($members as $member) {
+            if (! $member->salary_amount) {
+                continue;
+            }
+
+            // Daily earners are paid for a single day; monthly ones for the
+            // month just closed. Only settled months, so the current one still
+            // shows as outstanding on the page.
+            for ($monthsAgo = 3; $monthsAgo >= 1; $monthsAgo--) {
+                $paidFor = Carbon::today()->startOfMonth()->subMonths($monthsAgo);
+
+                $service->pay($member, [
+                    'amount' => (float) $member->salary_amount,
+                    'accountId' => $accountId,
+                    'paidFor' => $paidFor->toDateString(),
+                    'period' => $member->salary_period?->value,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * The handful of /settings keys an owner sets on day one. Everything else
+     * keeps falling back to its registry default, which is the point of a
+     * default.
+     */
+    private function seedTenantSettings(): void
+    {
+        foreach ([
+            'business_phone' => '+970599123456',
+            'business_address' => 'شارع عمر المختار، غزة',
+            'receipt_footer' => 'شكراً لزيارتكم - مطعم البركة',
+        ] as $key => $value) {
+            TenantSetting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
     }
 
@@ -273,7 +537,7 @@ class DemoTenantSeeder extends Seeder
      */
     private function makeTransfer(Carbon $createdAt, Collection $accounts, Collection $items, ?TransferStatus $status = null, ?PaymentMethod $payment = null): void
     {
-        $customers = ['أحمد أبو ياسين', 'محمد العرّاج', 'سميرة خليل', 'يوسف النجّار', 'هبة عيّاش', 'خالد شاهين', 'رنا الطويل', 'عبدالله زيدان', 'لينا حدّاد', 'مازن قنديل', 'دعاء سلامة', 'طارق البيطار'];
+        $customers = array_column(self::CUSTOMERS, 0);
 
         $chosen = $items->random(random_int(1, min(4, $items->count())));
         $lines = $chosen->map(fn (MenuItem $item) => ['item' => $item, 'qty' => random_int(1, 3)]);

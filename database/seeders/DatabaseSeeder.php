@@ -12,8 +12,10 @@ class DatabaseSeeder extends Seeder
      *
      * Order matters: the platform admin + package catalog must exist before
      * DemoTenantSeeder provisions a tenant (License.package_id is a required
-     * FK, and the demo owner logs into the admin-less tenant space). Every
-     * step is idempotent so `db:seed` can be re-run safely.
+     * FK, and the demo owner logs into the admin-less tenant space), and
+     * PlatformDemoSeeder runs LAST because its payments are recorded against
+     * whatever licenses exist by then. Every step is idempotent so `db:seed`
+     * can be re-run safely.
      */
     public function run(): void
     {
@@ -27,6 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PackageSeeder::class,
             DemoTenantSeeder::class,
+            PlatformDemoSeeder::class,
         ]);
     }
 }
