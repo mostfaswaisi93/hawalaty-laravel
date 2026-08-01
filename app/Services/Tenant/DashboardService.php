@@ -21,11 +21,6 @@ class DashboardService
         ];
     }
 
-    /**
-     * One GROUP BY query for the whole 7-day window (today inclusive)
-     * instead of 7 separate whereDate() counts; zero-count days are filled
-     * in afterward since the query only returns rows that actually exist.
-     */
     public function weeklyActivity(): array
     {
         $countsByDay = Transfer::where('created_at', '>=', Carbon::today()->subDays(6))

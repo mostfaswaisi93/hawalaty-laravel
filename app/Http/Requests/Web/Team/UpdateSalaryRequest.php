@@ -6,11 +6,6 @@ use App\Enums\SalaryPeriod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * Sets a member's agreed pay RATE. This is only a default for the payment form -
- * changing it never rewrites a salary already paid, because each payment stores
- * its own amount and period.
- */
 class UpdateSalaryRequest extends FormRequest
 {
     public function authorize(): bool
@@ -18,11 +13,6 @@ class UpdateSalaryRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Amount and period travel together: a rate with only one half set is
-     * unusable, so each requires the other rather than both being independently
-     * nullable.
-     */
     public function rules(): array
     {
         return [

@@ -1,20 +1,7 @@
-{{--
-    The business logo, printed at the top of every receipt.
-
-    Drag-and-drop with a click fallback: a drop zone alone is undiscoverable on
-    a touch screen, and the shop tablet is exactly where this gets used. The
-    file input stays in the DOM (visually hidden) so the label/keyboard path
-    keeps working - `display:none` would take it out of the tab order.
-
-    Selecting a file submits immediately: a "choose, then remember to press
-    save" flow is where uploads get lost.
---}}
 <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6 lg:col-span-2" style="--d:120ms"
     x-data="{
         dragging: false,
         uploading: false,
-        {{-- Shown the instant a file is picked, so the operator sees the new
-             logo before the round-trip finishes. --}}
         preview: @js($logo),
         pick(files) {
             if (!files || !files.length) return;
@@ -48,7 +35,6 @@
         <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" x-ref="input" @change="pick($event.target.files)"
             class="sr-only" id="settings-logo" />
 
-        {{-- ── has a logo: show it, with replace / remove ── --}}
         <template x-if="preview">
             <div class="space-y-3">
                 <div class="flex items-center justify-center rounded-2xl border border-outline-variant bg-white p-5">
@@ -69,7 +55,6 @@
             </div>
         </template>
 
-        {{-- ── no logo yet: the drop zone ── --}}
         <template x-if="!preview">
             <label for="settings-logo"
                 @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false" @drop.prevent="drop($event)"

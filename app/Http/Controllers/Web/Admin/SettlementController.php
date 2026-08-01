@@ -10,14 +10,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use RuntimeException;
 
-/**
- * Partner clearing (المقاصة) - the accounting screen that answers "what does
- * each partner still have coming, after what they already took?".
- *
- * The service owns every rule that could produce a wrong number (period
- * boundaries, rounding residual, one-draft-at-a-time); this controller only
- * translates its exceptions into flash messages.
- */
 class SettlementController extends Controller
 {
     public function __construct(private readonly SettlementService $service) {}

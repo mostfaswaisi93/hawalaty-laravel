@@ -6,9 +6,6 @@ use App\Models\Settlement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * @mixin Settlement
- */
 class SettlementResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -21,8 +18,7 @@ class SettlementResource extends JsonResource
 
             'totalPayments' => (float) $this->total_payments,
             'totalExpenses' => (float) $this->total_expenses,
-            // payments - expenses. Withdrawals are distributions OF this, never
-            // subtracted from it - see SettlementService.
+
             'distributableProfit' => (float) $this->distributable_profit,
             'totalEntitlement' => (float) $this->total_entitlement,
             'totalDrawn' => (float) $this->total_drawn,
@@ -37,8 +33,7 @@ class SettlementResource extends JsonResource
             'lines' => $this->whenLoaded('lines', fn () => $this->lines->map(fn ($line) => [
                 'id' => $line->id,
                 'partnerId' => $line->partner_id,
-                // Snapshots taken when the run was created; a later change to
-                // the partner never rewrites a confirmed statement.
+
                 'partnerName' => $line->partner_name,
                 'percentage' => (float) $line->percentage,
                 'entitlement' => (float) $line->entitlement,

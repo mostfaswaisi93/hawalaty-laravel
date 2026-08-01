@@ -13,11 +13,6 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Throwable;
 
-/**
- * Real mysqldump-backed backups, replacing the abandoned
- * spatie/laravel-backup dependency (see BACKEND_PROMPT.md's note on this).
- * Shells out via Laravel's Process facade (never raw exec()/shell_exec()).
- */
 class BackupService
 {
     public function runManual(?License $license, Admin $actor): Backup
@@ -48,16 +43,6 @@ class BackupService
 
             File::ensureDirectoryExists(dirname($absolutePath));
 
-            // On Windows, spawning mysqldump via Process::env() with only
-            // MYSQL_PWD set can fail with "Got error: 2004: Can't create
-            // TCP/IP socket (10106)" - a Winsock init failure caused by the
-            // child process not inheriting SystemRoot (case-sensitive
-            // lookup; some parent shells only expose SYSTEMROOT). Verified
-            // live during this task: identical mysqldump invocation worked
-            // fine from `artisan tinker` (inherits the CLI SAPI's env
-            // untouched) but failed under `artisan serve`'s built-in
-            // cli-server SAPI until SystemRoot was forced through
-            // explicitly here.
             $env = ['MYSQL_PWD' => $credentials['password']];
             $systemRoot = getenv('SystemRoot') ?: getenv('SYSTEMROOT') ?: 'C:\\Windows';
             $env['SystemRoot'] = $systemRoot;
@@ -114,9 +99,6 @@ class BackupService
         }
     }
 
-    /**
-     * @return array{host: string, port: int, database: string, username: string, password: string}
-     */
     protected function credentialsFor(?License $license): array
     {
         if ($license) {

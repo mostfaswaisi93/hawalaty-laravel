@@ -10,31 +10,8 @@ use App\Models\Tenant\WalletName;
 use App\Models\Tenant\WalletType;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * The six reference catalogs the accounting redesign is built on - the bank
- * and wallet names to pick from, the currencies money is held in, the
- * bank-account and wallet types, and the business's cash boxes.
- *
- * NOT to be confused with App\Services\Tenant\CatalogNaming, which only renames
- * the food MENU ("قائمة الطعام" -> "أصناف الفاكهة"). These are FK-referenced
- * lookup tables for the banks/wallets/accounts side of the app.
- *
- * One registry so a single controller, request and page can drive all six
- * without six near-identical CRUD copies. The kebab-case keys are the
- * `{catalog}` route segment and the page's tab ids.
- */
 class CatalogRegistry
 {
-    /**
-     * Per catalog:
-     *  - symbol:     has a currency symbol field (currencies only)
-     *  - currencies: has a "supported currencies" multi-select (banks, wallets,
-     *                cash boxes) - an account here may only use one of them
-     *  - fk:         the accounts column that references this catalog, or null.
-     *                Used to refuse deleting a row still in use by an account.
-     *
-     * @return array<string, array{model: class-string<Model>, singular: string, plural: string, icon: string, symbol: bool, currencies: bool, fk: ?string, placeholder: string, hint: string}>
-     */
     public function all(): array
     {
         return [
@@ -112,9 +89,6 @@ class CatalogRegistry
         return array_key_exists($key, $this->all());
     }
 
-    /**
-     * @return array{model: class-string<Model>, singular: string, plural: string, icon: string, symbol: bool, currencies: bool, fk: ?string, placeholder: string, hint: string}
-     */
     public function get(string $key): array
     {
         abort_unless($this->has($key), 404);
@@ -122,7 +96,6 @@ class CatalogRegistry
         return $this->all()[$key];
     }
 
-    /** @return class-string<Model> */
     public function modelFor(string $key): string
     {
         return $this->get($key)['model'];

@@ -9,16 +9,6 @@ use App\Models\Tenant\TeamMember;
 use Illuminate\Http\UploadedFile;
 use Tests\TenantTestCase;
 
-/**
- * Catalogue export and import, over HTTP.
- *
- * The service rules are covered by MenuServiceTest; what had never been
- * exercised is the ROUTE - and the export route is where the CSV
- * formula-injection defence actually reaches a user. A sanitiser that works in
- * a unit test but is bypassed by the controller (a second query, a different
- * serialiser, a stream that writes raw rows) protects nobody, and the file
- * lands in Excel either way.
- */
 class CatalogTransferTest extends TenantTestCase
 {
     private function signIn(bool $permitted = true): TeamMember
@@ -39,14 +29,6 @@ class CatalogTransferTest extends TenantTestCase
         return $response->streamedContent() ?: $response->getContent();
     }
 
-    // --- export -----------------------------------------------------------
-
-    /**
-     * A leading `=`, `+`, `-` or `@` makes Excel and LibreOffice treat the cell
-     * as a FORMULA when the export is opened. The names here are free text a
-     * customer typed, so the export is a path from one tenant's input to
-     * whatever a spreadsheet will execute on someone's machine (CWE-1236).
-     */
     public function test_the_export_neutralises_names_a_spreadsheet_would_execute(): void
     {
         $this->signIn();
@@ -60,16 +42,12 @@ class CatalogTransferTest extends TenantTestCase
 
         $csv = $this->download(route('menu.export'));
 
-        // Prefixed with a quote, so the cell is text - and the visible name is
-        // unchanged for whoever reads it.
         $this->assertStringContainsString('\'=HYPERLINK', $csv);
         $this->assertStringContainsString('\'+1+1', $csv);
 
-        // The dangerous forms must not survive at the start of any field.
         $this->assertDoesNotMatchRegularExpression('/(^|,|")[=+@]/m', $csv);
     }
 
-    /** An ordinary name must come through untouched - no stray quote. */
     public function test_the_export_leaves_a_normal_name_alone(): void
     {
         $this->signIn();
@@ -90,8 +68,6 @@ class CatalogTransferTest extends TenantTestCase
         $this->get(route('menu.export'))->assertForbidden();
     }
 
-    // --- import -----------------------------------------------------------
-
     public function test_a_csv_creates_categories_and_items(): void
     {
         $this->signIn();
@@ -107,7 +83,6 @@ class CatalogTransferTest extends TenantTestCase
         $this->assertSame('40.00', MenuItem::where('name', 'كباب')->sole()->price);
     }
 
-    /** A price below zero is refused rather than stored. */
     public function test_a_negative_price_does_not_get_imported(): void
     {
         $this->signIn();
@@ -121,10 +96,6 @@ class CatalogTransferTest extends TenantTestCase
         $this->assertSame(0, MenuItem::where('name', 'كباب')->count());
     }
 
-    /**
-     * Re-importing the same row updates in place rather than duplicating -
-     * otherwise a shop correcting one price ends up with two of every item.
-     */
     public function test_reimporting_updates_in_place(): void
     {
         $this->signIn();
@@ -153,11 +124,6 @@ class CatalogTransferTest extends TenantTestCase
         $this->assertSame(0, MenuItem::count());
     }
 
-    /**
-     * A round trip must be lossless: whatever the export writes, the import has
-     * to read back as the same catalogue. The two share a column contract, and
-     * nothing else checks that they still agree on it.
-     */
     public function test_an_exported_catalogue_imports_back_unchanged(): void
     {
         $this->signIn();

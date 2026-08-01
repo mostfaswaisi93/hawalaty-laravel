@@ -8,7 +8,6 @@ class ImportMenuItemsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Gated explicitly via canManage() in MenuController.
         return true;
     }
 

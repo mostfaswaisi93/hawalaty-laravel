@@ -3,13 +3,6 @@
 @section('title', __('الأجهزة - حوالاتي'))
 
 @section('content')
-    {{--
-        The allowance meter is the point of this page: `packages.device_limit`
-        is set by the Super Admin per package, and until now it was never shown
-        to the tenant nor enforced anywhere. It counts devices across the WHOLE
-        license, not just the current member, because that is how the
-        entitlement works.
-    --}}
     @php
         $pct = $usage['unlimited'] || $usage['limit'] === 0
             ? 0
@@ -27,7 +20,6 @@
             </p>
         </header>
 
-        {{-- Allowance --}}
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">

@@ -3,7 +3,7 @@
 @section('title', __('شروط الخدمة - حوالاتي'))
 
 @php
-    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call there.
+
     $metaDescription = __('شروط استخدام منصّة حوالاتي: الاشتراك والباقات، مسؤوليات الحساب، ملكية البيانات، وحدود المسؤولية.');
     $metaRobots = 'index, follow';
 @endphp
@@ -11,7 +11,6 @@
 @section('content')
     <section class="page-enter mx-auto w-full max-w-4xl px-inline-md py-16 md:px-inline-lg lg:col-span-2">
 
-        {{-- ── header ─────────────────────────────────────────────────────── --}}
         <header class="text-center">
             <div class="reveal-scale mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary" style="--d:120ms">
                 <span class="material-symbols-outlined !text-4xl" aria-hidden="true">contract</span>
@@ -26,7 +25,6 @@
             </p>
         </header>
 
-        {{-- ── table of contents ──────────────────────────────────────────── --}}
         <nav class="tonal-elevation mt-10 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6"
             aria-labelledby="toc-heading">
             <h2 id="toc-heading" class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">
@@ -56,10 +54,8 @@
             </ul>
         </nav>
 
-        {{-- ── sections ───────────────────────────────────────────────────── --}}
         <div class="stagger mt-6 space-y-6">
 
-            {{-- 1 · acceptance --}}
             <section id="acceptance" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -82,7 +78,6 @@
                 </ul>
             </section>
 
-            {{-- 2 · accounts --}}
             <section id="accounts" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -107,7 +102,6 @@
                 </ul>
             </section>
 
-            {{-- 3 · subscriptions --}}
             <section id="subscriptions" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -133,7 +127,6 @@
                 </ul>
             </section>
 
-            {{-- 4 · acceptable use --}}
             <section id="acceptable-use" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -159,7 +152,6 @@
                 </ul>
             </section>
 
-            {{-- 5 · customer content --}}
             <section id="your-data" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -183,7 +175,6 @@
                 </ul>
             </section>
 
-            {{-- 6 · availability --}}
             <section id="availability" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -207,7 +198,6 @@
                 </ul>
             </section>
 
-            {{-- 7 · suspension & termination --}}
             <section id="termination" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -231,7 +221,6 @@
                 </ul>
             </section>
 
-            {{-- 8 · liability --}}
             <section id="liability" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -256,7 +245,6 @@
                 </ul>
             </section>
 
-            {{-- 9 · changes --}}
             <section id="changes" class="tonal-elevation scroll-mt-24 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -284,7 +272,6 @@
                 </div>
             </section>
 
-            {{-- ── lawyer-review note ─────────────────────────────────────── --}}
             <aside class="rounded-3xl border border-secondary/40 bg-secondary/5 p-5 md:p-6" role="note">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-secondary/15 text-secondary">

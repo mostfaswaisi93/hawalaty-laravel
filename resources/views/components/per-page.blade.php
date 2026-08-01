@@ -1,8 +1,3 @@
-{{--
-    Per-page selector for paginated tables. Auto-submits on change and
-    preserves the current filters (everything except `per_page` and `page`),
-    resetting to page 1. Options: 10 / 50 / 100.
---}}
 @props(['perPage' => 10, 'options' => [10, 50, 100]])
 
 <form method="GET" class="flex items-center gap-2">

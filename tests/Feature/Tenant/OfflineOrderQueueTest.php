@@ -11,17 +11,8 @@ use App\Models\Tenant\Transfer;
 use Illuminate\Support\Facades\Notification;
 use Tests\TenantTestCase;
 
-/**
- * The drain the browser posts to after taking orders with no connection.
- *
- * The rule that matters most here is the permission one: having been offline
- * when an order was written must not become a way around a permission the member
- * does not hold. Everything a queued order goes through - validation, the
- * server-side amount, the audit trail - has to be the same as the online path.
- */
 class OfflineOrderQueueTest extends TenantTestCase
 {
-    /** @var array{owner: Role, manager: Role, staff: Role} */
     private array $roles;
 
     protected function setUp(): void
@@ -74,14 +65,9 @@ class OfflineOrderQueueTest extends TenantTestCase
         $this->assertSame([], $response->json('failed'));
         $response->assertJsonPath('applied.0', 'uuid-1');
 
-        // Recomputed from the catalogue, never taken from the queued payload.
         $this->assertSame('40.00', Transfer::sole()->amount);
     }
 
-    /**
-     * The whole point of the client-side uuid: a browser that could not tell
-     * whether its push landed will send the same batch again.
-     */
     public function test_the_same_queued_order_sent_twice_creates_one_order(): void
     {
         $this->signIn();
@@ -96,7 +82,6 @@ class OfflineOrderQueueTest extends TenantTestCase
         $this->assertSame(1, Transfer::count());
     }
 
-    /** Being offline when it was written changes nothing about who may write it. */
     public function test_a_member_without_the_create_permission_is_refused(): void
     {
         $powerless = Role::factory()->create();
@@ -111,12 +96,6 @@ class OfflineOrderQueueTest extends TenantTestCase
         $this->assertSame(0, SyncEvent::count());
     }
 
-    /**
-     * A redirect, not a 401: this is a web route behind the session guard, so
-     * an expired session sends the browser to the login page. The queue treats
-     * anything non-2xx as "keep the orders and try later", which is the right
-     * response to a session that simply timed out during a long shift.
-     */
     public function test_a_guest_cannot_drain_a_queue(): void
     {
         $this->postJson(route('sync.push'), $this->event('uuid-guest', $this->orderPayload()))
@@ -125,10 +104,6 @@ class OfflineOrderQueueTest extends TenantTestCase
         $this->assertSame(0, Transfer::count());
     }
 
-    /**
-     * A payload that will never validate has to come back as failed rather than
-     * hang in the browser's queue being retried forever.
-     */
     public function test_an_unfixable_payload_comes_back_as_failed(): void
     {
         $this->signIn();

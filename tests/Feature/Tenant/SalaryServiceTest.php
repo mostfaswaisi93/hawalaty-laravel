@@ -11,15 +11,6 @@ use App\Services\Tenant\SalaryService;
 use Illuminate\Support\Carbon;
 use Tests\TenantTestCase;
 
-/**
- * Payroll.
- *
- * The property that matters most: paying a salary IS an expense. If the two ever
- * come apart, salaries either vanish from the expense totals or turn into a
- * second ledger nobody reconciles - so most of this pins that pairing, the
- * account the money left from, and the fact that snapshots survive a later
- * change to the member's rate.
- */
 class SalaryServiceTest extends TenantTestCase
 {
     private function service(): SalaryService
@@ -48,7 +39,6 @@ class SalaryServiceTest extends TenantTestCase
         $this->assertSame('1500.00', $payment->amount);
         $this->assertSame($member->id, $payment->team_member_id);
 
-        // The money movement itself.
         $expense = $payment->expense;
         $this->assertNotNull($expense, 'A salary payment without an expense is invisible to the books.');
         $this->assertSame('1500.00', $expense->amount);
@@ -57,7 +47,6 @@ class SalaryServiceTest extends TenantTestCase
         $this->assertStringContainsString('يوسف النجّار', $expense->description);
     }
 
-    /** It has to be countable as an ordinary expense, with no special-casing. */
     public function test_the_salary_shows_up_in_the_expense_totals(): void
     {
         $bank = Account::factory()->create();
@@ -74,7 +63,6 @@ class SalaryServiceTest extends TenantTestCase
     {
         $member = $this->member();
 
-        // A bank id that does not exist trips the foreign key.
         try {
             $this->service()->pay($member, [
                 'amount' => '500.00',
@@ -83,17 +71,12 @@ class SalaryServiceTest extends TenantTestCase
             ]);
             $this->fail('Expected the invalid bank reference to fail.');
         } catch (\Throwable) {
-            // expected
         }
 
         $this->assertSame(0, Expense::count(), 'An expense survived a failed salary payment.');
         $this->assertSame(0, SalaryPayment::count());
     }
 
-    /**
-     * The rate is only a DEFAULT. A bonus or a part payment must be recordable
-     * without editing it first, and the amount actually paid is what is stored.
-     */
     public function test_the_submitted_amount_wins_over_the_members_rate(): void
     {
         $bank = Account::factory()->create();
@@ -130,7 +113,7 @@ class SalaryServiceTest extends TenantTestCase
         $payment = $this->service()->pay($member, ['amount' => '90.00', 'accountId' => $bank->id, 'paidFor' => '2026-07-10']);
 
         $this->assertSame(SalaryPeriod::Daily, $payment->period);
-        // A daily payment names the day; a monthly one names the month.
+
         $this->assertStringContainsString('10', $payment->expense->description);
     }
 
@@ -161,7 +144,6 @@ class SalaryServiceTest extends TenantTestCase
         $this->assertSame('جوال باي', $first->expense->account->holder_name);
     }
 
-    /** Deleting the expense must not leave a payment claiming someone was paid. */
     public function test_force_deleting_the_expense_removes_its_salary_payment(): void
     {
         $bank = Account::factory()->create();
@@ -174,7 +156,6 @@ class SalaryServiceTest extends TenantTestCase
         $this->assertSame(0, SalaryPayment::count());
     }
 
-    /** Soft-deleting it keeps the record, which is what an audit trail needs. */
     public function test_soft_deleting_the_expense_keeps_the_payment_readable(): void
     {
         $bank = Account::factory()->create(['holder_name' => 'بنك القدس']);
@@ -232,7 +213,6 @@ class SalaryServiceTest extends TenantTestCase
         $this->assertSame($bank->id, Expense::first()->account_id);
     }
 
-    /** A future-dated salary would silently skew every report it lands in. */
     public function test_a_future_paid_for_date_is_rejected(): void
     {
         $roles = $this->seedStandardRoles();
@@ -250,7 +230,6 @@ class SalaryServiceTest extends TenantTestCase
         $this->assertSame(0, SalaryPayment::count());
     }
 
-    /** A rate is unusable with only one half set, so each half requires the other. */
     public function test_setting_a_rate_requires_both_amount_and_cycle(): void
     {
         $roles = $this->seedStandardRoles();

@@ -3,16 +3,6 @@
 @section('title', __('الإعدادات - حوالاتي'))
 
 @section('content')
-    {{--
-        Two columns from `lg` up: the form on the left, the read-only licence
-        summary as a sidebar on the right.
-
-        The licence block is reference information, never edited, so it belongs
-        beside the form rather than below it.
-
-        Spacing follows one scale throughout: 6 between blocks, 5 inside a form,
-        4 inside a row.
-    --}}
     @php
         $statusLabels = ['trial' => __('تجريبي'), 'active' => __('نشط'), 'suspended' => __('موقوف'), 'expired' => __('منتهٍ')];
         $statusStyles = [
@@ -23,11 +13,6 @@
         ];
     @endphp
 
-    {{-- No `mx-auto max-w-*` here: every other page in the app is full width
-         inside the layout's own `max-w-[1680px] p-inline-lg` <main>, so capping
-         this one made the content jump inward by ~250px a side when navigating
-         to it. The two-column grid below is what keeps the form from stretching,
-         not an arbitrary container width. --}}
     <div class="page-enter space-y-6">
         <header>
             <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('الإعدادات') }}</h1>
@@ -36,7 +21,6 @@
 
         <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
 
-            {{-- profile + password --}}
             <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6 lg:col-span-3">
                 <div class="mb-6 flex items-center gap-4">
                     <div class="grid h-12 w-12 flex-shrink-0 place-items-center rounded-2xl bg-primary-container text-lg font-bold text-white">{{ mb_substr($member->name, 0, 1) }}</div>
@@ -98,7 +82,6 @@
                 </form>
             </section>
 
-            {{-- business / license info --}}
             @if ($license)
                 @php
                     $rows = [
@@ -115,8 +98,6 @@
                 <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6 lg:col-span-2" style="--d:90ms">
                     <div class="mb-5 flex items-center justify-between gap-3">
                         <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('معلومات النشاط') }}</h2>
-                        {{-- Status is the one figure worth reading at a glance, so it
-                             is a chip in the header rather than a sixth grey row. --}}
                         <span class="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1 font-body-sm text-body-sm font-bold {{ $statusStyles[$license->status->value] ?? $statusStyles['expired'] }}">
                             <span class="material-symbols-outlined !text-base">verified</span>
                             {{ $statusLabels[$license->status->value] ?? $license->status->value }}

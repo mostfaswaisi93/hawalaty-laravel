@@ -6,31 +6,8 @@ use Illuminate\Support\Facades\Route;
 use ReflectionClass;
 use Tests\TestCase;
 
-/**
- * Every tenant route that WRITES must check a permission.
- *
- * `auth:tenant` only proves someone is signed in. A staff member holding one
- * permission can still POST to any other endpoint unless the action itself
- * checks - and nothing in the UI would reveal it, because the nav item is
- * hidden from them. That is a gap you find by reading routes, not by clicking.
- */
 class RouteAuthorizationTest extends TestCase
 {
-    /**
-     * Routes that legitimately need no permission because they act on the
-     * signed-in member's OWN data. Each was read and confirmed scoped:
-     *
-     *   logout                 ends your own session
-     *   notifications/read     `$member->notifications()->where('id', ...)`,
-     *                          scoped through the member's own relation, so one
-     *                          member cannot touch another's
-     *   notifications/read-all `auth()->user()->unreadNotifications`
-     *   settings/profile       updates `auth('tenant')->user()`, never an id
-     *                          taken from the request
-     *
-     * Adding to this list is a deliberate act: it means asserting the action
-     * cannot reach another member's data.
-     */
     private const SELF_SERVICE = [
         'logout',
         'notifications/{notification}/read',
@@ -87,8 +64,6 @@ class RouteAuthorizationTest extends TestCase
             );
         }
 
-        // Proves the scan found routes at all: a broken matcher would otherwise
-        // report "no ungated routes" and pass while checking nothing.
         $this->assertGreaterThan(20, $gated, 'The scan matched almost no routes - it is broken, not the app.');
 
         $this->assertSame([], $ungated, sprintf(
@@ -98,11 +73,6 @@ class RouteAuthorizationTest extends TestCase
         ));
     }
 
-    /**
-     * Exactly one method's body, by matching braces - NOT a fixed-size window,
-     * which runs past the closing brace and credits a method with its
-     * neighbour's check.
-     */
     private function methodBody(string $source, string $method): string
     {
         $at = strpos($source, "function {$method}(");

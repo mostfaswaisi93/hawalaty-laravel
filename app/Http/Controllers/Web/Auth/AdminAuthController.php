@@ -9,12 +9,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-/**
- * Session/cookie login for the Super Admin portal - deliberately simpler
- * than TenantAuthController: no license code, no dynamic `tenant`
- * connection, Admin always lives on the default `mysql` connection. Mirrors
- * App\Http\Controllers\Api\V1\Admin\AuthController.
- */
 class AdminAuthController extends Controller
 {
     public function showLogin(): View

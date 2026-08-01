@@ -9,8 +9,6 @@
             mode: '{{ old('id') ? 'edit' : 'add' }}',
             submitting: false,
             confirmOpen: false, confirmMessage: '', confirmFormId: null,
-            {{-- Same shape the order form hands its picker, so the shared
-                 partial works here unchanged. --}}
             accounts: {{ \Illuminate\Support\Js::from($accounts->map(fn ($a) => [
                 'id' => $a->id,
                 'kind' => $a->kind->value,
@@ -19,15 +17,11 @@
                 'type' => $a->typeName() ?? '',
                 'currency' => $a->currency?->symbol ?? '',
             ])->values()) }},
-            {{-- Which side of the chooser is showing; follows the chosen
-                 account when an existing expense is opened for edit. --}}
             payTarget: 'cash',
             form: { id: '{{ old('id', '') }}', description: '{{ old('description', '') }}', amount: '{{ old('amount', '') }}', accountId: '{{ old('accountId', '') }}', date: '{{ old('date', now()->toDateString()) }}' },
             accountById(id) { return this.accounts.find(a => a.id === id) || null; },
             accountsOfKind(kind) { return this.accounts.filter(a => a.kind === kind); },
             get currencySymbol() { return this.accountById(this.form.accountId)?.currency || '₪'; },
-            {{-- Switching side clears a choice that belongs to the other one,
-                 so the hidden input can never post a mismatched account. --}}
             setTarget(kind) {
                 this.payTarget = kind;
                 if (this.accountById(this.form.accountId)?.kind !== kind) this.form.accountId = '';
@@ -56,7 +50,6 @@
         @endif
 
         <form method="GET" action="{{ route('expenses.index') }}" class="reveal-up relative max-w-md" style="--d:60ms">
-            {{-- Filtering must not throw away a chosen page size. --}}
             <x-keep-per-page />
             <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث في الوصف...') }}" aria-label="{{ __('بحث') }}"
@@ -170,7 +163,6 @@
             @endif
         </section>
 
-        {{-- add / edit modal --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false"
@@ -202,9 +194,6 @@
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
-                    {{-- Which account the money left, picked the same way the order
-                         form picks where money arrives: choose the channel, then the
-                         account, which collapses into one card with a "تغيير" button. --}}
                     <div class="space-y-2">
                         <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('صُرِف من') }}</span>
 

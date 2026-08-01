@@ -11,7 +11,6 @@
             confirmOpen: false, confirmMessage: '', confirmFormId: null,
         }">
 
-        {{-- ══════════════ header ══════════════ --}}
         <header class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
                 <a href="{{ route('accounts.index') }}" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('رجوع') }}" title="{{ __('رجوع') }}"
@@ -45,7 +44,6 @@
             </div>
         </header>
 
-        {{-- ══════════════ balance + details ══════════════ --}}
         <div class="grid gap-5 lg:grid-cols-3">
             <section class="reveal-up tonal-elevation flex flex-col justify-center rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6">
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الرصيد الحالي') }}</p>
@@ -72,7 +70,6 @@
             </section>
         </div>
 
-        {{-- ══════════════ statement ══════════════ --}}
         <section class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
             <div class="mb-5 flex items-center justify-between gap-3">
                 <div>
@@ -135,7 +132,6 @@
             @endif
         </section>
 
-        {{-- ══════════════ add-entry modal ══════════════ --}}
         <div x-show="entryOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="entryOpen" x-transition.opacity @click="entryOpen = false"></div>
             <div x-show="entryOpen" @keydown.escape.window="entryOpen = false"

@@ -10,12 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * Super Admin authentication - deliberately simpler than the tenant
- * AuthController (App\Http\Controllers\Api\V1\Auth\AuthController): no
- * license code, no dynamic `tenant` connection switching. Admin always lives
- * on the default `mysql` connection.
- */
 class AuthController extends Controller
 {
     public function login(LoginRequest $request): JsonResponse

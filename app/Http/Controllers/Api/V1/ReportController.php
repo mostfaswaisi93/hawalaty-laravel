@@ -19,9 +19,7 @@ class ReportController extends Controller
         $report = $this->service->generate($data['from'], $data['to']);
 
         return response()->json([
-            // Summary rows, matching what ReportService actually selects. The
-            // full TransferResource used to be used here and 500'd on the first
-            // order in range, because it reads columns the report never loads.
+
             'transfers' => TransferSummaryResource::collection($report['transfers']),
             'count' => $report['count'],
             'total' => $report['total'],

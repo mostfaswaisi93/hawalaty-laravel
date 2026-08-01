@@ -35,7 +35,6 @@ class BackupController extends Controller
             $license = License::findOrFail($licenseId);
         }
 
-        /** @var Admin $admin */
         $admin = $request->user();
 
         $backup = $this->service->runManual($license, $admin);
@@ -43,13 +42,6 @@ class BackupController extends Controller
         return (new BackupResource($backup->load('license')))->response()->setStatusCode(201);
     }
 
-    /**
-     * Streams the real gzipped dump if one exists on disk. Falls back to a
-     * generated JSON snapshot of the row for legacy/seed rows with no
-     * `file_path` - matching how the original Angular mock's download
-     * behavior worked (there was never a real file behind those rows
-     * either).
-     */
     public function download(string $backup): BinaryFileResponse|JsonResponse
     {
         $model = Backup::with('license')->findOrFail($backup);

@@ -4,14 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * restrictOnDelete() on the banks.id foreign keys, so a bank with financial
- * history can never be hard-deleted at the database level.
- *
- * BankService::delete checks first and returns a friendly error; this is the
- * last-resort net if that check is bypassed. Banks with history should be
- * DEACTIVATED via the `active` toggle, not deleted.
- */
 return new class extends Migration
 {
     public function up(): void

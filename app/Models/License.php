@@ -11,11 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-/**
- * A customer's license to run their own tenant database - see
- * BACKEND_PROMPT.md sections 3, 5 and 8.1. The actual connection details for
- * the tenant database live on the related DatabaseConnection model, not here.
- */
 #[Fillable(['license_code', 'customer_name', 'address', 'phone', 'package_id', 'status', 'expired_at', 'customer_balance'])]
 class License extends Model
 {
@@ -35,13 +30,6 @@ class License extends Model
         return $this->belongsTo(Package::class);
     }
 
-    /**
-     * Whether this license's package grants a capability.
-     *
-     * A license with no package resolves to false: a capability must be sold
-     * deliberately, so an unreadable/absent package closes the gate rather than
-     * opening it.
-     */
     public function hasFeature(PackageFeature|string $feature): bool
     {
         $key = $feature instanceof PackageFeature ? $feature->value : $feature;

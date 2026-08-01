@@ -6,26 +6,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Tests\TestCase;
 
-/**
- * Structural guarantees about the Blade templates that nothing else catches.
- *
- * These exist because of a real incident: a script that added `for`/`id` pairs
- * computed an offset with `strlen('<').strlen($tag)` - string CONCATENATION,
- * "1" and "6" becoming 16 instead of adding to 7 - and inserted ids
- * mid-attribute across thirteen files. One file ended up with four ids stacked
- * on a stray line after the closing form tag. Every test still passed, Pint was
- * clean, and the build succeeded, because none of them look at markup shape.
- *
- * A broken `for`/`id` pair is invisible in exactly the same way a missing
- * translation key is: the page renders, it looks right, and only someone using
- * a screen reader ever finds out.
- */
 class ViewMarkupTest extends TestCase
 {
-    /**
-     * Ids containing Blade interpolation (`id="delete-item-{{ $item->id }}"`)
-     * are per-row by design and cannot be checked statically.
-     */
     private const STATIC_ID = '/\bid="([^"{]+)"/';
 
     public function test_every_label_names_a_control(): void
@@ -36,13 +18,6 @@ class ViewMarkupTest extends TestCase
             preg_match_all('/<label\b([^>]*)>/', $src, $labels);
 
             foreach ($labels[1] as $attrs) {
-                // Three valid ways a label can name a control:
-                //   for="id"          the usual pairing;
-                //   cursor-pointer    the wrapping kind used for checkbox rows;
-                //   id="x" + aria-labelledby elsewhere, which is how the icon
-                //                     picker names its BUTTON - its only form
-                //                     control is a hidden input, and nothing can
-                //                     focus or announce one of those.
                 if (str_contains($attrs, 'for=') || str_contains($attrs, 'cursor-pointer')) {
                     continue;
                 }
@@ -67,7 +42,6 @@ class ViewMarkupTest extends TestCase
         $broken = [];
 
         foreach ($this->templates() as $rel => $src) {
-            // A label's `for`, never Alpine's `x-for` or a bound `:for`.
             preg_match_all('/(?<![-\w:])for="([^"{]+)"/', $src, $fors);
 
             foreach ($fors[1] as $id) {
@@ -82,7 +56,6 @@ class ViewMarkupTest extends TestCase
         $this->assertSame([], $broken);
     }
 
-    /** A duplicate id is worse than none: the label points at whichever came first. */
     public function test_no_static_id_is_used_twice_in_one_template(): void
     {
         $duplicates = [];
@@ -100,10 +73,6 @@ class ViewMarkupTest extends TestCase
         $this->assertSame([], $duplicates);
     }
 
-    /**
-     * The exact shape of the incident above: an id written into the document
-     * body rather than into a tag, where it renders as visible text.
-     */
     public function test_no_id_attribute_sits_outside_a_tag(): void
     {
         $loose = [];
@@ -116,7 +85,6 @@ class ViewMarkupTest extends TestCase
                 $open = strrpos($before, '<');
                 $close = strrpos($before, '>');
 
-                // Inside a tag means an unclosed `<` precedes it.
                 if ($open === false || ($close !== false && $close > $open)) {
                     $loose[] = "{$rel}: {$match} is not inside a tag";
                 }
@@ -126,16 +94,6 @@ class ViewMarkupTest extends TestCase
         $this->assertSame([], $loose);
     }
 
-    /**
-     * Both shells put ~30 controls - a sidebar of navigation plus a header -
-     * ahead of the page content, so a keyboard user tabbed past all of them on
-     * every page load. The skip link is the first thing in the tab order.
-     *
-     * Its target must exist and be FOCUSABLE: `<main>` is not by default, and
-     * without `tabindex="-1"` the browser scrolls but leaves focus where it
-     * was, so the next Tab returns to the navigation just skipped. A skip link
-     * that only moves the viewport is worse than none - it looks like it worked.
-     */
     public function test_each_shell_offers_a_working_skip_link(): void
     {
         foreach (['layouts/app.blade.php', 'layouts/admin.blade.php'] as $shell) {
@@ -158,19 +116,11 @@ class ViewMarkupTest extends TestCase
         $link = $this->templates()['components/skip-link.blade.php'] ?? null;
         $this->assertNotNull($link, 'The skip-link component is gone.');
         $this->assertStringContainsString('href="#main-content"', $link);
-        // Hidden until focused, or it becomes clutter for everyone else.
+
         $this->assertStringContainsString('sr-only', $link);
         $this->assertStringContainsString('focus:not-sr-only', $link);
     }
 
-    /**
-     * Every icon a shell links must exist and hold real bytes.
-     *
-     * `public/favicon.ico` sat at ZERO BYTES while three layouts linked it with
-     * rel="icon". A browser honouring that link gets an empty 200 and draws a
-     * blank icon - and it can beat the SVG that was working. Nothing failed;
-     * the tab simply looked wrong, which is why it survived a favicon fix.
-     */
     public function test_every_linked_icon_exists_and_is_not_empty(): void
     {
         $missing = [];
@@ -194,7 +144,6 @@ class ViewMarkupTest extends TestCase
         $this->assertSame([], $missing);
     }
 
-    /** An install needs a parseable manifest naming icons that are really there. */
     public function test_the_web_manifest_is_valid(): void
     {
         $path = public_path('manifest.webmanifest');
@@ -207,7 +156,6 @@ class ViewMarkupTest extends TestCase
             $this->assertArrayHasKey($key, $manifest, "manifest is missing `{$key}`.");
         }
 
-        // Chrome will not offer an install without a 192px and a 512px icon.
         $sizes = array_column($manifest['icons'], 'sizes');
         $this->assertContains('192x192', $sizes);
         $this->assertContains('512x512', $sizes);
@@ -219,13 +167,6 @@ class ViewMarkupTest extends TestCase
         }
     }
 
-    /**
-     * Blade comments stripped: a comment that discusses `<label>` or shows an
-     * `id="..."` example is prose, not markup, and counting it produced false
-     * findings while this was being written.
-     *
-     * @return array<string, string> relative path => source
-     */
     private function templates(): array
     {
         $root = resource_path('views');

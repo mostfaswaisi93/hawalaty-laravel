@@ -4,12 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * audit_log is append-only and grows unboundedly, but ActivityLogController
- * filters it by category and sorts by created_at with zero supporting
- * index; transfers is filtered by date range (History, Reports) with only
- * a `status` index; expenses is sorted by `date` with none at all.
- */
 return new class extends Migration
 {
     public function up(): void

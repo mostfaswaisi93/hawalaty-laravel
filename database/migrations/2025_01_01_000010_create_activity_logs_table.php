@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Platform-level audit trail of admin actions (license created, plan
-     * changed, payment recorded...). Fully separate from `audit_log`, which
-     * lives inside each tenant's own database.
-     */
     public function up(): void
     {
         Schema::create('activity_logs', function (Blueprint $table) {

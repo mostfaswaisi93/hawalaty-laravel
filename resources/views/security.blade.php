@@ -3,7 +3,7 @@
 @section('title', __('الأمان وحماية البيانات - حوالاتي'))
 
 @php
-    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call there.
+
     $metaDescription = __('كيف نحمي بيانات مشروعك في حوالاتي: قاعدة بيانات مستقلة لكل حساب، تشفير النقل، صلاحيات دقيقة، سجل نشاط غير قابل للتعديل، ونسخ احتياطية دورية.');
     $metaRobots = 'index, follow, max-image-preview:large, max-snippet:-1';
     $seoSchemas = [[
@@ -19,9 +19,7 @@
 
 @section('content')
     @php
-        // The claims on this page are the ones the codebase can actually back
-        // up. Nothing here describes a certification the platform does not
-        // hold - see the closing note.
+
         $pillars = [
             [
                 'dns',
@@ -104,7 +102,6 @@
             </p>
         </header>
 
-        {{-- headline numbers --}}
         <div class="stagger mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
             @foreach ([
                 ['database', __('قاعدة لكل حساب'), __('عزل فعلي')],
@@ -144,7 +141,6 @@
                 </article>
             @endforeach
 
-            {{-- ownership --}}
             <article class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-low p-5 md:p-6">
                 <h2 class="font-headline-md text-headline-md text-on-surface">{{ __('ملكية البيانات') }}</h2>
                 <div class="mt-5 grid gap-5 md:grid-cols-3">
@@ -160,7 +156,6 @@
                 </div>
             </article>
 
-            {{-- report a vulnerability --}}
             <article class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-primary/5 p-5 md:p-6">
                 <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
                     <div class="flex items-start gap-4">
@@ -181,7 +176,6 @@
                 </div>
             </article>
 
-            {{-- honesty note: the same shape as the legal-review note on privacy/terms --}}
             <aside class="rounded-3xl border border-dashed border-tertiary/50 bg-tertiary-container/15 p-5 md:p-6" role="note">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-tertiary/10 text-tertiary">

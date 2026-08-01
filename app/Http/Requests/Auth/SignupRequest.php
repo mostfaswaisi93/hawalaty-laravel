@@ -12,14 +12,6 @@ class SignupRequest extends FormRequest
         return true;
     }
 
-    /**
-     * `phone` is intentionally accepted but not persisted anywhere - the
-     * `licenses` table (BACKEND_PROMPT.md section 3) has no column for it.
-     * See the provisioning task report for this gap; not silently adding an
-     * unplanned migration for it here.
-     *
-     * @return array<string, array<int, mixed>>
-     */
     public function rules(): array
     {
         return [

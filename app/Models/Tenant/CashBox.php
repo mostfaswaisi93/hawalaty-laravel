@@ -9,10 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * A cash box / drawer the business keeps cash in (صندوق المحل...). Reference
- * catalog - see App\Services\Tenant\CatalogRegistry.
- */
 #[Fillable(['name', 'active'])]
 class CashBox extends Model
 {
@@ -30,7 +26,6 @@ class CashBox extends Model
         ];
     }
 
-    /** The currencies this cash box holds. */
     public function currencies(): MorphToMany
     {
         return $this->morphToMany(Currency::class, 'catalog', 'catalog_currency', 'catalog_id', 'currency_id');

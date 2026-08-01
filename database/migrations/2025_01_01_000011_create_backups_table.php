@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('backups', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            // null = a backup of the platform DB itself, not any single tenant.
+
             $table->foreignUlid('license_id')->nullable()->constrained('licenses')->nullOnDelete();
             $table->unsignedInteger('size_mb')->nullable();
             $table->enum('trigger', ['manual', 'scheduled']);

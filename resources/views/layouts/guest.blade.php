@@ -27,16 +27,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {{--
-        A child view sets $metaDescription / $metaRobots / $seoSchemas at its top
-        level - `@extends` hands the layout `get_defined_vars()`, so a plain
-        variable reaches here without a section.
-
-        The default is `noindex`, and the public content pages opt back IN. The
-        pages that inherit the default are the auth screens, which have no
-        business in a search result: an indexed login form only competes with
-        the landing page for the brand query.
-    --}}
     <x-seo
         :title="trim($__env->yieldContent('title', __('حوالاتي')))"
         :description="$metaDescription ?? __('منصّة عربية متكاملة لإدارة الطلبات والحسابات والتقارير لأي مشروع.')"
@@ -44,20 +34,10 @@
         type="article"
         :schemas="$seoSchemas ?? []" />
 
-    {{-- No favicon was declared anywhere, so browsers fell back to probing /favicon.ico
-         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
-    {{-- PNG, not SVG: iOS ignores SVG for the home screen. --}}
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    {{-- The manifest belongs here too, not only on the signed-in shell: the
-         login page is the first thing anyone opens, and a browser only offers
-         to install from a page that declares one.
-
-         Excluded on /admin/*, which shares this shell for its own login. The
-         manifest's start_url is the TENANT dashboard, so offering an install
-         there would put the wrong app on a platform operator's home screen. --}}
     @unless (request()->is('admin/*'))
         <link rel="manifest" href="/manifest.webmanifest">
         <meta name="mobile-web-app-capable" content="yes">
@@ -76,8 +56,6 @@
                 <span class="font-display-lg text-2xl font-bold leading-none text-primary">{{ __('حوالاتي') }}</span>
             </a>
             <div class="flex items-center gap-1">
-                {{-- The locale code alone carries the meaning; the translate glyph
-                     beside it was pure duplication. --}}
                 <a href="{{ route('locale.switch', $otherLocale) }}"
                     @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
@@ -85,9 +63,6 @@
                     aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
                     {{ $otherLocale === 'en' ? 'EN' : 'ع' }}
                 </a>
-                {{-- No `:title` here: the styled bubble already names the control,
-                     and the native tooltip would fade in on top of it. The label
-                     stays available to assistive tech via `:aria-label`. --}}
                 <button
                     type="button"
                     @click="dark = !dark"
@@ -100,9 +75,6 @@
             </div>
         </header>
 
-        {{-- Fewer controls ahead of it than the app shell, but /help renders
-             here for a guest and runs long. See layouts/app.blade.php for why
-             the target is focusable. --}}
         <main id="main-content" tabindex="-1" class="w-full flex-grow pt-16 focus:outline-none lg:grid lg:grid-cols-2">
             @yield('content')
         </main>
@@ -137,15 +109,8 @@
         </footer>
     </div>
 
-    {{-- The one shared tooltip for the header controls. Fixed, and rendered LAST
-         in the body so it wins on DOM order - the shell sits inside `.page-enter`,
-         whose fill-mode:both animation leaves a transform in place and therefore
-         its own stacking context, which would paint over a bubble declared
-         higher up. Only the `below` placement is bound; see the x-data above. --}}
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
-        {{-- Physical `left`, which is already direction-correct off
-             getBoundingClientRect, so it centres under the control in both dirs. --}}
         :style="`top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"
         x-text="tipText" role="tooltip" style="display:none"></div>
 </body>

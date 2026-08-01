@@ -20,7 +20,6 @@ class TeamService
         return $this->query($search)->get();
     }
 
-    /** The team page, which had no pagination and grew unbounded. */
     public function paginate(?string $search = null, int $perPage = 20): LengthAwarePaginator
     {
         return $this->query($search)->paginate($perPage)->withQueryString();
@@ -63,8 +62,7 @@ class TeamService
         if (array_key_exists('active', $data)) {
             $update['active'] = $data['active'];
         }
-        // Optional-if-present: an empty/omitted password means "keep the
-        // current one".
+
         if (! empty($data['password'])) {
             $update['password'] = $data['password'];
         }
@@ -77,20 +75,6 @@ class TeamService
         return $member;
     }
 
-    /**
-     * BLOCKS: a team member removing their own currently-authenticated
-     * account, and removing the tenant's last remaining ACTIVE team member
-     * who holds the `owner`-keyed system role - mirrors Angular's Team
-     * component (removeMember()) guard rails, see
-     * src/app/features/team/team.ts.
-     *
-     * The owner-count check only applies when the member being deleted is
-     * themselves active - deleting an already-inactive owner never reduces
-     * how many owners can actually log in. The count/delete is wrapped in a
-     * transaction with lockForUpdate() so two concurrent deletes of two
-     * different owners can't both read "2 active owners remain" and both
-     * proceed, leaving zero.
-     */
     public function delete(TeamMember $actingUser, TeamMember $member): void
     {
         if ($actingUser->id === $member->id) {

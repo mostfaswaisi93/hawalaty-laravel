@@ -5,12 +5,6 @@ namespace Database\Seeders;
 use App\Models\Package;
 use Illuminate\Database\Seeder;
 
-/**
- * Fixed product catalog on the platform DB. Must run before any tenant is
- * provisioned because License.package_id is a non-nullable FK and
- * TenantProvisioner falls back to the cheapest package when none is given.
- * Idempotent via updateOrCreate() keyed on the package name.
- */
 class PackageSeeder extends Seeder
 {
     public function run(): void

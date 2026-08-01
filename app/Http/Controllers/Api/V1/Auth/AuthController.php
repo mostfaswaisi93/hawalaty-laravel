@@ -23,20 +23,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-/**
- * See BACKEND_PROMPT.md sections 5 and 8.1 for the login/connection-routing
- * design this implements.
- */
 class AuthController extends Controller
 {
     public function __construct(private readonly TenantProvisioner $provisioner) {}
 
-    /**
-     * No token exists yet, so `licenseCode` is read straight from the
-     * request body and TenantConnectionResolver is called directly here
-     * (not via the tenant.header middleware, which only runs on routes that
-     * already carry a Bearer token to check).
-     */
     public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -56,19 +46,11 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Invalid credentials.'], 422);
             }
 
-            // AuditLogger resolves its actor from the `tenant` guard, which
-            // this manual Hash::check() flow never populates (no
-            // Auth::attempt() call) - set it explicitly so the login event
-            // attributes to the real member instead of falling back to
-            // "System".
             Auth::guard('tenant')->setUser($member);
             AuditLogger::record(AuditAction::LoggedIn, AuditEntityType::TeamMember, $member->name, AuditCategory::Auth);
 
             return response()->json($this->tokenResponse($member, $license, $request));
         } catch (DeviceLimitReachedException $e) {
-            // Rethrown out of tokenResponse(). 403, not 422: the credentials
-            // were correct, the plan is what refused - and the client needs to
-            // tell those two apart to show the right screen.
             return response()->json(['message' => $e->getMessage(), 'deviceLimit' => $e->limit], 403);
         } catch (Throwable $e) {
             Log::error('Login failed unexpectedly.', [
@@ -76,7 +58,6 @@ class AuthController extends Controller
                 'exception' => $e,
             ]);
 
-            // Generic message either way - never leak whether the email exists.
             return response()->json(['message' => 'Invalid credentials.'], 422);
         }
     }
@@ -85,9 +66,6 @@ class AuthController extends Controller
     {
         $license = $this->provisioner->provision($request->validated());
 
-        // provision() already leaves the `tenant` connection pointed at the
-        // new database, but resolve explicitly here too so login-after-signup
-        // doesn't silently depend on that side effect.
         TenantConnectionResolver::resolve($license->license_code);
         app()->instance('currentLicense', $license);
 
@@ -105,17 +83,10 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out.']);
     }
 
-    /**
-     * @return array{token: string, licenseCode: string, user: array{id: string, name: string, email: string, roleId: ?string, permissions: array<int, string>}}
-     */
     private function tokenResponse(TeamMember $member, License $license, ?Request $request = null): array
     {
         $token = $member->createToken('api');
 
-        // Registering the device is what makes /devices show anything at all
-        // and what enforces the package's device_limit. If the allowance is
-        // full the just-issued token is deleted again, so a refused login
-        // cannot leave a usable credential behind.
         try {
             app(DeviceRegistrar::class)->register($member, $token->accessToken, $request ?? request(), $license);
         } catch (DeviceLimitReachedException $e) {

@@ -10,8 +10,6 @@ class StoreRoleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Gated explicitly via $this->authorize('create', Role::class) in
-        // RoleController.
         return true;
     }
 

@@ -37,16 +37,6 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/signup', [AuthController::class, 'signup']);
     Route::middleware(['tenant.header', 'auth:sanctum'])->post('auth/logout', [AuthController::class, 'logout']);
 
-    // Tenant-space domain routes - every route here requires the
-    // X-License-Code header (tenant.header) resolved BEFORE auth:sanctum
-    // checks the bearer token against the correct tenant database, see
-    // BACKEND_PROMPT.md section 8.1. `throttle:api` is inherited from the
-    // global `api` middleware group (see bootstrap/app.php's
-    // $middleware->throttleApi() call), not added again here.
-    //
-    // Reserved for the admin/platform task: nothing under this prefix may
-    // collide with `/admin/*` (Super Admin) routes, which never pass
-    // through tenant.header and stay on the platform's default connection.
     Route::middleware(['tenant.header', 'auth:sanctum'])->group(function () {
         Route::get('dashboard/stats', [DashboardController::class, 'stats']);
         Route::get('dashboard/weekly-activity', [DashboardController::class, 'weeklyActivity']);
@@ -57,22 +47,17 @@ Route::prefix('v1')->group(function () {
         Route::put('transfers/{transfer}', [TransferController::class, 'update']);
         Route::delete('transfers/{transfer}', [TransferController::class, 'destroy']);
         Route::get('history', [TransferController::class, 'index']);
-        // The printable receipt, same view and paper size as the web app.
+
         Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show']);
 
-        // Customers. Identity is the PHONE, not the name.
         Route::get('customers', [CustomerController::class, 'index']);
         Route::get('customers/{customer}', [CustomerController::class, 'show']);
 
-        // In-app notifications.
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead']);
         Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
 
-        // Global search. Mirrors the web permission rules exactly, so search
-        // can never become a way to read around a permission.
         Route::get('search', [SearchController::class, 'index']);
-
 
         Route::get('menu-items', [MenuItemController::class, 'index']);
         Route::post('menu-items', [MenuItemController::class, 'store']);
@@ -115,12 +100,6 @@ Route::prefix('v1')->group(function () {
         Route::get('sync/pull', [SyncController::class, 'pull']);
     });
 
-    // Admin/platform routes - see BACKEND_PROMPT.md sections 3 and 8. These
-    // NEVER pass through tenant.header and always stay on the platform's
-    // default `mysql` connection (LicenseController::show is the one
-    // deliberate, explicit exception - it resolves a tenant connection
-    // read-only for a single peek and restores it immediately after, see
-    // App\Services\Admin\LicenseService::show()).
     Route::prefix('admin')->group(function () {
         Route::post('auth/login', [AdminAuthController::class, 'login'])->middleware('throttle:6,1');
 
@@ -165,7 +144,6 @@ Route::prefix('v1')->group(function () {
 
             Route::get('finance/summary', [FinanceController::class, 'summary']);
 
-            // Partner clearing (المقاصة).
             Route::get('settlements', [AdminSettlementController::class, 'index']);
             Route::get('settlements/preview', [AdminSettlementController::class, 'preview']);
             Route::post('settlements', [AdminSettlementController::class, 'store']);

@@ -16,25 +16,13 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
-/**
- * The five tenant capabilities that existed on the web but had no API:
- * customers, notifications, global search and the printable receipt.
- *
- * The one that genuinely needed care is SEARCH: it reaches across four tables,
- * so if it ignored permissions it would become a way to read around them. Those
- * cases are covered in both directions.
- */
 class TenantApiCoverageTest extends TenantApiTestCase
 {
-    // --- customers ---
-
     public function test_customers_are_listed_with_their_aggregates(): void
     {
         Notification::fake();
         $this->actAsOwner();
 
-        // Deliberately not a round number: it also proves the cents survive the
-        // decimal -> float -> JSON round-trip instead of being truncated.
         $item = MenuItem::factory()->create(['price' => '25.25']);
         app(TransferService::class)->create([
             'customer' => 'أحمد',
@@ -62,7 +50,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonPath('data.0.name', 'سارة');
     }
 
-    /** Orders come back paginated, not embedded whole. */
     public function test_a_customer_detail_returns_a_page_of_their_orders(): void
     {
         $this->actAsOwner();
@@ -75,8 +62,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonCount(2, 'transfers.data')
             ->assertJsonPath('transfers.meta.total', 3);
     }
-
-    // --- notifications ---
 
     public function test_notifications_are_listed_with_an_unread_count(): void
     {
@@ -100,7 +85,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonPath('unreadCount', 0);
     }
 
-    /** Scoped through the member's own relation - no reading across members. */
     public function test_a_member_cannot_mark_another_members_notification_read(): void
     {
         $other = TeamMember::factory()->create(['role_id' => $this->roles['staff']->id]);
@@ -112,8 +96,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
         $this->postJson("/api/v1/notifications/{$id}/read")->assertNotFound();
         $this->assertSame(1, $other->fresh()->unreadNotifications()->count());
     }
-
-    // --- search ---
 
     public function test_search_finds_orders_and_customers(): void
     {
@@ -137,17 +119,12 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonCount(0, 'customers');
     }
 
-    /**
-     * The real risk: search touches banks and catalogue entries, so it must not
-     * surface what the member's permissions would otherwise hide.
-     */
     public function test_search_hides_banks_and_catalogue_from_a_member_without_those_permissions(): void
     {
         Account::factory()->create(['holder_name' => 'بنك فلسطين']);
         $category = MenuCategory::create(['name' => 'مشاوي', 'position' => 0]);
         MenuItem::factory()->create(['name' => 'بنك برجر', 'menu_category_id' => $category->id]);
 
-        // A role with no permissions at all.
         $powerless = Role::factory()->create();
         $member = TeamMember::factory()->create(['role_id' => $powerless->id]);
         Sanctum::actingAs($member, ['*']);
@@ -171,8 +148,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonCount(1, 'menuItems');
     }
 
-    // --- receipt ---
-
     public function test_the_receipt_is_returned_as_a_pdf(): void
     {
         $this->actAsOwner();
@@ -192,12 +167,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
         }
     }
 
-    /**
-     * The base class disables `tenant.header` so the test database stays in
-     * place; this one re-enables it, because "a tenant request without a licence
-     * header is refused" is the behaviour that actually matters and must not go
-     * uncovered just because the rest of the suite bypasses it.
-     */
     public function test_the_license_header_is_required(): void
     {
         $this->withMiddleware(ResolveTenantConnection::class);
@@ -208,14 +177,6 @@ class TenantApiCoverageTest extends TenantApiTestCase
             ->assertJsonPath('message', 'The X-License-Code header is required.');
     }
 
-    // --- sync ---
-
-    /**
-     * The envelope rule that cannot be written with required_if alone: an update
-     * or delete has to name its target, by server id or by the create event's
-     * uuid, and "neither" must be refused rather than silently applied to
-     * nothing.
-     */
     public function test_a_sync_update_without_a_target_is_rejected(): void
     {
         $this->actAsOwner();

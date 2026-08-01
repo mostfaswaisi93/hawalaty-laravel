@@ -17,19 +17,6 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Every platform API read endpoint, requested for real.
- *
- * The tenant half of this sweep turned up a /reports endpoint that returned
- * 500 for any range holding a single order - a resource reading columns its
- * query never selected. Nothing caught it because nothing had ever called it,
- * and the same was true of all forty routes under /api/v1/admin.
- *
- * Deliberately smoke tests: the endpoint answers, answers JSON, refuses a
- * guest, and refuses a TENANT token. That last one matters most here - Admin
- * and TeamMember both issue Sanctum tokens against the same table, so a valid
- * bearer token is not by itself proof of platform staff.
- */
 class AdminApiSmokeTest extends TestCase
 {
     use RefreshDatabase;
@@ -42,10 +29,6 @@ class AdminApiSmokeTest extends TestCase
         return $admin;
     }
 
-    /**
-     * One row in every platform table, so each endpoint formats a real record
-     * rather than returning an empty list that hides a broken mapping.
-     */
     private function seedThePlatform(): void
     {
         $package = Package::create(['name' => 'Starter', 'price' => 30, 'device_limit' => 2, 'features' => ['a']]);
@@ -66,7 +49,6 @@ class AdminApiSmokeTest extends TestCase
         Expense::create(['box_id' => $box->id, 'description' => 'استضافة', 'amount' => 30, 'date' => now()->toDateString()]);
     }
 
-    /** @return array<string, array{string}> */
     public static function readEndpoints(): array
     {
         return [
@@ -103,11 +85,6 @@ class AdminApiSmokeTest extends TestCase
         $this->getJson($uri)->assertUnauthorized();
     }
 
-    /**
-     * A tenant's own token must not open the platform console. Both guards
-     * issue tokens against the same table, so this is the line that separates
-     * a shop's staff from the operator running the platform.
-     */
     #[DataProvider('readEndpoints')]
     public function test_the_endpoint_refuses_a_tenant_token(string $uri): void
     {
@@ -122,13 +99,6 @@ class AdminApiSmokeTest extends TestCase
         );
     }
 
-    /**
-     * The licence detail route also peeks at the tenant's own database. A
-     * licence with no `databaseConnection` skips that block entirely (see
-     * LicenseService::show), so the endpoint is reachable here without MySQL
-     * and must answer with the roster and activity keys present but empty -
-     * not omitted, which would make a client branch on their absence.
-     */
     public function test_a_single_licence_can_be_fetched_without_a_tenant_database(): void
     {
         $this->actingAsAdmin();
@@ -142,11 +112,6 @@ class AdminApiSmokeTest extends TestCase
             ->assertJsonCount(0, 'recentActivity');
     }
 
-    /**
-     * The clearing preview is the one read endpoint that computes rather than
-     * lists, and its figures feed a document that cannot be edited once
-     * confirmed - so it has to reconcile even with nothing to distribute.
-     */
     public function test_the_settlement_preview_reconciles_on_an_empty_platform(): void
     {
         $this->actingAsAdmin();

@@ -3,11 +3,6 @@
 @section('title', __('المقاصة - حوالاتي'))
 
 @section('content')
-    {{--
-        The clearing board. Everything above the history table is the LIVE,
-        uncommitted position for the period that is currently open - nothing
-        here is stored until "تنفيذ المقاصة" is submitted.
-    --}}
     @php
         $p = $preview;
         $overAllocated = $p['percentageTotal'] > 100;
@@ -25,9 +20,6 @@
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ __('المقاصة') }}</h1>
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('تسوية حصص الشركاء: ما استحقّه كل شريك مقابل ما سحبه فعلياً.') }}</p>
             </div>
-            {{-- Over-allocation disables the button, because SettlementService now
-                 REFUSES the run outright. Leaving it clickable would walk the
-                 admin into an error they can already see explained above. --}}
             <button type="button" @click="runOpen = true; submitting = false"
                 @disabled($p['hasOpenDraft'] || empty($p['lines']) || $overAllocated)
                 class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
@@ -36,7 +28,6 @@
             </button>
         </header>
 
-        {{-- Open period --}}
         <section class="reveal-up flex flex-col gap-3 rounded-3xl border border-outline-variant/50 bg-surface-container-low p-5 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-3">
                 <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -49,10 +40,6 @@
                     </p>
                 </div>
             </div>
-            {{-- A LINK, not a badge. The open draft is the only thing that
-                 disables "تنفيذ المقاصة", so announcing it without a way to
-                 reach it left the page's primary action stuck behind a message
-                 and made the admin hunt for the draft in the history table. --}}
             @if ($p['openDraft'])
                 <a href="{{ route('admin.settlements.show', $p['openDraft']) }}"
                     class="inline-flex items-center gap-1.5 self-start rounded-full bg-secondary-container/20 px-3 py-1.5 font-body-sm text-body-sm font-bold text-secondary transition-colors hover:bg-secondary-container/40 sm:self-auto"
@@ -65,7 +52,6 @@
             @endif
         </section>
 
-        {{-- Headline figures --}}
         <section class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <x-card>
                 <p class="font-body-sm text-on-surface-variant">{{ __('المدفوعات في الفترة') }}</p>
@@ -105,7 +91,6 @@
             </div>
         @endif
 
-        {{-- Partner positions --}}
         <x-card :title="__('مراكز الشركاء')" :subtitle="__('الاستحقاق مقابل المسحوب خلال الفترة المفتوحة')">
             @if (empty($p['lines']))
                 <div class="flex flex-col items-center gap-3 py-14 text-center">
@@ -154,9 +139,6 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                {{-- Reconciliation. The identity holds by construction in
-                     SettlementService; showing it makes the page auditable
-                     instead of asking the admin to trust it. --}}
                 <div class="mt-6 rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined !text-xl {{ $p['reconciles'] ? 'text-success' : 'text-error' }}">
@@ -187,7 +169,6 @@
             @endif
         </x-card>
 
-        {{-- History --}}
         <x-card :title="__('سجل المقاصات')" :subtitle="__('الدورات السابقة والفترات المُقفلة')">
             @if ($settlements->total() === 0)
                 <div class="flex flex-col items-center gap-2 py-12 text-center">
@@ -250,7 +231,6 @@
             @endif
         </x-card>
 
-        {{-- Run-clearing modal --}}
         <div x-show="runOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="runOpen" x-transition.opacity></div>
             <div x-show="runOpen" @keydown.escape.window="runOpen = false" role="dialog" aria-modal="true" aria-labelledby="run-settlement-title"

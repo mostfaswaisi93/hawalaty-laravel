@@ -15,11 +15,6 @@ use App\Services\Admin\WithdrawalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-/**
- * The platform's internal accounting dashboard - reuses
- * FinanceSummaryService for the read side, and WithdrawalService/ExpenseService
- * for the two "money out of a box" actions that have no dedicated nav page.
- */
 class FinanceController extends Controller
 {
     public function __construct(private readonly FinanceSummaryService $service) {}
@@ -34,14 +29,6 @@ class FinanceController extends Controller
         ]);
     }
 
-    /**
-     * The insufficient-balance catch is not belt-and-braces: the services check
-     * the balance INSIDE their locked transaction, which is the only place the
-     * answer is authoritative, so a refusal can arrive here even when the
-     * request-level rule passed. Rendering it as an `amount` error puts it on
-     * the field the admin has to change, and withInput() reopens the modal with
-     * their figures still in it.
-     */
     public function storeWithdrawal(StoreWithdrawalRequest $request, WithdrawalService $service): RedirectResponse
     {
         try {

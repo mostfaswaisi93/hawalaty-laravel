@@ -18,15 +18,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * No RefreshDatabase and no saved models: the tenant schema
- * (database/migrations/tenant) cannot run against the sqlite test database
- * because several of those migrations use MySQL-only DDL. Every model here is
- * unsaved with its relations set explicitly, so nothing can lazy-load.
- *
- * The invariant every case shares: sendNewOrder() never throws, whatever
- * happens.
- */
 class WhatsAppSenderTest extends TestCase
 {
     private function sender(): WhatsAppSender
@@ -34,7 +25,6 @@ class WhatsAppSenderTest extends TestCase
         return new WhatsAppSender(app(WhatsAppSettings::class));
     }
 
-    /** An unsaved account with its institution relation set, so nothing lazy-loads. */
     private function account(?string $whatsapp): Account
     {
         $account = new Account([
@@ -59,11 +49,9 @@ class WhatsAppSenderTest extends TestCase
             'payment_method' => PaymentMethod::Bank,
         ], $attributes));
 
-        // Unique per call so the dedupe cache key never collides across cases.
         $transfer->id = (string) Str::ulid();
         $transfer->created_at = now();
 
-        // setRelation even for null: otherwise ->account would try to lazy-load.
         $transfer->setRelation('account', $account === false ? null : $account);
         $transfer->setRelation('lineItems', new Collection([
             new TransferLineItem(['name' => 'شاورما دجاج', 'quantity' => 2, 'price' => '30.00']),
@@ -71,8 +59,6 @@ class WhatsAppSenderTest extends TestCase
 
         return $transfer;
     }
-
-    // ---------------------------------------------------------------- guards
 
     public function test_it_skips_a_cash_order(): void
     {
@@ -158,8 +144,6 @@ class WhatsAppSenderTest extends TestCase
         $this->assertSame('duplicate', $second->errorCode);
     }
 
-    // --------------------------------------------------------------- drivers
-
     public function test_log_driver_reports_success_without_any_http_call(): void
     {
         config(['whatsapp.driver' => 'log']);
@@ -206,13 +190,11 @@ class WhatsAppSenderTest extends TestCase
 
             return $request->url() === 'https://graph.facebook.com/v21.0/123456/messages'
                 && $request->hasHeader('Authorization', 'Bearer test-token')
-                // Digits only - Meta rejects a leading '+' in `to`.
+
                 && $body['to'] === '972595817016'
-                // Free-form text would be rejected with error 131047, because an
-                // account's number never opens a 24h customer-initiated window.
+
                 && $body['type'] === 'template'
-                // One value per {{n}} in the approved template; a mismatch is
-                // Meta error 132000.
+
                 && count($body['template']['components'][0]['parameters']) === NewOrderMessage::PARAM_COUNT;
         });
     }
@@ -227,8 +209,6 @@ class WhatsAppSenderTest extends TestCase
         $this->assertTrue($result->sent);
         Http::assertNothingSent();
     }
-
-    // -------------------------------------------------------------- failures
 
     public function test_a_rejected_send_fails_without_throwing(): void
     {
@@ -249,8 +229,6 @@ class WhatsAppSenderTest extends TestCase
     {
         config(['whatsapp.driver' => 'cloud', 'whatsapp.token' => 't', 'whatsapp.phone_number_id' => '1']);
 
-        // A timeout raises ConnectionException - there is no HTTP status on this
-        // path, which is exactly why it is the one most often missed.
         Http::fake(fn () => throw new ConnectionException('cURL error 28: timeout'));
 
         $result = $this->sender()->sendNewOrder($this->transfer());
@@ -269,8 +247,6 @@ class WhatsAppSenderTest extends TestCase
 
         $this->assertFalse($sender->sendNewOrder($transfer)->sent);
 
-        // Second attempt must reach the provider again, not be suppressed as a
-        // duplicate - a failure must not poison the key.
         $second = $sender->sendNewOrder($transfer);
 
         $this->assertNotSame('duplicate', $second->errorCode);

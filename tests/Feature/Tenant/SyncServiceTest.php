@@ -11,15 +11,6 @@ use App\Services\Tenant\SyncService;
 use Illuminate\Support\Facades\Notification;
 use Tests\TenantTestCase;
 
-/**
- * The offline sync engine.
- *
- * The property that matters is CONVERGENCE: a client that was offline pushes
- * whatever it accumulated, in one batch, possibly twice, and the server ends up
- * in the state the client described. Everything below is a way that can fail -
- * a resend applying twice, one bad event taking the batch down with it, or an
- * edit to something the client created offline having nothing to attach to.
- */
 class SyncServiceTest extends TenantTestCase
 {
     private function service(): SyncService
@@ -56,8 +47,6 @@ class SyncServiceTest extends TenantTestCase
         Notification::fake();
     }
 
-    // --- create -----------------------------------------------------------
-
     public function test_a_queued_order_is_applied_and_logged(): void
     {
         $result = $this->service()->push(null, [
@@ -67,16 +56,10 @@ class SyncServiceTest extends TenantTestCase
         $this->assertSame(['uuid-1'], $result['applied']);
         $this->assertSame([], $result['failed']);
 
-        // The amount is recomputed server-side from the catalogue, never taken
-        // from the client: 2 x 20.00.
         $this->assertSame('40.00', Transfer::sole()->amount);
         $this->assertSame('uuid-1', SyncEvent::sole()->client_uuid);
     }
 
-    /**
-     * A push with no registered device must succeed - the column allows null,
-     * so the client never sees a raw database error.
-     */
     public function test_a_push_from_an_unregistered_device_still_applies(): void
     {
         $result = $this->service()->push(null, [
@@ -87,7 +70,6 @@ class SyncServiceTest extends TenantTestCase
         $this->assertNull(SyncEvent::sole()->device_id);
     }
 
-    /** A flaky connection makes clients resend; the second copy must be a no-op. */
     public function test_the_same_event_pushed_twice_is_applied_once(): void
     {
         $event = $this->event('uuid-dupe', 'transfer', 'create', $this->orderPayload());
@@ -100,12 +82,12 @@ class SyncServiceTest extends TenantTestCase
         $this->assertSame(1, Transfer::count());
     }
 
-    /** Each event gets its own transaction, so one bad apple cannot spoil the batch. */
     public function test_one_invalid_event_does_not_roll_back_the_others(): void
     {
         $result = $this->service()->push(null, [
             $this->event('good-1', 'transfer', 'create', $this->orderPayload()),
-            $this->event('bad', 'transfer', 'create', ['customer' => 'ناقص']), // no items
+            $this->event('bad', 'transfer', 'create', ['customer' => 'ناقص']),
+
             $this->event('good-2', 'transfer', 'create', $this->orderPayload()),
         ]);
 
@@ -114,8 +96,6 @@ class SyncServiceTest extends TenantTestCase
         $this->assertSame('bad', $result['failed'][0]['clientUuid']);
         $this->assertSame(2, Transfer::count());
     }
-
-    // --- update -----------------------------------------------------------
 
     public function test_an_order_status_can_be_updated_by_server_id(): void
     {
@@ -129,11 +109,6 @@ class SyncServiceTest extends TenantTestCase
         $this->assertSame('completed', $transfer->fresh()->status->value);
     }
 
-    /**
-     * The case the whole design exists for: a record created offline has no
-     * server id, so a later edit in the SAME batch can only name the create
-     * event's uuid.
-     */
     public function test_a_record_created_offline_can_be_edited_in_the_same_batch(): void
     {
         $result = $this->service()->push(null, [
@@ -148,7 +123,6 @@ class SyncServiceTest extends TenantTestCase
         $this->assertSame('completed', Transfer::sole()->status->value);
     }
 
-    /** An order's amount is server-owned; a client must not be able to set it. */
     public function test_an_update_cannot_rewrite_an_orders_amount(): void
     {
         $transfer = Transfer::factory()->create(['status' => 'pending', 'amount' => '40.00']);
@@ -190,8 +164,6 @@ class SyncServiceTest extends TenantTestCase
         $this->assertStringContainsString('No transfer matches', $result['failed'][0]['error']);
     }
 
-    // --- delete -----------------------------------------------------------
-
     public function test_an_order_created_offline_can_be_deleted_by_its_client_uuid(): void
     {
         $result = $this->service()->push(null, [
@@ -201,14 +173,10 @@ class SyncServiceTest extends TenantTestCase
 
         $this->assertSame(['made', 'unmade'], $result['applied'], json_encode($result['failed']));
         $this->assertSame(0, Transfer::count());
-        // Soft-deleted, not gone: financial records survive for the audit trail.
+
         $this->assertSame(1, Transfer::withTrashed()->count());
     }
 
-    /**
-     * Sync converges on end states. A record two devices both deleted is in the
-     * state the client asked for, so failing would make it retry forever.
-     */
     public function test_deleting_something_already_deleted_succeeds(): void
     {
         $transfer = Transfer::factory()->create();
@@ -220,8 +188,6 @@ class SyncServiceTest extends TenantTestCase
 
         $this->assertSame(['uuid-del'], $result['applied'], json_encode($result['failed']));
     }
-
-    // --- pull -------------------------------------------------------------
 
     public function test_pull_returns_only_events_after_the_cursor_in_order(): void
     {

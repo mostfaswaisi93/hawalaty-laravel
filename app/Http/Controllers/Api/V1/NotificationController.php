@@ -6,14 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * In-app notifications for the mobile client.
- *
- * TeamMember uses Notifiable, so the framework's notifications table backs this.
- * Timestamps go out as ISO strings, NOT the web controller's `diffForHumans()`:
- * a mobile client formats relative time itself, in its own locale, and a
- * pre-rendered "قبل ساعة" would go stale the moment it is cached.
- */
 class NotificationController extends Controller
 {
     private const MAX_PER_PAGE = 50;
@@ -46,8 +38,6 @@ class NotificationController extends Controller
     {
         $member = $request->user();
 
-        // Scoped through the member's own relation, so one member can never mark
-        // another's notification read by guessing an id.
         $found = $member->notifications()->where('id', $notification)->first();
 
         abort_if($found === null, 404);

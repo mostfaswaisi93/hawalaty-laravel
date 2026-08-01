@@ -12,21 +12,12 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TenantTestCase;
 
-/**
- * The new-order WhatsApp notification must reach the OWNER OF THE ACCOUNT the
- * operator chose for the invoice, on that account's `whatsapp_phone`.
- *
- * Drives the real cloud driver against a faked HTTP client so the assertion is
- * on the actual recipient in the outgoing request, not on an internal.
- */
 class OrderWhatsAppRoutingTest extends TenantTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Credentials live per-tenant; without them the sender falls back to the
-        // log driver and there is no request to inspect.
         foreach ([
             WhatsAppSettings::ENABLED => '1',
             WhatsAppSettings::DRIVER => 'cloud',
@@ -50,7 +41,6 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
         ]);
     }
 
-    /** @return array<string, mixed> */
     private function payload(array $overrides): array
     {
         $item = $this->menuItem();
@@ -85,14 +75,9 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
             'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
         ]));
 
-        // Meta wants bare digits, no '+'.
         $this->assertSentTo('972595817016');
     }
 
-    /**
-     * The chosen account decides the recipient - not some other account that
-     * happens to exist, and not the first one in the table.
-     */
     public function test_it_notifies_the_chosen_account_and_not_another(): void
     {
         Account::factory()->create(['whatsapp_phone' => '+972599999999']);
@@ -108,7 +93,6 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
         $this->assertSentTo('972595817016');
     }
 
-    /** A wallet account notifies its own number just like a bank account. */
     public function test_a_wallet_account_is_notified_too(): void
     {
         $wallet = Account::factory()->wallet()->create(['whatsapp_phone' => '+972599000123']);
@@ -147,7 +131,6 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
         Http::assertNothingSent();
     }
 
-    /** The message names the account, so the recipient knows which one it is. */
     public function test_the_message_names_the_chosen_account(): void
     {
         $account = Account::factory()->create([

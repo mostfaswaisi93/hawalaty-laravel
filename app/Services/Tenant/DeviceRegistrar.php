@@ -9,32 +9,10 @@ use App\Models\Tenant\TeamMember;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
 
-/**
- * Turns a freshly-issued Sanctum token into a Device row, and enforces the
- * license package's `device_limit`.
- *
- * WHY THIS EXISTS
- * `packages.device_limit` was set by the Super Admin and shown on the packages
- * page, but was never read anywhere - nothing enforced it. More basically,
- * NOTHING in the codebase ever created a Device row, so /devices could only
- * ever render its empty state and the limit had nothing to count. (The
- * `sync_events.device_id` column was even made nullable to work around the
- * absence of device registration - see that migration.)
- *
- * THE LIMIT IS LICENSE-WIDE, not per team member: it is an entitlement of the
- * subscribed package, so five members sharing a 3-device package get three
- * devices between them, not three each.
- */
 class DeviceRegistrar
 {
-    /** Used when the package itself sets no limit (0 = unlimited). */
     private const UNLIMITED = 0;
 
-    /**
-     * Registers the device that just signed in.
-     *
-     * @throws DeviceLimitReachedException when the package's allowance is full
-     */
     public function register(
         TeamMember $member,
         PersonalAccessToken $token,
@@ -59,12 +37,6 @@ class DeviceRegistrar
         ]);
     }
 
-    /**
-     * How many device slots the license's package grants, and how many are in
-     * use right now. Drives the meter on the tenant's devices page.
-     *
-     * @return array{used: int, limit: int, unlimited: bool, remaining: int}
-     */
     public function usage(?License $license = null): array
     {
         $limit = $this->limitFor($license);
@@ -78,18 +50,11 @@ class DeviceRegistrar
         ];
     }
 
-    /** Total registered devices for the whole tenant, across every member. */
     public function activeCount(): int
     {
         return Device::query()->count();
     }
 
-    /**
-     * The package allowance. `currentLicense` is bound by the tenant-session
-     * middleware (web) and by the login flow (API); if neither ran, the limit
-     * is treated as unlimited rather than zero - locking everyone out because
-     * a container binding was missing would be the worse failure.
-     */
     private function limitFor(?License $license = null): int
     {
         $license ??= app()->bound('currentLicense') ? app('currentLicense') : null;
@@ -101,11 +66,6 @@ class DeviceRegistrar
         return (int) ($license->package?->device_limit ?? self::UNLIMITED);
     }
 
-    /**
-     * A human label for the row. A mobile client can send `X-Device-Name`
-     * (nothing else knows the handset's real name); browsers fall back to the
-     * platform parsed out of the user agent.
-     */
     private function deviceName(Request $request, string $agent): string
     {
         $supplied = trim((string) $request->header('X-Device-Name'));
@@ -128,8 +88,6 @@ class DeviceRegistrar
     private function browser(string $agent): string
     {
         return match (true) {
-            // Edge and Opera both carry "Chrome" in their UA, so they must be
-            // tested first or every browser reads as Chrome.
             str_contains($agent, 'Edg/') => 'Edge',
             str_contains($agent, 'OPR/') => 'Opera',
             str_contains($agent, 'Firefox') => 'Firefox',
@@ -140,7 +98,6 @@ class DeviceRegistrar
         };
     }
 
-    /** A Material Symbols name; the view whitelists what it will render. */
     private function platformIcon(string $agent): string
     {
         return match (true) {

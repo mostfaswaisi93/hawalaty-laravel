@@ -20,8 +20,7 @@ class ConstantListService
     public function create(array $data): ConstantList
     {
         $list = ConstantList::create([
-            // Mirrors ConstantsService.addCustomList()'s key generation
-            // scheme in the Angular app ('custom-' + Date.now().toString(36)).
+
             'key' => 'custom-'.Str::lower(Str::random(10)),
             'title' => $data['title'],
         ]);
@@ -41,11 +40,6 @@ class ConstantListService
         AuditLogger::record(AuditAction::Deleted, AuditEntityType::Constant, $title, AuditCategory::Constants);
     }
 
-    /**
-     * lockForUpdate() inside a transaction so two concurrent adds to the
-     * same list can't both read the same MAX(position) and insert with an
-     * identical value.
-     */
     public function addItem(ConstantList $list, array $data): ConstantList
     {
         DB::connection('tenant')->transaction(function () use ($list, $data) {
@@ -64,10 +58,6 @@ class ConstantListService
         return $list;
     }
 
-    /**
-     * ->items()->findOrFail() (not ConstantListItem::findOrFail()) ensures
-     * the item actually belongs to THIS list.
-     */
     public function deleteItem(ConstantList $list, string $itemId): void
     {
         $item = $list->items()->findOrFail($itemId);

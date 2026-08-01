@@ -11,30 +11,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Categories + items live in one Service - they're tightly coupled (an item
- * always belongs to a category, and MenuItemResource denormalizes the
- * category name onto the item), matching the task instructions' explicit
- * pairing.
- */
 class MenuService
 {
-    // --- Categories ---
-
     public function listCategories(): Collection
     {
         return MenuCategory::query()->orderBy('position')->get();
     }
 
-    /**
-     * index/store/destroy only - no update, matching
-     * ConstantsService.addMenuCategory()/removeMenuCategory() in the
-     * Angular app, which never renames a category, only adds/removes.
-     *
-     * lockForUpdate() inside a transaction so two concurrent creates can't
-     * both read the same MAX(position) and insert with an identical value -
-     * the second transaction's locked read waits for the first to commit.
-     */
     public function createCategory(array $data): MenuCategory
     {
         return DB::connection('tenant')->transaction(function () use ($data) {
@@ -42,8 +25,7 @@ class MenuService
 
             $category = MenuCategory::create([
                 'name' => $data['name'],
-                // Blank means "no icon", stored as NULL so the resolver falls
-                // through to the neutral default rather than an empty ligature.
+
                 'icon' => filled($data['icon'] ?? null) ? $data['icon'] : null,
                 'position' => $nextPosition,
             ]);
@@ -61,8 +43,6 @@ class MenuService
 
         AuditLogger::record(AuditAction::Deleted, AuditEntityType::MenuItem, $name, AuditCategory::Menu);
     }
-
-    // --- Items ---
 
     public function listItems(?string $search = null): Collection
     {
@@ -97,8 +77,6 @@ class MenuService
             $update['menu_category_id'] = $data['menuCategoryId'];
         }
         if (array_key_exists('icon', $data)) {
-            // Submitting an empty picker CLEARS the icon, so this must write
-            // NULL rather than skip the field.
             $update['icon'] = filled($data['icon']) ? $data['icon'] : null;
         }
         if (array_key_exists('price', $data)) {
@@ -124,11 +102,6 @@ class MenuService
         AuditLogger::record(AuditAction::Deleted, AuditEntityType::MenuItem, $name, AuditCategory::Menu);
     }
 
-    // --- Bulk CSV import/export ---
-
-    /**
-     * @return array<int, array{category: string, name: string, price: string, active: string}>
-     */
     public function exportRows(): array
     {
         return MenuCategory::query()
@@ -144,27 +117,11 @@ class MenuService
             ->all();
     }
 
-    /**
-     * Category/item names are free text, so a name starting with an equals,
-     * plus, minus, or at-sign would be interpreted as a formula by
-     * Excel/LibreOffice when the export is opened (CSV/formula injection,
-     * CWE-1236). Prefixing with a single quote neutralizes it while keeping
-     * the visible text unchanged.
-     */
     private static function sanitizeCsvField(string $value): string
     {
         return preg_match('/^[=+\-@\t\r]/', $value) === 1 ? "'".$value : $value;
     }
 
-    /**
-     * Expects a `category,name,price,active` header row. Categories are
-     * matched by exact name and created on the fly (appended after the
-     * current highest position); items are matched by (category, name) -
-     * an existing match is updated in place, everything else is created.
-     * One DB::transaction so a bad file never leaves a half-applied import.
-     *
-     * @return array{created: int, updated: int, skipped: int}
-     */
     public function importCsv(UploadedFile $file): array
     {
         $handle = fopen($file->getRealPath(), 'rb');

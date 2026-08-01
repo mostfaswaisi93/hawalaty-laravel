@@ -15,14 +15,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Where a tenant enters its OWN Meta Cloud API credentials.
- *
- * Gated on ConstantsManage rather than a new permission key: the tenant
- * permission set is fixed at seven (App\Enums\PermissionKey) and mirrored in the
- * Angular client, so adding an eighth would desynchronise them. ConstantsManage
- * is already "configure how this business behaves", which is what this is.
- */
 class WhatsAppSettingsController extends Controller
 {
     public function __construct(
@@ -59,8 +51,6 @@ class WhatsAppSettingsController extends Controller
             WhatsAppSettings::TEMPLATE_LANGUAGE => $data['templateLanguage'] ?? null,
         ]);
 
-        // Secrets are write-only: the form shows bullets, so a blank field means
-        // "leave the stored value alone" - not "clear it".
         $secrets = array_filter([
             WhatsAppSettings::TOKEN => $data['token'] ?? null,
             WhatsAppSettings::APP_SECRET => $data['appSecret'] ?? null,
@@ -75,10 +65,6 @@ class WhatsAppSettingsController extends Controller
             ->with('success', __('تم حفظ إعدادات واتساب.'));
     }
 
-    /**
-     * Sends one message to a number the operator types, so the credentials can
-     * be proven from the settings screen instead of by creating a real order.
-     */
     public function test(Request $request): RedirectResponse
     {
         abort_unless($this->canManage(), 403);
@@ -96,9 +82,6 @@ class WhatsAppSettingsController extends Controller
             return back()->withInput()->with('error', __('الرقم غير صالح.'));
         }
 
-        // نص فارغ يعني «جرّب الإعدادات»، لا «أرسل رسالة فارغة». الإرسال يستهدف
-        // نفس القالب متعدّد المتغيّرات الذي تستخدمه إشعارات الطلبات، فنزوّده بقيم
-        // تجريبية بنفس العدد؛ النص المُدخَل - إن وُجد - يظهر في خانة الطلب.
         $body = trim((string) ($validated['body'] ?? ''));
 
         $result = $this->sender->send(
@@ -120,17 +103,6 @@ class WhatsAppSettingsController extends Controller
         ]));
     }
 
-    /**
-     * Two independent gates, both required:
-     *
-     * - the PACKAGE must sell the capability (WhatsApp is a paid add-on, so a
-     *   Basic tenant must not reach the form at all);
-     * - the USER must be allowed to configure the business.
-     *
-     * The license is bound by ResolveTenantConnectionFromSession. If it is
-     * missing the gate closes - an unresolvable package must never read as
-     * "everything included".
-     */
     private function canManage(): bool
     {
         if (! $this->packageAllows()) {

@@ -10,7 +10,6 @@
         </header>
 
         <form method="GET" action="{{ route('customers.index') }}" class="reveal-up relative max-w-md" style="--d:60ms">
-            {{-- Filtering must not throw away a chosen page size. --}}
             <x-keep-per-page />
             <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الهاتف...') }}" aria-label="{{ __('بحث') }}"
@@ -44,8 +43,6 @@
                                         </div>
                                         <div class="min-w-0">
                                             <p class="truncate font-body-sm font-bold text-on-surface">{{ $c->name ?: __('بدون اسم') }}</p>
-                                            {{-- The number IS the customer, so it sits with the name rather
-                                                 than in a column of its own. --}}
                                             <p class="truncate text-[11px] text-on-surface-variant"><span dir="ltr">{{ $c->phone ?: '-' }}</span></p>
                                         </div>
                                     </div>

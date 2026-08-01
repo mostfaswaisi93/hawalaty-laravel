@@ -4,9 +4,6 @@
 
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">
-        {{-- Signup provisions a whole tenant - a physical database, its user and
-             the full migration run - so this is the longest wait in the app and
-             the one where a second click does the most damage. --}}
         <div class="w-full max-w-md" x-data="{ submitting: false }">
             <div class="reveal-up mb-8">
                 <h1 class="mb-2 font-display-lg text-display-lg text-primary">{{ __('أنشئ حساب عملك') }}</h1>
@@ -95,10 +92,6 @@
                 <button
                     type="submit"
                     :disabled="submitting"
-                    {{-- `!opacity-60` because this form carries `.stagger`, whose
-                         reveal-up runs with fill-mode:both - an animation's value
-                         outranks a normal declaration, so the plain utility would
-                         dim nothing. Same reason as the login button. --}}
                     class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:!opacity-60" title="{{ __('إنشاء الحساب') }}">
                     <span x-text="submitting ? @js(__('جارٍ إنشاء الحساب...')) : @js(__('إنشاء الحساب'))">{{ __('إنشاء الحساب') }}</span>
                     <span class="material-symbols-outlined rtl:-scale-x-100" :class="submitting && 'animate-spin'"

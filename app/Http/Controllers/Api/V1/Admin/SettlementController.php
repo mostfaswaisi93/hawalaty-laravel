@@ -11,19 +11,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use RuntimeException;
 
-/**
- * Partner clearing (المقاصة) over the API.
- *
- * Every rule that can produce a wrong number - the open period's boundaries, the
- * rounding residual, one-draft-at-a-time, confirmed runs being immutable - lives
- * in SettlementService, exactly as on the web. This only translates its
- * exceptions into HTTP.
- *
- * 422 for a refused run: the request was well-formed, the STATE refused it (a
- * draft already exists, or the period end predates the open period). That is a
- * different thing from a malformed payload, and a client needs to tell them
- * apart to show the right message.
- */
 class SettlementController extends Controller
 {
     public function __construct(private readonly SettlementService $service) {}
@@ -33,7 +20,6 @@ class SettlementController extends Controller
         return SettlementResource::collection($this->service->list());
     }
 
-    /** The live, uncommitted position for the period that is currently open. */
     public function preview(): JsonResponse
     {
         $preview = $this->service->preview();
@@ -50,8 +36,7 @@ class SettlementController extends Controller
             'totalNet' => $preview['totalNet'],
             'retained' => $preview['retained'],
             'percentageTotal' => $preview['percentageTotal'],
-            // sum(net) + retained == distributable - sum(drawn). Held by
-            // construction; exposed so a client can surface a broken run.
+
             'reconciles' => $preview['reconciles'],
             'lines' => $preview['lines'],
         ]);

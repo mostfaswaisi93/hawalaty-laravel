@@ -18,11 +18,6 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Server-rendered menu management (categories + items). Gated on MenuManage.
- * String ids + manual find keep every tenant-table lookup inside the
- * controller, after the tenant connection is resolved.
- */
 class MenuController extends Controller
 {
     public function __construct(
@@ -44,14 +39,11 @@ class MenuController extends Controller
 
         return view('menu.index', [
             'categories' => $categories,
-            // The catalogue is not assumed to be food: these carry the tenant's
-            // own wording and their chosen glyphs into the page.
+
             'catalogIcons' => $this->icons,
             'naming' => $this->naming,
         ]);
     }
-
-    // --- Categories ---
 
     public function storeCategory(StoreMenuCategoryRequest $request): RedirectResponse
     {
@@ -70,8 +62,6 @@ class MenuController extends Controller
 
         return redirect()->route('menu.index')->with('success', __('تم حذف الفئة وأصنافها.'));
     }
-
-    // --- Items ---
 
     public function storeItem(StoreMenuItemRequest $request): RedirectResponse
     {
@@ -99,8 +89,6 @@ class MenuController extends Controller
 
         return redirect()->route('menu.index')->with('success', __('تم حذف الصنف.'));
     }
-
-    // --- Bulk CSV import/export ---
 
     public function export(): StreamedResponse
     {

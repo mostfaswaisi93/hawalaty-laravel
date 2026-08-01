@@ -17,13 +17,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Covers the Super Admin web portal: every page renders for an authenticated
- * admin, guests are redirected to login, and the platform-DB write paths
- * (CRUD + the payment→box→license renewal money flow) behave correctly.
- * License provisioning, backups and the tenant "peek" page are excluded here
- * because they need a real MySQL server, not the sqlite test database.
- */
 class AdminPagesTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,13 +45,6 @@ class AdminPagesTest extends TestCase
         ];
     }
 
-    /**
-     * The licence detail page had no coverage at all, only the index did. The
-     * peek at a tenant's own database needs real MySQL and stays out of this
-     * suite - but a licence with NO `databaseConnection` row skips that block
-     * entirely (see LicenseService::show), so the page itself, its empty states
-     * and its change-package form are all reachable here.
-     */
     public function test_the_license_detail_page_renders_without_a_tenant_database(): void
     {
         $package = Package::create(['name' => 'Starter', 'price' => 30, 'device_limit' => 2, 'features' => []]);
@@ -76,13 +62,11 @@ class AdminPagesTest extends TestCase
             ->assertOk()
             ->assertSee('مطعم التجربة')
             ->assertSee('DETAIL01')
-            // No connection means nothing to peek at, and both cards say so
-            // rather than rendering an empty table.
+
             ->assertSee(__('لا يوجد أعضاء فريق'))
             ->assertSee(__('لا يوجد نشاط'));
     }
 
-    /** A roster that fits under the cap must not claim it was truncated. */
     public function test_the_roster_notice_is_absent_when_nothing_was_cut(): void
     {
         $package = Package::create(['name' => 'Basic', 'price' => 20, 'device_limit' => 1, 'features' => []]);
@@ -101,10 +85,6 @@ class AdminPagesTest extends TestCase
             ->assertDontSee('من أصل');
     }
 
-    /**
-     * Filtering must PRESERVE the chosen page size: <x-per-page> re-emits the
-     * active filters, so the filter forms have to carry the size back.
-     */
     public function test_a_filter_form_carries_the_chosen_page_size(): void
     {
         $response = $this->actingAs($this->admin(), 'admin')
@@ -114,7 +94,6 @@ class AdminPagesTest extends TestCase
         $response->assertSee('name="per_page" value="50"', false);
     }
 
-    /** ...and emits nothing when the admin never touched the selector. */
     public function test_no_page_size_input_is_emitted_by_default(): void
     {
         $this->actingAs($this->admin(), 'admin')
@@ -171,11 +150,6 @@ class AdminPagesTest extends TestCase
         $this->get('/admin/dashboard')->assertRedirect('/admin/login');
     }
 
-    /**
-     * The case above only proves the dashboard survives an EMPTY database. This
-     * exercises every aggregate - notably the month-bucket GROUP BY, which must
-     * not use MySQL-only syntax.
-     */
     public function test_dashboard_renders_with_real_data(): void
     {
         $package = Package::create(['name' => 'Basic', 'price' => 25, 'device_limit' => 2, 'features' => []]);
@@ -187,7 +161,7 @@ class AdminPagesTest extends TestCase
             'customer_name' => 'Acme',
             'package_id' => $package->id,
             'status' => LicenseStatus::Active,
-            // Inside the 30-day window, so the expiring-soon block renders too.
+
             'expired_at' => now()->addDays(10),
             'customer_balance' => 0,
         ]);
@@ -230,11 +204,6 @@ class AdminPagesTest extends TestCase
         $this->assertDatabaseHas('partners', ['name' => 'Ali']);
     }
 
-    /**
-     * The free-form endpoint now only serves keys OUTSIDE the registry - a
-     * registered key like `site_name` has a typed field on the form and is
-     * rejected here, so this uses a genuinely custom key.
-     */
     public function test_can_upsert_a_custom_setting(): void
     {
         $admin = $this->admin();
@@ -242,7 +211,6 @@ class AdminPagesTest extends TestCase
         $this->actingAs($admin, 'admin')->post('/admin/settings', ['key' => 'custom_flag', 'value' => 'Hawalaty'])->assertRedirect('/admin/settings');
         $this->assertDatabaseHas('settings', ['key' => 'custom_flag', 'value' => 'Hawalaty']);
 
-        // Same key again updates in place instead of duplicating.
         $this->actingAs($admin, 'admin')->post('/admin/settings', ['key' => 'custom_flag', 'value' => 'Changed'])->assertRedirect();
         $this->assertDatabaseCount('settings', 1);
         $this->assertDatabaseHas('settings', ['key' => 'custom_flag', 'value' => 'Changed']);
@@ -279,17 +247,14 @@ class AdminPagesTest extends TestCase
             Partner::create(['name' => "Partner {$i}", 'percentage' => 1]);
         }
 
-        // Default (10) → 2 pages of 12 rows.
         $this->actingAs($this->admin(), 'admin')->get('/admin/partners')
             ->assertOk()
             ->assertViewHas('partners', fn ($p) => $p->perPage() === 10 && $p->total() === 12 && $p->lastPage() === 2);
 
-        // per_page=50 → everything on one page.
         $this->actingAs($this->admin(), 'admin')->get('/admin/partners?per_page=50')
             ->assertOk()
             ->assertViewHas('partners', fn ($p) => $p->perPage() === 50 && $p->lastPage() === 1);
 
-        // A value outside the whitelist falls back to 10.
         $this->actingAs($this->admin(), 'admin')->get('/admin/partners?per_page=9999')
             ->assertViewHas('partners', fn ($p) => $p->perPage() === 10);
     }
@@ -306,14 +271,6 @@ class AdminPagesTest extends TestCase
         $this->assertSame('180.00', $box->fresh()->box_balance);
     }
 
-    /**
-     * A box holds real money. Neither the request rules (`min:0.01`, no ceiling)
-     * nor the service checked the balance before decrementing, and there is no
-     * CHECK constraint on `boxes.box_balance` to catch it either - so a
-     * withdrawal larger than the box could drive it negative and every
-     * downstream figure (finance summary, partner shares, the dashboard tile)
-     * would quietly report a number that cannot exist.
-     */
     public function test_a_withdrawal_cannot_overdraw_its_box(): void
     {
         $box = Box::create(['box_name' => 'Main', 'box_balance' => 300]);
@@ -329,7 +286,6 @@ class AdminPagesTest extends TestCase
         $this->assertSame(0, Withdrawal::count());
     }
 
-    /** The same hole existed on the platform-expense path. */
     public function test_a_platform_expense_cannot_overdraw_its_box(): void
     {
         $box = Box::create(['box_name' => 'Main', 'box_balance' => 50]);
@@ -349,12 +305,6 @@ class AdminPagesTest extends TestCase
         $this->assertSame(0, Expense::count());
     }
 
-    /**
-     * The request-level rule would hide this: it is the check INSIDE the locked
-     * transaction that actually stops two concurrent withdrawals from both being
-     * approved against the same starting balance. Calling the service directly
-     * is the only way to exercise it.
-     */
     public function test_the_service_itself_refuses_an_overdraw_even_when_validation_is_bypassed(): void
     {
         $box = Box::create(['box_name' => 'Main', 'box_balance' => 100]);
@@ -369,13 +319,11 @@ class AdminPagesTest extends TestCase
                 'amount' => '250',
             ]);
         } finally {
-            // The transaction must have rolled back completely.
             $this->assertSame('100.00', $box->fresh()->box_balance);
             $this->assertSame(0, Withdrawal::count());
         }
     }
 
-    /** Spending the box down to exactly zero is legitimate and must still work. */
     public function test_a_withdrawal_of_the_entire_balance_is_allowed(): void
     {
         $box = Box::create(['box_name' => 'Main', 'box_balance' => 300]);

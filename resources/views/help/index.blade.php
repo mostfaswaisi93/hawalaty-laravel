@@ -1,40 +1,19 @@
-{{--
-    One route serves both audiences: this page carries no authenticated data, and
-    the guest footer links it, so it must render for signed-out visitors too. The
-    layout follows the session - the app shell (with its sidebar) for a signed-in
-    tenant, the guest shell otherwise.
---}}
 @extends(auth('tenant')->check() ? 'layouts.app' : 'layouts.guest')
 
 @section('title', __('مركز المساعدة - حوالاتي'))
 
 @php
-    // The catalogue's name in THIS tenant's words, so the help text matches the
-    // sidebar the reader is looking at. Safe for the signed-out case too: with no
-    // tenant connection the service falls back to its neutral defaults rather
-    // than throwing (see CatalogNaming::all()).
+
     $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class);
 @endphp
 
 @php
-    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call
-    // there. Ignored under layouts.app, which is behind auth and has no SEO.
+
     $metaDescription = __('أجوبة سريعة عن استخدام حوالاتي: إنشاء الطلبات، الحسابات والمحافظ، الفريق والصلاحيات، التقارير، والعمل بدون إنترنت.');
     $metaRobots = 'index, follow';
 @endphp
 
 @section('content')
-    {{--
-        The width cap is applied ONLY under the guest shell, whose <main> has no
-        max-width of its own - there it keeps a full-bleed reading column from
-        stretching across a desktop. Inside the app shell the layout already caps
-        at 1680px with its own gutters, so capping again left ~410px of dead
-        space on each side while the cards below were cramped into three narrow
-        columns.
-
-        lg:col-span-2 is likewise a guest-shell requirement (its <main> is a
-        two-column grid) and inert inside layouts.app.
-    --}}
     @php $inAppShell = auth('tenant')->check(); @endphp
 
     <div @class([
@@ -49,12 +28,8 @@
             <p class="mt-2 font-body-lg text-on-surface-variant">{{ __('دليل سريع وأجوبة لأكثر الأسئلة شيوعاً.') }}</p>
         </header>
 
-        {{-- Main column = FAQ, sidebar = quick links + contact. Order is
-             swapped on xl so the FAQ leads on desktop while the quick links stay
-             first on mobile, where they are the faster route to a page. --}}
         <div class="grid items-start gap-6 xl:grid-cols-3">
 
-        {{-- quick links --}}
         <section class="xl:order-2 xl:col-span-1">
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('روابط سريعة') }}</h2>
             <div class="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
@@ -79,16 +54,12 @@
             </div>
         </section>
 
-        {{-- FAQ --}}
         <section x-data="{ open: 0 }" class="xl:order-1 xl:col-span-2">
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('الأسئلة الشائعة') }}</h2>
             <div class="stagger space-y-3">
                 @foreach ([
                     [__('كيف أنشئ طلباً جديداً؟'), __('من «طلب جديد»، اختر الأصناف من القائمة لتُضاف إلى السلة، حدّد اسم العميل وطريقة الدفع (نقدي أو تحويل بنكي)، ثم اضغط «إنشاء الطلب». يُحسب الإجمالي تلقائياً من الأصناف.')],
                     [__('كيف أضيف بنكاً أو محفظة؟'), __('من «البنوك والمحافظ» اضغط «إضافة»، أدخل الاسم والنوع (بنك/محفظة) والرمز واختيارياً الهاتف. يمكنك تفعيل أو إيقاف أي وسيلة دفع في أي وقت من مفتاح الحالة.')],
-                    {{-- Worded through the tenant's own labels, and the example is
-                         left generic: "المشاوي" only makes sense to a restaurant,
-                         and this same answer is read by a fuel station. --}}
                     [__('كيف أنظّم :catalog؟', ['catalog' => $catalogNaming->catalog()]), __('من «:catalog» أنشئ :category أولاً، ثم أضِف :items إليها مع أسعارها. يمكنك إخفاء أي :item مؤقتاً بإيقاف «متاح للطلب» دون حذفه.', ['catalog' => $catalogNaming->catalog(), 'category' => $catalogNaming->category(), 'items' => __('الأصناف'), 'item' => $catalogNaming->item()])],
                     [__('ما الفرق بين الأدوار؟'), __('المالك يملك كل الصلاحيات. المدير يملك كل الصلاحيات عدا إدارة الفريق. الموظف يمكنه إنشاء الطلبات فقط. يمكنك تعيين الدور المناسب لكل عضو من صفحة «الفريق».')],
                     [__('ماذا تعني حالات الطلب؟'), __('«مكتملة» أي تم استلام الدفع وإنهاء الطلب، «قيد الانتظار» أي جديد لم يُنجَز بعد، و«فاشلة» أي أُلغي أو تعذّر إتمامه.')],
@@ -110,7 +81,6 @@
             </div>
         </section>
 
-        {{-- contact --}}
         <section class="reveal-up tonal-elevation flex flex-col items-center gap-4 rounded-3xl border border-outline-variant/50 bg-primary/5 p-8 text-center xl:order-3 xl:col-span-1" style="--d:200ms">
             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/15 text-secondary">
                 <span class="material-symbols-outlined !text-3xl">support_agent</span>
@@ -128,6 +98,5 @@
             </div>
         </section>
 
-        </div>{{-- /two-column grid --}}
-    </div>
+        </div></div>
 @endsection

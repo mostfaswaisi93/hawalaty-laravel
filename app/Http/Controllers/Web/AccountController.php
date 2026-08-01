@@ -21,13 +21,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
-/**
- * Accounts + their ledgers (Phase 2b). Gated on BanksManage - the same
- * permission as the banks/wallets vocabulary these are built from.
- *
- * String ids + manual find (not route-model binding), like BankController, so
- * every tenant lookup runs after the tenant connection is resolved.
- */
 class AccountController extends Controller
 {
     use HasPerPage;
@@ -150,13 +143,6 @@ class AccountController extends Controller
         return redirect()->route('accounts.show', $account->id)->with('success', __('تمت إضافة الحركة.'));
     }
 
-    /**
-     * Options for the create/edit form: the active catalog rows, plus which
-     * currencies each bank/wallet supports so the currency select can be
-     * narrowed to the chosen institution.
-     *
-     * @return array<string, mixed>
-     */
     private function formData(): array
     {
         return [

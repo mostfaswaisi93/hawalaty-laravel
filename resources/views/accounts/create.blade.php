@@ -3,8 +3,7 @@
 @section('title', __('حساب جديد - حوالاتي'))
 
 @php
-    // Which currencies each bank/wallet supports, so the currency select can be
-    // narrowed to the chosen institution (mirrors StoreAccountRequest's check).
+
     $currenciesJs = $currencies->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'symbol' => $c->symbol])->values();
     $bankCurrencies = $banks->mapWithKeys(fn ($b) => [$b->id => $b->currencies->pluck('id')->values()]);
     $walletCurrencies = $wallets->mapWithKeys(fn ($w) => [$w->id => $w->currencies->pluck('id')->values()]);
@@ -68,7 +67,6 @@
             @csrf
             <input type="hidden" name="kind" :value="kind">
 
-            {{-- kind selector: نقدي / بنك / محفظة --}}
             <div class="grid grid-cols-3 gap-3">
                 @foreach (\App\Enums\AccountKind::cases() as $case)
                     <button type="button" @click="kind = '{{ $case->value }}'; onInstitutionChange()"
@@ -81,7 +79,6 @@
             </div>
 
             <section class="tonal-elevation space-y-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
-                {{-- ═══ bank fields ═══ --}}
                 <div class="space-y-4" x-show="kind === 'bank'" x-cloak>
                     <div class="space-y-1.5">
                         <label for="acc-bank" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('البنك') }}</label>
@@ -115,7 +112,6 @@
                     </div>
                 </div>
 
-                {{-- ═══ wallet fields ═══ --}}
                 <div class="space-y-4" x-show="kind === 'wallet'" x-cloak>
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-1.5">
@@ -149,7 +145,6 @@
                     </div>
                 </div>
 
-                {{-- ═══ cash fields ═══ --}}
                 <div class="space-y-4" x-show="kind === 'cash'" x-cloak>
                     <div class="space-y-1.5">
                         <label for="acc-cash-box" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصندوق النقدي') }}</label>
@@ -164,7 +159,6 @@
                     </div>
                 </div>
 
-                {{-- ═══ shared fields ═══ --}}
                 <div class="space-y-1.5">
                     <label for="acc-holder" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم صاحب الحساب') }}</label>
                     <input id="acc-holder" name="holder_name" value="{{ old('holder_name') }}" required placeholder="{{ __('مثال: أحمد محمد') }}"

@@ -8,14 +8,8 @@ use App\Services\Tenant\MenuService;
 use Illuminate\Http\UploadedFile;
 use Tests\TenantTestCase;
 
-/**
- * Covers MenuService: category/item CRUD, position sequencing on create,
- * FK cascade on category delete, CSV export sanitization (CWE-1236), and
- * CSV import matching/skip rules (negative/non-numeric price rejection).
- */
 class MenuServiceTest extends TenantTestCase
 {
-    /** @var array<int, string> */
     private array $tempCsvFiles = [];
 
     protected function tearDown(): void
@@ -37,8 +31,6 @@ class MenuServiceTest extends TenantTestCase
 
         return new UploadedFile($path, 'import.csv', 'text/csv', null, true);
     }
-
-    // --- Categories ---
 
     public function test_create_category_assigns_sequential_positions(): void
     {
@@ -82,11 +74,9 @@ class MenuServiceTest extends TenantTestCase
         app(MenuService::class)->deleteCategory($category);
 
         $this->assertNull(MenuCategory::find($category->id));
-        // menu_items.menu_category_id has cascadeOnDelete() at the DB level.
+
         $this->assertNull(MenuItem::find($item->id));
     }
-
-    // --- Items ---
 
     public function test_create_item_persists_expected_attributes(): void
     {
@@ -144,8 +134,6 @@ class MenuServiceTest extends TenantTestCase
 
         $this->assertTrue($item->relationLoaded('menuCategory'));
     }
-
-    // --- CSV export ---
 
     public function test_export_rows_ordered_by_category_position_then_item_name(): void
     {
@@ -206,8 +194,6 @@ class MenuServiceTest extends TenantTestCase
         $this->assertSame('1', $rows['Active Item']['active']);
         $this->assertSame('0', $rows['Inactive Item']['active']);
     }
-
-    // --- CSV import ---
 
     public function test_import_creates_new_category_and_item(): void
     {

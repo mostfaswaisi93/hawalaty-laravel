@@ -3,9 +3,7 @@
 @section('title', __('الكتالوجات - حوالاتي'))
 
 @php
-    // A compact mirror of the registry for the client: which tab has a symbol
-    // field, its placeholder, and where its form posts. Keyed by the same
-    // {catalog} segment used in the routes and the tab ids.
+
     $catalogJs = [];
     foreach ($catalogs as $key => $c) {
         $catalogJs[$key] = [
@@ -58,7 +56,6 @@
             </button>
         </header>
 
-        {{-- ══════════════ tab bar ══════════════ --}}
         <div class="reveal-up flex gap-1 overflow-x-auto rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-1.5" style="--d:60ms" role="tablist">
             @foreach ($catalogs as $key => $catalog)
                 <button type="button" role="tab" @click="tab = '{{ $key }}'"
@@ -73,7 +70,6 @@
             @endforeach
         </div>
 
-        {{-- ══════════════ panels ══════════════ --}}
         @foreach ($catalogs as $key => $catalog)
             <section x-show="tab === '{{ $key }}'" x-cloak id="{{ $key }}"
                 class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6">
@@ -160,7 +156,6 @@
             </section>
         @endforeach
 
-        {{-- ══════════════ add / edit modal ══════════════ --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity @click="open = false"></div>
             <div x-show="open" @keydown.escape.window="open = false"
@@ -177,7 +172,6 @@
                 <form :action="actionUrl()" method="POST" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
-                    {{-- Carries which tab is submitting so a validation error can reopen the modal on the right one. --}}
                     <input type="hidden" name="catalog" :value="tab">
                     <input type="hidden" name="id" :value="form.id">
                     <input type="hidden" name="active" :value="form.active ? 1 : 0">
@@ -196,8 +190,6 @@
                         @error('symbol')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Supported currencies (banks / wallets / cash boxes). An account
-                         opened here may only pick one of these. --}}
                     <div class="space-y-1.5" x-show="current().currencies" x-cloak>
                         <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('العملات المدعومة') }}</span>
                         @if ($currencyOptions->isEmpty())

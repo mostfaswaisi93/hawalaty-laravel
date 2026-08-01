@@ -1,16 +1,8 @@
 @extends('layouts.app')
 
-{{-- The browser tab follows the tenant's own wording too. --}}
 @section('title', $naming->catalog() . ' - ' . __('حوالاتي'))
 
 @section('content')
-    {{--
-        Three modals share one page, so a failed submission's old()/$errors
-        must be routed to the modal that actually caused it: import errors
-        are always on `file`; item errors always include menuCategoryId or
-        price (category errors never do); anything else with errors is the
-        category form.
-    --}}
     @php
         $importHasErrors = $errors->has('file');
         $itemHasErrors = $errors->has('menuCategoryId') || $errors->has('price');
@@ -32,9 +24,6 @@
 
         <header class="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
-                {{-- The tenant's own words, not "قائمة الطعام": the same page
-                     runs a fruit shop and a fuel station. `$naming` was already
-                     handed to this view and simply was not being read. --}}
                 <h1 class="font-display-lg text-display-lg text-on-surface">{{ $naming->catalog() }}</h1>
                 <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('نظّم فئاتك وعناصرها وأسعارها.') }}</p>
             </div>
@@ -51,9 +40,6 @@
                     class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('استيراد CSV') }}" title="{{ __('استيراد CSV') }}">
                     <span class="material-symbols-outlined !text-xl">upload</span>
                 </button>
-                {{-- "إضافة :label" rather than ":label جديدة": the tenant's word
-                     can be any gender ("فئة" vs "نوع"), and gluing a fixed
-                     adjective onto it produces broken Arabic for half of them. --}}
                 <button type="button" @click="catOpen = true; submitting = false"
                     class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container" title="{{ __('إضافة :label', ['label' => $naming->category()]) }}">
                     <span class="material-symbols-outlined !text-xl">create_new_folder</span>
@@ -111,23 +97,11 @@
                                 <button type="button" @click="openAddItem(@js($cat->id))" class="font-body-sm font-bold text-primary hover:underline">{{ __('إضافة :label', ['label' => $naming->item()]) }}</button>
                             </div>
                         @else
-                            {{--
-                                A GRID, not a list. One entry per full-width row left most of a
-                                wide screen empty - the name hard against one edge, its controls
-                                against the other - and a 20-entry catalogue ran several screens
-                                long. Cards keep the name, price and controls of one entry
-                                together, and the column count follows the viewport.
-                            --}}
                             <div class="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                                 @foreach ($cat->menuItems as $item)
-                                    {{-- Anchor + :target ring so a catalogue hit in the header
-                                         search lands ON its card, not at the top of the page. --}}
                                     <div id="item-{{ $item->id }}"
                                         class="flex scroll-mt-24 flex-col justify-between gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3 transition-all target:ring-2 target:ring-primary hover:border-outline-variant hover:shadow-md {{ $item->active ? '' : 'opacity-60' }}">
                                         <div class="flex items-start gap-3">
-                                            {{-- The entry's own icon, falling back to its category's
-                                                 and then to a neutral glyph - never a food-specific
-                                                 default. --}}
                                             <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl {{ $item->active ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-outline' }}">
                                                 <span class="material-symbols-outlined">{{ $catalogIcons->resolve($item->icon, $cat->icon) }}</span>
                                             </div>
@@ -138,11 +112,6 @@
                                         </div>
 
                                         <div class="flex items-center justify-between gap-2 border-t border-outline-variant/40 pt-2">
-                                            {{-- toggle active --}}
-                                            {{-- Row-scoped `toggling`, not the page-level
-                                                 `submitting` that drives the modals: see
-                                                 catalogs/_toggle for why a switch pulses
-                                                 instead of showing a spinner. --}}
                                             <form method="POST" action="{{ route('menu.items.update', $item->id) }}" class="inline-flex"
                                                 x-data="{ toggling: false }" @submit="toggling = true">
                                                 @csrf @method('PUT')
@@ -151,7 +120,6 @@
                                                     aria-label="{{ $item->active ? __('إيقاف') : __('تفعيل') }}" title="{{ $item->active ? __('إيقاف') : __('تفعيل') }}"
                                                     :disabled="toggling" :class="toggling && 'animate-pulse opacity-60'"
                                                     class="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed {{ $item->active ? 'bg-primary' : 'bg-surface-container-high' }}">
-                                                    {{-- See banks/_toggle.blade.php - tokenised knob so it stays visible on the pale dark-mode track. --}}
                                                     <span class="absolute top-1 h-4 w-4 rounded-full shadow transition-all {{ $item->active ? 'bg-on-primary start-1' : 'bg-on-surface-variant end-1' }}"></span>
                                                 </button>
                                             </form>
@@ -181,7 +149,6 @@
             </div>
         @endif
 
-        {{-- ══════════════ category modal ══════════════ --}}
         <div x-show="catOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="catOpen" x-transition.opacity></div>
             <div x-show="catOpen" @keydown.escape.window="catOpen = false"
@@ -211,7 +178,6 @@
             </div>
         </div>
 
-        {{-- ══════════════ item modal (add / edit) ══════════════ --}}
         <div x-show="itemOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="itemOpen" x-transition.opacity></div>
             <div x-show="itemOpen" @keydown.escape.window="itemOpen = false"
@@ -220,9 +186,7 @@
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl bg-surface-container-lowest shadow-2xl">
                 <x-modal-close on-close="itemOpen = false" />
-                <h3 id="item-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md" {{-- @js, not bare quotes: the label is tenant-supplied and an apostrophe
-                         in it ("Bob's parts") would otherwise break the expression. --}}
-                    x-text="itemMode === 'edit' ? @js(__('تعديل :label', ['label' => $naming->item()])) : @js(__('إضافة :label', ['label' => $naming->item()]))"></h3>
+                <h3 id="item-modal-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md" x-text="itemMode === 'edit' ? @js(__('تعديل :label', ['label' => $naming->item()])) : @js(__('إضافة :label', ['label' => $naming->item()]))"></h3>
                 <form :action="itemMode === 'edit' ? '{{ url('menu/items') }}/' + itemForm.id : '{{ route('menu.items.store') }}'" method="POST" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <template x-if="itemMode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
@@ -271,7 +235,6 @@
             </div>
         </div>
 
-        {{-- ══════════════ import CSV modal ══════════════ --}}
         <div x-show="importOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="importOpen" x-transition.opacity></div>
             <div x-show="importOpen" @keydown.escape.window="importOpen = false"

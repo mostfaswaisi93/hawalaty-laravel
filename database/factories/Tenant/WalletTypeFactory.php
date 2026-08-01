@@ -5,9 +5,6 @@ namespace Database\Factories\Tenant;
 use App\Models\Tenant\WalletType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<WalletType>
- */
 class WalletTypeFactory extends Factory
 {
     protected $model = WalletType::class;

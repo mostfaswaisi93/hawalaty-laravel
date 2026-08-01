@@ -33,16 +33,11 @@ class ConstantController extends Controller
 
         return view('constants.index', [
             'lists' => $lists,
-            // What this tenant calls its catalogue. Lives here because it IS a
-            // per-account constant, and this is the page for those.
+
             'naming' => $this->naming,
         ]);
     }
 
-    /**
-     * Renames the catalogue for this tenant. The app shipped hard-coded as a
-     * restaurant; a fruit shop or a fuel station needs its own words.
-     */
     public function updateNaming(UpdateCatalogNamingRequest $request): RedirectResponse
     {
         abort_unless($this->canManage(), 403);
@@ -56,8 +51,6 @@ class ConstantController extends Controller
             CatalogNaming::ICON => $data['catalogIcon'] ?? null,
         ]);
 
-        // Naming the section is what adds it to the sidebar, so say so - the
-        // change happens somewhere other than the page being looked at.
         return redirect()->route('constants.index')->with('success', filled($data['catalogLabel'] ?? null)
             ? __('تم حفظ القائمة - ستجدها الآن في القائمة الجانبية.')
             : __('تمت إزالة القائمة من القائمة الجانبية.'));

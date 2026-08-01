@@ -5,24 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ __('فاتورة') }} #{{ strtoupper(substr($order->id, -8)) }}</title>
 
-    {{--
-        Rendered as HTML and printed by the BROWSER, not by dompdf.
-
-        dompdf has no Arabic shaping or bidi: it drew the letters in isolated
-        forms, left to right, so every Arabic receipt came out unreadable. The
-        browser's text engine shapes Arabic correctly, and its print dialog
-        talks to the thermal printer directly. The API still serves a PDF, for
-        mobile clients that want a file rather than a page.
-
-        Laid out to match a supermarket POS slip: a ruled grid throughout - a
-        meta strip, a boxed customer line, a fully-bordered items table, a
-        bordered totals stack, and the licence line last. 80mm is the standard
-        thermal roll, and `size: 80mm auto` makes the page exactly as long as
-        the content. Hairline rules rather than filled blocks: a thermal head
-        burns a solid fill into a smear and wears itself out doing it.
-    --}}
-    {{-- Tajawal only, and no icon font: a print station is regularly offline,
-         and this page draws no glyph that would justify shipping 447 kB to it. --}}
     <x-fonts :families="['tajawal']" :icons="false" />
 
     <style>
@@ -127,9 +109,6 @@
     </div>
 
     <div class="sheet">
-        {{-- The shop's own logo when it has uploaded one, its name otherwise.
-             `alt` still carries the name, so a logo that fails to decode on the
-             printer never leaves the slip anonymous. --}}
         <div class="head">
             @if ($logo)
                 <img src="{{ $logo }}" alt="{{ $businessName }}" class="logo" />
@@ -190,14 +169,11 @@
         @endif
 
         @php
-            // The subtotal is summed from the LINE ITEMS, not derived as
-            // amount + discount: the lines are what the table above prints, so
-            // this is the one figure that can never disagree with them.
+
             $subtotal = $order->lineItems->sum(fn ($line) => $line->quantity * (float) $line->price);
         @endphp
         @php
-            // The stamp cell spans every totals row, so it stays level with them
-            // however many optional lines this order happens to have.
+
             $totalRows = 2
                 + ($order->discount > 0 ? 1 : 0)
                 + ($order->transferred_amount ? 1 : 0)

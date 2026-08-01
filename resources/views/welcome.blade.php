@@ -1,20 +1,6 @@
 @php
     $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar';
 
-    /*
-     * ── Copy tables ────────────────────────────────────────────────────────
-     *
-     * Everything the page says lives up here as data rather than inline in the
-     * markup, so the wording can be reviewed in one screen and the sections
-     * below stay readable as layout.
-     *
-     * WORDING: write for "مشروع", never one trade. The product serves a grocer,
-     * a fuel station, a workshop and a laundry alike, so trades appear as
-     * examples rather than as the premise.
-     */
-
-    // Trades the catalogue ships icons for. Shown as a marquee - concrete
-    // examples answer "is this for me?" faster than any adjective.
     $trades = [
         ['restaurant', __('مطاعم ومقاهي')],
         ['storefront', __('بقالة وسوبرماركت')],
@@ -28,8 +14,6 @@
         ['nutrition', __('خضار وفواكه')],
     ];
 
-    // [icon, big number, suffix, label] - the number counts up when it scrolls
-    // into view (see the observer at the bottom of the page).
     $stats = [
         ['bolt', 8, '', __('ثوانٍ لتسجيل طلب كامل')],
         ['language', 2, '', __('لغتان في الواجهة نفسها')],
@@ -37,8 +21,6 @@
         ['cloud_off', 100, '%', __('يعمل حتى بلا إنترنت')],
     ];
 
-    // The product tour. Each entry paints a small mock of that screen, so a
-    // visitor sees what the app looks like before signing up for anything.
     $tour = [
         [
             'key' => 'orders',
@@ -88,8 +70,6 @@
         ['rocket_launch', __('ابدأ التشغيل'), __('استقبل الطلبات وتابع الأرصدة والأرباح لحظة بلحظة من لوحة تحكم واحدة.')],
     ];
 
-    // Truthful contrast, not invented customer quotes: every "before" line is a
-    // problem this software actually removes.
     $comparison = [
         [__('دفتر وقلم وملف إكسل منفصل'), __('كل شيء في مكان واحد يتحدّث لحظياً')],
         [__('رصيد البنك تعرفه آخر الشهر'), __('رصيد كل حساب أمامك الآن')],
@@ -118,7 +98,6 @@
         'other' => __('موضوع آخر'),
     ];
 
-    // ── SEO ────────────────────────────────────────────────────────────────
     $metaTitle = __('حوالاتي - نظام إدارة الطلبات والحسابات لأي مشروع');
     $metaDescription = __('نظام عربي متكامل لإدارة الطلبات والحسابات والمحافظ والمصروفات والتقارير لأي مشروع - بصلاحيات دقيقة، وعمل بلا إنترنت، وتجربة مجانية ١٤ يوماً.');
 
@@ -156,15 +135,7 @@
             'description' => $metaDescription,
             'inLanguage' => ['ar', 'en'],
             'featureList' => array_map(fn ($f) => $f[2], $features),
-            /*
-             * The lowest price anyone actually PAYS, not zero.
-             *
-             * The entry tier is a 14-day trial rather than a free-forever plan,
-             * and an Offer of 0 would render as "Free" in a rich result - a
-             * promise the pricing table does not make. `lowPrice` on an
-             * AggregateOffer is the honest shape: a search result reads
-             * "from ₪99".
-             */
+
             'offers' => [
                 '@type' => 'AggregateOffer',
                 'lowPrice' => '99',
@@ -187,9 +158,6 @@
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}"
-    {{-- The landing page is standalone - it extends no layout, so it carries its
-         own copy of the tooltip state. Only the `below` placement: there is no
-         sidebar rail here, so no `collapsed` for a `side` bubble to clear. --}}
     x-data="{
         dark: localStorage.getItem('theme') === 'dark',
         tipText: '', tipTop: 0, tipLeft: 0,
@@ -212,8 +180,6 @@
 
     <x-seo :title="$metaTitle" :description="$metaDescription" :canonical="route('home')" :schemas="$schemas" />
 
-    {{-- No favicon was declared anywhere, so browsers fell back to probing /favicon.ico
-         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -294,7 +260,6 @@
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
     <x-skip-link />
 
-    {{-- ─────────────────────────  NAV  ───────────────────────── --}}
     <header x-data="{ open: false }" class="sticky top-0 z-50 border-b border-outline-variant/60 bg-surface/80 backdrop-blur-lg">
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-outline-variant/20">
             <div id="scroll-progress" class="progress-bar h-full w-0 bg-primary" role="presentation"></div>
@@ -320,8 +285,6 @@
             </div>
 
             <div class="flex items-center gap-2">
-                {{-- The locale code alone carries the meaning; the translate glyph
-                     beside it was pure duplication. --}}
                 <a href="{{ route('locale.switch', $otherLocale) }}"
                     class="flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
                     aria-label="{{ __('تغيير اللغة') }}" title="{{ __('تغيير اللغة') }}">
@@ -340,11 +303,6 @@
                 <a href="{{ route('signup') }}" class="hidden rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 sm:inline-block" title="{{ __('ابدأ مجاناً') }}">
                     {{ __('ابدأ مجاناً') }}
                 </a>
-                {{-- `showTipBelow` resolves up the Alpine scope chain from this
-                     header's own `x-data` to the root one on <html>.
-
-                     `hideTip()` on click: the mobile panel drops open directly
-                     beneath this button, exactly where the bubble sits. --}}
                 <button type="button" @click="hideTip(); open = !open"
                     @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
@@ -356,7 +314,6 @@
             </div>
         </nav>
 
-        {{-- mobile menu --}}
         <div id="mobile-menu" x-show="open" x-cloak class="border-t border-outline-variant/60 bg-surface px-inline-md py-4 lg:hidden" style="display:none">
             <div class="flex flex-col gap-1">
                 @foreach ([
@@ -378,7 +335,6 @@
     </header>
 
     <main id="main">
-        {{-- ─────────────────────────  HERO  ───────────────────────── --}}
         <section class="relative overflow-hidden">
             <div class="pointer-events-none absolute inset-0 grid-dots opacity-60" aria-hidden="true"></div>
             <div class="pointer-events-none absolute -top-40 start-[-10%] h-[28rem] w-[28rem] rounded-full bg-primary/20 blur-3xl" aria-hidden="true"></div>
@@ -425,7 +381,6 @@
                     </ul>
                 </div>
 
-                {{-- floating dashboard preview --}}
                 <div class="reveal is-visible relative mx-auto w-full max-w-lg lg:mx-0 lg:max-w-none" aria-hidden="true">
                     <div class="pointer-events-none absolute -inset-4 -z-10 hidden rounded-[2.5rem] bg-primary-container/25 blur-2xl lg:block"></div>
                     <div class="floaty glass-card w-full rounded-3xl p-7 sm:p-8">
@@ -452,7 +407,6 @@
                         </div>
 
                         <div class="mt-6 space-y-3">
-                            {{-- Mock customer names in this demo widget stay as-is across locales - proper names aren't translated (same convention as real order data elsewhere in the app). --}}
                             @foreach ([['أحمد أبو ياسين', __('مكتملة'), '+85.00', 'bg-green-500'], ['سميرة خليل', __('قيد الانتظار'), '+42.00', 'bg-secondary-container']] as [$name, $status, $amount, $dot])
                                 <div class="flex items-center gap-3 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3">
                                     <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -473,13 +427,9 @@
             </div>
         </section>
 
-        {{-- ─────────────────────  TRADES MARQUEE  ───────────────────── --}}
         <section class="border-y border-outline-variant/50 bg-surface-container-low py-10">
             <p class="mb-6 text-center font-label-caps text-label-caps uppercase tracking-wider text-outline">{{ __('مصمَّم ليخدم أي نشاط تجاري') }}</p>
             <div class="marquee overflow-hidden">
-                {{-- Two tracks, not one list rendered twice: see the .marquee
-                     rules in <head>. The second is a visual duplicate, so it is
-                     hidden from assistive tech rather than read out again. --}}
                 @foreach ([false, true] as $isDuplicate)
                     <ul class="marquee-track" @if ($isDuplicate) aria-hidden="true" @endif>
                         @foreach ($trades as [$icon, $label])
@@ -493,7 +443,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  STATS  ───────────────────────── --}}
         <section class="bg-surface">
             <div class="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-inline-md py-14 md:grid-cols-4 md:gap-6 md:px-inline-lg md:py-16">
                 @foreach ($stats as $i => [$icon, $value, $suffix, $label])
@@ -502,9 +451,6 @@
                             <span class="material-symbols-outlined !text-2xl" data-weight="fill">{{ $icon }}</span>
                         </span>
                         <span class="font-display-lg text-3xl font-bold text-on-surface" dir="ltr">
-                            {{-- data-count drives the count-up; the element already
-                                 holds the final value so it is correct with JS off
-                                 and never reflows when the animation finishes. --}}
                             <span class="count" data-count="{{ $value }}">{{ $value }}</span>{{ $suffix }}
                         </span>
                         <span class="font-body-sm text-on-surface-variant">{{ $label }}</span>
@@ -513,7 +459,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────  PRODUCT TOUR  ───────────────────── --}}
         <section id="tour" class="scroll-mt-24 border-y border-outline-variant/50 bg-surface-container-low py-24 md:py-28 lg:py-32">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
                 <div class="reveal mx-auto max-w-2xl text-center">
@@ -542,7 +487,6 @@
                     x-init="start()" @mouseenter="stop()">
 
                     <div class="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
-                        {{-- tab list --}}
                         <div class="flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0" role="tablist" aria-label="{{ __('جولة في النظام') }}">
                             @foreach ($tour as $i => $panel)
                                 <button type="button" role="tab" id="tour-tab-{{ $panel['key'] }}"
@@ -568,7 +512,6 @@
                             @endforeach
                         </div>
 
-                        {{-- panels --}}
                         <div class="relative min-h-[26rem]">
                             @foreach ($tour as $i => $panel)
                                 <div role="tabpanel" id="tour-panel-{{ $panel['key'] }}" aria-labelledby="tour-tab-{{ $panel['key'] }}"
@@ -578,7 +521,6 @@
                                     x-transition:enter-end="opacity-100 translate-y-0"
                                     class="tonal-elevation h-full rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6 md:p-8">
 
-                                    {{-- a small, honest mock of the real screen --}}
                                     @include('partials._tour-mock', ['panel' => $panel['key']])
 
                                     <ul class="mt-6 space-y-2.5 border-t border-outline-variant/50 pt-5">
@@ -596,7 +538,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  FEATURES  ───────────────────────── --}}
         <section id="features" class="scroll-mt-24 bg-surface py-24 md:py-28 lg:py-32">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
                 <div class="reveal mx-auto max-w-2xl text-center">
@@ -624,7 +565,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────  BEFORE / AFTER  ───────────────────── --}}
         <section class="border-y border-outline-variant/50 bg-surface-container-low py-24 md:py-28">
             <div class="mx-auto max-w-5xl px-inline-md md:px-inline-lg">
                 <div class="reveal mx-auto max-w-2xl text-center">
@@ -658,7 +598,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  HOW IT WORKS  ───────────────────────── --}}
         <section id="how" class="scroll-mt-24 bg-surface py-24 md:py-28 lg:py-32">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
                 <div class="reveal mx-auto max-w-2xl text-center">
@@ -682,7 +621,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  SECURITY  ───────────────────────── --}}
         <section class="border-y border-outline-variant/50 bg-surface-container-low py-24 md:py-28">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
                 <div class="reveal grid items-center gap-12 lg:grid-cols-[1fr_1fr] lg:gap-20">
@@ -718,7 +656,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  PRICING  ───────────────────────── --}}
         <section id="pricing" class="scroll-mt-24 bg-surface py-24 md:py-28 lg:py-32">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg"
                 x-data="{
@@ -735,7 +672,6 @@
                     <p class="mt-4 font-body-lg text-on-surface-variant">{{ __('ابدأ مجاناً وارتقِ متى شئت. كل الباقات تشمل التحديثات والدعم، والترقية أو التخفيض لا يفقدك أي بيانات.') }}</p>
                 </div>
 
-                {{-- billing toggle --}}
                 <div class="reveal mt-10 flex items-center justify-center gap-4">
                     <span class="font-body-sm font-bold transition-colors" :class="annual ? 'text-outline' : 'text-on-surface'">{{ __('شهري') }}</span>
                     <button type="button" @click="annual = !annual" role="switch" :aria-checked="annual ? 'true' : 'false'"
@@ -754,9 +690,7 @@
                 @php
                     $plans = [
                         [
-                            // A 14-day trial, not a free-forever tier: the same
-                            // promise the hero and the CTA band already make, so
-                            // the pricing table cannot contradict them.
+
                             'name' => __('البداية'), 'monthly' => 0, 'devices' => __('جهازين'),
                             'tagline' => __('جرّب النظام كاملاً قبل أن تدفع'), 'popular' => false, 'enterprise' => false,
                             'features' => [__('إدارة الطلبات'), __('الكتالوج والأسعار'), __('التقارير الأساسية'), __('مستخدم واحد'), __('العمل بلا إنترنت')],
@@ -818,8 +752,6 @@
                                 @endif
                             </div>
 
-                            {{-- "up to unlimited devices" is nonsense, so the cap
-                                 wording is dropped on the tier that has no cap. --}}
                             <p class="mt-1 font-body-sm text-outline">{{ $plan['enterprise'] ? $plan['devices'] : __('حتى').' '.$plan['devices'] }}</p>
 
                             <ul class="mt-7 flex-1 space-y-3">
@@ -832,8 +764,6 @@
                             </ul>
 
                             @if ($plan['enterprise'])
-                                {{-- Enterprise goes to the form, not to signup: the whole
-                                     point of the tier is that the terms are negotiated. --}}
                                 <a href="#contact" data-plan="{{ $plan['name'] }}"
                                     class="plan-cta mt-8 flex items-center justify-center gap-2 rounded-xl border-2 border-primary px-6 py-3.5 font-headline-md font-bold text-primary transition-all hover:bg-primary hover:text-on-primary active:scale-[0.98]"
                                     title="{{ __('تحدّث مع فريق المبيعات') }}">
@@ -858,7 +788,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  FAQ  ───────────────────────── --}}
         <section id="faq" class="scroll-mt-24 border-y border-outline-variant/50 bg-surface-container-low py-24 md:py-28">
             <div class="mx-auto max-w-3xl px-inline-md md:px-inline-lg">
                 <div class="reveal text-center">
@@ -868,10 +797,6 @@
 
                 <div class="reveal mt-12 space-y-3">
                     @foreach ($faqs as $i => [$question, $answer])
-                        {{-- <details>, not an Alpine accordion: it opens with no
-                             JavaScript at all, it is keyboard and screen-reader
-                             correct for free, and the browser's own find-in-page
-                             can reach the answers inside it. --}}
                         <details class="tonal-elevation group rounded-2xl border border-outline-variant/50 bg-surface-container-lowest" @if ($i === 0) open @endif>
                             <summary class="flex cursor-pointer items-center justify-between gap-4 p-5 font-headline-md text-body-lg font-bold text-on-surface">
                                 <span>{{ $question }}</span>
@@ -884,7 +809,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  CONTACT  ───────────────────────── --}}
         <section id="contact" class="scroll-mt-24 bg-surface py-24 md:py-28 lg:py-32">
             <div class="mx-auto max-w-7xl px-inline-md md:px-inline-lg">
                 <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
@@ -953,10 +877,6 @@
                         <form method="POST" action="{{ route('contact.store') }}" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
                             @csrf
 
-                            {{-- Honeypot. Hidden from people and from assistive tech;
-                                 a bot that walks the DOM fills it and the request is
-                                 rejected by StoreContactRequest. Not `display:none`
-                                 - some bots skip those - but off-canvas. --}}
                             <div class="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden" aria-hidden="true">
                                 <label for="contact-website">{{ __('اتركه فارغاً') }}</label>
                                 <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off" value="">
@@ -1007,8 +927,6 @@
                                 @error('subject')<p class="text-body-sm text-error">{{ $message }}</p>@enderror
                             </div>
 
-                            {{-- Filled by the Enterprise card's link so the enquiry
-                                 arrives already knowing which tier prompted it. --}}
                             <input type="hidden" id="contact-plan" name="plan" value="{{ old('plan') }}">
 
                             <div class="space-y-2">
@@ -1036,7 +954,6 @@
             </div>
         </section>
 
-        {{-- ─────────────────────────  CTA BAND  ───────────────────────── --}}
         <section class="mx-auto max-w-7xl px-inline-md pb-24 md:px-inline-lg md:pb-32">
             <div class="reveal relative overflow-hidden rounded-[2rem] bg-primary-container px-8 py-16 text-center shadow-2xl sm:py-20 md:px-16 md:py-24">
                 <div class="pointer-events-none absolute -top-1/3 start-[-5%] h-72 w-72 rounded-full bg-white/10 blur-3xl" aria-hidden="true"></div>
@@ -1045,10 +962,6 @@
                     <h2 class="font-display-lg text-3xl font-bold text-white sm:text-4xl md:text-5xl">{{ __('جاهز لتنمية مشروعك؟') }}</h2>
                     <p class="mx-auto mt-4 max-w-xl font-body-lg text-white/80">{{ __('انضم إلى المشاريع التي تدير طلباتها وحساباتها باحترافية. جهّز مساحتك خلال دقائق.') }}</p>
                     <a href="{{ route('signup') }}"
-                        {{-- Literal navy, not text-primary: the band behind it is FIXED dark in both
-                             themes, but --c-primary flips to pale lavender in dark, which would land
-                             at ~1.5:1 on this white button. Pinned to the band's own navy (#1e3a8a,
-                             the --c-primary-container value), which sits at ~11:1 on white. --}}
                         class="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-headline-md text-headline-md font-bold text-[#1e3a8a] shadow-xl transition-all hover:bg-white/90 active:scale-[0.98]" title="{{ __('أنشئ حسابك المجاني') }}">
                         <span>{{ __('أنشئ حسابك المجاني') }}</span>
                         <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
@@ -1059,7 +972,6 @@
         </section>
     </main>
 
-    {{-- ─────────────────────────  FOOTER  ───────────────────────── --}}
     <footer class="border-t border-outline-variant/60 bg-surface-container-lowest">
         <div class="mx-auto max-w-7xl px-inline-md py-16 md:px-inline-lg md:py-20">
             <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr] md:gap-12">
@@ -1185,9 +1097,6 @@
         });
     </script>
 
-    {{-- The shared tooltip bubble, last in the body so no transformed ancestor's
-         stacking context can paint over it. z-[110] clears the sticky header
-         (z-50) and any dialog (z-[100]). --}}
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
         :style="`top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"

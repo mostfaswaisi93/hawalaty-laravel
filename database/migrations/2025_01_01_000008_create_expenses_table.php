@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Platform's own operating expenses (hosting, domain, SSL...) - distinct
-     * from any tenant's own `expenses` table, which lives in a separate
-     * per-license database entirely.
-     */
     public function up(): void
     {
         Schema::create('expenses', function (Blueprint $table) {

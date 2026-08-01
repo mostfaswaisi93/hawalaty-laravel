@@ -5,9 +5,6 @@ namespace Database\Factories\Tenant;
 use App\Models\Tenant\BankName;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<BankName>
- */
 class BankNameFactory extends Factory
 {
     protected $model = BankName::class;

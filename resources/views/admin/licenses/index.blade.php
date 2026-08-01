@@ -30,16 +30,9 @@
             </button>
         </header>
 
-        {{-- Filters --}}
-        {{-- Its own `filtering` flag rather than the page-level `submitting`, which
-             belongs to the create-licence modal. --}}
         <form method="GET" action="{{ route('admin.licenses.index') }}" class="reveal-up grid grid-cols-1 gap-3 md:grid-cols-4" style="--d: 80ms"
             x-data="{ filtering: false }" @submit="filtering = true">
-            {{-- Filtering must not throw away a chosen page size - see the component. --}}
             <x-keep-per-page />
-            {{-- aria-label on all three: a placeholder is not an accessible name,
-                 and a bare <select> whose first option reads "كل الحالات" announces
-                 nothing at all about what it filters. --}}
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو الرمز...') }}"
                 aria-label="{{ __('ابحث بالاسم أو الرمز...') }}"
                 class="rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary md:col-span-2" />
@@ -94,10 +87,6 @@
                                                 <span class="material-symbols-outlined !text-xl">pause_circle</span>
                                             </button>
                                         @else
-                                            {{-- Row-scoped x-data, so one row's spinner does
-                                                 not light up every other row's button. The
-                                                 page-level `submitting` belongs to the create
-                                                 form and is deliberately not reused here. --}}
                                             <form method="POST" action="{{ route('admin.licenses.activate', $license->id) }}" class="inline-flex"
                                                 x-data="{ activating: false }" @submit="activating = true">@csrf
                                                 <button type="submit" :disabled="activating" class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60" aria-label="{{ __('تفعيل') }}" title="{{ __('تفعيل') }}"
@@ -152,7 +141,6 @@
             @endif
         </section>
 
-        {{-- Provision modal --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true"
@@ -200,8 +188,6 @@
                         <input id="admin-licenses-password" type="password" name="password" required dir="ltr" placeholder="{{ __('8 أحرف على الأقل، حروف وأرقام') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
 
-                    {{-- قاعدة بيانات العميل: يُنشئها المشغّل في cPanel ثم تُربط هنا (الاستضافة
-                         المشتركة لا تسمح بإنشاء قاعدة بيانات من داخل التطبيق). --}}
                     <div class="md:col-span-2">
                         <div class="mt-2 flex items-center gap-2 border-t border-outline-variant/60 pt-4">
                             <span class="material-symbols-outlined !text-xl text-primary">database</span>

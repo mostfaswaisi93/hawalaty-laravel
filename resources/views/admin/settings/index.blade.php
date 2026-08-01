@@ -3,16 +3,6 @@
 @section('title', __('الإعدادات - حوالاتي'))
 
 @section('content')
-    {{--
-        A grouped form over App\Settings\SettingRegistry, not a key/value table.
-        Each field's label, help text, input type and validation come from the
-        registry, so adding a setting there makes it appear here with no change
-        to this file.
-
-        Anything in the database the registry does not know about is listed at
-        the bottom under "custom keys" rather than hidden, so a key added by a
-        previous admin (or through the API) is never lost.
-    --}}
     <div class="page-enter space-y-6"
         x-data="{
             submitting: false,
@@ -52,7 +42,7 @@
                                 $field = "settings.{$key}";
                                 $current = old("settings.{$key}", $values[$key] ?? $setting['default']);
                                 $hasError = $errors->has($field);
-                                // From the setting's OWN rules - see boundsFor().
+
                                 $bounds = $registry->boundsFor($setting);
                             @endphp
 
@@ -116,7 +106,6 @@
                 </section>
             @endforeach
 
-            {{-- Sticky so Save stays reachable however many groups are added. --}}
             <div class="reveal-up sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest/90 p-4 shadow-xl backdrop-blur" style="--d: 240ms">
                 <p class="hidden font-body-sm text-body-sm text-on-surface-variant sm:block">{{ __('لن تُحفظ التغييرات حتى تضغط حفظ.') }}</p>
                 <button type="submit" :disabled="submitting"
@@ -129,7 +118,6 @@
             </div>
         </form>
 
-        {{-- Custom keys --}}
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 300ms">
             <div class="mb-5 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <div class="flex items-center gap-3">
@@ -187,7 +175,6 @@
             @endif
         </section>
 
-        {{-- Custom key modal --}}
         <div x-show="customOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="customOpen" x-transition.opacity></div>
             <div x-show="customOpen" @keydown.escape.window="customOpen = false" role="dialog" aria-modal="true" aria-labelledby="custom-setting-title"
@@ -196,9 +183,6 @@
                 <x-modal-close on-close="customOpen = false" />
                 <h3 id="custom-setting-title" class="border-b border-outline-variant/60 py-4 ps-6 pe-14 font-headline-md text-headline-md"
                     x-text="customMode === 'edit' ? @js(__('تعديل المفتاح')) : @js(__('إضافة مفتاح'))"></h3>
-                {{-- Reuses the page-level `submitting`: this modal and the settings
-                     form above are mutually exclusive, so they can never be in
-                     flight at the same time. --}}
                 <form method="POST" action="{{ route('admin.settings.upsert') }}" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf
                     <div class="space-y-1.5">

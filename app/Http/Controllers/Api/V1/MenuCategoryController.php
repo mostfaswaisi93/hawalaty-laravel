@@ -10,11 +10,6 @@ use App\Services\Tenant\MenuService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-/**
- * index/store/destroy only - no update, matching
- * ConstantsService.addMenuCategory()/removeMenuCategory() in the Angular
- * app.
- */
 class MenuCategoryController extends Controller
 {
     public function __construct(private readonly MenuService $service) {}

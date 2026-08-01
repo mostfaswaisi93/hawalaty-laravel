@@ -9,11 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * A clearing run (مقاصة) over a closed period - see App\Services\Admin\SettlementService
- * for the arithmetic and why withdrawals are treated as distributions rather
- * than costs.
- */
 #[Fillable([
     'reference',
     'period_from',

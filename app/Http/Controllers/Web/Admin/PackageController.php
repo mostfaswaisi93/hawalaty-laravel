@@ -12,12 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-/**
- * `features` is stored as a JSON array. The web form collects it as a
- * newline-separated textarea, so validation happens inline here (splitting the
- * textarea into an array) rather than reusing the API's StorePackageRequest,
- * which expects `features` to already be an array.
- */
 class PackageController extends Controller
 {
     use HasPerPage;
@@ -59,9 +53,6 @@ class PackageController extends Controller
         return redirect()->route('admin.packages.index')->with('success', __('تم حذف الباقة.'));
     }
 
-    /**
-     * @return array{name: string, price: float, deviceLimit: int, features: array<int, string>}
-     */
     private function validated(Request $request): array
     {
         $validated = $request->validate([
@@ -73,10 +64,6 @@ class PackageController extends Controller
             'featureKeys.*' => [Rule::enum(PackageFeature::class)],
         ]);
 
-        // العمود قائمة نصية واحدة، والنموذج يجمعها من مصدرين: صناديق المزايا
-        // التي يبني عليها التطبيق (PackageFeature)، ونص حر لبنود تسويقية لا
-        // تبوّب شيئًا. تُدمجان هنا مع إزالة التكرار حتى لا يظهر مفتاح مرتين
-        // إن كتبه أحدهم يدويًا في المربّع أيضًا.
         $free = collect(preg_split('/\r\n|\r|\n/', (string) ($validated['features'] ?? '')))
             ->map(fn (string $line) => trim($line))
             ->filter();

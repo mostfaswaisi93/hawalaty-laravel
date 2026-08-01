@@ -19,10 +19,8 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('تحليل أداء عملك خلال فترة محددة.') }}</p>
         </header>
 
-        {{-- date range --}}
         <form method="GET" action="{{ route('reports.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="reveal-up tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end" style="--d: 40ms">
-            {{-- Filtering must not throw away a chosen page size. --}}
             <x-keep-per-page />
             <div class="flex-1 space-y-1.5">
                 <label for="reports-from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
@@ -45,7 +43,6 @@
             </a>
         </form>
 
-        {{-- summary cards --}}
         <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-3">
             @foreach ([
                 ['receipt_long', 'primary', __('عدد الطلبات'), number_format($count), ''],
@@ -64,7 +61,6 @@
             @endforeach
         </div>
 
-        {{-- year at a glance (also on the dashboard) --}}
         <x-activity-heatmap
             class="reveal-up"
             style="--d: 110ms"
@@ -72,7 +68,6 @@
             :from="$heatmapFrom"
             :to="$heatmapTo" />
 
-        {{-- daily revenue chart --}}
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-6" style="--d: 140ms">
             <h2 class="mb-6 font-headline-md text-headline-md text-on-surface">{{ __('الإيراد اليومي') }}</h2>
             @if ($daily->isEmpty())
@@ -81,12 +76,6 @@
                     <p class="font-body-sm">{{ __('لا نشاط في هذه الفترة') }}</p>
                 </div>
             @else
-                {{-- dir="ltr" on the WRAPPER, not just the scroller: it puts the
-                     date axis oldest-left like the heatmap and the two other
-                     charts, and it keeps the scroll-affordance gradient on the
-                     same side as the overflow. Setting it on the scroller alone
-                     would leave the gradient resolving `end-0` against the page's
-                     RTL and fading the wrong edge. --}}
                 <div class="relative" dir="ltr"
                     x-data="{ overflowing: false }"
                     x-init="$nextTick(() => { overflowing = $refs.chartScroll.scrollWidth > $refs.chartScroll.clientWidth })">
@@ -96,8 +85,6 @@
                         <div class="flex min-w-10 flex-1 flex-col items-center gap-2">
                             <span class="font-numeral-lg text-[10px] text-on-surface-variant" dir="ltr">{{ number_format($sum, 0) }}</span>
                             <div class="flex w-full items-end" style="height: 160px">
-                                {{-- Delay is capped: a wide date range would otherwise trail
-                                     the last columns well past a second. --}}
                                 <div class="grow-bar w-full rounded-t-lg bg-primary transition-all" style="height: {{ max(4, ($sum / $maxDaily) * 100) }}%; --d: {{ min(180 + $loop->index * 35, 560) }}ms" title="{{ number_format($sum, 2) }} ₪"></div>
                             </div>
                             <span class="font-label-caps text-[10px] text-on-surface-variant">{{ $dayLabels[\Illuminate\Support\Carbon::parse($date)->dayOfWeek] }}</span>
@@ -108,7 +95,6 @@
             @endif
         </section>
 
-        {{-- transfers in range --}}
         @if ($transfers->isNotEmpty())
             <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 220ms">
                 <h2 class="mb-4 font-headline-md text-headline-md text-on-surface">{{ __('طلبات الفترة') }} ({{ number_format($count) }})</h2>
@@ -125,8 +111,6 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($transfers as $t)
-                            {{-- Cascade is per-card, not a container .stagger - the cards
-                                 container itself belongs to the shared table component. --}}
                             <div class="reveal-up flex items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 <div class="min-w-0">

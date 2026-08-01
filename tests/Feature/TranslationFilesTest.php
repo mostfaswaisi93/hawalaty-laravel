@@ -7,31 +7,15 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Tests\TestCase;
 
-/**
- * Guards on the two JSON translation catalogues.
- *
- * `test_every_translated_string_has_a_key` is the one that earns its keep: a
- * missing key is INVISIBLE, because `__()` returns the key itself - Arabic
- * renders fine while English users quietly get Arabic, with nothing logged.
- *
- * Ordering is asserted as a plain SORT_STRING sort, which is mechanical enough
- * for a test to enforce.
- */
 class TranslationFilesTest extends TestCase
 {
-    /** Directories whose source can contain translatable strings. */
     private const SCANNED = ['app', 'resources', 'routes', 'config', 'database'];
 
-    /** @return array<string, array{string}> */
     public static function localeProvider(): array
     {
         return ['ar' => ['ar'], 'en' => ['en']];
     }
 
-    /**
-     * Every Arabic string passed to __() or trans_choice() must exist in the
-     * catalogue, or the English build silently shows Arabic.
-     */
     public function test_every_translated_string_has_a_key(): void
     {
         $catalogue = $this->load('ar');
@@ -39,8 +23,6 @@ class TranslationFilesTest extends TestCase
 
         foreach ($this->sourceFiles() as $path) {
             foreach ($this->translatableStrings((string) file_get_contents($path)) as $key) {
-                // Only Arabic strings are catalogue keys; 'success' and friends
-                // are flash-message channels, not user-facing copy.
                 if (! preg_match('/\p{Arabic}/u', $key)) {
                     continue;
                 }
@@ -69,7 +51,6 @@ class TranslationFilesTest extends TestCase
         $sorted = $keys;
         sort($sorted, SORT_STRING);
 
-        // Reported as the first offender rather than a 1000-line array diff.
         foreach ($keys as $i => $key) {
             $this->assertSame(
                 $sorted[$i],
@@ -88,10 +69,6 @@ class TranslationFilesTest extends TestCase
         $this->assertSame([], array_values(array_diff($en, $ar)), 'Keys present in en.json but missing from ar.json.');
     }
 
-    /**
-     * In ar.json the value IS the key - Arabic is the source language, so any
-     * other value there is a typo that silently changes what users read.
-     */
     public function test_arabic_values_mirror_their_keys(): void
     {
         foreach ($this->load('ar') as $key => $value) {
@@ -99,7 +76,6 @@ class TranslationFilesTest extends TestCase
         }
     }
 
-    /** An English value left as its Arabic key is an untranslated string. */
     public function test_no_english_value_is_still_arabic(): void
     {
         $untranslated = [];
@@ -123,12 +99,6 @@ class TranslationFilesTest extends TestCase
         }
     }
 
-    /**
-     * Both quote styles, because a string containing an apostrophe is written
-     * with double quotes and would otherwise be skipped by the scan.
-     *
-     * @return array<int, string>
-     */
     private function translatableStrings(string $source): array
     {
         $found = [];
@@ -149,7 +119,6 @@ class TranslationFilesTest extends TestCase
         return $found;
     }
 
-    /** @return array<int, string> */
     private function sourceFiles(): array
     {
         $files = [];
@@ -171,7 +140,6 @@ class TranslationFilesTest extends TestCase
         return $files;
     }
 
-    /** @return array<string, string> */
     private function load(string $locale): array
     {
         $path = lang_path("{$locale}.json");

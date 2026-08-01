@@ -29,10 +29,6 @@ class RoleController extends Controller
         return (new RoleResource($role))->response()->setStatusCode(201);
     }
 
-    /**
-     * RolePolicy::update() already blocks `is_system` roles at the
-     * authorization layer; RoleService re-checks it (defense in depth).
-     */
     public function update(UpdateRoleRequest $request, string $role): JsonResponse
     {
         $roleModel = Role::findOrFail($role);

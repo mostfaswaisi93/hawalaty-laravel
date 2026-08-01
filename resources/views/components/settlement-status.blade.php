@@ -1,7 +1,3 @@
-{{--
-    Draft / confirmed chip for a clearing run. Accepts the SettlementStatus
-    enum itself so callers never hand-write the string.
---}}
 @props(['status'])
 
 @php

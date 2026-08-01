@@ -12,11 +12,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-/**
- * Handles both /api/v1/transfers and /api/v1/history - BACKEND_PROMPT.md
- * section 7 describes History as "same as transfers with wider filters +
- * pagination", so both routes are wired to index().
- */
 class TransferController extends Controller
 {
     public function __construct(private readonly TransferService $service) {}
@@ -39,11 +34,6 @@ class TransferController extends Controller
         return (new TransferResource($transfer))->response()->setStatusCode(201);
     }
 
-    /**
-     * Reading is unrestricted for any authenticated team member of the
-     * tenant (see TransferPolicy's docblock), so no explicit authorize()
-     * call here.
-     */
     public function show(string $transfer): JsonResponse
     {
         $transferModel = $this->service->find($transfer);

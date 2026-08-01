@@ -8,19 +8,12 @@ use App\Models\Tenant\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Read-only activity log (append-only tenant `audit_log`). Sidebar
- * permission=null - any authenticated member. Mirrors the API
- * ActivityLogController's search + category filtering; no writes.
- */
 class ActivityLogController extends Controller
 {
     use HasPerPage;
 
     public function index(Request $request): View
     {
-        // 20 by default rather than the admin tables' 10: this is a scan-heavy
-        // audit trail, and the whitelist keeps a crafted per_page bounded.
         $perPage = $this->perPage($request, 20);
 
         $filters = array_filter([

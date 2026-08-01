@@ -5,9 +5,6 @@ namespace Database\Factories\Tenant;
 use App\Models\Tenant\Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Currency>
- */
 class CurrencyFactory extends Factory
 {
     protected $model = Currency::class;

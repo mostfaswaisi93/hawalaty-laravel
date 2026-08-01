@@ -8,26 +8,6 @@ use App\Services\TenantProvisioner;
 use Illuminate\Database\Seeder;
 use Throwable;
 
-/**
- * Provisions the ONE working tenant, and nothing else.
- *
- * This is the default `db:seed` path: a real License + physical MySQL database
- * + user, the tenant migrations, and the baseline permissions/roles/owner that
- * TenantProvisioner writes - then it stops. No catalogue, no orders, no
- * expenses. The workspace is meant to be filled with real data through the app.
- *
- * Sample data lives in DemoTenantSeeder and PlatformDemoSeeder, which are NOT
- * called from DatabaseSeeder. They are opt-in:
- *
- *     php artisan db:seed --class=DemoTenantSeeder     # fills this tenant
- *     php artisan db:seed --class=PlatformDemoSeeder   # fills the admin console
- *
- * Keeping them out of the default run is deliberate: a fresh install that
- * silently invents 59 orders and a four-month trading history is impossible to
- * tell apart from real usage once someone starts entering their own.
- *
- * Idempotent - guarded on the business name, so `db:seed` is safe to re-run.
- */
 class TenantSeeder extends Seeder
 {
     public const BUSINESS_NAME = 'بيت التميس';
@@ -49,8 +29,6 @@ class TenantSeeder extends Seeder
             return;
         }
 
-        // Prefer the richest package so no feature is gated off while working;
-        // falls back to whatever the catalogue has if the names ever change.
         $package = Package::where('name', 'Enterprise')->first()
             ?? Package::orderByDesc('price')->first();
 

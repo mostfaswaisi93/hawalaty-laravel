@@ -3,11 +3,6 @@
 @section('title', $settlement->reference . ' - ' . __('المقاصة') . ' - ' . __('حوالاتي'))
 
 @section('content')
-    {{--
-        A single clearing run, presented as the accounting document it is. A
-        confirmed run has no edit path anywhere on this page by design - the
-        only actions are on a draft.
-    --}}
     <div class="page-enter space-y-6"
         x-data="{
             submitting: false,
@@ -66,7 +61,6 @@
             @endunless
         </header>
 
-        {{-- Document meta --}}
         <section class="reveal-up grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <x-card>
                 <p class="font-body-sm text-on-surface-variant">{{ __('المدفوعات') }}</p>
@@ -90,7 +84,6 @@
             </x-card>
         </section>
 
-        {{-- Lines --}}
         <x-card :title="__('تفاصيل الشركاء')" :subtitle="__('النسب والمبالغ كما كانت وقت تنفيذ المقاصة')">
             @if ($settlement->lines->isEmpty())
                 <div class="flex flex-col items-center gap-2 py-12 text-center">
@@ -137,10 +130,7 @@
                 </x-table-responsive>
 
                 @php
-                    // Recomputed from the STORED columns, not from the live
-                    // partner table: this document is a snapshot, and it must
-                    // still add up years later when the percentages behind it
-                    // have long since changed.
+
                     $reconciles = bccomp(
                         bcadd((string) $settlement->total_entitlement, (string) $settlement->retained, 2),
                         (string) $settlement->distributable_profit,
@@ -149,10 +139,6 @@
                 @endphp
 
                 <div class="mt-6 rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4">
-                    {{-- The same arithmetic check the live preview shows. Without
-                         it the uncommitted position was auditable and the
-                         COMMITTED document - the one a partner is actually shown -
-                         was not, which is the wrong way round. --}}
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined !text-xl {{ $reconciles ? 'text-success' : 'text-error' }}">{{ $reconciles ? 'verified' : 'error' }}</span>
                         <p class="font-body-sm text-body-sm font-bold text-on-surface">{{ __('التحقق الحسابي') }}</p>
@@ -177,7 +163,6 @@
             @endif
         </x-card>
 
-        {{-- Audit trail --}}
         <x-card :title="__('بيانات التنفيذ')">
             <dl class="grid grid-cols-1 gap-4 font-body-sm text-body-sm sm:grid-cols-2">
                 <div>

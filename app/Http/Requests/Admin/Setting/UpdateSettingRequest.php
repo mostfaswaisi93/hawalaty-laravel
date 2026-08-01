@@ -6,14 +6,6 @@ use App\Settings\SettingRegistry;
 use App\Settings\SettingType;
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * PUT /api/v1/admin/settings/{key}.
- *
- * A registered key is validated with ITS OWN rules, not as a loose string.
- * Without this the API is a hole straight through the typed settings form:
- * `trial_days` could be set to "abc", which the reader would cast to 0 and hand
- * to `now()->addDays(0)` - silently issuing trials that expire immediately.
- */
 class UpdateSettingRequest extends FormRequest
 {
     public function __construct(private readonly SettingRegistry $registry)

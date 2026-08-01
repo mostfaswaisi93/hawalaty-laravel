@@ -5,15 +5,10 @@ window.Alpine = Alpine;
 
 registerServiceWorker();
 
-/**
- * Connection state and the queue of orders taken while it was down, in one
- * place so the header badge, the order screen and any toast all read the same
- * numbers rather than each polling IndexedDB on their own.
- */
 Alpine.store('offline', {
     online: navigator.onLine,
     pending: 0,
-    /** Set after a flush so the page can say what actually happened. */
+
     lastResult: null,
 
     async init() {
@@ -28,9 +23,6 @@ Alpine.store('offline', {
             this.online = false;
         });
 
-        // A page opened after the connection came back never fires `online`,
-        // so the queue has to be drained on load too or it would sit there
-        // until the network happened to flap.
         if (this.online) this.drain();
     },
 
@@ -48,7 +40,6 @@ Alpine.store('offline', {
         return result;
     },
 
-    /** Sign-out: the next person here must not find the previous one's data. */
     async wipe() {
         await clearAll();
         this.pending = 0;
@@ -130,18 +121,16 @@ Alpine.data('globalSearch', () => ({
     searched: false,
     results: EMPTY_RESULTS(),
     itemLabel: '',
-    /** Index into `flat`; -1 means "nothing highlighted, Enter does nothing". */
+
     cursor: -1,
     recent: [],
     debounceTimer: null,
-    /** In-flight request, so a slow answer can never overwrite a newer one. */
+
     controller: null,
 
     init() {
         this.recent = this.readRecent();
 
-        // Ctrl/Cmd+K focuses the search from anywhere, the convention every
-        // app with a header search follows. `/` would collide with typing.
         window.addEventListener('keydown', (e) => {
             if (!((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) return;
             e.preventDefault();
@@ -150,8 +139,6 @@ Alpine.data('globalSearch', () => ({
     },
 
     focusSearch() {
-        // Under `sm` the desktop pill is display:none and cannot take focus,
-        // so the shortcut has to open the overlay instead.
         if (window.matchMedia('(min-width: 640px)').matches) {
             this.$refs.desktopSearchInput?.focus();
             this.$refs.desktopSearchInput?.select();
@@ -163,10 +150,6 @@ Alpine.data('globalSearch', () => ({
         this.$nextTick(() => this.$refs.mobileSearchInput?.focus());
     },
 
-    /**
-     * Every visible result in render order. Keyboard navigation needs one flat
-     * list; the four groups are a display detail.
-     */
     get flat() {
         return [
             ...this.results.orders,
@@ -180,7 +163,6 @@ Alpine.data('globalSearch', () => ({
         return this.flat.length > 0;
     },
 
-    /** True when the panel should show something - results, "none", or hints. */
     get showPanel() {
         return this.hasResults || (this.searched && !this.loading) || this.showRecent;
     },
@@ -189,7 +171,6 @@ Alpine.data('globalSearch', () => ({
         return !this.searched && this.query.trim().length < SEARCH_MIN && this.recent.length > 0;
     },
 
-    /** Global index of a row, so each group can offset its own local index. */
     indexOf(group, i) {
         const before = {
             orders: 0,
@@ -208,21 +189,17 @@ Alpine.data('globalSearch', () => ({
         if (!this.hasResults) return;
 
         const total = this.flat.length;
-        // Wraps, so ArrowUp from the top reaches the last result.
+
         this.cursor = (this.cursor + step + total) % total;
         this.open = true;
 
         this.$nextTick(() => {
-            // The desktop panel and the mobile overlay both render the row, so
-            // this has to scroll the one actually on screen - `offsetParent` is
-            // null for the hidden copy.
             [...this.$root.querySelectorAll(`[data-result-index="${this.cursor}"]`)]
                 .find((el) => el.offsetParent !== null)
                 ?.scrollIntoView({ block: 'nearest' });
         });
     },
 
-    /** Enter on a highlighted row navigates to it. */
     choose() {
         const hit = this.flat[this.cursor];
         if (!hit?.url) return;
@@ -249,8 +226,6 @@ Alpine.data('globalSearch', () => ({
         this.cursor = -1;
 
         if (this.query.trim().length < SEARCH_MIN) {
-            // Abort whatever is still in flight: its answer is for a query the
-            // user has already deleted past.
             this.controller?.abort();
             this.results = EMPTY_RESULTS();
             this.searched = false;
@@ -265,8 +240,6 @@ Alpine.data('globalSearch', () => ({
     search() {
         const query = this.query.trim();
 
-        // One request at a time. The old code let stale responses race and
-        // relied on comparing the query back; aborting is the actual fix.
         this.controller?.abort();
         this.controller = new AbortController();
 
@@ -291,8 +264,6 @@ Alpine.data('globalSearch', () => ({
                 this.loading = false;
             })
             .catch((e) => {
-                // An abort is the expected path, not a failure: a newer request
-                // has already taken over and will set `loading` itself.
                 if (e.name === 'AbortError') return;
                 this.searched = true;
                 this.results = EMPTY_RESULTS();
@@ -300,14 +271,11 @@ Alpine.data('globalSearch', () => ({
             });
     },
 
-    // --- recent searches -------------------------------------------------
-
     readRecent() {
         try {
             const raw = JSON.parse(localStorage.getItem(SEARCH_RECENT_KEY) ?? '[]');
             return Array.isArray(raw) ? raw.filter((s) => typeof s === 'string').slice(0, SEARCH_RECENT_MAX) : [];
         } catch {
-            // Private mode, or someone put junk in the key. Not worth a crash.
             return [];
         }
     },
@@ -320,7 +288,6 @@ Alpine.data('globalSearch', () => ({
         try {
             localStorage.setItem(SEARCH_RECENT_KEY, JSON.stringify(this.recent));
         } catch {
-            /* storage full or blocked - the feature is a convenience, not a requirement */
         }
     },
 
@@ -329,7 +296,6 @@ Alpine.data('globalSearch', () => ({
         try {
             localStorage.removeItem(SEARCH_RECENT_KEY);
         } catch {
-            /* see remember() */
         }
     },
 
@@ -338,11 +304,6 @@ Alpine.data('globalSearch', () => ({
         this.search();
     },
 
-    /**
-     * Splits a value around the matched term so the template can bold the part
-     * that matched. Returns plain strings for x-text, never markup - building
-     * HTML here would put user data straight into the DOM.
-     */
     parts(value) {
         const text = String(value ?? '');
         const term = this.query.trim();

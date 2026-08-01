@@ -11,17 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Platform settings.
- *
- * The page is a grouped FORM over the registered settings rather than a
- * paginated key/value table - an admin should not have to know that a key
- * called `trial_days` exists, nor type it by hand.
- *
- * The free-form key/value endpoint is kept (`upsert`) because the settings
- * table is still a plain key/value store and the API exposes it as one; it now
- * backs the "custom keys" section for anything outside the registry.
- */
 class SettingController extends Controller
 {
     public function __construct(
@@ -36,13 +25,11 @@ class SettingController extends Controller
             'groups' => $this->registry->groups(),
             'values' => $this->settings->all(),
             'custom' => $this->settings->unregistered(),
-            // The view asks it for each field's min/max, so the browser
-            // constraint can never contradict the server rule.
+
             'registry' => $this->registry,
         ]);
     }
 
-    /** Bulk-saves the grouped form. */
     public function update(UpdateSettingsRequest $request): RedirectResponse
     {
         $this->settings->put($request->validated()['settings']);
@@ -52,11 +39,6 @@ class SettingController extends Controller
             ->with('success', __('تم حفظ الإعدادات.'));
     }
 
-    /**
-     * Free-form key/value upsert, used by the "custom keys" section. Registered
-     * keys are rejected here so the typed form stays the only way to set them -
-     * otherwise a raw string could bypass that setting's validation.
-     */
     public function upsert(Request $request): RedirectResponse
     {
         $data = $request->validate([

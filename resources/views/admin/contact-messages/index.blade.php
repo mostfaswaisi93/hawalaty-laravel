@@ -3,8 +3,7 @@
 @section('title', __('رسائل التواصل - حوالاتي'))
 
 @php
-    // The form stores a slug so the value is stable across locales; the label is
-    // resolved for display only.
+
     $subjectLabels = [
         'sales' => __('استفسار عن الأسعار'),
         'demo' => __('طلب عرض توضيحي'),
@@ -77,8 +76,6 @@
 
                                 <div class="flex flex-shrink-0 items-center gap-1">
                                     @if ($message->isUnread())
-                                        {{-- Scoped x-data per row: each message's button
-                                             tracks its own in-flight state. --}}
                                         <form method="POST" action="{{ route('admin.contact-messages.read', $message->id) }}"
                                             x-data="{ submitting: false }" @submit="submitting = true">
                                             @csrf

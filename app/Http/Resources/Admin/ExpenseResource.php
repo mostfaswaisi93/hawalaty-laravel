@@ -6,11 +6,6 @@ use App\Models\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Controllers/Services must eager-load `box` before returning this resource.
- *
- * @mixin Expense
- */
 class ExpenseResource extends JsonResource
 {
     public function toArray(Request $request): array

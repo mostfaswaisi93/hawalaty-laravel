@@ -4,13 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Lightweight customer/recipient directory. `transfers.customer` (a plain
- * text snapshot of the name at order time) is kept as-is - customer_id is
- * an ADDITIVE, nullable link so existing orders and the API contract are
- * unaffected. Matching is by exact trimmed name (see CustomerService),
- * intentionally simple for v1: no dedupe-by-phone, no merge tooling.
- */
 return new class extends Migration
 {
     public function up(): void

@@ -9,14 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * A tenant's OWN business expenses - NOT the platform's own operating
- * expenses (App\Models\Expense lives in the platform DB). Namespaced under
- * App\Models\Tenant to avoid a class-name collision with that model, and by
- * extension every tenant-space domain model lives under this same
- * App\Models\Tenant\ sub-namespace for consistency. See BACKEND_PROMPT.md
- * section 4 and D:\Angular\Hawalaty\src\app\data\expenses.ts.
- */
 #[Fillable(['description', 'amount', 'account_id', 'date'])]
 class Expense extends Model
 {
@@ -35,8 +27,6 @@ class Expense extends Model
         ];
     }
 
-    // withTrashed(): a retired account must still show its name on historical
-    // expenses instead of silently going null.
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class)->withTrashed();

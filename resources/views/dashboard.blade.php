@@ -59,8 +59,6 @@
                     </a>
                 @endif
 
-                {{-- Mirrors the sidebar: the tenant's own word and glyph, and nothing
-                     at all until the section is named in /constants. --}}
                 @php $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class); @endphp
                 @if ($catalogNaming->isConfigured() && $member?->hasPermission(\App\Enums\PermissionKey::MenuManage))
                     <a href="/menu" class="tonal-elevation press group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 transition-all hover:border-primary hover:bg-surface-container">
@@ -90,10 +88,6 @@
         </section>
 
         <!-- Weekly activity -->
-        {{-- Fixed dark navy (not the bg-inverse-surface token, which flips to
-             near-white in dark mode) so this stays visually paired with the
-             hero card above it - which is also a fixed dark gradient -
-             instead of the two swapping contrast against each other. --}}
         <section class="reveal-up tonal-elevation relative overflow-hidden rounded-3xl bg-[rgb(33,49,69)] p-6 text-[rgb(234,241,255)]" style="--d: 140ms">
             <div class="relative z-10 flex h-full flex-col">
                 <div class="mb-8 flex items-center justify-between">
@@ -103,13 +97,6 @@
                 <div>
                     <p class="mb-1 text-sm opacity-70">{{ __('إجمالي طلبات هذا الأسبوع') }}</p>
                     <h4 class="mb-4 text-3xl font-bold" dir="ltr">{{ $weeklyTotalCount }}</h4>
-                    {{--
-                        ONE column owns its bar AND its day label, so a caption
-                        cannot drift from the bar it belongs to.
-
-                        dir="ltr" because these are the last seven DAYS, oldest
-                        first - the same axis as the heatmap and trend chart.
-                    --}}
                     <div class="mt-4 flex items-end gap-2" dir="ltr">
                         @foreach ($weeklyActivity as $day)
                             <div class="flex w-full flex-col items-center gap-1">
@@ -186,8 +173,6 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($recentTransfers as $t)
-                            {{-- Cascade is per-card, not a container .stagger - the cards
-                                 container itself belongs to the shared table component. --}}
                             <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 <div class="flex items-center gap-3">

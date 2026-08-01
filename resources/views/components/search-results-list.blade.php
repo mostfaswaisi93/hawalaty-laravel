@@ -1,26 +1,10 @@
-{{--
-    Shared result markup for the global search (header pill on desktop,
-    full-screen overlay on mobile) - both read the same `globalSearch()` Alpine
-    state, so this partial avoids duplicating the groups in two places.
-
-    Every row carries `data-result-index`, matching the flat index the component
-    uses for keyboard navigation; that attribute is how ArrowUp/ArrowDown scroll
-    the highlighted row into view.
-
-    Matched text is emphasised by splitting the value with `parts()` and binding
-    each piece with x-text. Deliberately NOT x-html: these are customer names and
-    phone numbers, and building highlight markup from them would be an injection
-    straight into the page.
---}}
-
 @php
-    // The highlighted row's styling, repeated on all four groups.
+
     $row = 'flex items-center gap-3 rounded-xl px-2 py-2 transition-colors scroll-mt-1';
     $rowActive = 'bg-primary/10 ring-1 ring-primary/30';
     $rowIdle = 'hover:bg-surface-container-low';
 @endphp
 
-{{-- idle: what was searched before, so an empty box is not a dead end --}}
 <template x-if="showRecent">
     <div>
         <div class="flex items-center justify-between px-2 py-1">
@@ -46,7 +30,6 @@
     </div>
 </template>
 
-{{-- orders --}}
 <template x-if="results.orders.length">
     <div class="mb-1">
         <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('الطلبات') }}</p>
@@ -72,7 +55,6 @@
     </div>
 </template>
 
-{{-- customers --}}
 <template x-if="results.customers.length">
     <div class="mb-1">
         <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('العملاء') }}</p>
@@ -86,8 +68,6 @@
                     <span class="block truncate font-body-sm font-bold text-on-surface">
                         <template x-for="(p, pi) in parts(c.name)" :key="pi"><span :class="p.hit && 'text-primary underline decoration-primary/40'" x-text="p.text"></span></template>
                     </span>
-                    {{-- The phone is the customer's identity now, so it is
-                         always shown and always LTR. --}}
                     <span class="block truncate font-numeral-lg text-[11px] text-on-surface-variant" dir="ltr">
                         <template x-for="(p, pi) in parts(c.phone)" :key="pi"><span :class="p.hit && 'font-bold text-primary'" x-text="p.text"></span></template>
                     </span>
@@ -99,7 +79,6 @@
     </div>
 </template>
 
-{{-- banks --}}
 <template x-if="results.banks.length">
     <div class="mb-1">
         <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline">{{ __('البنوك') }}</p>
@@ -118,9 +97,6 @@
     </div>
 </template>
 
-{{-- catalogue entries. The heading is the tenant's own word for them
-     (`itemLabel`, from the search response) - a fruit shop must not be told
-     it has matching "أصناف طعام". --}}
 <template x-if="results.menuItems.length">
     <div>
         <p class="px-2 py-1 font-body-sm text-[11px] font-bold uppercase tracking-wide text-outline"
@@ -130,8 +106,6 @@
                 :aria-selected="cursor === indexOf('menuItems', i)"
                 @mouseenter="cursor = indexOf('menuItems', i)" @click="remember(query.trim())"
                 class="{{ $row }}" :class="cursor === indexOf('menuItems', i) ? '{{ $rowActive }}' : '{{ $rowIdle }}'">
-                {{-- The entry's own icon, resolved server-side against its
-                     category and a neutral default. --}}
                 <span class="material-symbols-outlined flex-shrink-0 text-primary" x-text="m.icon"></span>
                 <span class="min-w-0 flex-1">
                     <span class="block truncate font-body-sm font-bold text-on-surface">

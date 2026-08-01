@@ -11,13 +11,6 @@ use App\Services\Tenant\TransferService;
 use Illuminate\Support\Facades\Notification;
 use Tests\TenantTestCase;
 
-/**
- * Proof-of-concept + regression coverage for TenantTestCase: verifies the
- * real-MySQL tenant harness actually works (migrations applied, transaction
- * rollback isolates tests) and locks in the price/name-tampering fix -
- * amount and line-item name/price are always computed server-side from the
- * canonical MenuItem, never trusted from the request payload.
- */
 class TransferServiceTest extends TenantTestCase
 {
     public function test_amount_is_computed_from_menu_item_prices_not_client_input(): void
@@ -30,8 +23,7 @@ class TransferServiceTest extends TenantTestCase
             'customer' => 'أحمد محمد',
             'paymentMethod' => PaymentMethod::Cash,
             'items' => [
-                // Client-submitted name/price are attacker-controlled input
-                // and must be ignored entirely.
+
                 ['itemId' => $item->id, 'quantity' => 3, 'name' => 'مجاناً', 'price' => '0.01'],
             ],
         ]);
@@ -58,7 +50,6 @@ class TransferServiceTest extends TenantTestCase
             ],
         ]);
 
-        // (10.00 * 2) + (15.50 * 1) = 35.50
         $this->assertSame('35.50', $transfer->amount);
     }
 
@@ -69,7 +60,6 @@ class TransferServiceTest extends TenantTestCase
         $existing = Customer::factory()->create(['name' => 'محمد خالد', 'phone' => '0599123456']);
         $item = MenuItem::factory()->create();
 
-        // Name typed differently; the NUMBER is what identifies them.
         $transfer = app(TransferService::class)->create([
             'customer' => 'محمد خالد الأحمد',
             'customerPhone' => '0599123456',
@@ -81,10 +71,6 @@ class TransferServiceTest extends TenantTestCase
         $this->assertSame(1, Customer::count());
     }
 
-    /**
-     * An order without a phone still records the typed name on the transfer,
-     * but creates no customer profile - there is nothing to identify.
-     */
     public function test_a_transfer_without_a_phone_creates_no_customer(): void
     {
         Notification::fake();
@@ -121,9 +107,6 @@ class TransferServiceTest extends TenantTestCase
 
     public function test_transaction_rollback_isolates_state_between_tests_a(): void
     {
-        // Paired with the _b test below: if TenantTestCase's per-test
-        // transaction rollback ever breaks, one of these two will see the
-        // other's leftover row and fail.
         $this->assertSame(0, Customer::count());
         Customer::factory()->create();
         $this->assertSame(1, Customer::count());

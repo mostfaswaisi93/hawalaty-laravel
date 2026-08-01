@@ -7,10 +7,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * An incoming payment from a customer (license renewal, subscription...) -
- * see BACKEND_PROMPT.md section 3.
- */
 #[Fillable(['license_id', 'amount', 'box_id'])]
 class Payment extends Model
 {

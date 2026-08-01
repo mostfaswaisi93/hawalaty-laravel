@@ -3,15 +3,7 @@
 @section('title', __('دخول المشرف - حوالاتي'))
 
 @section('content')
-    {{--
-        Fills BOTH columns of the guest layout's lg:grid-cols-2 so the page reads
-        as one composition: a fixed-dark brand panel and the form beside it.
-        The panel is fixed-dark in both themes (like the sidebar rail), so its
-        text uses literal white rather than the surface tokens, which invert.
-    --}}
     <section class="relative order-2 hidden overflow-hidden bg-primary-container lg:flex lg:flex-col lg:justify-between lg:p-12">
-        {{-- Ambient depth: two slow-drifting blurred orbs over the flat brand
-             navy. No gradient - the orbs alone carry the depth. --}}
         <div class="pointer-events-none absolute -start-24 -top-24 h-96 w-96 rounded-full bg-secondary-container/25 blur-3xl motion-safe:animate-[admin-orb_14s_ease-in-out_infinite]"></div>
         <div class="pointer-events-none absolute -bottom-32 -end-24 h-[28rem] w-[28rem] rounded-full bg-primary-fixed-dim/20 blur-3xl motion-safe:animate-[admin-orb_18s_ease-in-out_infinite_reverse]"></div>
 
@@ -32,7 +24,6 @@
             </p>
         </div>
 
-        {{-- Feature chips: glass cards that lift on hover. --}}
         <div class="relative grid grid-cols-2 gap-3">
             @foreach ([
                 ['icon' => 'key', 'label' => __('إدارة التراخيص')],
@@ -50,7 +41,6 @@
         </div>
     </section>
 
-    {{-- ───────────────────────────── Form column ───────────────────────────── --}}
     <section class="order-1 flex w-full items-center justify-center px-inline-md py-16 md:px-inline-lg">
         <div class="w-full max-w-md" x-data="{ submitting: false }">
             <div class="mb-8">
@@ -74,10 +64,6 @@
                     dir="ltr"
                     placeholder="admin@hawalaty.test" />
 
-                {{-- Hand-rolled rather than <x-form-field>, matching auth/login: the
-                     shared component renders a bare input with no visibility toggle.
-                     Physical left/right is correct because the input is dir="ltr"
-                     regardless of page locale. --}}
                 <div class="space-y-2">
                     <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" for="password">
                         {{ __('كلمة المرور') }}
@@ -105,9 +91,6 @@
                     @enderror
                 </div>
 
-                {{-- AdminLoginRequest already validates `remember` and the controller
-                     already passes it to Auth::attempt() - the field was simply never
-                     rendered, so the feature was unreachable. --}}
                 <label class="flex w-fit cursor-pointer items-center gap-2">
                     <input type="checkbox" name="remember" value="1" class="h-5 w-5 rounded accent-primary" />
                     <span class="font-body-sm text-on-surface-variant">{{ __('تذكّرني') }}</span>

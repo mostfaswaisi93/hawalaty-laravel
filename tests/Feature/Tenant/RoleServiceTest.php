@@ -10,13 +10,6 @@ use App\Services\Tenant\RoleService;
 use Illuminate\Validation\ValidationException;
 use Tests\TenantTestCase;
 
-/**
- * Locks in RoleService's is_system/key stripping on create, the
- * system-role-is-immutable rule on update/delete, and the
- * cannot-orphan-team-members guard on delete - plus TeamMember::hasPermission()
- * against the real seeded owner/manager/staff permission sets, since that's
- * what every one of these guards ultimately protects.
- */
 class RoleServiceTest extends TenantTestCase
 {
     public function test_create_always_forces_a_custom_non_system_role_and_syncs_permissions(): void
@@ -27,7 +20,7 @@ class RoleServiceTest extends TenantTestCase
         $role = app(RoleService::class)->create([
             'name' => 'مدير الفرع',
             'permissions' => [PermissionKey::MenuManage->value, PermissionKey::BanksManage->value],
-            // Attacker-controlled/mistaken input attempting to self-elevate to a system role.
+
             'is_system' => true,
             'key' => 'owner',
         ]);

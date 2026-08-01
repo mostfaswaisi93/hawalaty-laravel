@@ -11,7 +11,6 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('ما دخل وما خرج خلال الفترة، وحركة كل حساب.') }}</p>
         </header>
 
-        {{-- date range --}}
         <form method="GET" action="{{ route('balance.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="reveal-up tonal-elevation flex flex-col gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:flex-row sm:items-end" style="--d: 40ms">
             <div class="flex-1 space-y-1.5">
@@ -34,7 +33,6 @@
             </button>
         </form>
 
-        {{-- headline --}}
         <section class="stagger grid grid-cols-1 gap-4 sm:grid-cols-3">
             <x-card>
                 <div class="flex items-center justify-between">
@@ -72,7 +70,6 @@
             </x-card>
         </section>
 
-        {{-- what the outflow is made of --}}
         <x-card :title="__('تركيب المصروفات')" :subtitle="__('الرواتب جزء من الخارج، وليست إضافة عليه')">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div class="flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/50 bg-surface-container-low p-4">
@@ -96,7 +93,6 @@
             </div>
         </x-card>
 
-        {{-- per account --}}
         <x-card :title="__('حركة الحسابات')" :subtitle="__('ما دخل وما خرج من كل بنك أو محفظة')">
             @if (empty($accounts))
                 <div class="flex flex-col items-center gap-2 py-12 text-center">
@@ -153,7 +149,6 @@
             @endif
         </x-card>
 
-        {{-- figures that are deliberately OUTSIDE the balance --}}
         @if ($s['pending'] > 0 || $s['changeGiven'] > 0)
             <x-card :title="__('خارج الحساب')" :subtitle="__('أرقام معروضة للعلم ولم تُحتسب ضمن الصافي')">
                 <div class="space-y-3">

@@ -10,8 +10,7 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            // Null for custom (non-system) roles; a system key for the 3
-            // built-in roles cloned into every tenant at provisioning time.
+
             $table->enum('key', ['owner', 'manager', 'staff'])->nullable();
             $table->string('name');
             $table->boolean('is_system')->default(false);

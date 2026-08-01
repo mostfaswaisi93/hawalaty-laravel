@@ -8,30 +8,14 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
-/**
- * The business's own logo, printed at the top of its receipts.
- *
- * The FILE lives on the `public` disk; only its path is kept in the tenant's
- * settings, so the row stays small and the image is replaceable without a
- * migration.
- *
- * Reading it back returns a DATA URI rather than a URL. That is deliberate:
- *   - the receipt is also rendered by dompdf for the mobile API, which cannot
- *     fetch an authenticated URL;
- *   - `public/storage` is a symlink that shared hosting frequently does not
- *     have, and a receipt whose logo silently 404s is worse than none.
- * A data URI needs neither, and a logo is small enough to inline.
- */
 class BusinessLogo
 {
     public const KEY = 'business_logo';
 
-    /** Big enough for a crisp receipt header, small enough to inline. */
     public const MAX_KILOBYTES = 1024;
 
     private const DIRECTORY = 'logos';
 
-    /** Stores the upload, replacing whatever was there before. */
     public function put(UploadedFile $file): string
     {
         $this->delete();
@@ -62,11 +46,6 @@ class BusinessLogo
         return $path !== null && Storage::disk('public')->exists($path);
     }
 
-    /**
-     * The logo as a `data:` URI, or null when there is none. Degrades to null
-     * if the tenant connection or the file is unreachable - a missing logo must
-     * never take a receipt down.
-     */
     public function dataUri(): ?string
     {
         try {
@@ -89,7 +68,6 @@ class BusinessLogo
         try {
             return TenantSetting::where('key', self::KEY)->value('value');
         } catch (Throwable) {
-            // No tenant connection, or the table has not been migrated yet.
             return null;
         }
     }

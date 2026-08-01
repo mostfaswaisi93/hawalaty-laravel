@@ -1,7 +1,3 @@
-{{--
-    Shared across the tenant, admin and guest layouts so the credit line only
-    ever has to change in one place. The year is derived, not hard-coded.
---}}
 <footer class="mt-auto border-t border-outline-variant/40 px-inline-lg py-5">
     <div class="mx-auto flex max-w-[1680px] flex-col items-center justify-between gap-3 sm:flex-row">
         <p class="font-body-sm text-body-sm text-outline">
@@ -13,7 +9,6 @@
         <div class="flex items-center gap-3">
             <span class="flex items-center gap-1.5 font-body-sm text-body-sm text-outline">
                 {{ __('صُنع بحب') }}
-                {{-- FILL 1 so the heart renders solid rather than outlined. --}}
                 <span class="material-symbols-outlined !text-base text-error" style="font-variation-settings: 'FILL' 1" aria-hidden="true">favorite</span>
                 {{ __('بواسطة') }}
             </span>

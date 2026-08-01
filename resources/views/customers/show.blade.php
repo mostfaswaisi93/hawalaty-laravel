@@ -14,8 +14,7 @@
             'pending' => __('قيد الانتظار'),
             default => __('فاشلة'),
         };
-        // SQL aggregates from CustomerService::find(), not a sum over a
-        // fully-loaded relation - see that method for why.
+
         $total = (float) ($customer->total_spent ?? 0);
     @endphp
 

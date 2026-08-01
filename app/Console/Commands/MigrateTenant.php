@@ -10,13 +10,6 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Throwable;
 
-/**
- * `php artisan tenants:migrate {code}` / `--all`. Runs database/migrations/tenant,
- * which plain `artisan migrate` does NOT pick up.
- *
- * Safe to call mid-provisioning: TenantConnectionResolver only needs a
- * `DatabaseConnection` row, not tables on the other end.
- */
 class MigrateTenant extends Command
 {
     protected $signature = 'tenants:migrate {code? : A single license_code to migrate} {--all : Migrate every active/trial license that has a database connection}';
@@ -50,11 +43,6 @@ class MigrateTenant extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * Loop every active/trial license that has a DatabaseConnection, running
-     * migrations for each. A single tenant's failure is caught and reported
-     * (not thrown) so one bad database doesn't stop the rest.
-     */
     protected function migrateAll(): int
     {
         $licenses = License::whereIn('status', [LicenseStatus::Active, LicenseStatus::Trial])
@@ -80,9 +68,6 @@ class MigrateTenant extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * @throws InvalidLicenseException
-     */
     protected function migrateOne(string $licenseCode): void
     {
         TenantConnectionResolver::resolve($licenseCode);

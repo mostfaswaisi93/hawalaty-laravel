@@ -14,7 +14,7 @@ class StoreBackupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Omitted/null = a backup of the platform database itself.
+
             'licenseId' => ['nullable', 'string', 'exists:licenses,id'],
         ];
     }

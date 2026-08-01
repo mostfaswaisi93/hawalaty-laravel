@@ -7,15 +7,6 @@ use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
 use Tests\TenantTestCase;
 
-/**
- * The roles screen.
- *
- * The permission model was already enforced everywhere but had no UI - the three
- * built-in roles were fixed and a custom one could only be made through the API.
- * These cover the screen, and above all its GUARDS: this is the page that hands
- * out access, so "who may use it" and "what it refuses to do" matter more than
- * the happy path.
- */
 class RolePageTest extends TenantTestCase
 {
     private function owner(): TeamMember
@@ -31,14 +22,10 @@ class RolePageTest extends TenantTestCase
             ->assertOk()
             ->assertViewHas('roles')
             ->assertViewHas('permissions')
-            // The human label, not the raw `transfers.create` key.
+
             ->assertSee(__('إنشاء الطلبات'));
     }
 
-    /**
-     * Inventing a role is the same power as assigning one, so the page is gated
-     * on the same permission that governs changing a member's role.
-     */
     public function test_a_member_without_team_manage_cannot_reach_the_page(): void
     {
         $roles = $this->seedStandardRoles();
@@ -98,11 +85,8 @@ class RolePageTest extends TenantTestCase
         );
     }
 
-    /** The three built-in roles are cloned at provisioning and are immutable. */
     public function test_a_system_role_cannot_be_edited(): void
     {
-        // seedStandardRoles() inserts the 7 permissions, which are UNIQUE by
-        // key - so it must be called once per test and its result reused.
         $roles = $this->seedStandardRoles();
         $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
         $system = $roles['manager'];
@@ -125,10 +109,6 @@ class RolePageTest extends TenantTestCase
         $this->assertNotNull($system->fresh(), 'A built-in role was deleted.');
     }
 
-    /**
-     * `team_members.role_id` is a required FK, so deleting a role still in use
-     * would orphan its members.
-     */
     public function test_a_role_with_members_cannot_be_deleted(): void
     {
         $owner = $this->owner();
@@ -151,7 +131,6 @@ class RolePageTest extends TenantTestCase
         $this->assertNull($role->fresh());
     }
 
-    /** A role granting nothing is meaningless, and the form disables submit too. */
     public function test_a_role_must_grant_at_least_one_permission(): void
     {
         $owner = $this->owner();
@@ -172,7 +151,6 @@ class RolePageTest extends TenantTestCase
         $this->assertSame(0, Role::where('name', 'مزيّف')->count());
     }
 
-    /** Every permission needs a label, description and icon or the page renders gaps. */
     public function test_every_permission_has_presentation_metadata(): void
     {
         foreach (PermissionKey::cases() as $permission) {

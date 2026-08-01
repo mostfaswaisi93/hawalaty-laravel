@@ -36,23 +36,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-/**
- * Opt-in sample data for the tenant workspace:
- *
- *     php artisan db:seed --class=DemoTenantSeeder
- *
- * Fills the workspace TenantSeeder provisioned - catalogue, accounts, team,
- * customers, constants, ~59 orders, expenses and payroll. It never provisions a
- * tenant of its own, so a second business cannot appear beside the real one.
- *
- * Idempotent section by section: bulk sections are guarded on their own table
- * being empty, and anything with a natural key dedupes row by row.
- */
 class DemoTenantSeeder extends Seeder
 {
     private const OWNER_PASSWORD = TenantSeeder::OWNER_PASSWORD;
 
-    /** One list for BOTH the /customers directory and the names put on orders. */
     private const CUSTOMERS = [
         ['أحمد أبو ياسين', '0599100001'],
         ['محمد العرّاج', '0599100002'],
@@ -68,10 +55,8 @@ class DemoTenantSeeder extends Seeder
         ['طارق البيطار', '0599100012'],
     ];
 
-    /** Anchored so the "last 7 days" always includes the seeding day. */
     public function run(): void
     {
-        // Provisioning is TenantSeeder's job.
         $license = License::where('customer_name', TenantSeeder::BUSINESS_NAME)->first();
 
         if (! $license) {
@@ -85,8 +70,6 @@ class DemoTenantSeeder extends Seeder
         TenantConnectionResolver::resolve($license->license_code);
         app()->instance('currentLicense', $license);
 
-        // Guarded PER SECTION. One guard around the whole block meant a tenant
-        // seeded before a feature shipped could never be topped up.
         $filled = [];
 
         DB::connection('tenant')->transaction(function () use (&$filled) {
@@ -94,8 +77,6 @@ class DemoTenantSeeder extends Seeder
             $items = MenuItem::count() > 0 ? MenuItem::get() : tap($this->seedMenu(), fn () => $filled[] = 'menu');
             $members = $this->seedTeam($filled);
 
-            // Keyed on a natural unique column, so they dedupe row by row. A
-            // count() guard here would let one stray row suppress the section.
             $this->tally($filled, 'customers', $this->seedCustomers());
             $this->tally($filled, 'constants', $this->seedConstants());
             $this->tally($filled, 'cash boxes', $this->seedCashBoxes());
@@ -110,14 +91,13 @@ class DemoTenantSeeder extends Seeder
                 $filled[] = 'expenses';
             }
 
-            // After the expenses guard: payroll writes its own expense rows,
-            // which would otherwise suppress the running costs.
             if (SalaryPayment::count() === 0) {
                 $this->seedSalaries($members, $accounts);
                 $filled[] = 'payroll';
             }
 
-            $this->seedTenantSettings(); // updateOrCreate - idempotent by itself
+            $this->seedTenantSettings();
+
         });
 
         $this->command->info($filled === []
@@ -125,12 +105,6 @@ class DemoTenantSeeder extends Seeder
             : 'Seeded '.implode(', ', $filled).'.');
     }
 
-    /**
-     * Reference catalogs plus one account per institution. `whatsapp_phone` is
-     * where new-order notifications go, in E.164.
-     *
-     * @return Collection<int, Account>
-     */
     private function seedAccounts(): Collection
     {
         $currency = Currency::create(['name' => 'شيكل', 'symbol' => '₪', 'active' => true]);
@@ -154,7 +128,6 @@ class DemoTenantSeeder extends Seeder
                 ? BankName::create(['name' => $row['name'], 'active' => true])
                 : WalletName::create(['name' => $row['name'], 'active' => true]);
 
-            // An account may only use a currency its institution supports.
             $institution->currencies()->attach($currency->id);
 
             return Account::create([
@@ -173,7 +146,6 @@ class DemoTenantSeeder extends Seeder
         });
     }
 
-    /** @return Collection<int, MenuItem> every active menu item, for building line items */
     private function seedMenu(): Collection
     {
         $catalog = [
@@ -202,13 +174,6 @@ class DemoTenantSeeder extends Seeder
         return $allItems;
     }
 
-    /**
-     * Members carry a salary rate - without one `payable()` is false and
-     * seedSalaries() has nothing to work from.
-     *
-     * @param  list<string>  $filled  collects a note when this changed something
-     * @return Collection<int, TeamMember>
-     */
     private function seedTeam(array &$filled): Collection
     {
         $manager = Role::where('key', RoleKey::Manager->value)->first();
@@ -237,14 +202,6 @@ class DemoTenantSeeder extends Seeder
                 continue;
             }
 
-            /*
-             * Backfill the rate onto members seeded before `salary_amount`
-             * existed. Without it `payable()` stays false, so the /team payroll
-             * action and seedSalaries() below both have nothing to act on - the
-             * feature would look broken on the very tenant used to demo it.
-             * Only the empty case is written; a rate someone edited by hand is
-             * left alone.
-             */
             if ($existing->salary_amount === null) {
                 $existing->forceFill([
                     'salary_amount' => $member['salary_amount'],
@@ -263,11 +220,6 @@ class DemoTenantSeeder extends Seeder
         return $result;
     }
 
-    /**
-     * The /customers directory, keyed on phone - the schema's identity column.
-     *
-     * @return int rows actually created
-     */
     private function seedCustomers(): int
     {
         $created = 0;
@@ -280,7 +232,6 @@ class DemoTenantSeeder extends Seeder
         return $created;
     }
 
-    /** Records a section in the run summary only when it changed something. */
     private function tally(array &$filled, string $label, int $created): void
     {
         if ($created > 0) {
@@ -288,11 +239,6 @@ class DemoTenantSeeder extends Seeder
         }
     }
 
-    /**
-     * Keys mirror ConstantListService's `custom-<random>` scheme.
-     *
-     * @return int lists and items created, combined
-     */
     private function seedConstants(): int
     {
         $lists = [
@@ -304,10 +250,6 @@ class DemoTenantSeeder extends Seeder
         $created = 0;
 
         foreach ($lists as $title => $values) {
-            // Matched on title because that is what the app validates unique.
-            // The generated key mirrors ConstantListService::create()'s
-            // `custom-<random>` scheme, so a seeded list is indistinguishable
-            // from one the tenant added themselves.
             $list = ConstantList::firstOrCreate(
                 ['title' => $title],
                 ['key' => 'custom-'.Str::lower(Str::random(10))],
@@ -315,9 +257,6 @@ class DemoTenantSeeder extends Seeder
 
             $created += $list->wasRecentlyCreated ? 1 : 0;
 
-            // Items are filled per VALUE, so an existing but empty list - one
-            // added through the UI and never populated - is completed rather
-            // than left half-made.
             foreach ($values as $position => $value) {
                 $item = ConstantListItem::firstOrCreate(
                     ['constant_list_id' => $list->id, 'value' => $value],
@@ -331,11 +270,6 @@ class DemoTenantSeeder extends Seeder
         return $created;
     }
 
-    /**
-     * Cash drawers, one per shift point - the /accounts cash side.
-     *
-     * @return int rows actually created
-     */
     private function seedCashBoxes(): int
     {
         $created = 0;
@@ -348,14 +282,6 @@ class DemoTenantSeeder extends Seeder
         return $created;
     }
 
-    /**
-     * Three months of payroll, through SalaryService so each payment is paired
-     * with the Expense row that actually moves the money - creating
-     * SalaryPayment alone would show wages on /team that /expenses never saw.
-     *
-     * @param  Collection<int, TeamMember>  $members
-     * @param  Collection<int, Account>  $accounts
-     */
     private function seedSalaries(Collection $members, Collection $accounts): void
     {
         if ($members->isEmpty() || $accounts->isEmpty()) {
@@ -370,9 +296,6 @@ class DemoTenantSeeder extends Seeder
                 continue;
             }
 
-            // Daily earners are paid for a single day; monthly ones for the
-            // month just closed. Only settled months, so the current one still
-            // shows as outstanding on the page.
             for ($monthsAgo = 3; $monthsAgo >= 1; $monthsAgo--) {
                 $paidFor = Carbon::today()->startOfMonth()->subMonths($monthsAgo);
 
@@ -386,11 +309,6 @@ class DemoTenantSeeder extends Seeder
         }
     }
 
-    /**
-     * The handful of /settings keys an owner sets on day one. Everything else
-     * keeps falling back to its registry default, which is the point of a
-     * default.
-     */
     private function seedTenantSettings(): void
     {
         foreach ([
@@ -402,14 +320,8 @@ class DemoTenantSeeder extends Seeder
         }
     }
 
-    /**
-     * @param  Collection<int, Account>  $accounts
-     * @param  Collection<int, MenuItem>  $items
-     */
     private function seedTransfers(Collection $accounts, Collection $items): void
     {
-        // Last 7 days, each with a different non-zero count and a clear peak
-        // four days ago (10) so the weekly bar chart reads as real activity.
         $dailyCounts = [6 => 4, 5 => 6, 4 => 3, 3 => 10, 2 => 5, 1 => 8, 0 => 2];
 
         foreach ($dailyCounts as $offset => $count) {
@@ -422,7 +334,6 @@ class DemoTenantSeeder extends Seeder
             }
         }
 
-        // Older orders (8..14 days ago) to inflate totals and fill /history.
         for ($offset = 8; $offset <= 14; $offset++) {
             $anchor = Carbon::today()->subDays($offset)->setTime(19, 30);
 
@@ -431,9 +342,6 @@ class DemoTenantSeeder extends Seeder
             }
         }
 
-        // The 5 NEWEST orders are exactly what the dashboard's recent-orders
-        // table shows, so make them deliberately varied (mixed statuses +
-        // cash/bank) and strictly the latest by created_at.
         $newest = [
             [TransferStatus::Completed, PaymentMethod::Bank],
             [TransferStatus::Completed, PaymentMethod::Cash],
@@ -447,10 +355,6 @@ class DemoTenantSeeder extends Seeder
         }
     }
 
-    /**
-     * @param  Collection<int, Account>  $accounts
-     * @param  Collection<int, MenuItem>  $items
-     */
     private function makeTransfer(Carbon $createdAt, Collection $accounts, Collection $items, ?TransferStatus $status = null, ?PaymentMethod $payment = null): void
     {
         $customers = array_column(self::CUSTOMERS, 0);
@@ -489,7 +393,8 @@ class DemoTenantSeeder extends Seeder
         $transfer = new Transfer($attributes);
         $transfer->created_at = $createdAt;
         $transfer->updated_at = $createdAt;
-        $transfer->timestamps = false; // keep the back-dated created_at instead of now()
+        $transfer->timestamps = false;
+
         $transfer->save();
 
         foreach ($lines as $line) {
@@ -514,7 +419,6 @@ class DemoTenantSeeder extends Seeder
         };
     }
 
-    /** @param Collection<int, Account> $accounts */
     private function seedExpenses(Collection $accounts): void
     {
         $expenses = [

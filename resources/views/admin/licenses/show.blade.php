@@ -12,8 +12,6 @@
     $meta = $statusMap[$license->status->value] ?? ['label' => $license->status->value, 'class' => 'bg-outline/10 text-outline'];
     $connection = $license->databaseConnection;
 
-    // The tenant's own audit vocabulary, matching activity-log/index so the same
-    // event never reads one way inside the tenant app and another way here.
     $actionLabels = [
         'created' => __('إنشاء'),
         'updated' => __('تعديل'),
@@ -42,8 +40,6 @@
             </div>
             <div class="flex items-center gap-2">
                 @if (in_array($license->status->value, ['active', 'trial']))
-                    {{-- Confirmed, matching admin.licenses.index: suspending locks every user of the
-                         tenant out of the app, so it must never be one unguarded click. --}}
                     <form method="POST" action="{{ route('admin.licenses.suspend', $license->id) }}" id="suspend-{{ $license->id }}">@csrf</form>
                     <button type="button"
                         @click="confirmOpen = true; confirmMessage = '{{ __('تعليق هذا الترخيص؟') }}'; confirmFormId = 'suspend-{{ $license->id }}'; confirmTitle = '{{ __('تأكيد التعليق') }}'; confirmLabel = '{{ __('تعليق') }}'"
@@ -63,7 +59,6 @@
         </header>
 
         <div class="stagger grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {{-- Overview --}}
             <x-card title="{{ __('بيانات الترخيص') }}" class="lg:col-span-2">
                 <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                     <div>
@@ -98,22 +93,12 @@
                     @endif
                 </dl>
 
-                {{-- Run tenant migrations on demand against the linked database. --}}
                 @if ($connection)
                     <div class="mt-6 flex flex-col gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 class="font-body-lg font-bold text-on-surface">{{ __('ترحيل قاعدة البيانات') }}</h3>
                             <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('يُنشئ الجداول الناقصة حسب باقة العميل. آمن للتكرار — لا يمسّ البيانات الموجودة.') }}</p>
                         </div>
-                        {{-- `submitting` is set inside the handler, NOT via `@submit`:
-                             this form is submitted programmatically with
-                             `$el.submit()`, which by spec fires no submit event - an
-                             `@submit` binding would simply never run. It also has to
-                             sit AFTER the confirm, so dismissing the dialog does not
-                             leave the button stuck spinning.
-
-                             This is the slowest action in the console (a full tenant
-                             migration run), so the feedback matters most here. --}}
                         <form method="POST" action="{{ route('admin.licenses.migrate', $license->id) }}"
                             x-data="{ submitting: false }"
                             @submit.prevent="if (confirm('{{ __('تشغيل ترحيلات قاعدة البيانات لهذا الترخيص؟') }}')) { submitting = true; $el.submit() }">
@@ -127,7 +112,6 @@
                     </div>
                 @endif
 
-                {{-- Change package --}}
                 <form method="POST" action="{{ route('admin.licenses.change-package', $license->id) }}" class="mt-6 flex flex-col gap-3 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-end"
                     x-data="{ submitting: false }" @submit="submitting = true">
                     @csrf
@@ -145,7 +129,6 @@
                 </form>
             </x-card>
 
-            {{-- Recent tenant activity --}}
             <x-card title="{{ __('آخر نشاط المستأجر') }}">
                 @if ($recentActivity->isEmpty())
                     <p class="py-6 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد نشاط') }}</p>
@@ -153,10 +136,6 @@
                     <ul class="divide-y divide-outline-variant/50">
                         @foreach ($recentActivity as $log)
                             <li class="py-3">
-                                {{-- WHAT happened, not only what it happened to. The
-                                     action codes are not translation keys, so they go
-                                     through the same label map the tenant's own
-                                     activity log uses. --}}
                                 <div class="flex items-center gap-2">
                                     <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold {{ $actionPill($log->action?->value) }}">
                                         {{ $actionLabels[$log->action?->value] ?? ($log->action?->value ?? '-') }}
@@ -171,7 +150,6 @@
             </x-card>
         </div>
 
-        {{-- Team roster --}}
         <x-card title="{{ __('فريق المستأجر') }}" subtitle="{{ __('قراءة مباشرة من قاعدة بيانات المستأجر') }}" class="reveal-up" style="--d: 200ms">
             @if ($team->isEmpty())
                 <p class="py-6 text-center font-body-sm text-on-surface-variant">{{ __('لا يوجد أعضاء فريق') }}</p>
@@ -205,9 +183,6 @@
                     </x-slot:cards>
                 </x-table-responsive>
 
-                {{-- The roster is capped, so say so. A silently truncated list of
-                     people reads as "this is everyone", which is the one thing an
-                     admin opening this card must not be told wrongly. --}}
                 @if ($teamTotal > $team->count())
                     <p class="mt-4 flex items-start gap-1.5 border-t border-outline-variant/50 pt-3 text-[11px] text-on-surface-variant">
                         <span class="material-symbols-outlined !text-base flex-shrink-0">info</span>

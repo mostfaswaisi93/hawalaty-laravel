@@ -9,20 +9,8 @@ use App\Models\Tenant\TeamMember;
 use App\Support\SearchTerm;
 use Tests\TenantTestCase;
 
-/**
- * A search box has to answer the question that was typed into it.
- *
- * Bindings make "%{$search}%" injection-safe but leave `%` and `_` as
- * WILDCARDS, silently widening the query - `_` is ordinary in email addresses,
- * and `%` alone dumps whole tables through a box that requires two characters.
- *
- * These run against MySQL, on real rows, through the real query builder. A
- * string-level assertion on the pattern would pass even if the ESCAPE clause
- * never made it into the SQL - which is the half that actually has to work.
- */
 class SearchEscapingTest extends TenantTestCase
 {
-    /** `customers.phone` is unique, so each row needs its own unless one is given. */
     private int $phoneSeed = 0;
 
     private function customer(string $name, ?string $phone = null): Customer
@@ -33,8 +21,6 @@ class SearchEscapingTest extends TenantTestCase
         ]);
     }
 
-    // --- the pattern itself -----------------------------------------------
-
     public function test_a_wildcard_is_escaped_and_the_escape_character_is_doubled(): void
     {
         $this->assertSame('%a!%b%', SearchTerm::pattern('a%b'));
@@ -42,14 +28,8 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame('%a!!b%', SearchTerm::pattern('a!b'));
     }
 
-    /**
-     * The escape character must be doubled BEFORE the wildcards are escaped.
-     * The other order re-escapes the `!` this method just introduced, and the
-     * pattern stops meaning what the user typed.
-     */
     public function test_a_term_mixing_the_escape_character_and_a_wildcard_survives(): void
     {
-        // `!` -> `!!`, then the literal `%` -> `!%`.
         $this->assertSame('%a!!!%b%', SearchTerm::pattern('a!%b'));
     }
 
@@ -58,9 +38,6 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame('%كباب%', SearchTerm::pattern('كباب'));
     }
 
-    // --- against the database ---------------------------------------------
-
-    /** The headline case: a lone `%` used to return the whole table. */
     public function test_a_percent_sign_matches_only_a_literal_percent_sign(): void
     {
         $this->customer('خصم 50%');
@@ -72,10 +49,6 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame(['خصم 50%'], $matches->all());
     }
 
-    /**
-     * An underscore is a single-character wildcard. Unescaped, a search for
-     * `abu_ali` also returned `abuXali` - two different people.
-     */
     public function test_an_underscore_matches_only_a_literal_underscore(): void
     {
         $role = Role::factory()->create();
@@ -87,10 +60,6 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame(['abu_ali@example.test'], $matches->all());
     }
 
-    /**
-     * The escape character is only special to LIKE, so a user who genuinely
-     * types one must still find their row rather than a mangled pattern.
-     */
     public function test_the_escape_character_can_itself_be_searched_for(): void
     {
         $this->customer('عاجل!');
@@ -101,7 +70,6 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame(['عاجل!'], $matches->all());
     }
 
-    /** Ordinary searching must be unchanged - this is a narrowing, not a rewrite. */
     public function test_a_plain_term_still_matches_as_a_substring(): void
     {
         $this->customer('أحمد علي');
@@ -123,14 +91,6 @@ class SearchEscapingTest extends TenantTestCase
         );
     }
 
-    // --- the parenthesising -----------------------------------------------
-
-    /**
-     * The OR-group has to be wrapped, or it escapes its own condition and
-     * swallows whatever filter sits beside it. Here the term matches both rows
-     * but only one is active: unwrapped, `holder_name LIKE x OR iban LIKE x AND
-     * active` binds `active` to the last branch and the inactive row leaks out.
-     */
     public function test_the_or_group_does_not_swallow_a_neighbouring_filter(): void
     {
         Account::factory()->create(['holder_name' => 'بنك الراجحي', 'active' => true]);
@@ -144,7 +104,6 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame(['بنك الراجحي'], $matches->all());
     }
 
-    /** An empty or whitespace-only term must not filter anything out. */
     public function test_an_empty_term_is_a_no_op(): void
     {
         $this->customer('أحمد');
@@ -154,7 +113,6 @@ class SearchEscapingTest extends TenantTestCase
         $this->assertSame(2, Customer::query()->whereSearch(['name', 'phone'], '   ')->count());
     }
 
-    /** The ESCAPE clause has to reach the SQL, not just the binding. */
     public function test_the_compiled_sql_carries_the_escape_clause(): void
     {
         $sql = Customer::query()->whereSearch(['name', 'phone'], 'x')->toSql();

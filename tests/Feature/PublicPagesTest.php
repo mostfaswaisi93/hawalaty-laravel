@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * The pages the guest footer links to. They must render without a session, and
- * `/help` additionally has to survive being opened by a SIGNED-IN tenant.
- */
 class PublicPagesTest extends TestCase
 {
     use RefreshDatabase;
@@ -23,29 +19,18 @@ class PublicPagesTest extends TestCase
             'terms' => ['/terms'],
             'security' => ['/security'],
             'help' => ['/help'],
-            // Crawler-facing, and both are built from the route table - a
-            // renamed route would otherwise 500 somewhere only a bot can see.
+
             'sitemap' => ['/sitemap.xml'],
             'robots' => ['/robots.txt'],
         ];
     }
 
-    /** @dataProvider pages */
     #[DataProvider('pages')]
     public function test_a_guest_can_read_the_page(string $uri): void
     {
         $this->get($uri)->assertOk();
     }
 
-    /**
-     * Regression: `help.index` renders `layouts.app` or `layouts.guest` based on
-     * `auth('tenant')->check()`. That guard resolves a TeamMember from the
-     * `tenant` connection, which only exists once
-     * ResolveTenantConnectionFromSession (`tenant.session`) has run. The route
-     * was published without it, so a signed-in tenant opening المساعدة hit a
-     * 500 - "Plugin 'mysql_native_password' is not loaded ... Database: " -
-     * while a guest saw the page fine, which is why it slipped through.
-     */
     public function test_the_help_route_resolves_the_tenant_connection_first(): void
     {
         $route = collect(Route::getRoutes()->getRoutes())
@@ -59,27 +44,6 @@ class PublicPagesTest extends TestCase
         );
     }
 
-    /**
-     * Any other `Route::view()` whose template consults the tenant guard needs
-     * the same middleware, so this catches the next one rather than only the one
-     * that already broke.
-     *
-     * Two things this test got wrong before, both of which made it assert
-     * NOTHING while reading like a safety net:
-     *
-     *   - it looked for the template in `$route->getAction()['view']`, but
-     *     Route::view() stores it in `$route->defaults` - so every route was
-     *     skipped and the loop body never ran once;
-     *   - `glob('views/**\/*.blade.php')` is a single level deep, not recursive,
-     *     so a dozen templates were never scanned at all.
-     *
-     * The two assertions below the scan exist so it can never silently degrade
-     * to a no-op again: if the scan stops finding guard views, or stops matching
-     * any route, the test fails instead of passing green.
-     *
-     * Scope note: this covers `Route::view()` routes only. A controller that
-     * returns a guard-dependent view is not reachable by static inspection here.
-     */
     public function test_every_route_rendering_a_tenant_guard_view_configures_the_connection(): void
     {
         $guardViews = $this->viewsUsingTheTenantGuard();
@@ -92,7 +56,6 @@ class PublicPagesTest extends TestCase
         $checked = 0;
 
         foreach (Route::getRoutes()->getRoutes() as $route) {
-            // Route::view() puts the template in `defaults`, NOT in the action.
             $view = $route->defaults['view'] ?? $route->getAction()['view'] ?? null;
 
             if ($view === null || ! in_array($view, $guardViews, true)) {
@@ -115,12 +78,6 @@ class PublicPagesTest extends TestCase
         );
     }
 
-    /**
-     * Every Blade template that consults `auth('tenant')`, as dotted view names.
-     * Recursive on purpose - `glob('**')` only descends one level.
-     *
-     * @return array<int, string>
-     */
     private function viewsUsingTheTenantGuard(): array
     {
         $root = resource_path('views');

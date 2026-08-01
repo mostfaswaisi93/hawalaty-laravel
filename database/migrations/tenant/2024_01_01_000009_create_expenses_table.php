@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * A tenant's OWN business expenses - distinct from the platform's own
-     * operating expenses (App\Models\Expense, platform `expenses` table).
-     * See App\Models\Tenant\Expense.
-     */
     public function up(): void
     {
         Schema::create('expenses', function (Blueprint $table) {

@@ -2,20 +2,6 @@
 
 namespace App\Enums;
 
-/**
- * The feature keys a package may grant, stored inside `packages.features`
- * (a JSON array of strings).
- *
- * That column predates this enum and accepts free text: the admin form is a
- * newline textarea, so an operator can type anything. This enum does NOT
- * restrict it - it names the subset the application actually gates on, so a
- * capability like WhatsApp can be sold per package instead of being on for
- * everyone.
- *
- * A key absent from this enum is still stored and still shown on the package
- * card; it simply gates nothing. That keeps every existing package row valid
- * and lets marketing bullet points live in the same list.
- */
 enum PackageFeature: string
 {
     case Transfers = 'transfers';
@@ -29,14 +15,11 @@ enum PackageFeature: string
     case Backups = 'backups';
     case WhatsApp = 'whatsapp';
 
-    /** What the operator sees when ticking it on a package. */
     public function label(): string
     {
         return match ($this) {
             self::Transfers => __('الطلبات والحوالات'),
-            // Platform-side wording, so it cannot use the tenant's own label -
-            // one package is sold to a bakery and a fuel station alike. Kept
-            // trade-neutral for the same reason CatalogNaming's default is.
+
             self::Menu => __('قائمة الأصناف'),
             self::Reports => __('التقارير'),
             self::Banks => __('البنوك والمحافظ'),
@@ -49,7 +32,6 @@ enum PackageFeature: string
         };
     }
 
-    /** One line on what including it actually unlocks for the tenant. */
     public function description(): string
     {
         return match ($this) {

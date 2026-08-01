@@ -6,12 +6,6 @@ use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Controllers/Services must eager-load `box` and `partner` before returning
- * this resource.
- *
- * @mixin Withdrawal
- */
 class WithdrawalResource extends JsonResource
 {
     public function toArray(Request $request): array

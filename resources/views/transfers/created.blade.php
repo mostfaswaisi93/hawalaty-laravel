@@ -7,11 +7,6 @@
 @endphp
 
 @section('content')
-    {{--
-        Where a freshly created order lands. The two things an operator does next
-        are print the invoice and start the next order, so those are the only two
-        buttons - everything else is a quiet link underneath.
-    --}}
     <style>
         /* The tick is DRAWN rather than faded in - the stroke arriving is what
            makes the moment read as "done", and it costs one keyframe. */
@@ -43,7 +38,6 @@
             <h1 class="reveal-up mt-4 font-display-lg text-2xl font-bold text-on-surface md:text-display-lg" style="--d:120ms">{{ __('تم إنشاء الطلب') }}</h1>
             <p class="reveal-up mt-1 font-body-lg text-on-surface-variant" style="--d:180ms">{{ __('أُنشئت الفاتورة وسُجّلت في النظام.') }}</p>
 
-            {{-- The receipt's own identity, so the operator can match paper to screen. --}}
             <dl class="reveal-up mt-6 space-y-2 rounded-2xl border border-outline-variant/60 bg-surface-container-low p-4 text-start" style="--d:240ms">
                 <div class="flex items-center justify-between gap-3">
                     <dt class="font-body-sm text-on-surface-variant">{{ __('رقم الفاتورة') }}</dt>
@@ -72,8 +66,6 @@
             </dl>
 
             <div class="reveal-up mt-6 grid gap-3 sm:grid-cols-2" style="--d:320ms">
-                {{-- New tab: the print dialog must not take the operator off this
-                     page, or the "next order" button goes with it. --}}
                 <a href="{{ route('transfers.receipt', $order->id) }}" target="_blank"
                     class="flex items-center justify-center gap-2 rounded-xl border border-primary bg-surface-container-lowest px-5 py-3.5 font-body-lg font-bold text-primary transition-colors hover:bg-primary/10"
                     title="{{ __('طباعة الفاتورة') }}">

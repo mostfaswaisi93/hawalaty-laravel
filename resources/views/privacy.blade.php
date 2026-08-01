@@ -3,14 +3,14 @@
 @section('title', __('سياسة الخصوصية - حوالاتي'))
 
 @php
-    // Read by layouts.guest through get_defined_vars() - see the <x-seo> call there.
+
     $metaDescription = __('سياسة خصوصية حوالاتي: ما الذي يُجمع من بيانات، ولماذا، ومن يستطيع الوصول إليه، وكيف تطلب نسخة منها أو حذفها.');
     $metaRobots = 'index, follow';
 @endphp
 
 @section('content')
     @php
-        // [icon, heading, intro paragraph, bullet points]
+
         $sections = [
             [
                 'list_alt',
@@ -121,7 +121,6 @@
         </header>
 
         <div class="stagger mt-10 space-y-5">
-            {{-- scope --}}
             <p class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-low p-5 font-body-lg leading-relaxed text-on-surface-variant md:p-6">
                 {{ __('توضّح هذه السياسة ما الذي يُجمع من بيانات عند استخدامك لحوالاتي، ولماذا يُجمع، ومن يستطيع الوصول إليه. وهي تنطبق على حسابات الأعمال وعلى أعضاء الفريق الذين تدعوهم للعمل داخل حسابك.') }}
             </p>
@@ -151,7 +150,6 @@
                 </article>
             @endforeach
 
-            {{-- contact --}}
             <article class="tonal-elevation rounded-3xl border border-outline-variant/50 bg-primary/5 p-5 md:p-6">
                 <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
                     <div class="flex items-start gap-4">
@@ -172,7 +170,6 @@
                 </div>
             </article>
 
-            {{-- template / legal-review notice --}}
             <aside class="rounded-3xl border border-dashed border-tertiary/50 bg-tertiary-container/15 p-5 md:p-6" role="note">
                 <div class="flex items-start gap-4">
                     <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-tertiary/10 text-tertiary">

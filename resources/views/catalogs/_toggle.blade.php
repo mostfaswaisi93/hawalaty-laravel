@@ -1,11 +1,3 @@
-{{-- Active switch. Reuses the update route with only `active` (a partial
-     update, allowed because CatalogItemRequest relaxes `name` to `sometimes`
-     on PUT) - same shape as banks/_toggle. --}}
-{{-- A switch has no glyph to swap, so the in-flight state reads as a pulse and
-     a dim rather than the `progress_activity` spinner used on icon buttons.
-     Disabling matters more here than elsewhere: the posted value is a hidden
-     input computed from the CURRENT state, so a second click before the reload
-     would send the same value again and silently undo nothing. --}}
 <form method="POST" action="{{ route('catalogs.update', [$catalog, $item->id]) }}" class="inline-flex"
     x-data="{ toggling: false }" @submit="toggling = true">
     @csrf

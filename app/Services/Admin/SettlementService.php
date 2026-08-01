@@ -13,40 +13,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-/**
- * Partner clearing (المقاصة).
- *
- * WHY THIS EXISTS
- * FinanceSummaryService reports each partner's share as
- * `totalBoxBalance * percentage`, which is not what a partner is owed. Box
- * balance is already net of every withdrawal, so the moment partner A takes
- * money out, partner B's reported "share" drops too - even though B took
- * nothing. It also has no memory: there is no way to say "we settled up to
- * March, start again from April".
- *
- * THE ARITHMETIC
- *   distributable = payments - expenses          (profit earned in the period)
- *   entitlement_i = distributable * percentage_i (what partner i earned)
- *   drawn_i       = withdrawals by partner i     (what partner i already took)
- *   net_i         = entitlement_i - drawn_i      (+ we owe them, - they owe us)
- *
- * Withdrawals are deliberately absent from `distributable`: they are a
- * distribution OF profit, not a cost of earning it. Subtracting them there
- * would charge every partner for one partner's payout.
- *
- * `retained` (the business's own slice when percentages sum to under 100) is
- * computed as the RESIDUAL rather than its own percentage calculation, so
- * `sum(entitlement) + retained == distributable` holds exactly and per-line
- * rounding can never leak a stray agora. That in turn makes the reconciliation
- * identity exact:
- *
- *   sum(net) + retained == distributable - sum(drawn)
- *
- * DATE ATTRIBUTION mirrors the convention already set by
- * Admin\DashboardController::monthlyTrend(): payments and withdrawals are
- * dated by `created_at` (they have no other date), expenses by their own
- * back-datable `date` column.
- */
 class SettlementService
 {
     public function list(int $perPage = 15): LengthAwarePaginator
@@ -60,28 +26,11 @@ class SettlementService
             ->withQueryString();
     }
 
-    /**
-     * The live, uncommitted position for the period that is currently open.
-     * This is what the clearing page shows before anyone commits to a run.
-     *
-     * @return array{
-     *     periodFrom: Carbon, periodTo: Carbon, hasOpenDraft: bool, openDraft: ?Settlement,
-     *     totalPayments: float, totalExpenses: float, distributableProfit: float,
-     *     totalEntitlement: float, totalDrawn: float, totalNet: float,
-     *     retained: float, percentageTotal: float, reconciles: bool,
-     *     lines: array<int, array{partnerId: string, partnerName: string, percentage: float, entitlement: float, drawn: float, net: float}>,
-     * }
-     */
     public function preview(?Carbon $periodTo = null): array
     {
         $from = $this->nextPeriodStart();
         $to = ($periodTo ?? Carbon::today())->copy()->endOfDay();
 
-        // The draft itself, not just whether one exists. An open draft is the
-        // only thing that blocks running a new clearing, so the page has to be
-        // able to send the admin TO it - saying "a draft is waiting" while
-        // offering no way to reach it leaves the screen's whole purpose stuck
-        // behind a message.
         $openDraft = Settlement::query()->where('status', SettlementStatus::Draft)->latest()->first();
 
         return $this->compute($from, $to) + [
@@ -90,15 +39,9 @@ class SettlementService
         ];
     }
 
-    /**
-     * Persists a clearing run. `confirm` closes the period immediately; a draft
-     * leaves it open so the figures can be reviewed first.
-     */
     public function create(array $data, ?string $adminId = null): Settlement
     {
         return DB::transaction(function () use ($data, $adminId) {
-            // Re-derive the window inside the transaction: two admins hitting
-            // "run clearing" at once must not both settle the same period.
             $from = $this->nextPeriodStart();
             $to = Carbon::parse($data['periodTo'])->endOfDay();
 
@@ -112,15 +55,6 @@ class SettlementService
 
             $computed = $this->compute($from, $to);
 
-            // Over-allocation is refused, not merely warned about. Percentages
-            // summing past 100 hand out more than the period earned and drive
-            // `retained` negative - the platform recorded as owing money it
-            // never made. The clearing page already flags it, but a warning
-            // cannot be a guard here: a run can be confirmed straight away, and
-            // a confirmed settlement is immutable by design.
-            //
-            // Almost always this is a slip in the partner list, so the message
-            // names the actual total rather than saying "invalid".
             if ($computed['percentageTotal'] > 100) {
                 throw new RuntimeException(__('مجموع نسب الشركاء :total% يتجاوز 100% - راجع نسب الشركاء قبل تنفيذ المقاصة.', [
                     'total' => number_format($computed['percentageTotal'], 2),
@@ -161,7 +95,6 @@ class SettlementService
         });
     }
 
-    /** Closes a draft run, locking its period. */
     public function confirm(Settlement $settlement): Settlement
     {
         if ($settlement->isConfirmed()) {
@@ -176,10 +109,6 @@ class SettlementService
         return $settlement;
     }
 
-    /**
-     * Only a draft may be discarded. A confirmed run is an accounting document
-     * and deleting it would silently reopen a closed period.
-     */
     public function deleteDraft(Settlement $settlement): void
     {
         if ($settlement->isConfirmed()) {
@@ -189,12 +118,6 @@ class SettlementService
         $settlement->delete();
     }
 
-    /**
-     * The day the open period starts: the day after the last CONFIRMED run, or
-     * the first money movement on record if nothing has ever been settled.
-     * Drafts deliberately do not move this - an unconfirmed run has not closed
-     * anything.
-     */
     public function nextPeriodStart(): Carbon
     {
         $last = Settlement::query()
@@ -215,21 +138,8 @@ class SettlementService
         return ($earliest ?? Carbon::today())->copy()->startOfDay();
     }
 
-    /**
-     * Runs the arithmetic over a window without persisting anything.
-     *
-     * @return array<string, mixed>
-     */
     private function compute(Carbon $from, Carbon $to): array
     {
-        // HALF-OPEN window [start, end), never an inclusive BETWEEN.
-        //
-        // `expenses.date` is cast to `date` on the model, so Eloquent writes it
-        // as "Y-m-d H:i:s". On sqlite that column is TEXT, so an inclusive
-        // upper bound of "2026-01-31" compares as a STRING against the stored
-        // "2026-01-31 00:00:00" and loses - silently dropping the last day of
-        // every period. A half-open range is immune to that, and to the same
-        // problem with sub-second precision on the two `created_at` columns.
         $windowStart = $from->copy()->startOfDay();
         $windowEnd = $to->copy()->startOfDay()->addDay();
 
@@ -238,7 +148,6 @@ class SettlementService
             ->where('created_at', '<', $windowEnd)
             ->sum('amount');
 
-        // Expenses carry their own back-datable date column.
         $totalExpenses = (float) Expense::query()
             ->where('date', '>=', $windowStart->toDateString())
             ->where('date', '<', $windowEnd->toDateString())
@@ -246,7 +155,6 @@ class SettlementService
 
         $distributable = round($totalPayments - $totalExpenses, 2);
 
-        // One grouped query rather than a withdrawal sum per partner.
         $drawnByPartner = Withdrawal::query()
             ->where('created_at', '>=', $windowStart)
             ->where('created_at', '<', $windowEnd)
@@ -278,7 +186,6 @@ class SettlementService
             $totalDrawn = round($totalDrawn + $drawn, 2);
         }
 
-        // Residual, not its own percentage sum - see the class docblock.
         $retained = round($distributable - $totalEntitlement, 2);
         $totalNet = round($totalEntitlement - $totalDrawn, 2);
 
@@ -293,19 +200,12 @@ class SettlementService
             'totalNet' => $totalNet,
             'retained' => $retained,
             'percentageTotal' => round($partners->sum(fn (Partner $p) => (float) $p->percentage), 2),
-            // Guards the identity the page states out loud. Held by
-            // construction; asserted so a future change to the rounding cannot
-            // break it unnoticed.
+
             'reconciles' => abs(($totalNet + $retained) - ($distributable - $totalDrawn)) < 0.01,
             'lines' => $lines,
         ];
     }
 
-    /**
-     * `MQ-2026-0001`, sequential within the period's year. Runs inside
-     * create()'s transaction, and `settlements.reference` is UNIQUE, so a
-     * concurrent duplicate fails loudly instead of silently reusing a number.
-     */
     private function nextReference(Carbon $periodTo): string
     {
         $year = $periodTo->year;

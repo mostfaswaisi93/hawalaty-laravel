@@ -4,14 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * The columns the legacy-bank migration fills.
- *
- * `transfers.account_id` / `change_account_id` are the new Account links; the old
- * `bank_id` / `change_bank_id` stay beside them so historical receipts keep
- * resolving. `accounts.legacy_bank_id` gives provenance, idempotency and the
- * backfill join. Data moves in the next migration.
- */
 return new class extends Migration
 {
     public function up(): void

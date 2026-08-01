@@ -7,11 +7,6 @@ use App\Models\Tenant\Expense;
 use App\Services\Tenant\ExpenseService;
 use Tests\TenantTestCase;
 
-/**
- * Regression coverage for ExpenseService: standard CRUD, the SoftDeletes
- * behavior of delete(), the Expense::bank() withTrashed() relation surviving
- * a soft-deleted Bank, and list() search + pagination.
- */
 class ExpenseServiceTest extends TenantTestCase
 {
     private function service(): ExpenseService
@@ -71,8 +66,6 @@ class ExpenseServiceTest extends TenantTestCase
         $bank = Account::factory()->create(['holder_name' => 'بنك محذوف']);
         $expense = Expense::factory()->create(['account_id' => $bank->id]);
 
-        // Bypasses BankService::delete()'s history guard on purpose - this
-        // test targets the withTrashed() relation, not the guard.
         $bank->delete();
 
         $reloaded = Expense::find($expense->id);

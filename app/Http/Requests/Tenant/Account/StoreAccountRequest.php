@@ -12,20 +12,12 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-/**
- * Creating an account. `kind` decides which side is required: a bank account
- * needs a bank + account type; a wallet account needs a wallet + wallet type +
- * wallet phone. Both need a currency, and that currency must be one the chosen
- * bank/wallet supports (checked in withValidator).
- *
- * whatsapp_phone is normalised to E.164 here (as banks did) - it is the number
- * order notifications are sent to.
- */
 class StoreAccountRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Gated in AccountController::canManage().
+        return true;
+
     }
 
     protected function prepareForValidation(): void
@@ -49,26 +41,18 @@ class StoreAccountRequest extends FormRequest
             'whatsapp_phone' => ['nullable', 'string', 'max:20', 'regex:/^\+[1-9]\d{7,14}$/'],
             'opening_balance' => ['nullable', 'numeric', 'between:-9999999999999,9999999999999'],
 
-            // Bank accounts.
             'bank_name_id' => ['nullable', 'required_if:kind,bank', 'string', Rule::exists('tenant.bank_names', 'id')],
             'account_type_id' => ['nullable', 'required_if:kind,bank', 'string', Rule::exists('tenant.account_types', 'id')],
             'iban' => ['nullable', 'string', 'max:50'],
 
-            // Wallet accounts.
             'wallet_name_id' => ['nullable', 'required_if:kind,wallet', 'string', Rule::exists('tenant.wallet_names', 'id')],
             'wallet_type_id' => ['nullable', 'required_if:kind,wallet', 'string', Rule::exists('tenant.wallet_types', 'id')],
             'wallet_phone' => ['nullable', 'required_if:kind,wallet', 'string', 'max:30'],
 
-            // Cash accounts - a drawer, and nothing else.
             'cash_box_id' => ['nullable', 'required_if:kind,cash', 'string', Rule::exists('tenant.cash_boxes', 'id')],
         ];
     }
 
-    /**
-     * The currency must be one the chosen bank/wallet actually supports -
-     * otherwise the account could not receive money in a currency its
-     * institution doesn't hold.
-     */
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
@@ -87,7 +71,8 @@ class StoreAccountRequest extends FormRequest
             };
 
             if ($institution === null) {
-                return; // The required_if rules already flagged the missing institution.
+                return;
+
             }
 
             if (! $institution->currencies()->whereKey($currencyId)->exists()) {

@@ -33,9 +33,6 @@
         @else
             <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($packages as $package)
-                    {{-- المفاتيح المعروفة تُملأ في الصناديق، وما تبقّى يعود إلى
-                         مربّع النص الحر — وإلا فقد المستخدم مزاياه المخصّصة عند
-                         أول عملية تعديل. --}}
                     @php
                         $allFeatures = $package->features ?? [];
                         $knownKeys = array_column(\App\Enums\PackageFeature::cases(), 'value');
@@ -80,13 +77,8 @@
             <x-table-footer :paginator="$packages" :perPage="$perPage" />
         @endif
 
-        {{-- add / edit modal --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
-            {{-- aria-labelledby + the focus watcher, matching every other modal
-                 in the app: an unnamed dialog is announced as just "dialog", and
-                 one that never moves focus leaves a keyboard user still on the
-                 page behind it. --}}
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true" aria-labelledby="package-modal-title"
                 x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
@@ -97,9 +89,6 @@
                     @csrf
                     <template x-if="mode === 'edit'"><input type="hidden" name="_method" value="PUT"></template>
                     <div class="space-y-1.5">
-                        {{-- for/id pairs throughout: a bare <label> beside an input
-                             looks right and names nothing, so a screen reader reads
-                             the field as unlabelled. --}}
                         <label for="package-name" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم الباقة') }}</label>
                         <input id="package-name" name="name" x-model="form.name" required class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                     </div>
@@ -113,9 +102,6 @@
                             <input id="package-device-limit" type="number" min="0" name="deviceLimit" x-model="form.deviceLimit" required dir="ltr" placeholder="0" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
-                    {{-- المزايا التي يبني عليها التطبيق فعليًا: تُعرض كصناديق
-                         اختيار حتى لا يُكتب المفتاح يدويًا، وخطأ حرف واحد
-                         ("whatsap") يترك الميزة مقفلة دون أي رسالة خطأ. --}}
                     <div class="space-y-1.5">
                         <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('المزايا المفعَّلة') }}</span>
                         <div class="grid grid-cols-1 gap-1.5 sm:grid-cols-2">

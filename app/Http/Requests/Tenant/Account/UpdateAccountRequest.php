@@ -12,17 +12,12 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * Editing an account. `kind` and `currency` are fixed at creation (the ledger
- * is denominated in that currency), so neither is here; the required fields
- * follow the account's existing kind. A changed bank/wallet must still support
- * the account's currency (withValidator).
- */
 class UpdateAccountRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Gated in AccountController::canManage().
+        return true;
+
     }
 
     protected function prepareForValidation(): void

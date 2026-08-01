@@ -8,11 +8,6 @@ use App\Services\Tenant\AccountService;
 use Illuminate\Validation\ValidationException;
 use Tests\TenantTestCase;
 
-/**
- * Phase 2b - the ledger. The running balance is the whole point: debit adds,
- * credit subtracts, every entry stores the balance after it, and the account's
- * cached balance always equals the last entry.
- */
 class AccountServiceTest extends TenantTestCase
 {
     private function service(): AccountService
@@ -154,7 +149,7 @@ class AccountServiceTest extends TenantTestCase
         $this->assertSame('اسم جديد', $fresh->holder_name);
         $this->assertSame('PS999', $fresh->iban);
         $this->assertNull($fresh->wallet_name_id);
-        // currency + kind are immutable on edit.
+
         $this->assertNotNull($fresh->currency_id);
         $this->assertSame($account->currency_id, $fresh->currency_id);
     }

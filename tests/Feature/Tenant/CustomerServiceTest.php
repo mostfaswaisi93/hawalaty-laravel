@@ -10,14 +10,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Tests\TenantTestCase;
 
-/**
- * Regression coverage for CustomerService.
- *
- * The identity rule is the important part: a customer IS a phone number. Name
- * matching was wrong both ways - it merged two different people who shared a
- * name, and it split one person whose name was typed two ways. Several tests
- * below pin both directions.
- */
 class CustomerServiceTest extends TenantTestCase
 {
     private function service(): CustomerService
@@ -34,10 +26,6 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame(1, Customer::count());
     }
 
-    /**
-     * IDENTITY IS THE PHONE. Two different people can share a name; they cannot
-     * share a number.
-     */
     public function test_the_same_phone_is_the_same_customer_even_with_a_different_name(): void
     {
         $existing = Customer::factory()->create(['name' => 'محمد خالد', 'phone' => '0599222222']);
@@ -48,7 +36,6 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame(1, Customer::count());
     }
 
-    /** The converse: a shared name must NOT merge two different numbers. */
     public function test_the_same_name_on_a_different_phone_is_a_different_customer(): void
     {
         $first = $this->service()->findOrCreate('أحمد', '0599000001');
@@ -58,10 +45,6 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame(2, Customer::count());
     }
 
-    /**
-     * The name is a LABEL on the number, so the latest spelling wins - fixing a
-     * typo on a new order corrects the record instead of forking it.
-     */
     public function test_a_corrected_name_updates_the_record_rather_than_duplicating_it(): void
     {
         $this->service()->findOrCreate('احمد محمد', '0599333333');
@@ -79,10 +62,6 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame('سارة علي', $customer->fresh()->name);
     }
 
-    /**
-     * With no phone there is nothing to identify, so no half-record is created.
-     * The order still carries the typed name in `transfers.customer`.
-     */
     public function test_no_customer_is_created_without_a_phone(): void
     {
         $this->assertNull($this->service()->findOrCreate('زبون عابر'));
@@ -103,11 +82,6 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame(1, Customer::count());
     }
 
-    /**
-     * The lookup-then-insert is not atomic, so the UNIQUE index on `phone` is
-     * what turns a concurrent double-insert into a catchable error rather than a
-     * silent duplicate that splits the customer's history.
-     */
     public function test_a_duplicate_phone_insert_is_rejected_by_the_database(): void
     {
         Customer::create(['name' => 'أول', 'phone' => '0599888888']);
@@ -162,10 +136,6 @@ class CustomerServiceTest extends TenantTestCase
         $this->assertSame([$byPhone->id], $result->getCollection()->pluck('id')->all());
     }
 
-    /**
-     * find() must NOT eager-load transfers - it returns SQL aggregates, and the
-     * orders come back paginated from transfersFor().
-     */
     public function test_find_returns_aggregates_without_loading_every_transfer(): void
     {
         $customer = Customer::factory()->create();

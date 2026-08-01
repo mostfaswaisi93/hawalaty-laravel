@@ -3,14 +3,6 @@
 <head>
     <meta charset="utf-8">
     <style>
-        {{-- dompdf: no external stylesheets/fonts - everything must be inline
-             and use a font it ships with (DejaVu Sans covers Arabic + Latin
-             correctly, verified). Meta rows are STACKED <div> blocks, not a
-             two-column <table> - dompdf's table column-width calculation
-             reliably clips the last few characters of narrow-column cell
-             content regardless of page width (verified: identical clipping
-             on an 80mm receipt AND a full A4 page), so single-column block
-             flow is used for anything that isn't genuinely tabular. --}}
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1a1a1a; }
         .receipt { width: 100%; padding: 4mm; }
@@ -25,12 +17,6 @@
         .items-label { font-size: 9px; color: #666; padding-bottom: 1mm; border-bottom: 1px solid #ccc; margin-bottom: 2mm; }
         .item-row { margin-bottom: 2mm; }
         .item-name { font-size: 10px; }
-        {{-- dompdf clips the trailing character(s) of any text-align:end line
-             when the content sits flush against the container edge (verified:
-             the ₪ symbol specifically vanished at the end of these lines,
-             confirmed via raw-HTML inspection that Blade emits it correctly
-             - dompdf drops it at render time). A small end-side padding
-             buffer reliably prevents it. --}}
         .item-detail { font-size: 10px; color: #444; text-align: {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}; padding-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 3mm; }
         .total-row td { padding-top: 2mm; font-size: 13px; font-weight: bold; }
         .amount-cell { padding-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 3mm; text-align: {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}; }

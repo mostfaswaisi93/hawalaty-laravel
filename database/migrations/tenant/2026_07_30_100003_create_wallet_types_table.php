@@ -4,12 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 2a - reference catalogs.
- *
- * Wallet types the tenant defines themselves (تجارية، شخصية...). A wallet
- * Account (Phase 2b) picks one of these.
- */
 return new class extends Migration
 {
     public function up(): void

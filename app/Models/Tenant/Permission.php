@@ -9,11 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/**
- * Lives inside every tenant database (physical DB-per-tenant) - the 7 fixed
- * rows from App\Enums\PermissionKey are seeded here at provisioning time.
- * See BACKEND_PROMPT.md section 4.
- */
 #[Fillable(['key'])]
 class Permission extends Model
 {

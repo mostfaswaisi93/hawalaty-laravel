@@ -29,10 +29,6 @@ class TransferService
         private readonly AccountService $accounts,
     ) {}
 
-    /**
-     * Backs both /transfers and /history (see BACKEND_PROMPT.md section 7 -
-     * History is "same as transfers with wider filters + pagination").
-     */
     public function list(array $filters): LengthAwarePaginator
     {
         $query = Transfer::query()->with(['lineItems', 'account', 'changeAccount']);
@@ -47,9 +43,6 @@ class TransferService
             $query->where('payment_method', $filters['paymentMethod']);
         }
 
-        // A plain >=/<= comparison (vs whereDate()'s DATE(created_at) wrap)
-        // lets MySQL use the index on created_at instead of forcing a full
-        // scan to evaluate the function on every row.
         if (! empty($filters['from'])) {
             $query->where('created_at', '>=', "{$filters['from']} 00:00:00");
         }
@@ -68,18 +61,6 @@ class TransferService
         return Transfer::with(['lineItems', 'account', 'changeAccount'])->findOrFail($id);
     }
 
-    /**
-     * Creates the Transfer + its TransferLineItems in one DB::transaction().
-     * `amount` is always computed server-side as the sum of quantity ×
-     * price across line items - a client-sent total is never trusted.
-     *
-     * The per-line `name`/`price` are likewise never trusted from the
-     * client: StoreTransferRequest only validates that each `itemId` exists,
-     * not that the submitted price matches it, so a caller holding only
-     * TransfersCreate could otherwise report an arbitrary price for a real
-     * menu item and skew revenue. Every line is priced from the canonical
-     * MenuItem row instead - the client's `price`/`name` are ignored.
-     */
     public function create(array $data): Transfer
     {
         $transfer = DB::transaction(function () use ($data) {
@@ -94,12 +75,6 @@ class TransferService
                 $summaryParts[] = "{$menuItem->name} ×{$item['quantity']}";
             }
 
-            // Null when the order carries no phone: identity is the number, so
-            // there is nothing to link to. `customer` below still records the
-            // typed name either way, and customer_id is already nullable.
-            // The discount can never exceed what was ordered: `amount` is what
-            // the customer owes, and a negative one would fail the DB's own
-            // non-negative CHECK.
             $discount = min(max((float) ($data['discount'] ?? 0), 0), $amount);
 
             $customer = $this->customers->findOrCreate($data['customer'], $data['customerPhone'] ?? null);
@@ -111,28 +86,22 @@ class TransferService
                 'amount' => $amount - $discount,
                 'discount' => $discount,
                 'item_name' => implode('، ', $summaryParts),
-                // Whatever the order screen assembled from the tenant's constant
-                // lists, plus anything typed by hand. Stored as the text it will be
-                // printed as - see the migration for why it is not normalised.
+
                 'notes' => filled($data['notes'] ?? null) ? trim($data['notes']) : null,
                 'payment_method' => $data['paymentMethod'],
                 'has_change' => $data['hasChange'] ?? null,
                 'change_method' => $data['changeMethod'] ?? null,
                 'change_account_id' => $data['changeAccountId'] ?? null,
                 'change_amount' => $data['changeAmount'] ?? null,
-                // The account this order posts to, and posts its ledger entry against.
+
                 'account_id' => $data['accountId'] ?? null,
                 'sender_name' => $data['senderName'] ?? null,
                 'sender_phone' => $data['senderPhone'] ?? null,
                 'transferred_amount' => $data['transferredAmount'] ?? null,
                 'reference_number' => $data['referenceNumber'] ?? null,
-                // Whoever raised the order, so the bank owner's later
-                // confirmation notifies exactly this person - null on the API/
-                // sync paths that carry no logged-in team member.
+
                 'created_by' => auth('tenant')->id(),
-                // Only a bank/wallet order is confirmable, so only it gets a
-                // token. 48 random chars is the unguessable credential the
-                // public confirmation link carries.
+
                 'confirmation_token' => ($data['paymentMethod'] ?? null) === 'bank' ? Str::random(48) : null,
             ]);
 
@@ -151,11 +120,6 @@ class TransferService
             return $transfer;
         });
 
-        // customerProfile carries the customer's phone, which the account owner
-        // needs to reach them; it is null when the order captured no phone (see
-        // CustomerService::findOrCreate). `account` carries the whatsapp_phone the
-        // notification is sent to, and its institution relations let
-        // NewOrderMessage name it ("<bank> - <holder>") without a lazy load.
         $transfer->load([
             'lineItems', 'changeAccount', 'customerProfile',
             'account.bankName', 'account.walletName',
@@ -165,17 +129,6 @@ class TransferService
 
         Notification::send($this->teammatesToNotify(), new NewOrderNotification($transfer));
 
-        // Notifies the bank/wallet the operator selected, when the order was
-        // paid by transfer. All the "should this send at all?" rules live in
-        // the sender; this call is unconditional on purpose.
-        //
-        // The catch is mandatory. The transfer is already committed by this
-        // point, so an escaping exception would 500 the operator on an order
-        // that persisted - and on the offline-sync path SyncService::push()'s
-        // catch(Throwable) would mark the event failed and force the client to
-        // re-push it. It would NOT roll the order back: the DB::transaction()
-        // above runs on the default (platform) connection while Transfer and
-        // TransferLineItem live on `tenant`.
         try {
             $this->whatsapp->sendNewOrder($transfer);
         } catch (Throwable $e) {
@@ -189,16 +142,6 @@ class TransferService
         return $transfer;
     }
 
-    /**
-     * Posts the order to the accounting ledger: an order is a movement on the
-     * chosen account, not just a row in `transfers`.
-     *
-     * Directions follow balance = Σdebit − Σcredit:
-     *  - money arriving in the account the customer transferred to is a DEBIT;
-     *  - change paid back out of an account is a CREDIT.
-     *
-     * A cash order names no account and so moves no ledger.
-     */
     private function postLedgerEntries(Transfer $transfer): void
     {
         $label = __('طلب').' - '.$transfer->customer;
@@ -231,8 +174,6 @@ class TransferService
 
         AuditLogger::record(AuditAction::Updated, AuditEntityType::Order, $transfer->id, AuditCategory::Transfers);
 
-        // Only a completed/failed transition is a meaningful update to
-        // announce - pending is just the default state at creation.
         if (in_array($transfer->status, [TransferStatus::Completed, TransferStatus::Failed], true)) {
             Notification::send($this->teammatesToNotify(), new OrderStatusChangedNotification($transfer));
         }
@@ -240,12 +181,6 @@ class TransferService
         return $transfer;
     }
 
-    /**
-     * Every active team member except whoever is performing the action
-     * (avoids notifying someone about their own order/status change).
-     *
-     * @return Collection<int, TeamMember>
-     */
     private function teammatesToNotify(): Collection
     {
         $actorId = auth('tenant')->id();

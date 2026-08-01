@@ -19,9 +19,7 @@ class StoreWithdrawalRequest extends FormRequest
     {
         return [
             'boxId' => ['required', 'string', 'exists:boxes,id'],
-            // `min:0.01` bounds it from below only. The upper bound is the
-            // box's own balance, which no static rule can express - see the
-            // trait.
+
             'amount' => ['required', 'numeric', 'min:0.01'],
             'partnerId' => ['required', 'string', 'exists:partners,id'],
         ];

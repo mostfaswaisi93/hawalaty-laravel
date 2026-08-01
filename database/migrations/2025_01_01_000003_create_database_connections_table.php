@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedInteger('port')->default(3306);
             $table->string('database_name');
             $table->string('username');
-            // Encrypted at the Eloquent cast layer (see App\Models\DatabaseConnection) - never plain text at rest.
+
             $table->text('password');
             $table->timestamps();
         });

@@ -41,8 +41,7 @@ class TeamController extends Controller
         return view('team.index', [
             'members' => $this->service->paginate($search, $perPage),
             'roles' => $this->roles->list(),
-            // Unpaginated: this fills the "paid from" select on the salary form,
-            // where a page of 20 would hide accounts.
+
             'accounts' => $this->activeAccounts(),
             'salaryHistory' => $this->salaries->history(perPage: 10),
             'search' => $search,
@@ -50,10 +49,6 @@ class TeamController extends Controller
         ]);
     }
 
-    /**
-     * Sets a member's agreed pay rate. Only a default for the payment form -
-     * see UpdateSalaryRequest.
-     */
     public function updateSalary(UpdateSalaryRequest $request, string $member): RedirectResponse
     {
         abort_unless($this->canManage(), 403);
@@ -69,10 +64,6 @@ class TeamController extends Controller
         return redirect()->route('team.index')->with('success', __('تم تحديث الراتب.'));
     }
 
-    /**
-     * Records a salary payment. The service writes the matching expense in the
-     * same transaction, which is what puts it in المصروفات and the reports.
-     */
     public function paySalary(PaySalaryRequest $request, string $member): RedirectResponse
     {
         abort_unless($this->canManage(), 403);
@@ -92,8 +83,6 @@ class TeamController extends Controller
         return redirect()->route('team.index')->with('success', __('تمت إضافة العضو بنجاح.'));
     }
 
-    // Route param name is {teamMember} so UpdateTeamMemberRequest's
-    // Rule::unique()->ignore($this->route('teamMember')) excludes this row.
     public function update(UpdateTeamMemberRequest $request, string $teamMember): RedirectResponse
     {
         abort_unless($this->canManage(), 403);
@@ -108,8 +97,6 @@ class TeamController extends Controller
         abort_unless($this->canManage(), 403);
 
         try {
-            // delete() guards against removing yourself / the last owner and
-            // throws ValidationException with an Arabic-friendly message.
             $this->service->delete(auth('tenant')->user(), TeamMember::findOrFail($teamMember));
         } catch (ValidationException $e) {
             return redirect()->route('team.index')->with('error', $e->validator->errors()->first());

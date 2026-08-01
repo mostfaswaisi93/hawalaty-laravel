@@ -14,10 +14,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-/**
- * The real "User"/login model of tenant space - see BACKEND_PROMPT.md
- * sections 4-5 and D:\Angular\Hawalaty\src\app\data\team-members.ts.
- */
 #[Fillable(['name', 'email', 'password', 'role_id', 'active', 'salary_amount', 'salary_period'])]
 #[Hidden(['password', 'remember_token'])]
 class TeamMember extends Authenticatable
@@ -54,19 +50,11 @@ class TeamMember extends Authenticatable
         return $this->hasMany(SalaryPayment::class);
     }
 
-    /** A rate is only usable once BOTH the amount and its period are set. */
     public function hasSalary(): bool
     {
         return $this->salary_amount !== null && $this->salary_period !== null;
     }
 
-    /**
-     * Named hasPermission() rather than can() because TeamMember extends
-     * Illuminate\Foundation\Auth\User, which already defines can() via the
-     * Authorizable trait for Gate/Policy checks - a same-named method here
-     * would silently shadow it (a mistake made and caught in the earlier
-     * prototype at D:\Angular\Hawalaty_Laravel).
-     */
     public function hasPermission(PermissionKey|string $key): bool
     {
         $value = $key instanceof PermissionKey ? $key->value : $key;

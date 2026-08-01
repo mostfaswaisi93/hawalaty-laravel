@@ -1,8 +1,6 @@
 @php
     $admin = auth('admin')->user();
 
-    // Grouped so a 10-item rail reads as three short scannable blocks instead
-    // of one long undifferentiated list. Group labels hide when collapsed.
     $navGroups = [
         [
             'label' => 'عام',
@@ -33,8 +31,6 @@
         ],
     ];
 
-    // Drives the header breadcrumb - resolved from the same nav table so the
-    // two can never drift apart.
     $currentSection = null;
     $currentGroup = null;
     foreach ($navGroups as $group) {
@@ -50,13 +46,6 @@
     $otherLocale = app()->getLocale() === 'ar' ? 'en' : 'ar';
 @endphp
 <!DOCTYPE html>
-{{--
-    `collapsed` drives the desktop icon-only rail, persisted across navigation
-    and gated behind `lg:` - below that the sidebar is a full-label overlay.
-
-    One shared position-fixed tooltip: per-item absolute bubbles got clipped by
-    the nav's `overflow-y-auto` and added a horizontal scrollbar.
---}}
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="lang-{{ app()->getLocale() }}"
     x-data="{
         dark: localStorage.getItem('theme') === 'dark',
@@ -99,20 +88,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{-- The suffix is the `site_name` platform setting (/admin/settings), so an
-         operator can brand the portal tab without a deploy. --}}
     <title>@yield('title', __('لوحة التحكم')) · {{ app(\App\Settings\PlatformSettings::class)->get('site_name') }}</title>
 
-    {{-- No favicon was declared anywhere, so browsers fell back to probing /favicon.ico
-         and showed the generic page glyph. The SVG is the same wallet mark as <x-logo>. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
-    {{-- PNG, not SVG: iOS ignores SVG for the home screen. --}}
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    {{-- No manifest here on purpose. The platform console is a desk tool; the
-         installable app is the tenant workspace, and pointing an install at
-         /dashboard from here would open the wrong one. --}}
     <meta name="theme-color" content="#00236f">
     <x-fonts />
 
@@ -130,10 +111,7 @@
             collapsed ? 'lg:w-[5.5rem]' : 'lg:w-64',
         ]">
 
-        {{-- Brand + collapse toggle --}}
         <div class="mb-6 flex items-center gap-3 px-inline-md" :class="collapsed && 'lg:justify-center lg:px-2'">
-            {{-- The mark doubles as the home link, so it gets the same hover
-                 affordance and tooltip as every other icon in the rail. --}}
             <a href="{{ route('admin.dashboard') }}"
                 @mouseenter="showTip($el, @js(__('حوالاتي')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('حوالاتي')))" @blur="hideTip()"
@@ -145,8 +123,6 @@
                 <span class="block font-display-lg text-2xl font-bold leading-tight text-on-sidebar">{{ __('حوالاتي') }}</span>
                 <p class="font-body-sm text-body-sm text-on-sidebar-muted">{{ __('المشرف العام') }}</p>
             </div>
-            {{-- Given a container, border and fill-on-hover so it reads as a real
-                 control rather than a stray glyph next to the brand. --}}
             <button type="button" @click="collapsed = !collapsed"
                 @mouseenter="showTip($el, @js(__('طي القائمة')))" @mouseleave="hideTip()"
                 @focus="showTip($el, @js(__('طي القائمة')))" @blur="hideTip()"
@@ -157,8 +133,6 @@
             </button>
         </div>
 
-        {{-- When collapsed the toggle moves to its own centered row so the brand
-             block does not have to reserve width for it. --}}
         <div class="mb-2 hidden justify-center px-2" :class="collapsed ? 'lg:flex' : 'lg:hidden'">
             <button type="button" @click="collapsed = !collapsed"
                 @mouseenter="showTip($el, @js(__('توسيع القائمة')))" @mouseleave="hideTip()"
@@ -169,15 +143,11 @@
             </button>
         </div>
 
-        {{-- overflow-x-hidden is explicit: overflow-y-auto alone would compute the
-             x axis to `auto` and show a stray horizontal scrollbar. --}}
         <nav class="flex-1 scroll-smooth space-y-1 overflow-y-auto overflow-x-hidden px-inline-md" :class="collapsed && 'lg:px-2'">
             @foreach ($navGroups as $group)
                 <p class="px-4 pb-1 pt-4 font-label-caps text-label-caps uppercase tracking-wider text-on-sidebar-muted"
                     :class="collapsed && 'lg:hidden'">{{ __($group['label']) }}</p>
 
-                {{-- Collapsed: a hairline stands in for the hidden group heading so
-                     the three blocks stay visually separated in the icon rail. --}}
                 <div class="mx-3 hidden border-t border-sidebar-border" :class="collapsed ? 'lg:mt-3 lg:block' : 'lg:hidden'"></div>
 
                 @foreach ($group['items'] as $item)
@@ -196,9 +166,6 @@
             @endforeach
         </nav>
 
-        {{-- Identity and sign-out are stacked rather than crammed into one row:
-             sharing the row with the logout button left the name ~110px and it
-             truncated to "...tform Admin". On its own row it gets the full rail. --}}
         <div class="mt-auto border-t border-sidebar-border px-inline-md pt-4" :class="collapsed && 'lg:px-2'">
             <a href="{{ route('admin.profile.index') }}"
                 @mouseenter="showTip($el, @js($admin?->name ?? ''))" @mouseleave="hideTip()"
@@ -209,19 +176,12 @@
                 <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-sidebar-accent/15 font-bold text-sidebar-accent ring-1 ring-sidebar-accent/30">
                     {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                 </span>
-                {{-- dir=auto so a Latin name ellipsises at its own end rather than
-                     having the RTL container push the "…" to the visual start. --}}
                 <span class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
-                    {{-- Bidi goes on the inner span, never the block: `dir` on a block
-                         sets its text-align too, so an Arabic name (dir=auto -> rtl)
-                         and an email (dir=ltr) ended up aligned to OPPOSITE edges of
-                         the same two-line stack. --}}
                     <span class="block truncate text-start font-body-sm text-body-sm font-bold text-on-sidebar"><span dir="auto">{{ $admin?->name }}</span></span>
                     <span class="block truncate text-start font-body-sm text-[11px] text-on-sidebar-muted"><span dir="ltr">{{ $admin?->email }}</span></span>
                 </span>
             </a>
 
-            {{-- Confirmed: a stray click here ends the admin session outright. --}}
             <form method="POST" action="{{ route('admin.logout') }}" id="admin-logout-form">@csrf</form>
             <button
                 type="button"
@@ -240,9 +200,6 @@
     <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface/85 px-inline-lg backdrop-blur">
             <div class="flex min-w-0 items-center gap-3">
-                {{-- See layouts/app.blade.php: `pointer: fine` keeps this to a narrow
-                     desktop window, and `hideTip()` on click stops the bubble hanging
-                     over the rail that is about to slide across this button. --}}
                 <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="hideTip(); sidebarOpen = !sidebarOpen"
                     @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
@@ -250,8 +207,6 @@
                     <span class="material-symbols-outlined">menu</span>
                 </button>
 
-                {{-- Breadcrumb: group › page, resolved from the nav table above so the
-                     header always names where you actually are. --}}
                 @if ($currentSection)
                     <nav class="flex min-w-0 items-center gap-2" aria-label="{{ __('مسار التنقل') }}">
                         <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -266,7 +221,6 @@
             </div>
 
             <div class="flex flex-shrink-0 items-center gap-1">
-                {{-- Server-rendered so it needs no clock script and matches the app locale. --}}
                 <span class="me-2 hidden font-body-sm text-body-sm text-on-surface-variant xl:inline">
                     {{ now()->translatedFormat('l، j F Y') }}
                 </span>
@@ -279,8 +233,6 @@
                     <span class="material-symbols-outlined">space_dashboard</span>
                 </a>
 
-                {{-- The locale code alone carries the meaning; the translate glyph
-                     beside it was pure duplication. --}}
                 <a href="{{ route('locale.switch', $otherLocale) }}"
                     @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
@@ -297,8 +249,6 @@
                     <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                 </button>
 
-                {{-- Account menu. Nested x-data so `open` is scoped to this widget
-                     and cannot collide with the sidebar/search state on the root. --}}
                 <div class="relative ms-1" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
                     <button type="button" @click="open = !open"
                         @mouseenter="showTipBelow($el, @js(__('حساب المشرف')))" @mouseleave="hideTip()"
@@ -314,24 +264,16 @@
                     <div x-show="open" x-cloak style="display:none"
                         class="absolute end-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
                         role="menu">
-                        {{-- Identity header: avatar + name + role, on a tinted panel so it
-                             reads as context rather than a fourth menu row. --}}
                         <div class="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low p-3">
                             <span class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-primary-container font-body-lg text-base font-bold text-on-primary-container">
                                 {{ $admin ? mb_substr($admin->name, 0, 1) : '?' }}
                             </span>
                             <span class="min-w-0 flex-1">
-                                {{-- Surface tokens, NOT the sidebar ones: this dropdown hangs off
-                                     the header on a light surface, so the dark-rail palette would
-                                     render it at ~1.2:1 in light mode. --}}
                                 <span class="block truncate text-start font-body-sm text-body-sm font-bold text-on-surface"><span dir="auto">{{ $admin?->name }}</span></span>
                                 <span class="block truncate text-start font-body-sm text-[11px] text-on-surface-variant"><span dir="ltr">{{ $admin?->email }}</span></span>
                             </span>
                         </div>
 
-                        {{-- Items are inset and individually rounded so the hover state is a
-                             contained pill rather than a full-bleed band. The icon sits in its
-                             own chip, and a chevron fades in on hover to signal navigation. --}}
                         <div class="p-1.5">
                             <a href="{{ route('admin.profile.index') }}" role="menuitem"
                                 class="group flex items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary">
@@ -353,8 +295,6 @@
 
                             <div class="my-1 border-t border-outline-variant/60"></div>
 
-                            {{-- Reuses the layout-level confirm modal; the form itself lives
-                                 in the sidebar footer, referenced here by id. --}}
                             <button type="button" role="menuitem"
                                 @click="open = false; confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'admin-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
                                 class="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-error transition-colors hover:bg-error/10">
@@ -369,9 +309,6 @@
             </div>
         </header>
 
-        {{-- Full width, matching layouts/app.blade.php - see the note there on
-             why the max-w cap was removed. --}}
-        {{-- See layouts/app.blade.php for why this is focusable. --}}
         <main id="main-content" tabindex="-1" class="w-full flex-1 p-inline-lg focus:outline-none">
             <x-flash-messages />
             @yield('content')
@@ -380,19 +317,10 @@
         <x-app-footer />
     </div>
 
-    {{-- Layout-level so the sidebar's logout can reach it from any page. Pages
-         with their own delete confirmations declare a nested x-data that
-         shadows these roots, so the two never collide. --}}
     <x-confirm-modal />
 
-    {{-- One shared tooltip. Fixed so no ancestor's overflow clips it, and last in
-         the body so `.page-enter`'s leftover transform cannot paint over it. --}}
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
-        {{-- The translate differs per placement, so it lives in the bound style
-             rather than a utility class. `side` clears whichever sidebar width is
-             active (5.5rem / 16rem); `below` centres on the header control using
-             physical left, which is already direction-correct off getBoundingClientRect. --}}
         :style="tipPlacement === 'side'
             ? `top:${tipTop}px; inset-inline-start:${collapsed ? '6rem' : '17rem'}; transform:translateY(-50%);`
             : `top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"

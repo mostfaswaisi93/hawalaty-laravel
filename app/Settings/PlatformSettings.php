@@ -6,29 +6,14 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
-/**
- * The single way the application reads a platform setting.
- *
- * Settings are read on pages that render on nearly every request (the admin
- * dashboard, the public help/privacy/terms pages), so the whole table is
- * loaded once and cached rather than queried per key. Any write flushes it.
- *
- * Registered as a singleton in AppServiceProvider, so within one request the
- * table is touched at most once even on a cache miss.
- */
 class PlatformSettings
 {
     private const CACHE_KEY = 'platform.settings';
 
-    /** @var array<string, string|null>|null */
     private ?array $raw = null;
 
     public function __construct(private readonly SettingRegistry $registry) {}
 
-    /**
-     * A setting's value, cast to its declared type, falling back to the
-     * registry default when unset or blank. Unknown keys return $fallback.
-     */
     public function get(string $key, mixed $fallback = null): mixed
     {
         $definition = $this->registry->find($key);
@@ -46,12 +31,6 @@ class PlatformSettings
         return $definition['type']->cast($stored);
     }
 
-    /**
-     * Every registered setting, cast, with defaults filled in - what the
-     * settings form binds to.
-     *
-     * @return array<string, mixed>
-     */
     public function all(): array
     {
         $values = [];
@@ -63,24 +42,11 @@ class PlatformSettings
         return $values;
     }
 
-    /**
-     * Keys stored in the database that the registry does not know about -
-     * surfaced separately on the settings page so legacy or hand-added keys are
-     * never silently hidden.
-     *
-     * @return array<string, string|null>
-     */
     public function unregistered(): array
     {
         return array_diff_key($this->raw(), $this->registry->all());
     }
 
-    /**
-     * Bulk-saves registered settings. Values are serialised through their
-     * declared type, so a boolean stores "1"/"0" rather than "on".
-     *
-     * @param  array<string, mixed>  $values
-     */
     public function put(array $values): void
     {
         foreach ($values as $key => $value) {
@@ -105,9 +71,6 @@ class PlatformSettings
         Cache::forget(self::CACHE_KEY);
     }
 
-    /**
-     * @return array<string, string|null>
-     */
     private function raw(): array
     {
         if ($this->raw !== null) {
@@ -120,14 +83,6 @@ class PlatformSettings
                 fn () => Setting::query()->pluck('value', 'key')->all(),
             );
         } catch (Throwable) {
-            // Settings are read by the PUBLIC landing, help, privacy and terms
-            // pages. If the table is missing (fresh checkout before migrating)
-            // or the database is briefly unreachable, those pages must still
-            // render on registry defaults rather than 500 - a support address
-            // is not worth taking the marketing site down for.
-            //
-            // Deliberately NOT cached: a transient outage must not pin an empty
-            // result until the cache is flushed by hand.
             return [];
         }
     }

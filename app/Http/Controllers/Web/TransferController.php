@@ -15,14 +15,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Js;
 use Illuminate\View\View;
 
-/**
- * Server-rendered "New Order" builder - same TransferService and
- * StoreTransferRequest as Api\V1\TransferController::store(), just fed by
- * a normal POST from resources/views/transfers/index.blade.php's Alpine
- * cart instead of a JSON body. See that view for the array-input naming
- * convention (items[N][itemId] etc.) the Alpine state serializes into
- * before submit.
- */
 class TransferController extends Controller
 {
     public function __construct(private readonly TransferService $service) {}
@@ -42,9 +34,6 @@ class TransferController extends Controller
             ->filter(fn (MenuCategory $category) => $category->menuItems->isNotEmpty())
             ->values();
 
-        // Phase 2d: the order form now picks an ACCOUNT, not a legacy bank. Both
-        // kinds come down in one list with the fields the picker shows (holder,
-        // institution, type, currency); the form filters by `kind` client-side.
         $accounts = Account::query()
             ->where('active', true)
             ->with(['currency', 'bankName', 'walletName', 'accountType', 'walletType', 'cashBox'])
@@ -64,10 +53,6 @@ class TransferController extends Controller
 
         $customerNames = Customer::query()->orderBy('name')->pluck('name');
 
-        // Handed to Alpine as a JSON blob (x-data="orderBuilder(...)") so the
-        // menu browser/search/category filter runs entirely client-side
-        // without extra requests - see BACKEND_PROMPT-style brief for this
-        // task.
         $menuJson = Js::from(
             $categories->map(fn (MenuCategory $category) => [
                 'id' => $category->id,
@@ -80,15 +65,6 @@ class TransferController extends Controller
             ])->values()
         );
 
-        /*
-         * The tenant's own constant lists, offered on this screen as dropdowns
-         * that fill the order's note. Empty lists are dropped - a heading with
-         * no options underneath is just clutter.
-         *
-         * Loaded here rather than in the view so the query is visible and eager,
-         * and so an account that defined no lists costs one query and renders
-         * nothing extra.
-         */
         $constantLists = ConstantList::with(['items' => fn ($query) => $query->orderBy('position')])
             ->orderBy('title')
             ->get()
@@ -118,17 +94,9 @@ class TransferController extends Controller
 
         $transfer = $this->service->create($request->validated());
 
-        // Straight to the confirmation, not back to an empty form: the operator's
-        // next move is always either "print it" or "take the next order", and
-        // both are one tap from there.
         return redirect()->route('transfers.created', $transfer->id);
     }
 
-    /**
-     * The just-created order, with its two follow-up actions. A page rather
-     * than a flash message because the receipt has to be reachable AFTER the
-     * order is made - a toast that scrolls away takes the print link with it.
-     */
     public function created(string $transfer): View|RedirectResponse
     {
         $member = auth('tenant')->user();

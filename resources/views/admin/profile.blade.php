@@ -3,11 +3,6 @@
 @section('title', __('الملف الشخصي - حوالاتي'))
 
 @section('content')
-    {{--
-        `pw` mirrors UpdateAdminProfileRequest's rules exactly (min 8, mixed case,
-        numbers) so the live checklist can never promise something the server then
-        rejects. If that rule ever changes, change both together.
-    --}}
     <div class="page-enter space-y-6"
         x-data="{
             submitting: false,
@@ -25,20 +20,6 @@
             get mismatch() { return this.confirm.length > 0 && this.pw !== this.confirm; },
         }">
 
-        {{-- ── Identity banner ─────────────────────────────────────────────
-             Fixed-dark in both themes, so its text is literal white rather than
-             surface tokens (which invert).
-
-             Flat `bg-primary-container` rather than a gradient: the two blurred
-             orbs are what give the block depth, so it does not need one. The
-             token is deliberately identical in :root and .dark, so this stays
-             the same deep navy in both themes and the literal `text-white`
-             below is always correct.
-
-             Alignment note: the name/email carry their bidi on an inner <span>,
-             not on the block. Putting `dir` on the block itself made a Latin
-             name left-align while the badges below it stayed start-aligned,
-             so the three lines disagreed with each other. --}}
         <section class="reveal-up relative overflow-hidden rounded-3xl bg-primary-container shadow-xl ring-1 ring-white/10">
             <div class="pointer-events-none absolute -start-20 -top-24 h-72 w-72 rounded-full bg-secondary-container/30 blur-3xl motion-safe:animate-[admin-orb_16s_ease-in-out_infinite]"></div>
             <div class="pointer-events-none absolute -bottom-28 -end-16 h-80 w-80 rounded-full bg-primary-fixed-dim/25 blur-3xl motion-safe:animate-[admin-orb_20s_ease-in-out_infinite_reverse]"></div>
@@ -71,7 +52,6 @@
             @method('PUT')
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
-                {{-- ── Account details ───────────────────────────────────── --}}
                 <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6 lg:col-span-3" style="--d:80ms">
                     <div class="mb-6 flex items-center gap-3">
                         <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -100,7 +80,6 @@
                     </div>
                 </section>
 
-                {{-- ── Security ──────────────────────────────────────────── --}}
                 <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6 lg:col-span-2" style="--d:160ms">
                     <div class="mb-6 flex items-center gap-3">
                         <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
@@ -133,8 +112,6 @@
                             @enderror
                         </div>
 
-                        {{-- Strength meter + checklist, revealed only once the user
-                             starts typing so the resting state stays calm. --}}
                         <div x-show="changing" x-cloak style="display:none" class="space-y-3">
                             <div class="flex gap-1.5" role="presentation">
                                 @for ($i = 1; $i <= 3; $i++)
@@ -179,7 +156,6 @@
                 </section>
             </div>
 
-            {{-- Sticky action bar so Save stays reachable on a long form. --}}
             <div class="reveal-up sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest/90 p-4 shadow-xl backdrop-blur" style="--d:240ms">
                 <p class="hidden font-body-sm text-body-sm text-on-surface-variant sm:block">
                     {{ __('لن تُحفظ التغييرات حتى تضغط حفظ.') }}

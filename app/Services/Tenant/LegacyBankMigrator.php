@@ -9,38 +9,14 @@ use App\Models\Tenant\Currency;
 use App\Models\Tenant\WalletName;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Moves legacy `banks` rows into the accounts model and repoints orders onto
- * them. Lives outside the migration so it can be unit-tested.
- *
- * Rules:
- *  - migrated accounts are denominated in a default شيكل ₪ currency, also marked
- *    supported on each bank/wallet;
- *  - `banks.phone` becomes the account's `whatsapp_phone`, so notifications keep
- *    reaching the same person;
- *  - `transfers.bank_id` / `change_bank_id` are LEFT in place beside the new
- *    account columns, so historical receipts are untouched.
- *
- * Idempotent: matched on `accounts.legacy_bank_id`; the backfill only fills nulls.
- */
 class LegacyBankMigrator
 {
     public function migrate(): void
     {
-        // Nothing to do once the legacy table is gone, or before it exists.
-        //
-        // A plain information_schema SELECT, NOT Schema::hasTable(): the schema
-        // builder's machinery can force an implicit COMMIT of the surrounding
-        // transaction on MySQL, which would break the test harness's per-test
-        // rollback (and defeat this method's own transaction).
         if (! $this->tableExists('banks')) {
             return;
         }
 
-        // Read the legacy banks BEFORE opening the transaction or creating any
-        // default data: with no banks there is nothing to migrate, and creating
-        // the default currency anyway would leak a committed row into an
-        // otherwise-empty database (e.g. a fresh migrate on a brand-new tenant).
         $legacyBanks = DB::connection('tenant')->table('banks')->get();
 
         if ($legacyBanks->isEmpty()) {
@@ -86,7 +62,6 @@ class LegacyBankMigrator
 
     private function defaultCurrency(): Currency
     {
-        // A literal, not __(): a currency name is stored data, not UI copy.
         return Currency::firstOrCreate(
             ['name' => 'شيكل'],
             ['symbol' => '₪', 'active' => true],
@@ -100,10 +75,6 @@ class LegacyBankMigrator
         return $model::firstOrCreate(['name' => $name], ['active' => true]);
     }
 
-    /**
-     * Point each order at the account its legacy bank became. Multi-table
-     * UPDATE joined on the provenance column; only unfilled links are touched.
-     */
     private function backfillTransfers(): void
     {
         DB::connection('tenant')->statement(

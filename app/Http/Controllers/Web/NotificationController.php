@@ -8,19 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Backs BOTH the header bell-icon dropdown (JSON) and the full notifications
- * page (Blade). The bell fetches `/notifications` with `Accept: application/json`
- * (see resources/js/app.js), so the same route serves the compact JSON feed to
- * the bell and the full paginated page to a normal browser visit - no separate
- * route, and the bell's fetch is untouched.
- *
- * TeamMember already uses Notifiable, so ->notifications()/->unreadNotifications()
- * come from the framework for free.
- */
 class NotificationController extends Controller
 {
-    /** How many the bell peeks at; the full page paginates instead. */
     private const BELL_LIMIT = 10;
 
     public function index(Request $request): JsonResponse|View

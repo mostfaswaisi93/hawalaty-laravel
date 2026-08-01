@@ -1,4 +1,3 @@
-{{-- Supported-currency chips for a bank / wallet / cash box row. --}}
 @if ($item->currencies->isEmpty())
     <span class="font-body-sm text-outline">{{ __('لا عملات') }}</span>
 @else

@@ -4,9 +4,6 @@
 
 @section('content')
     <section class="flex items-center justify-center bg-surface px-inline-md py-10 lg:px-24">
-        {{-- `submitting` gates the button's spinner and its disabled state. Sign-in
-             hits the tenant connection resolver and can take a moment, and without
-             feedback the form looked inert - so it was double-submitted. --}}
         <div class="w-full max-w-md" x-data="{ submitting: false }">
             <div class="reveal-up mb-8">
                 <h1 class="mb-2 font-display-lg text-display-lg text-primary">{{ __('مرحباً بعودتك') }}</h1>
@@ -70,14 +67,7 @@
                 <button
                     type="submit"
                     :disabled="submitting"
-                    {{-- `!opacity-60`, unlike the admin login's plain utility: this
-                         form carries `.stagger`, whose `reveal-up` runs with
-                         fill-mode:both, and an animation's value outranks a normal
-                         author declaration - so the un-flagged class dimmed nothing
-                         once the entrance had settled on opacity 1. --}}
                     class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-headline-md text-headline-md text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:!opacity-60" title="{{ __('تسجيل الدخول') }}">
-                    {{-- The static text stays as the element's content so it still
-                         reads correctly before Alpine hydrates. --}}
                     <span x-text="submitting ? @js(__('جارٍ الدخول...')) : @js(__('تسجيل الدخول'))">{{ __('تسجيل الدخول') }}</span>
                     <span class="material-symbols-outlined rtl:-scale-x-100" :class="submitting && 'animate-spin'"
                         x-text="submitting ? 'progress_activity' : 'login'">login</span>
@@ -93,15 +83,7 @@
         </div>
     </section>
 
-    {{--
-        Brand panel. Fixed-dark in both themes (like the sidebar rail), so its text
-        uses literal white/white-alpha rather than the surface tokens, which invert.
-        Left-aligned and asymmetric on purpose: the previous centred stack read as a
-        splash screen rather than as product framing beside the form.
-    --}}
     <section class="relative hidden overflow-hidden bg-primary-container p-inline-lg lg:flex lg:flex-col lg:justify-between">
-        {{-- Ambient depth: drifting orbs over the flat brand navy. motion-safe
-             so reduced-motion users get a static field. --}}
         <div class="pointer-events-none absolute -start-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-secondary-container/25 blur-3xl motion-safe:animate-[admin-orb_16s_ease-in-out_infinite]"></div>
         <div class="pointer-events-none absolute -bottom-32 -end-24 h-[30rem] w-[30rem] rounded-full bg-primary-fixed-dim/20 blur-3xl motion-safe:animate-[admin-orb_20s_ease-in-out_infinite_reverse]"></div>
 
@@ -126,8 +108,6 @@
             </p>
         </div>
 
-        {{-- Feature cards as glass tiles that lift on hover, rather than a flat
-             tick-list - gives the panel a second focal point lower down. --}}
         <ul class="stagger relative z-10 mt-12 space-y-3">
             @foreach ([
                 ['icon' => 'bolt', 'title' => __('تتبّع الحوالات في الوقت الفعلي'), 'note' => __('حالة كل معاملة لحظة بلحظة')],

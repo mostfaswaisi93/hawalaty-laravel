@@ -23,8 +23,6 @@
             openEdit(member) { this.mode = 'edit'; this.submitting = false; this.form = { ...member, password: '' }; this.open = true; },
             payOpen: false, rateOpen: false,
             target: { id: '', name: '', amount: '', period: 'monthly' },
-            {{-- Payroll picks the account the salary LEAVES the same way the
-                 order form picks where money arrives - see partials/_account-picker. --}}
             accounts: {{ \Illuminate\Support\Js::from($accounts->map(fn ($a) => [
                 'id' => $a->id,
                 'kind' => $a->kind->value,
@@ -59,7 +57,6 @@
         </header>
 
         <form method="GET" action="{{ route('team.index') }}" class="reveal-up relative max-w-md" style="--d:60ms">
-            {{-- Filtering must not throw away a chosen page size. --}}
             <x-keep-per-page />
             <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('ابحث بالاسم أو البريد...') }}" aria-label="{{ __('بحث') }}"
@@ -175,7 +172,6 @@
             @endif
         </section>
 
-        {{-- add / edit modal --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
             <div x-show="open" @keydown.escape.window="open = false"
@@ -236,11 +232,6 @@
             </div>
         </div>
 
-        {{-- Pay a salary.
-             The amount defaults to the member's rate but stays editable: a
-             bonus, a deduction or a part payment must be recordable without
-             editing the rate first. Submitting writes an expense in the same
-             transaction, which is what puts this in المصروفات and the reports. --}}
         <div x-show="payOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="payOpen" x-transition.opacity></div>
             <div x-show="payOpen" @keydown.escape.window="payOpen = false" role="dialog" aria-modal="true" aria-labelledby="pay-salary-title"
@@ -326,7 +317,6 @@
             </div>
         </div>
 
-        {{-- Set the agreed rate. Only a default for the form above. --}}
         <div x-show="rateOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="rateOpen" x-transition.opacity></div>
             <div x-show="rateOpen" @keydown.escape.window="rateOpen = false" role="dialog" aria-modal="true" aria-labelledby="set-rate-title"

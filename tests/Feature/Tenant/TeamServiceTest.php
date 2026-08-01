@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Tests\TenantTestCase;
 
-/**
- * Locks in TeamService's password hashing/partial-update semantics and,
- * above all, the last-active-owner deletion guard (see TeamService::delete()
- * docblock) - the one rule that keeps a tenant from ever being left with no
- * team member able to log in and administer it.
- */
 class TeamServiceTest extends TenantTestCase
 {
     public function test_create_hashes_the_password_and_loads_the_role(): void

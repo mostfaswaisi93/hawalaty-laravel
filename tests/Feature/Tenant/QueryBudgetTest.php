@@ -11,15 +11,6 @@ use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TenantTestCase;
 
-/**
- * How many queries each page costs, and - the part that matters - whether that
- * number grows with the amount of data on it.
- *
- * An N+1 is invisible in every other kind of test: the page renders, the totals
- * are right, and the suite is green. It only shows up as a shop with a busy
- * month waiting on a screen that was instant with demo data. Counting the
- * queries at two different row counts is the only way to see it from here.
- */
 class QueryBudgetTest extends TenantTestCase
 {
     private TeamMember $owner;
@@ -60,7 +51,6 @@ class QueryBudgetTest extends TenantTestCase
         return $count;
     }
 
-    /** @return array<string, array{string}> */
     public static function pages(): array
     {
         return [
@@ -72,11 +62,6 @@ class QueryBudgetTest extends TenantTestCase
         ];
     }
 
-    /**
-     * The query count must not grow with the number of rows rendered. Five
-     * orders and twenty-five orders have to cost the same, or something is
-     * being fetched per row.
-     */
     #[DataProvider('pages')]
     public function test_a_page_costs_the_same_whether_it_shows_five_rows_or_twenty_five(string $uri): void
     {

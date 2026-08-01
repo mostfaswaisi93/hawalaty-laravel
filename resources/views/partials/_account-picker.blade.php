@@ -1,22 +1,6 @@
-{{--
-    Account picker, shared by the order form and the expense form.
-
-    Two states, never both:
-      - nothing chosen yet -> a scrollable list of account cards to pick from;
-      - chosen             -> ONE card summarising it, with a "تغيير" button
-                              that clears the choice and brings the list back.
-
-    Params:
-      $model      Alpine property holding the chosen id (e.g. 'accountId')
-      $inputName  the POST field name (e.g. 'accountId')
-      $listExpr   JS expression returning the accounts to offer
-      $id         unique prefix for element ids
-      $empty      message shown when $listExpr is empty
---}}
 <div class="space-y-2">
     <input type="hidden" name="{{ $inputName }}" :value="{{ $model }}" />
 
-    {{-- ── chosen: the card ── --}}
     <template x-if="{{ $model }}">
         <div class="reveal-scale flex items-center gap-3 rounded-2xl border-2 border-primary bg-primary/5 p-4">
             <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
@@ -43,7 +27,6 @@
         </div>
     </template>
 
-    {{-- ── not chosen: the list ── --}}
     <template x-if="!{{ $model }}">
         <div class="space-y-2">
             <template x-if="({{ $listExpr }}).length === 0">

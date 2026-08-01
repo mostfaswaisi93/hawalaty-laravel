@@ -6,17 +6,12 @@ use App\Services\WhatsApp\PhoneNumber;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Extends Tests\TestCase (not the bare PHPUnit one) because PhoneNumber reads
- * config('whatsapp.*'); it touches no database.
- */
 class PhoneNumberTest extends TestCase
 {
     public static function numbers(): array
     {
         return [
-            // The number supplied by the operator: country code pasted in front
-            // of the trunk-prefixed local number. The stray 0 must collapse.
+
             'operator paste with trunk zero' => ['+9720595817016', '+972595817016'],
             'bare local with leading zero' => ['0595817016', '+972595817016'],
             'arabic-indic digits' => ['٠٥٩٥٨١٧٠١٦', '+972595817016'],

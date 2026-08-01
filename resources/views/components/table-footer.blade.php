@@ -1,12 +1,3 @@
-{{--
-    Shared footer for paginated tables: the per-page selector on one side and a
-    themed pagination control (built from the paginator's own methods rather
-    than ->links(), so it matches the app's design in both light and dark and
-    under RTL) on the other. The controller must call ->withQueryString() on
-    the paginator so page links keep the active filters + per_page.
-
-    Usage: <x-table-footer :paginator="$rows" :perPage="$perPage" />
---}}
 @props(['paginator', 'perPage' => 10])
 
 @if ($paginator->total() > 0)
@@ -26,9 +17,6 @@
             </span>
 
             @if ($last > 1)
-                {{-- max-w-full + overflow-x-auto: fully expanded (prev + 1 + … + 5 pages + … + last +
-                     next) the strip needs ~390px, which overflowed the page on a 375px screen and
-                     scrolled the whole document sideways. Now only the strip itself scrolls. --}}
                 <div class="flex max-w-full items-center gap-1 overflow-x-auto">
                     @if ($paginator->onFirstPage())
                         <span class="flex h-9 w-9 items-center justify-center rounded-full text-outline/40"><span class="material-symbols-outlined !text-xl rtl:-scale-x-100">chevron_left</span></span>

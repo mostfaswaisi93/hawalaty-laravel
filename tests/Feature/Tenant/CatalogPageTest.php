@@ -8,15 +8,6 @@ use App\Models\Tenant\Currency;
 use App\Models\Tenant\TeamMember;
 use Tests\TenantTestCase;
 
-/**
- * Phase 2a - the reference catalogs screen (currencies, bank names, wallet
- * names, account types, wallet types, cash boxes), driven by one
- * registry-backed controller.
- *
- * Covers the guards (who may reach it, who may write to it), the shared
- * CRUD, the currency-only symbol field, name uniqueness, the active toggle as
- * a partial update, and that deletion soft-deletes.
- */
 class CatalogPageTest extends TenantTestCase
 {
     private function owner(): TeamMember
@@ -44,7 +35,6 @@ class CatalogPageTest extends TenantTestCase
             ->assertSee(__('الصناديق النقدية'));
     }
 
-    /** BanksManage governs the banks/wallets vocabulary, so it governs this too. */
     public function test_a_member_without_banks_manage_cannot_reach_the_page(): void
     {
         $staff = $this->staff();
@@ -99,7 +89,6 @@ class CatalogPageTest extends TenantTestCase
         $this->assertTrue($currency->active);
     }
 
-    /** A non-currency catalog never persists a symbol, even if one is posted. */
     public function test_a_symbol_is_ignored_for_non_currency_catalogs(): void
     {
         $owner = $this->owner();
@@ -125,7 +114,6 @@ class CatalogPageTest extends TenantTestCase
         $this->assertSame(1, BankName::where('name', 'بنك فلسطين')->count());
     }
 
-    /** The same name is fine in a different catalog - uniqueness is per-table. */
     public function test_the_same_name_may_exist_in_two_different_catalogs(): void
     {
         $owner = $this->owner();
@@ -149,7 +137,6 @@ class CatalogPageTest extends TenantTestCase
         $this->assertSame('اسم جديد', $bank->fresh()->name);
     }
 
-    /** The switch posts only `active`; that must be a valid partial update. */
     public function test_the_active_toggle_is_a_valid_partial_update(): void
     {
         $owner = $this->owner();
@@ -175,7 +162,6 @@ class CatalogPageTest extends TenantTestCase
         $this->assertNotNull(BankName::withTrashed()->find($bank->id));
     }
 
-    /** The {catalog} route constraint rejects anything outside the six keys. */
     public function test_an_unknown_catalog_key_is_not_routable(): void
     {
         $owner = $this->owner();

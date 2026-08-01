@@ -6,9 +6,6 @@ use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<MenuItem>
- */
 class MenuItemFactory extends Factory
 {
     protected $model = MenuItem::class;

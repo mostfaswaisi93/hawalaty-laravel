@@ -6,25 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Http\Response;
 
-/**
- * /sitemap.xml for the public marketing pages.
- *
- * Generated rather than a static file in /public: the URLs come from the route
- * table, so a renamed route can never leave a 404 advertised to every crawler.
- *
- * Each entry carries `xhtml:link` alternates for both locales. The site serves
- * one URL per page and switches language from the session, so without those a
- * crawler has no way to learn the Arabic and English versions are the same
- * page - and Google treats the pair as thin duplicate content.
- */
 class SitemapController extends Controller
 {
-    /**
-     * Route name => [change frequency, priority].
-     *
-     * The landing page is the only one that changes with the product; the legal
-     * and trust pages change when the policy does, which is rarely.
-     */
     private const PAGES = [
         'home' => ['weekly', '1.0'],
         'security' => ['monthly', '0.7'],

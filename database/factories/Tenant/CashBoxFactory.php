@@ -5,9 +5,6 @@ namespace Database\Factories\Tenant;
 use App\Models\Tenant\CashBox;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<CashBox>
- */
 class CashBoxFactory extends Factory
 {
     protected $model = CashBox::class;

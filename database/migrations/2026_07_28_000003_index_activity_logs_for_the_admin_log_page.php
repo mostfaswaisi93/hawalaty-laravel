@@ -4,15 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * The platform's own `activity_logs`, with the same gap as the tenant's
- * `audit_logs` - see that migration.
- *
- * Append-only, read only in `created_at DESC` order (the admin log page, its
- * API twin, and the dashboard's "latest 8"), and indexed on nothing but the
- * `admin_id` foreign key. The admin filter narrows by `admin_id` and still
- * sorts by date, so the composite carries both.
- */
 return new class extends Migration
 {
     public function up(): void

@@ -18,15 +18,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-/**
- * Partner clearing (المقاصة).
- *
- * The arithmetic is the whole feature, so most of this file pins the numbers
- * rather than the plumbing - in particular the two properties that are easy to
- * get subtly wrong and impossible to spot by eye afterwards: withdrawals must
- * not be treated as a cost, and the per-line rounding residual must land in
- * `retained` so the reconciliation identity stays exact.
- */
 class SettlementTest extends TestCase
 {
     use RefreshDatabase;
@@ -65,9 +56,6 @@ class SettlementTest extends TestCase
         ]);
 
         if ($on) {
-            // Payments have no date column of their own, so the period window
-            // is driven by created_at - which means backdating one has to write
-            // that column directly.
             $payment->forceFill(['created_at' => Carbon::parse($on)])->saveQuietly();
         }
 
@@ -116,12 +104,10 @@ class SettlementTest extends TestCase
 
         $lines = collect($preview['lines'])->keyBy('partnerName');
 
-        // 800 * 60% = 480, minus the 100 already taken.
         $this->assertSame(480.0, $lines['Alice']['entitlement']);
         $this->assertSame(100.0, $lines['Alice']['drawn']);
         $this->assertSame(380.0, $lines['Alice']['net']);
 
-        // 800 * 40% = 320, nothing drawn.
         $this->assertSame(320.0, $lines['Bob']['entitlement']);
         $this->assertSame(0.0, $lines['Bob']['drawn']);
         $this->assertSame(320.0, $lines['Bob']['net']);
@@ -133,12 +119,6 @@ class SettlementTest extends TestCase
         $this->assertSame($bob->id, $lines['Bob']['partnerId']);
     }
 
-    /**
-     * The property the whole design turns on: a withdrawal is a distribution of
-     * profit, not a cost of earning it. If it were subtracted from
-     * distributable profit, Bob's entitlement would drop because Alice took
-     * money out - charging him for her payout.
-     */
     public function test_one_partners_withdrawal_does_not_reduce_another_partners_entitlement(): void
     {
         $alice = Partner::create(['name' => 'Alice', 'percentage' => 50]);
@@ -157,11 +137,6 @@ class SettlementTest extends TestCase
         $this->assertSame(500.0, $after['net']);
     }
 
-    /**
-     * Three-way split of 100 rounds to 33.33 each, leaving 0.01 unallocated.
-     * That residual must land in `retained`, not vanish - otherwise the totals
-     * on the page silently stop adding up.
-     */
     public function test_rounding_residual_lands_in_retained_so_the_identity_stays_exact(): void
     {
         foreach (['A', 'B', 'C'] as $name) {
@@ -176,7 +151,6 @@ class SettlementTest extends TestCase
         $this->assertSame(99.99, $preview['totalEntitlement']);
         $this->assertSame(0.01, $preview['retained']);
 
-        // sum(net) + retained == distributable - sum(drawn)
         $this->assertEqualsWithDelta(
             $preview['totalNet'] + $preview['retained'],
             $preview['distributableProfit'] - $preview['totalDrawn'],
@@ -210,7 +184,6 @@ class SettlementTest extends TestCase
         $this->assertSame('500.00', $first->total_payments);
         $this->assertSame('400.00', $first->total_net);
 
-        // A later payment belongs to the NEXT period only.
         $this->payment(200, '2026-02-05');
 
         $next = $this->service()->preview();
@@ -230,7 +203,6 @@ class SettlementTest extends TestCase
         $this->assertSame(SettlementStatus::Draft, $draft->status);
         $this->assertNull($draft->confirmed_at);
 
-        // Still open: the period start has not moved past January.
         $this->assertTrue($this->service()->nextPeriodStart()->lte(Carbon::parse('2026-01-10')));
     }
 
@@ -260,10 +232,6 @@ class SettlementTest extends TestCase
         $this->service()->deleteDraft($confirmed);
     }
 
-    /**
-     * A confirmed run is a document the partner was shown. Editing their share
-     * afterwards must not rewrite what it says.
-     */
     public function test_confirmed_lines_keep_their_snapshot_when_the_partner_changes(): void
     {
         $alice = Partner::create(['name' => 'Alice', 'percentage' => 50]);
@@ -308,7 +276,6 @@ class SettlementTest extends TestCase
         Partner::create(['name' => 'Alice', 'percentage' => 100]);
         $this->payment(1000, '2026-03-05');
 
-        // Recorded today, but back-dated into the period being settled.
         $this->expense(300, '2026-03-10');
 
         $preview = $this->service()->preview(Carbon::parse('2026-03-31'));
@@ -317,21 +284,18 @@ class SettlementTest extends TestCase
         $this->assertSame(700.0, $preview['distributableProfit']);
     }
 
-    /**
-     * Regression: `expenses.date` is cast to `date`, so Eloquent stores it as
-     * "Y-m-d H:i:s". An inclusive BETWEEN upper bound of "2026-03-31" compared
-     * as a string against "2026-03-31 00:00:00" loses, which dropped every
-     * movement on the final day of a period. Caught by a failing assertion, not
-     * by review - so it is pinned here at both edges of the window.
-     */
     public function test_movement_on_the_first_and_last_day_of_the_period_is_included(): void
     {
         $alice = Partner::create(['name' => 'Alice', 'percentage' => 100]);
 
-        $this->payment(500, '2026-03-01 00:00:01');   // first day
-        $this->payment(300, '2026-03-31 23:59:59');   // last day
-        $this->expense(100, '2026-03-01');            // first day
-        $this->expense(200, '2026-03-31');            // last day
+        $this->payment(500, '2026-03-01 00:00:01');
+
+        $this->payment(300, '2026-03-31 23:59:59');
+
+        $this->expense(100, '2026-03-01');
+
+        $this->expense(200, '2026-03-31');
+
         $this->withdrawal($alice, 50, '2026-03-31 23:59:58');
 
         $preview = $this->service()->preview(Carbon::parse('2026-03-31'));
@@ -342,7 +306,6 @@ class SettlementTest extends TestCase
         $this->assertSame(500.0, $preview['distributableProfit']);
     }
 
-    /** The window is half-open, so the day AFTER period_to must not leak in. */
     public function test_movement_after_the_period_end_is_excluded(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 100]);
@@ -410,11 +373,6 @@ class SettlementTest extends TestCase
         $this->assertNotNull($draft->fresh()->confirmed_at);
     }
 
-    /**
-     * An open draft is the ONLY thing that blocks running a new clearing, so
-     * the preview has to hand back the draft itself and not merely a boolean -
-     * otherwise the page announces the blocker and cannot link to it.
-     */
     public function test_the_preview_hands_back_the_open_draft_itself(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 100]);
@@ -430,16 +388,6 @@ class SettlementTest extends TestCase
         $this->assertSame($draft->id, $preview['openDraft']?->id);
     }
 
-    /**
-     * Partner percentages summing over 100 mean the run would hand out more
-     * than the period earned, leaving `retained` negative - the platform owing
-     * money it never made. The page warns about it, but a warning is not a
-     * guard: the run was still committable, and a confirmed settlement cannot
-     * be edited or deleted afterwards.
-     *
-     * Almost always this is a data-entry slip in the partner list, which is why
-     * the message says what the total actually is.
-     */
     public function test_a_run_is_refused_when_partner_percentages_exceed_one_hundred(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 70]);
@@ -455,7 +403,6 @@ class SettlementTest extends TestCase
         }
     }
 
-    /** Exactly 100% is the normal, fully-allocated case and must still run. */
     public function test_percentages_totalling_exactly_one_hundred_are_allowed(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 60]);
@@ -468,7 +415,6 @@ class SettlementTest extends TestCase
         $this->assertSame('0.00', $settlement->retained);
     }
 
-    /** Under 100% is also normal - the remainder is simply retained. */
     public function test_percentages_under_one_hundred_still_run(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 30]);
@@ -480,7 +426,6 @@ class SettlementTest extends TestCase
         $this->assertSame('700.00', $settlement->retained);
     }
 
-    /** A confirmed run is not an open draft and must not block the next one. */
     public function test_a_confirmed_run_leaves_no_open_draft(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 100]);
@@ -494,7 +439,6 @@ class SettlementTest extends TestCase
         $this->assertNull($preview['openDraft']);
     }
 
-    /** The clearing page must link to the draft, not just mention it. */
     public function test_the_clearing_page_links_to_the_open_draft(): void
     {
         Partner::create(['name' => 'Alice', 'percentage' => 100]);

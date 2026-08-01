@@ -1,53 +1,11 @@
 @import 'tailwindcss';
 
-/*
- * Binds `dark:` to the `.dark` CLASS instead of the OS preference.
- *
- * This app switches theme with a moon button that toggles `.dark` on <html>
- * (see the layouts' x-init). Tailwind v4's DEFAULT `dark` variant is
- * `@media (prefers-color-scheme: dark)` - a completely independent signal - so
- * without this line every `dark:` utility ignored the toggle entirely:
- *
- *   - light OS + app switched to dark  -> the `dark:` utilities never fired
- *   - dark OS  + app left on light     -> they fired over the LIGHT palette
- *
- * Most of the UI still themed correctly because the palette is driven by the
- * `--c-*` channel variables redefined under `.dark`, which is why this went
- * unnoticed; only the utilities written as `dark:` were affected. Verified with
- * an isolated probe using `dark:text-green-400` (a static palette colour, so a
- * variable swap cannot mask the result).
- */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-/*
- * Navy/amber Material-3-ish palette, ported from the Angular app's
- * src/tailwind.config.js + src/styles.scss (see BACKEND_PROMPT.md task
- * notes). Angular drove Tailwind colors via CSS vars holding
- * space-separated RGB channels (`rgb(var(--c-x) / <alpha-value>)`) so a
- * `.dark` class swap could repaint the whole palette at once. Tailwind v4
- * has no JS config file / <alpha-value> placeholder, but `@theme` color
- * tokens accept any valid CSS color - including `rgb(var(--c-x))` - and v4
- * automatically supports opacity modifiers (`bg-primary/50`) on those via
- * `color-mix()`, so the same two-layer approach (raw channels in :root/.dark,
- * theme tokens referencing them) carries over unchanged.
- */
 @theme {
-    /*
-     * `--app-font` already ends in `system-ui, sans-serif`, so anything listed
-     * after it here is unreachable - the tokens below deliberately stop there
-     * instead of repeating a tail the browser can never get to.
-     *
-     * --font-sans is what `class="font-sans"` on <body> resolves to. It used to
-     * name Cairo first, which read as "the body font is Cairo" and was simply
-     * untrue: the `body { font-family: var(--app-font) }` rule further down is
-     * UNLAYERED, and unlayered CSS outranks the whole @layer utilities block,
-     * so the utility never won and every page rendered in Tajawal. Pointing the
-     * token at the same variable makes the two agree rather than leaving a
-     * declaration that looks decisive and is not.
-     */
     --font-sans: var(--app-font), 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-body-lg: var(--app-font);
     --font-body-sm: var(--app-font);
@@ -55,17 +13,6 @@
     --font-display-lg-mobile: var(--app-font);
     --font-headline-md: var(--app-font);
 
-    /*
-     * Inter FIRST, then the UI font - not Inter alone.
-     *
-     * Inter carries no Arabic block, and these two tokens were the only ones
-     * with nothing behind it but the generic `sans-serif`. Every Arabic string
-     * wearing `font-label-caps` or `font-numeral-lg` therefore dropped to the
-     * browser's default Arabic face while the text beside it stayed Tajawal:
-     * the sidebar's group headings ("عام", "الإدارة"), the same heading in the
-     * top bar, and each `<x-form-field>` label. Latin is unaffected - digits
-     * and A-Z still match Inter, which is the reason these tokens exist.
-     */
     --font-numeral-lg: 'Inter', var(--app-font);
     --font-label-caps: 'Inter', var(--app-font);
 
@@ -73,14 +20,7 @@
     --text-body-lg--line-height: 1.6;
     --text-numeral-lg: 24px;
     --text-numeral-lg--line-height: 1;
-    /*
-        Page titles carry their own weight/tracking rather than leaving it to
-        each view: every `text-display-lg` h1 in the app previously rendered at
-        Tajawal's regular 400, which reads faint at this size and made page
-        headings hard to pick out. Setting it on the token keeps all 31 page
-        titles identical instead of depending on whether a view remembered to
-        add `font-bold`.
-    */
+
     --text-display-lg: 34px;
     --text-display-lg--line-height: 1.15;
     --text-display-lg--font-weight: 800;
@@ -156,15 +96,9 @@
     --color-brand: rgb(var(--c-brand));
     --color-on-brand: rgb(var(--c-on-brand));
 
-    /* Not part of the ported MD3 palette - added so "completed"/"active"
-       status pills stop hand-rolling `bg-green-100 text-green-700
-       dark:bg-green-500/15 dark:text-green-300` identically in 8 places. */
     --color-success: rgb(var(--c-success));
     --color-success-container: rgb(var(--c-success-container));
 
-    /* The admin rail is intentionally semi-dark in BOTH themes, so it cannot
-       reuse the surface tokens (those invert). Its own namespace keeps the
-       contrast pairings explicit and lets dark mode deepen it a step. */
     --color-sidebar: rgb(var(--c-sidebar));
     --color-sidebar-hover: rgb(var(--c-sidebar-hover));
     --color-sidebar-active: rgb(var(--c-sidebar-active));
@@ -226,14 +160,9 @@
     --c-brand: 123 46 40;
     --c-on-brand: 255 255 255;
 
-    /* success = Tailwind green-700, success-container = green-100 (used at
-       full opacity here, and at 15% via dark:bg-success-container/15 to
-       reproduce dark:bg-green-500/15 exactly - see .dark below). */
     --c-success: 21 128 61;
     --c-success-container: 220 252 231;
 
-    /* Semi-dark navy rail, tuned to sit in the same family as --c-primary
-       (0 35 111) without competing with the light content area beside it. */
     --c-sidebar: 21 29 48;
     --c-sidebar-hover: 36 48 74;
     --c-sidebar-active: 34 62 146;
@@ -284,14 +213,9 @@
     --c-brand: 196 108 98;
     --c-on-brand: 43 15 13;
 
-    /* success = Tailwind green-300, success-container = green-500 (call
-       sites apply dark:bg-success-container/15 to reproduce the original
-       dark:bg-green-500/15 exactly). */
     --c-success: 134 239 172;
     --c-success-container: 34 197 94;
 
-    /* A step deeper than light mode so the rail still separates from the
-       already-dark content surface (--c-surface: 10 14 23). */
     --c-sidebar: 15 20 32;
     --c-sidebar-hover: 31 40 58;
     --c-sidebar-active: 30 58 138;
@@ -308,23 +232,11 @@ html.lang-en {
     --app-font: 'Inter', system-ui, sans-serif;
 }
 
-/*
- * body is min-height, NOT height. With `height: 100%` the body box is capped at
- * one viewport, so a `position: sticky` child (the landing page's nav is a
- * direct child of body) only sticks until that box scrolls away - it then
- * detaches and scrolls off. min-height keeps the full-height background while
- * letting the box grow to the content, which is what sticky needs as its
- * containing block. The app layouts were unaffected because their sticky header
- * lives inside a `min-h-screen` wrapper rather than directly in body.
- */
 html {
     height: 100%;
-    /* Eases every anchor jump, scrollIntoView() and programmatic scroll instead
-       of snapping. Nested scrollers (the sidebar nav, table wrappers) need
-       their own `scroll-smooth` - this property does not inherit into them. */
+
     scroll-behavior: smooth;
-    /* Keeps a sticky-header-height gap when jumping to an in-page anchor, so
-       the target is never hidden underneath it. */
+
     scroll-padding-top: 5rem;
 }
 body {
@@ -362,16 +274,6 @@ body {
     font-variation-settings: 'FILL' 1;
 }
 
-/* Activity heatmap intensity, GitHub-contributions style.
- *
- * Derived from the theme tokens via color-mix rather than hard-coded greens, so
- * the whole ramp inverts with the palette: in light mode it darkens from a pale
- * surface toward the navy primary; in dark mode --c-primary is a pale lavender
- * on a near-black surface, so the same ramp brightens instead. Either way
- * "more activity" stays the higher-contrast end.
- *
- * Level 0 gets a hairline border - without it an empty day is invisible against
- * the card and the grid loses its shape on quiet months. */
 .heat-0 {
     background-color: rgb(var(--c-surface-container-high));
     box-shadow: inset 0 0 0 1px rgb(var(--c-outline-variant) / 0.5);
@@ -389,20 +291,6 @@ body {
     background-color: rgb(var(--c-primary));
 }
 
-/* Material Symbols draws its glyph from a LIGATURE, so each element's text
-   content is the icon's own name ("restaurant_menu", "add", "search"). If the
-   font is missing the browser paints those identifiers as words all over the
-   UI - which is exactly what happened on a cold load, and worse, permanently
-   whenever Google Fonts is slow, blocked or offline.
-
-   `&display=block` on the stylesheet URL covers the LOADING window, but it
-   gives up after ~3s and falls back to the text. This covers the rest: the
-   glyph stays hidden until the font is confirmed available. `visibility`
-   rather than `display` so the box still reserves its space and nothing
-   reflows when the icons appear.
-
-   Unlayered on purpose - Google ships `.material-symbols-outlined` unlayered
-   too, and unlayered rules outrank anything in @layer. */
 .material-symbols-outlined {
     visibility: hidden;
 }
@@ -410,7 +298,6 @@ html.icons-ready .material-symbols-outlined {
     visibility: visible;
 }
 
-/* ---------- Design utilities (ported from the Angular app) ---------- */
 .glass-card {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
@@ -437,17 +324,6 @@ html.icons-ready .material-symbols-outlined {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25), 0px 16px 32px -8px rgba(0, 0, 0, 0.45);
 }
 
-/*
- * Tailwind v4's Preflight deliberately dropped v3's `cursor: pointer` on
- * buttons to match the raw browser default, which left all ~130 <button>
- * elements in this app showing an arrow instead of a hand. Restored globally
- * here (the fix Tailwind's own v4 upgrade guide prescribes) rather than
- * sprinkling `cursor-pointer` across every call site.
- *
- * In @layer base so the utility layer still wins - `disabled:cursor-not-allowed`
- * on the modal submit buttons keeps working, and the :disabled guard below
- * means a disabled control never reads as clickable even without it.
- */
 @layer base {
     button:not(:disabled),
     [role='button']:not(:disabled),
@@ -463,11 +339,6 @@ html.icons-ready .material-symbols-outlined {
         cursor: not-allowed;
     }
 
-    /*
-     * The native drag handle let a textarea be pulled to any size, which broke
-     * the layout of the modals they sit in. Height comes from the `rows`
-     * attribute at each call site instead.
-     */
     textarea {
         resize: none;
     }
@@ -502,15 +373,6 @@ textarea:focus-visible,
     outline: none;
 }
 
-/*
- * Deliberately animates margin-top rather than transform. Any non-none
- * transform makes the element a containing block for `position: fixed`
- * descendants, and this class wraps the content of every page - so with a
- * transform here, all 18 modals resolved `inset-0` against the page column
- * instead of the viewport and opened off-centre with a partial backdrop
- * (measured: a 1144x325 overlay at 24,96 on a 1280x800 viewport). margin-top
- * produces the same 8px rise with no containing block and no stacking context.
- */
 @keyframes app-fade-up {
     from {
         opacity: 0;
@@ -525,20 +387,6 @@ textarea:focus-visible,
     animation: app-fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ─────────────────────────── Motion system ───────────────────────────
- *
- * Shared entrance/interaction vocabulary so pages don't hand-roll keyframes.
- *
- * CRITICAL: every entrance keyframe ends at `transform: none`, never
- * `translateY(0)`. A retained non-none transform makes the element a
- * containing block for `position: fixed` descendants - that is exactly what
- * broke all 18 modals before (see the .page-enter note above). Ending at
- * `none` interpolates identically (CSS treats none as the identity matrix)
- * but leaves nothing behind, so these are safe on any wrapper.
- *
- * Stagger: set `--d` per item (inline or via :nth-child below) and the delay
- * is applied automatically.
- */
 @keyframes reveal-up {
     from {
         opacity: 0;
@@ -561,8 +409,6 @@ textarea:focus-visible,
     }
 }
 
-/* Bars/meters growing from their baseline. transform-origin is set at the
-   call site (bottom for columns, inline-start for horizontal meters). */
 @keyframes grow-bar {
     from {
         transform: scaleY(0);
@@ -600,8 +446,6 @@ textarea:focus-visible,
     animation-delay: var(--d, 0ms);
 }
 
-/* Applied to a container: its direct children reveal in sequence. Capped at 12
-   so a long list never trails into a visibly slow cascade. */
 .stagger > * {
     animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -618,10 +462,6 @@ textarea:focus-visible,
 .stagger > *:nth-child(11) { animation-delay: 440ms; }
 .stagger > *:nth-child(n + 12) { animation-delay: 480ms; }
 
-/* `stagger-rows` is the hook the shared table component puts on every <tbody>.
-   It predates this motion system and had no rule behind it, so table rows had
-   no entrance anywhere in the app; aliasing it to the stagger behaviour lights
-   them all up without touching the component. */
 .stagger-rows > * {
     animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -653,8 +493,6 @@ textarea:focus-visible,
     transform-origin: right;
 }
 
-/* Loading placeholder. Uses currentColor-independent tints so it reads in both
-   themes without a dark: variant at the call site. */
 .skeleton {
     background: linear-gradient(
         90deg,
@@ -667,15 +505,6 @@ textarea:focus-visible,
     border-radius: 0.75rem;
 }
 
-/* Pressable affordance for cards/tiles that act as buttons.
- *
- * !important is load-bearing here, not laziness: the entrance animations use
- * fill-mode `both`, so after finishing they keep applying their final
- * `transform: none`. Declarations originating from an animation outrank normal
- * author declarations in the cascade, so without !important an element carrying
- * BOTH an entrance and .press would silently lose its press feedback forever.
- * That combination is common (a staggered grid of clickable tiles).
- */
 .press {
     transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
 }
@@ -700,8 +529,6 @@ textarea:focus-visible,
     }
 }
 
-/* Slow ambient drift for the decorative orbs on the admin login panel. Applied
-   via motion-safe: at the call site, so reduced-motion users get a static orb. */
 @keyframes admin-orb {
     0%,
     100% {
@@ -733,13 +560,6 @@ textarea:focus-visible,
     border-radius: 10px;
 }
 
-/* ---------- Native <select> styling ----------
- * The browser's default select arrow renders on the wrong side under RTL and
- * ignores the theme. Kept UNLAYERED (like the Material Symbols rule above) so
- * the arrow-side padding wins over Tailwind's layered `px-*` utilities in v4,
- * and a single rule restyles every dropdown across the tenant + admin apps.
- * Two chevron images so the glyph follows light/dark; positioned on the
- * inline-end side via the page's dir. `<select multiple>` opts out. */
 select:not([multiple]) {
     appearance: none;
     -webkit-appearance: none;

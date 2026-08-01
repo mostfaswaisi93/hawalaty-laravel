@@ -2,16 +2,6 @@
 
 namespace App\Services\WhatsApp;
 
-/**
- * Outcome of one send attempt. Deliberately a value object rather than a bare
- * bool: Meta's error codes mean completely different operator actions (131047 =
- * outside the 24h window, 132000 = template parameter mismatch, 190 = expired
- * token), so the caller and the logs need to distinguish them.
- *
- * `skipped` is a third state, distinct from `failed`: nothing was wrong, the
- * message simply did not apply (cash order, no number on the bank, feature
- * disabled).
- */
 final readonly class WhatsAppResult
 {
     private function __construct(
@@ -45,7 +35,6 @@ final readonly class WhatsAppResult
         );
     }
 
-    /** @param string $reason machine-readable: disabled|not_bank|no_bank|bank_deleted|no_number|unnormalisable|duplicate */
     public static function skipped(string $reason): self
     {
         return new self(sent: false, skipped: true, errorCode: $reason);

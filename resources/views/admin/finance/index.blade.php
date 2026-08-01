@@ -28,7 +28,6 @@
             </div>
         </header>
 
-        {{-- Summary tiles --}}
         <section class="stagger grid grid-cols-1 gap-4 md:grid-cols-3">
             <x-card>
                 <p class="font-body-sm text-on-surface-variant">{{ __('إجمالي المدفوعات (داخل)') }}</p>
@@ -45,7 +44,6 @@
         </section>
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {{-- Boxes --}}
             <x-card title="{{ __('الصناديق') }}" subtitle="{{ __('أرصدة حسابات المنصّة') }}">
                 @if (empty($summary['boxes']))
                     <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد صناديق بعد') }}</p>
@@ -64,12 +62,6 @@
                 @endif
             </x-card>
 
-            {{-- Partners.
-                 This figure is a share of the cash sitting in the boxes RIGHT
-                 NOW - it is not what a partner is owed, because box balance is
-                 already net of every withdrawal. The settlement position lives
-                 on the clearing page; the note below keeps the two from being
-                 read as the same number. --}}
             <x-card title="{{ __('الشركاء') }}" subtitle="{{ __('حصة تقديرية من النقد الحالي في الصناديق') }}">
                 <x-slot:actions>
                     <a href="{{ route('admin.settlements.index') }}"
@@ -104,7 +96,6 @@
             </x-card>
         </div>
 
-        {{-- Recent payments --}}
         <x-card title="{{ __('آخر المدفوعات') }}" class="reveal-up" style="--d: 120ms">
             @if ($recentPayments->isEmpty())
                 <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد مدفوعات بعد') }}</p>
@@ -135,7 +126,6 @@
             @endif
         </x-card>
 
-        {{-- Withdrawal modal --}}
         <div x-show="withdrawalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="withdrawalOpen" x-transition.opacity></div>
             <div x-show="withdrawalOpen" @keydown.escape.window="withdrawalOpen = false" role="dialog" aria-modal="true"
@@ -176,7 +166,6 @@
             </div>
         </div>
 
-        {{-- Expense modal --}}
         <div x-show="expenseOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="expenseOpen" x-transition.opacity></div>
             <div x-show="expenseOpen" @keydown.escape.window="expenseOpen = false" role="dialog" aria-modal="true"

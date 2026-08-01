@@ -33,7 +33,6 @@ class LicenseController extends Controller
 
     public function store(StoreLicenseRequest $request): JsonResponse
     {
-        /** @var Admin $admin */
         $admin = $request->user();
 
         $license = $this->service->create($request->validated(), $admin);
@@ -41,11 +40,6 @@ class LicenseController extends Controller
         return (new LicenseResource($license->load('package')))->response()->setStatusCode(201);
     }
 
-    /**
-     * License details + a live read-only peek at its tenant's team roster
-     * and recent activity - see LicenseService::show()'s doc comment for how
-     * the tenant connection is resolved and released.
-     */
     public function show(string $license): JsonResponse
     {
         $model = License::findOrFail($license);

@@ -6,11 +6,6 @@ use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Controllers must eager-load `admin` before returning this resource.
- *
- * @mixin ActivityLog
- */
 class ActivityLogResource extends JsonResource
 {
     public function toArray(Request $request): array

@@ -2,22 +2,8 @@
 
 namespace App\Settings;
 
-/**
- * The platform settings the app actually understands.
- *
- * Every entry is DECLARED here and CONSUMED somewhere real (named in each
- * `description`). Adding a setting means adding it here and reading it through
- * PlatformSettings - form, validation and defaults follow automatically.
- *
- * Keys that exist in the database but not in this registry are not thrown away:
- * the settings page lists them in a separate "custom keys" section so nothing a
- * previous admin stored is silently lost.
- */
 class SettingRegistry
 {
-    /**
-     * @return array<int, array{label: string, description: string, icon: string, settings: array<int, array<string, mixed>>}>
-     */
     public function groups(): array
     {
         return [
@@ -83,11 +69,6 @@ class SettingRegistry
         ];
     }
 
-    /**
-     * Flat key => definition map.
-     *
-     * @return array<string, array<string, mixed>>
-     */
     public function all(): array
     {
         $flat = [];
@@ -106,17 +87,6 @@ class SettingRegistry
         return $this->all()[$key] ?? null;
     }
 
-    /**
-     * The `min:`/`max:` bounds a setting already declares, as HTML input
-     * attributes.
-     *
-     * Read from the SAME rules the server validates with. A browser constraint
-     * that contradicts the server rule is worse than none: it blocks a value the
-     * server would accept, with no error to explain why.
-     *
-     * @param  array<string, mixed>  $definition
-     * @return array{min: ?string, max: ?string}
-     */
     public function boundsFor(array $definition): array
     {
         $bounds = ['min' => null, 'max' => null];
@@ -126,8 +96,6 @@ class SettingRegistry
                 continue;
             }
 
-            // `max:120` on a string is a LENGTH, not a value - applying it as a
-            // number bound would cap a numeric field at its own digit count.
             if ($definition['type'] !== SettingType::Number) {
                 continue;
             }
@@ -149,25 +117,16 @@ class SettingRegistry
         return $this->find($key) !== null;
     }
 
-    /** @return array<string, mixed> */
     public function defaults(): array
     {
         return array_map(fn (array $d) => $d['default'], $this->all());
     }
 
-    /**
-     * Validation rules for the grouped form, keyed by the request field name.
-     *
-     * @return array<string, array<int, string>>
-     */
     public function rules(): array
     {
         $rules = [];
 
         foreach ($this->all() as $key => $definition) {
-            // Checkboxes are absent from the payload when unticked, so a
-            // boolean can never be `required` - it is normalised in the request
-            // instead.
             $rules["settings.{$key}"] = $definition['type'] === SettingType::Boolean
                 ? ['nullable', 'boolean']
                 : $definition['rules'];
@@ -176,12 +135,6 @@ class SettingRegistry
         return $rules;
     }
 
-    /**
-     * Human labels for validation messages, so an error reads "مدة التجربة"
-     * rather than "settings.trial_days".
-     *
-     * @return array<string, string>
-     */
     public function attributes(): array
     {
         $attributes = [];

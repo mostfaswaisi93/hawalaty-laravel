@@ -17,11 +17,9 @@ class PaySalaryRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'min:0.01', 'max:99999999.99'],
-            // The account the money leaves. Required: "paid from where" is the
-            // whole point of recording this rather than a bare note.
+
             'accountId' => ['required', 'string', 'exists:tenant.accounts,id'],
-            // Never in the future - a salary cannot be paid before it happens,
-            // and a mistyped year would silently skew every report.
+
             'paidFor' => ['required', 'date', 'before_or_equal:today'],
             'period' => ['nullable', Rule::enum(SalaryPeriod::class)],
             'notes' => ['nullable', 'string', 'max:500'],

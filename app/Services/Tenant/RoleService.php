@@ -17,11 +17,6 @@ class RoleService
         return Role::with('permissions')->get();
     }
 
-    /**
-     * Custom (tenant-created) role: `is_system` is always false and `key`
-     * is always null - only the 3 built-in roles cloned at provisioning
-     * time ever get a key/is_system=true.
-     */
     public function create(array $data): Role
     {
         $role = Role::create([
@@ -39,10 +34,6 @@ class RoleService
         return $role;
     }
 
-    /**
-     * Blocks mutating `is_system` roles - RolePolicy::update() already
-     * checks this too (defense in depth, per this task's instructions).
-     */
     public function update(Role $role, array $data): Role
     {
         if ($role->is_system) {
@@ -62,12 +53,6 @@ class RoleService
         return $role;
     }
 
-    /**
-     * Blocks deleting `is_system` roles (defense in depth alongside
-     * RolePolicy::delete()) and roles that still have team members
-     * assigned, to avoid orphaning `team_members.role_id` (a required,
-     * non-nullable foreign key).
-     */
     public function delete(Role $role): void
     {
         if ($role->is_system) {

@@ -4,9 +4,7 @@
 
 @section('content')
     @php
-        // One place that maps a stored notification's data to how it renders,
-        // mirroring the bell dropdown in layouts/app.blade.php so the page and
-        // the dropdown never disagree.
+
         $money = fn ($v) => number_format((float) $v, 2) . ' ₪';
 
         $meta = function (array $data) {
@@ -111,8 +109,6 @@
                                 </a>
                             @endif
                             @if ($unread)
-                                {{-- Text-only link-style button, so the state shows as a
-                                     label change rather than a spinner glyph. --}}
                                 <form method="POST" action="{{ route('notifications.read', $notification->id) }}" x-data="{ submitting: false }" @submit="submitting = true">
                                     @csrf
                                     <button type="submit" :disabled="submitting"

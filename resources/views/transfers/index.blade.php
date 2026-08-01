@@ -15,8 +15,6 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('اختر الأصناف، حدّد طريقة الدفع، وأنشئ الطلب.') }}</p>
         </header>
 
-        {{-- Connection state, stated before the order is written rather than
-             after it fails - staff need to know the order will be held. --}}
         <div x-show="!$store.offline.online" x-cloak
             class="flex items-start gap-3 rounded-2xl border border-tertiary/40 bg-tertiary/10 p-4">
             <span class="material-symbols-outlined flex-shrink-0 text-tertiary">cloud_off</span>
@@ -42,16 +40,13 @@
             class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.7fr_1fr]">
             @csrf
 
-            {{-- ══════════════ LEFT - menu browser ══════════════ --}}
             <section class="space-y-5">
-                {{-- search --}}
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-4' : 'left-0 pl-4' }}">search</span>
                     <input type="text" x-model="search" placeholder="{{ __('ابحث عن صنف...') }}" aria-label="{{ __('بحث') }}"
                         class="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3.5 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary {{ app()->getLocale() === 'ar' ? 'pr-12 pl-4' : 'pl-12 pr-4' }}" />
                 </div>
 
-                {{-- category chips (hidden while searching) --}}
                 <div x-show="!search.trim() && menu.length" class="flex flex-wrap gap-2">
                     <template x-for="cat in menu" :key="cat.id">
                         <button type="button" @click="activeCat = cat.id"
@@ -63,11 +58,7 @@
                     </template>
                 </div>
 
-                {{-- items grid --}}
                 <template x-if="menu.length">
-                    {{-- The entrance sits on the grid, not on the tiles: x-for rebuilds them on
-                         every search keystroke, so a per-tile cascade would replay as the user
-                         types - and a filled entrance animation outranks .press on :active. --}}
                     <div class="reveal-up grid grid-cols-2 gap-3 sm:grid-cols-3" style="--d:80ms">
                         <template x-for="item in filteredItems" :key="item.id">
                             <button type="button" @click="addItem(item)"
@@ -85,7 +76,6 @@
                             </button>
                         </template>
 
-                        {{-- no search results --}}
                         <div x-show="!filteredItems.length" class="col-span-full flex flex-col items-center gap-2 py-16 text-center text-outline">
                             <span class="material-symbols-outlined !text-5xl">search_off</span>
                             <p>{{ __('لا توجد أصناف مطابقة') }}</p>
@@ -93,7 +83,6 @@
                     </div>
                 </template>
 
-                {{-- empty menu state --}}
                 <template x-if="!menu.length">
                     <div class="reveal-scale flex flex-col items-center gap-3 rounded-3xl border border-dashed border-outline-variant bg-surface-container-lowest py-20 text-center">
                         <span class="material-symbols-outlined !text-5xl text-outline/60">restaurant_menu</span>
@@ -103,7 +92,6 @@
                 </template>
             </section>
 
-            {{-- ══════════════ RIGHT - order summary ══════════════ --}}
             <aside class="space-y-5 lg:sticky lg:top-24">
                 <div class="reveal-up tonal-elevation overflow-hidden rounded-3xl border border-outline-variant/50 bg-surface-container-lowest" style="--d:120ms">
                     <div class="flex items-center justify-between border-b border-outline-variant/50 p-5">
@@ -114,7 +102,6 @@
                         </span>
                     </div>
 
-                    {{-- cart lines --}}
                     <div class="stagger max-h-72 space-y-2 overflow-y-auto p-4">
                         <div x-show="!cart.length" class="flex flex-col items-center gap-2 py-10 text-center text-outline">
                             <span class="material-symbols-outlined !text-4xl">shopping_cart</span>
@@ -127,9 +114,6 @@
                                     <p class="truncate font-body-sm font-bold text-on-surface" x-text="line.name"></p>
                                     <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
                                 </div>
-                                {{-- 40px targets, not 28px: this is the busiest screen in the app and it is
-                                     used on phones, where decrement doubles as delete once qty hits 1 -
-                                     a mis-tap destroys the line. Wider gap for the same reason. --}}
                                 <div class="flex items-center gap-2">
                                     <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}" title="{{ __('إنقاص') }}"
                                         @mouseenter="showTipBelow($el, @js(__('إنقاص')))" @mouseleave="hideTip()"
@@ -150,7 +134,6 @@
                         </template>
                     </div>
 
-                    {{-- customer + payment --}}
                     <div class="space-y-5 border-t border-outline-variant/50 p-5">
                         <div class="space-y-2">
                             <label for="customer" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم العميل') }}</label>
@@ -170,14 +153,6 @@
                             <input id="customerPhone" name="customerPhone" x-model="customerPhone" dir="ltr" placeholder="059..."
                                 aria-describedby="customerPhone-hint"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-primary" />
-                            {{--
-                                The field stays OPTIONAL on purpose. The phone is the
-                                customer's identity, so requiring it here would push staff
-                                to type a placeholder to get past the form - and two people
-                                typing the same placeholder would merge two real customers
-                                into one record. A blank is honest; a fake number is not.
-                                The consequence is stated instead of enforced.
-                            --}}
                             <p id="customerPhone-hint" x-show="!customerPhone.trim()" x-cloak
                                 class="flex items-start gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
                                 <span class="material-symbols-outlined !text-base">info</span>
@@ -185,9 +160,6 @@
                             </p>
                         </div>
 
-                        {{-- Order note. Each constant list from /constants renders as a dropdown
-                             that appends its value here; the textarea stays free text, so
-                             the lists are a shortcut rather than a constraint. --}}
                         <div class="space-y-2">
                             <label for="orderNotes" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
                                 {{ __('ملاحظات الطلب') }} <span class="text-outline">({{ __('اختياري') }})</span>
@@ -214,10 +186,6 @@
                             @error('notes')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                         </div>
 
-                        {{-- ══ payment channel: cash / bank / wallet ══
-                             `payTarget` is a UI-only three-way choice. What the server
-                             receives is still paymentMethod cash|bank - a wallet order
-                             IS a transfer, distinguished by the chosen account's kind. --}}
                         <div class="space-y-2">
                             <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('طريقة الدفع') }}</span>
                             <input type="hidden" name="paymentMethod" :value="paymentMethod" />
@@ -234,10 +202,7 @@
                             </div>
                         </div>
 
-                        {{-- ── CASH scenario ── --}}
                         <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-4">
-                            {{-- Which drawer took the money. Optional: a shop that
-                                 never set a cash box up still takes cash orders. --}}
                             <div class="space-y-2">
                                 <span class="block font-body-sm text-on-surface-variant">{{ __('اختر الصندوق النقدي') }}</span>
                                 @include('partials._account-picker', [
@@ -251,9 +216,6 @@
 
                         </div>
 
-                        {{-- Invoice total, then the discount, then whatever the chosen
-                             payment method needs. The total shown is already net of the
-                             discount, and it is the ceiling for the transferred amount. --}}
                         <div x-show="paymentMethod === 'cash'" x-cloak class="space-y-2">
                             <span class="block font-body-sm text-on-surface-variant">{{ __('إجمالي الفاتورة') }}</span>
                             <div class="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
@@ -315,7 +277,6 @@
                             </div>
                         </div>
 
-                        {{-- ── BANK / WALLET scenario ── --}}
                         <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-4">
                             <div class="space-y-2">
                                 <span class="block font-body-sm text-on-surface-variant"
@@ -330,9 +291,6 @@
                             </div>
                         </div>
 
-                        {{-- Invoice total, then the discount, then whatever the chosen
-                             payment method needs. The total shown is already net of the
-                             discount, and it is the ceiling for the transferred amount. --}}
                         <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-2">
                             <span class="block font-body-sm text-on-surface-variant">{{ __('إجمالي الفاتورة') }}</span>
                             <div class="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
@@ -355,13 +313,7 @@
                         </div>
 
                         <div x-show="paymentMethod === 'bank'" x-cloak class="space-y-4">
-                            {{-- "sender name" / "sender phone" were removed from this form: the
-                                 operator does not need to re-key who paid, and neither field is
-                                 used by the WhatsApp order notification. The columns remain on
-                                 `transfers` so historical orders keep their values, and the API
-                                 still accepts both for backwards compatibility. --}}
                             <div class="space-y-2">
-                                {{-- The account's own symbol: the accounting side is multi-currency. --}}
                                 <label for="transfers-transferred-amount" class="block font-body-sm text-on-surface-variant">
                                     {{ __('المبلغ المُحوَّل') }} <span dir="ltr">(<span x-text="currencySymbol"></span>)</span>
                                 </label>
@@ -369,8 +321,6 @@
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                             </div>
 
-                            {{-- The slip's reference. Unique across the tenant: the same
-                                 reference twice means the same transfer was booked twice. --}}
                             <div class="space-y-2">
                                 <label for="transfers-reference" class="block font-body-sm text-on-surface-variant">{{ __('الرقم المرجعي للمعاملة') }}</label>
                                 <input id="transfers-reference" name="referenceNumber" x-model="referenceNumber" dir="ltr" maxlength="100" placeholder="TRX-000123"
@@ -379,9 +329,7 @@
                             </div>
                         </div>
 
-                        {{-- total + submit --}}
                         <div class="border-t border-outline-variant/50 pt-4">
-                            {{-- The breakdown only appears once there is a discount to explain. --}}
                             <template x-if="(parseFloat(discount) || 0) > 0">
                                 <div class="mb-2 space-y-1">
                                     <div class="flex items-center justify-between font-body-sm text-on-surface-variant">
@@ -407,7 +355,6 @@
                     </div>
                 </div>
 
-                {{-- serialized cart line items --}}
                 <template x-for="(line, idx) in cart" :key="'in-' + line.id">
                     <div class="hidden">
                         <input type="hidden" :name="`items[${idx}][itemId]`" :value="line.id" />

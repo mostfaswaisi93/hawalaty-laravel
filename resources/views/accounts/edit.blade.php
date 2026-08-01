@@ -4,8 +4,7 @@
 
 @php
     use App\Enums\AccountKind;
-    // Only institutions that support this account's (fixed) currency may be
-    // chosen - the request enforces the same, this just hides the rest.
+
     $bankOptions = $banks->filter(fn ($b) => $b->currencies->contains('id', $account->currency_id));
     $walletOptions = $wallets->filter(fn ($w) => $w->currencies->contains('id', $account->currency_id));
     $isBank = $account->kind === AccountKind::Bank;

@@ -7,22 +7,8 @@ use App\Models\Expense;
 use App\Models\Partner;
 use App\Models\Payment;
 
-/**
- * Turns the platform's own accounting tables into an actual dashboard - see
- * BACKEND_PROMPT.md section 11, "ملخّص مالي للمنصّة". Deliberately not a
- * Controller method: this is real aggregation business logic, not a
- * passthrough Resource mapping.
- */
 class FinanceSummaryService
 {
-    /**
-     * @return array{
-     *     totalPayments: float,
-     *     totalExpenses: float,
-     *     boxes: array<int, array{id: string, name: string, balance: float}>,
-     *     partners: array<int, array{id: string, name: string, percentage: float, computedShare: float}>,
-     * }
-     */
     public function summarize(): array
     {
         $totalPayments = (float) Payment::query()->sum('amount');

@@ -1,12 +1,3 @@
-{{--
-    A partner's net clearing position, rendered as a signed chip.
-
-    The sign carries the whole meaning here, so it is never left to the reader
-    to work out from a minus glyph alone: positive is labelled "له" (the
-    platform owes them), negative "عليه" (they over-drew). The amount is shown
-    unsigned next to that label, because "-250 عليه" reads as a double
-    negative in Arabic.
---}}
 @props(['net'])
 
 @php

@@ -11,15 +11,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-/**
- * Platform staff who manage licenses and the system itself - see
- * BACKEND_PROMPT.md section 3. Not related to any tenant's own team members.
- */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class Admin extends Authenticatable
 {
-    /** @use HasFactory<AdminFactory> */
     use HasApiTokens, HasFactory, HasUlids, Notifiable;
 
     protected function casts(): array

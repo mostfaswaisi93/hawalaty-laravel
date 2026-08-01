@@ -5,20 +5,8 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
 
-/**
- * robots.txt.
- *
- * Served from a route rather than /public so the `Sitemap:` directive can be an
- * absolute URL built from the current host - the spec requires absolute, and a
- * static file would have to hardcode one domain and be wrong everywhere else.
- */
 class RobotsController extends Controller
 {
-    /**
-     * Paths a crawler has no business in. Everything here is behind auth or is
-     * the platform operator's own portal; listing them keeps them out of the
-     * crawl budget rather than relying on the redirect to /login.
-     */
     private const DISALLOWED = [
         '/admin', '/login', '/signup', '/logout', '/sync',
         '/dashboard', '/transfers', '/history', '/accounts', '/customers',

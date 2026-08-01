@@ -9,14 +9,9 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('سجل تدقيق لجميع إجراءات المشرفين (للقراءة فقط).') }}</p>
         </header>
 
-        {{-- A GET filter still costs a full page load, and the log table is the
-             heaviest query in the console - so the button reports it too. --}}
         <form method="GET" action="{{ route('admin.logs.index') }}" class="reveal-up flex gap-2" style="--d: 80ms"
             x-data="{ filtering: false }" @submit="filtering = true">
-            {{-- Filtering must not throw away a chosen page size - see the component. --}}
             <x-keep-per-page />
-            {{-- aria-label: the first option reads "كل المشرفين", which says what the
-                 default IS but never what the control filters. --}}
             <select name="adminId" aria-label="{{ __('المشرف') }}" class="max-w-xs rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                 <option value="">{{ __('كل المشرفين') }}</option>
                 @foreach ($admins as $admin)

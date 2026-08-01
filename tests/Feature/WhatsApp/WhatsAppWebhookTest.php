@@ -4,10 +4,6 @@ namespace Tests\Feature\WhatsApp;
 
 use Tests\TestCase;
 
-/**
- * The public Meta webhook: verification handshake + inbound POST. No tenant
- * connection is touched, so these run without the tenant MySQL schema.
- */
 class WhatsAppWebhookTest extends TestCase
 {
     public function test_it_echoes_the_challenge_when_the_verify_token_matches(): void
@@ -29,7 +25,6 @@ class WhatsAppWebhookTest extends TestCase
 
     public function test_it_rejects_verification_when_no_token_is_configured(): void
     {
-        // An empty configured token must never match an empty supplied token.
         config(['whatsapp.verify_token' => '']);
 
         $this->get('/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=&hub.challenge=CHAL42')

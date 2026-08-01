@@ -1,7 +1,5 @@
 @php
-    // Public, login-free confirmation page - styled with the app's own design
-    // system (same fonts, colours and Material tokens as layouts/guest) so it
-    // reads as part of حوالاتي, not a bolted-on page. Bilingual via ?lang.
+
     $t = fn (string $ar, string $en) => $lang === 'en' ? $en : $ar;
     $rtl = $lang !== 'en';
     $symbol = $transfer->account?->currency?->symbol ?? '₪';
@@ -33,7 +31,6 @@
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
     <div class="flex min-h-screen flex-col">
-        {{-- Brand bar, mirroring layouts/guest --}}
         <header class="flex h-16 flex-shrink-0 items-center justify-between border-b border-outline-variant bg-surface px-4 md:px-8">
             <div class="flex items-center gap-3">
                 <x-logo />
@@ -56,7 +53,6 @@
         <main class="flex flex-grow items-start justify-center px-4 py-8 md:py-12">
             <div class="w-full max-w-xl">
                 <div class="overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-                    {{-- Card head --}}
                     <div class="flex items-center gap-4 bg-primary px-6 py-6 text-on-primary">
                         <span class="material-symbols-outlined flex-shrink-0 !text-4xl" style="font-variation-settings:'FILL' 1">receipt_long</span>
                         <div>
@@ -66,7 +62,6 @@
                     </div>
 
                     <div class="p-6">
-                        {{-- Details --}}
                         <dl class="rounded-2xl border border-outline-variant/70 bg-surface">
                             @php
                                 $rows = array_filter([
@@ -86,7 +81,6 @@
                             @endforeach
                         </dl>
 
-                        {{-- Items --}}
                         @php
                             $items = ($transfer->relationLoaded('lineItems') && $transfer->lineItems->isNotEmpty())
                                 ? $transfer->lineItems
@@ -95,10 +89,6 @@
                         <div class="mt-4 rounded-2xl bg-surface-container-low p-4">
                             <h2 class="mb-2 text-xs font-bold uppercase tracking-wide text-on-surface-variant">{{ $t('الأصناف', 'Items') }}</h2>
                             @if ($items)
-                                {{-- The same columns as the printed invoice - the run-together
-                                     "×1" and the price read as one number in a plain list. Ruled
-                                     and tinted rather than hairline black: this one is read on a
-                                     screen, not burned onto a thermal roll. --}}
                                 <div class="overflow-x-auto rounded-xl border border-outline-variant/70 bg-surface">
                                     <table class="w-full text-sm">
                                         <thead>
@@ -144,7 +134,6 @@
                             </div>
                         </div>
 
-                        {{-- Action / outcome --}}
                         @if ($decided)
                             <div class="mt-6 flex flex-col items-center rounded-2xl p-6 text-center {{ $confirmed ? 'bg-success-container' : 'bg-error-container' }}">
                                 <span class="material-symbols-outlined !text-5xl {{ $confirmed ? 'text-success' : 'text-error' }}" style="font-variation-settings:'FILL' 1">
@@ -165,15 +154,6 @@
                                 {{ $t('يرجى تأكيد استلامك لهذه الحوالة في حسابك، أو الإبلاغ عن عدم وصولها.',
                                       'Please confirm you received this transfer in your account, or report that it did not arrive.') }}
                             </p>
-                            {{-- Two submitters share this form, so `pending` records
-                                 WHICH was clicked - otherwise both would spin.
-
-                                 The clicked button is never given `:disabled`: a
-                                 disabled submitter is omitted from the payload, and
-                                 it carries `action`, so the request would arrive
-                                 with no verb at all. `pointer-events-none` stops a
-                                 second click without touching serialization; only
-                                 the idle sibling is safe to truly disable. --}}
                             <form method="POST" action="{{ route('order.confirm.act', ['license' => $license, 'token' => $token]) }}" class="mt-4 grid gap-3"
                                 x-data="{ pending: null }">
                                 @csrf

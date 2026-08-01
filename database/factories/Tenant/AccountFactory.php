@@ -12,9 +12,6 @@ use App\Models\Tenant\WalletName;
 use App\Models\Tenant\WalletType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Account>
- */
 class AccountFactory extends Factory
 {
     protected $model = Account::class;

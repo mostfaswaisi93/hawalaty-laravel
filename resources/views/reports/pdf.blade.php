@@ -3,14 +3,6 @@
 <head>
     <meta charset="utf-8">
     <style>
-        {{-- dompdf notes (learned building receipts.transfer, same rules apply):
-             1) <table> column-width calculation clips trailing characters of
-                cell content, regardless of page width - avoid real <table>s
-                here; use inline-block spans with fixed px widths instead.
-             2) any text-align:end element with content flush against its
-                container boundary loses its LAST character(s) (confirmed:
-                the ₪ symbol specifically) - always add a small end-side
-                padding buffer on such elements. --}}
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1a1a1a; }
         .page { width: 100%; padding: 10mm; }

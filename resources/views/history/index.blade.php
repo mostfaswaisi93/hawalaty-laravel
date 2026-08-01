@@ -20,11 +20,6 @@
             default => __('فاشلة'),
         };
 
-        /**
-         * How the money came in, as a badge. `payment_method` only knows
-         * cash-vs-transfer, so bank and wallet are told apart by the KIND of the
-         * account it landed in - the same distinction the order form offers.
-         */
         $channel = function ($t) {
             if ($t->payment_method->value === 'cash') {
                 return ['icon' => 'payments', 'label' => __('نقدي'), 'class' => 'bg-success-container text-success dark:bg-success-container/15'];
@@ -52,10 +47,8 @@
             </a>
         </header>
 
-        {{-- ══════════════ filters ══════════════ --}}
         <form method="GET" action="{{ route('history.index') }}" x-data="{ submitting: false }" @submit="submitting = true"
             class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-5" style="--d: 40ms">
-            {{-- Filtering must not throw away a chosen page size. --}}
             <x-keep-per-page />
             <div class="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <label for="history-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
@@ -111,7 +104,6 @@
             </div>
         </form>
 
-        {{-- ══════════════ results ══════════════ --}}
         <section class="reveal-up tonal-elevation rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 md:p-6" style="--d: 140ms">
             @if ($transfers->isEmpty())
                 <div class="reveal-scale flex flex-col items-center gap-3 py-20 text-center">
@@ -169,8 +161,6 @@
                     </x-slot:table>
                     <x-slot:cards>
                         @foreach ($transfers as $t)
-                            {{-- Cascade is per-card, not a container .stagger - the cards
-                                 container itself belongs to the shared table component. --}}
                             <div class="reveal-up tonal-elevation rounded-2xl border border-outline-variant bg-surface-container-lowest p-4"
                                 style="--d: {{ min(40 + $loop->index * 40, 480) }}ms">
                                 @php $ch = $channel($t); @endphp
@@ -206,7 +196,6 @@
 
                 <x-table-footer :paginator="$transfers" :perPage="$perPage" />
 
-                {{-- pagination --}}
                 @if ($transfers->hasPages())
                     <div class="mt-6 flex items-center justify-between gap-4 border-t border-outline-variant/50 pt-5">
                         <span class="font-body-sm text-on-surface-variant">

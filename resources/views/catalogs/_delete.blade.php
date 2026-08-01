@@ -1,5 +1,3 @@
-{{-- Delete. Confirmed through the layout's shared confirm modal, exactly like
-     banks/_delete. --}}
 <form method="POST" action="{{ route('catalogs.destroy', [$catalog, $item->id]) }}" id="delete-{{ $catalog }}-{{ $item->id }}" class="inline-flex">
     @csrf
     @method('DELETE')

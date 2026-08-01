@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * A user-defined bank-account type (توفير، جاري، شمول مالي...). Reference
- * catalog - see App\Services\Tenant\CatalogRegistry.
- */
 #[Fillable(['name', 'active'])]
 class AccountType extends Model
 {

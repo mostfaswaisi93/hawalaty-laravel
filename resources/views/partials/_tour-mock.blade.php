@@ -1,17 +1,3 @@
-{{--
-    The little screen mock inside each product-tour panel.
-
-    Split out of welcome.blade.php because four inline mocks buried the page's
-    structure under ~150 lines of decorative markup.
-
-    Drawn with the app's own tokens rather than screenshots, so it themes with
-    the page, reads correctly in RTL and LTR, costs no image bytes, and cannot
-    go stale the way a captured screenshot does. Everything here is decorative:
-    the whole block is aria-hidden, and every figure is illustrative.
-
-    @param string $panel  one of: orders, accounts, reports, team
---}}
-
 <div class="rounded-2xl border border-outline-variant/50 bg-surface-container-low p-5" aria-hidden="true">
     @if ($panel === 'orders')
         <div class="flex items-center justify-between">
@@ -96,9 +82,6 @@
                         <span class="block font-body-sm font-bold text-on-surface">{{ $role }}</span>
                         <span class="block truncate font-body-sm text-outline">{{ $scope }}</span>
                     </span>
-                    {{-- Four pips standing in for permission scope: full, then
-                         progressively fewer, which reads at a glance without
-                         inventing a number the product does not publish. --}}
                     <span class="flex flex-shrink-0 items-center gap-1">
                         @for ($pip = 1; $pip <= 4; $pip++)
                             <span class="h-1.5 w-1.5 rounded-full {{ $pip <= $filled ? 'bg-primary' : 'bg-outline-variant' }}"></span>

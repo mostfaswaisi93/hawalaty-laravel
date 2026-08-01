@@ -12,22 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
-/**
- * Roles and permissions.
- *
- * The permission model was fully enforced everywhere - sidebar filtering,
- * `abort_unless` in controllers - but had no screen: the three built-in roles
- * were fixed and a custom one could only be created through the API. This is
- * that screen.
- *
- * Gated on TeamManage, the same permission that governs who may change a
- * member's role: being able to invent a role is the same power as being able to
- * assign one.
- *
- * Every rule that can go wrong (system roles are immutable, a role still in use
- * cannot be deleted) already lives in RoleService; this only turns its
- * exceptions into flash messages.
- */
 class RoleController extends Controller
 {
     public function __construct(private readonly RoleService $service) {}
@@ -39,8 +23,7 @@ class RoleController extends Controller
         }
 
         return view('roles.index', [
-            // withCount so the page can say "3 أعضاء" and disable delete without
-            // loading every member of every role.
+
             'roles' => Role::with('permissions')->withCount('teamMembers')->orderByDesc('is_system')->orderBy('name')->get(),
             'permissions' => PermissionKey::cases(),
         ]);

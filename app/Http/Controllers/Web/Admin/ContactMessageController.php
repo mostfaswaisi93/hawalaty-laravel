@@ -9,13 +9,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * The inbox for the landing page's contact form.
- *
- * Read and delete only - a lead is answered by email, not edited here. The
- * point of the page is that a message which arrives while the mail relay is
- * misconfigured is still reachable.
- */
 class ContactMessageController extends Controller
 {
     use HasPerPage;
@@ -31,7 +24,6 @@ class ContactMessageController extends Controller
         ]);
     }
 
-    /** Marking as read is idempotent, so re-marking an already-read row is a no-op. */
     public function markRead(string $message): RedirectResponse
     {
         $contactMessage = ContactMessage::findOrFail($message);

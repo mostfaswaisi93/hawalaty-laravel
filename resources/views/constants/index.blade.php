@@ -4,11 +4,7 @@
 
 @section('content')
     @php
-        // Custom lists are the `constants` feature; naming the catalogue is not
-        // (see the routes file). A package without it still reaches this page to
-        // configure its section, so the list half is hidden rather than the page
-        // being shut - offering a button the route would 403 is worse than not
-        // offering it.
+
         $currentLicense = app()->bound('currentLicense') ? app('currentLicense') : null;
         $canUseCustomLists = (bool) $currentLicense?->hasFeature(\App\Enums\PackageFeature::Constants);
     @endphp
@@ -27,17 +23,6 @@
             @endif
         </header>
 
-        {{-- What this account calls its catalogue. A summary, with the editing
-             behind a dialog - matching every other create/edit flow in the app. --}}
-        {{-- State lives on this PLAIN wrapper, and the dialog is a sibling of the
-             card rather than a child of it.
-
-             `.reveal-up` animates with fill-mode:both, so its transform survives
-             the animation - and a transformed ancestor becomes the containing
-             block for `position: fixed`. A dialog nested inside the card was
-             therefore sized against the card instead of the viewport: the backdrop
-             stopped at the card's edges and the panel was squeezed to its width.
-             Same trap the sidebar tooltip documents for `.page-enter`. --}}
         <div x-data="{
                 open: {{ $errors->hasAny(['catalogLabel', 'categoryLabel', 'itemLabel', 'catalogIcon']) ? 'true' : 'false' }},
                 saving: false,
@@ -87,9 +72,6 @@
 
             </section>
 
-            {{-- The dialog. z-[100] matches x-modal so it clears the sticky header,
-                 and the shared tooltip at z-[110] still floats above it. Kept
-                 OUTSIDE the card above - see the note on the wrapper. --}}
             <div x-show="open" x-cloak style="display:none" class="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="catalog-dialog-title">
                 <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity @click="open = false"></div>
 
@@ -108,11 +90,7 @@
                         @csrf
                         @method('PUT')
 
-                        {{-- Trade shortcuts. One click fills the name and the icon,
-                             which is the whole decision for most accounts. --}}
                         <div class="space-y-2">
-                            {{-- A <span>, not a <label>: this names a group of buttons,
-                                 not a form control, so it has no `for` to point at. --}}
                             <span id="trade-presets-label" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اختر نوع نشاطك') }}</span>
                             <div class="flex flex-wrap gap-2" role="group" aria-labelledby="trade-presets-label">
                                 @foreach ($naming->catalogPresets() as $preset)
@@ -128,25 +106,15 @@
 
                         <div class="space-y-1.5">
                             <label for="catalogLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اسم القائمة') }}</label>
-                            {{-- Bound to the same property the shortcuts write, so a
-                                 preset shows up here and stays editable. --}}
                             <input id="catalogLabel" name="catalogLabel" maxlength="40" x-model="catalogLabel"
                                 placeholder="{{ __('مثال: قائمة الطعام، المحروقات، الكتب') }}"
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                             @error('catalogLabel')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
                         </div>
 
-                        {{-- Real <select>s: these two are grammar words with a handful
-                             of sensible answers, so a list beats a blank box. "أخرى"
-                             swaps in a text input for anything not covered. --}}
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="space-y-1.5" x-data="{ custom: {{ in_array(old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY)), array_merge([null, ''], $naming->categoryPresets()), true) ? 'false' : 'true' }} }">
                                 <label for="categoryLabel" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('مسمّى الفئة') }}</label>
-                                {{-- The <select> carries the id, so the label above names
-                                     the control the user actually operates. The
-                                     free-text alternative is only shown once "أخرى" is
-                                     picked, so it names itself with aria-label rather
-                                     than duplicating the id. --}}
                                 <select id="categoryLabel" x-show="!custom" @change="$event.target.value === '__other' ? (custom = true, categoryLabel = '') : categoryLabel = $event.target.value"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
                                     <option value="">{{ __('الافتراضي') }} ({{ $naming->defaults()[\App\Services\Tenant\CatalogNaming::CATEGORY] }})</option>
@@ -281,7 +249,6 @@
             </div>
         @endif
 
-        {{-- new list modal --}}
         <div x-show="listOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="listOpen" x-transition.opacity></div>
             <div x-show="listOpen" @keydown.escape.window="listOpen = false"

@@ -8,10 +8,6 @@ use App\Notifications\Tenant\OrderStatusChangedNotification;
 use Illuminate\Support\Str;
 use Tests\TenantTestCase;
 
-/**
- * The full notifications page (/notifications). The bell dropdown still hits the
- * same route for JSON; the page is what a normal browser visit gets.
- */
 class NotificationPageTest extends TenantTestCase
 {
     private function owner(): TeamMember

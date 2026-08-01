@@ -13,11 +13,6 @@ class DevicePolicy
         return true;
     }
 
-    /**
-     * A team member may always sign THEIR OWN device out, even without
-     * devices.manage - mirrors "you can always sign yourself out" from the
-     * superseded prototype's DevicePolicy.
-     */
     public function delete(TeamMember $user, Device $device): bool
     {
         return $device->team_member_id === $user->id

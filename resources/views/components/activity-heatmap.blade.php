@@ -1,29 +1,3 @@
-{{--
-    A GitHub-contributions-style year grid: one cell per day, shaded by how many
-    orders that day carried.
-
-    LAYOUT / DIRECTION
-    7 rows (Sun..Sat) x ~53 week columns using `grid-auto-flow: column`.
-
-    The calendar body is pinned `dir="ltr"` even in the Arabic UI, so time runs
-    OLDEST-LEFT to NEWEST-RIGHT; inheriting RTL flips the axis. The legend
-    follows the same axis.
-
-    Only the BODY is LTR; the heading and date range above it stay in the page
-    direction so the Arabic text still reads naturally.
-
-    The columns are `1fr`, not a fixed width, so the grid FILLS the card.
-    `aspect-square` keeps the cells square as they grow, and a max-width stops
-    them ballooning on very wide screens.
-
-    Month labels span their own weeks (`grid-column: span N`) instead of sitting
-    in one 11px column each - Arabic month names are far wider than that, so they
-    collided into "يوليوأغسطس" at every boundary.
-
-    INTENSITY uses QUARTILES of the non-zero days, not a fraction of the max: one
-    freak 60-order day would otherwise flatten every ordinary day to the lightest
-    shade and make the whole year look dead.
---}}
 @props([
     'days' => [],          // ['Y-m-d' => int]
     'from' => null,        // Carbon|string - defaults to 12 months back
@@ -38,9 +12,6 @@
     $end = $to ? Carbon::parse($to)->startOfDay() : Carbon::today();
     $start = $from ? Carbon::parse($from)->startOfDay() : $end->copy()->subYear()->addDay();
 
-    // Pad back to the Sunday on/before the start so every column is a whole week
-    // and the weekday rows line up. dayOfWeek is 0=Sunday, matching the label
-    // array the reports page already uses.
     $gridStart = $start->copy()->subDays($start->dayOfWeek);
 
     $total = (int) $counts->sum();
@@ -81,7 +52,6 @@
 
     $weekCount = count($weeks);
 
-    // Group consecutive weeks into month runs so each label spans its month.
     $monthSpans = [];
     foreach ($weeks as $week) {
         $month = $week[0]['date']->format('Y-m');
@@ -91,8 +61,7 @@
             $monthSpans[] = ['key' => $month, 'label' => $week[0]['date']->translatedFormat('M'), 'span' => 1];
         }
     }
-    // A 1-week sliver at either edge has no room for a label and would collide
-    // with its neighbour.
+
     foreach ($monthSpans as $i => $m) {
         if ($m['span'] < 2) {
             $monthSpans[$i]['label'] = '';
@@ -112,48 +81,29 @@
         </p>
     </div>
 
-    {{-- Below md the grid cannot shrink to a usable size, so IT scrolls rather
-         than squashing - the page itself never scrolls sideways. --}}
-    {{--
-        ONE grid holds the whole thing - corner, month labels, weekday rail and
-        cells - laid out as:
-
-              col 1 (auto)   col 2 (1fr)
-        row 1   (corner)     month labels
-        row 2   weekday rail day cells
-
-        Both row-2 children declare `repeat(7, 1fr)` and share an outer grid
-        row, so the weekday labels line up with the cell rows exactly - rather
-        than a hand-tuned padding offset.
-    --}}
     <div class="overflow-x-auto" dir="ltr">
         <div class="grid min-w-[600px] gap-x-2"
             style="grid-template-columns: auto minmax(0, 1fr); max-width: {{ $weekCount * 22 + ($weekCount - 1) * 3 + 56 }}px;">
 
-            {{-- row 1, col 1: corner spacer above the weekday rail --}}
             <div aria-hidden="true" style="grid-row: 1; grid-column: 1;"></div>
 
-            {{-- row 1, col 2: month labels, each spanning its own weeks --}}
             <div class="mb-1.5 grid gap-[3px]" style="grid-row: 1; grid-column: 2; grid-template-columns: repeat({{ $weekCount }}, minmax(0, 1fr));">
                 @foreach ($monthSpans as $month)
                     <span class="truncate font-body-sm text-[10px] leading-none text-outline" style="grid-column: span {{ $month['span'] }};">{{ $month['label'] }}</span>
                 @endforeach
             </div>
 
-            {{-- row 2, col 1: every weekday, not every other one --}}
             <div class="grid gap-[3px]" style="grid-row: 2; grid-column: 1; grid-template-rows: repeat(7, 1fr);">
                 @foreach ($dayLabels as $label)
                     <span class="flex items-center justify-end whitespace-nowrap pr-1 font-body-sm text-[10px] leading-none text-outline">{{ $label }}</span>
                 @endforeach
             </div>
 
-            {{-- row 2, col 2: the days --}}
             <div class="grid gap-[3px]"
                 style="grid-row: 2; grid-column: 2; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); grid-template-columns: repeat({{ $weekCount }}, minmax(0, 1fr));">
                 @foreach ($weeks as $week)
                     @foreach ($week as $cell)
                         @if ($cell['count'] === null)
-                            {{-- Outside the window: keeps the grid rectangular. --}}
                             <span class="aspect-square rounded-[2px]" aria-hidden="true"></span>
                         @else
                             <span
@@ -169,8 +119,6 @@
         </div>
     </div>
 
-    {{-- LTR to match the grid above: the ramp has to point the same way the
-         weeks do, or "أقل -> أكثر" reads against the axis it describes. --}}
     <div class="mt-3 flex items-center justify-end gap-1.5 font-body-sm text-[11px] text-outline" dir="ltr">
         <span class="mr-1">{{ __('أقل') }}</span>
         @for ($i = 0; $i <= 4; $i++)

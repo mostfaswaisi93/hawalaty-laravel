@@ -6,12 +6,6 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Controllers/Services must eager-load `box` and `license` before returning
- * this resource.
- *
- * @mixin Payment
- */
 class PaymentResource extends JsonResource
 {
     public function toArray(Request $request): array

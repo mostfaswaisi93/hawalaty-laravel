@@ -7,9 +7,6 @@ use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<TransferLineItem>
- */
 class TransferLineItemFactory extends Factory
 {
     protected $model = TransferLineItem::class;

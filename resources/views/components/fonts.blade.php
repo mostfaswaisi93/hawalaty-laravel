@@ -1,15 +1,3 @@
-{{--
-    Every font the page needs, plus the guard that keeps the icon font from
-    leaking its own ligature names.
-
-    One component, so the five layouts cannot drift apart.
-
-    @fonts writes <link rel="preload"> tags for the hot faces and INLINES the
-    @font-face block. Inlining avoids the three serial round trips a
-    cross-origin stylesheet costs before a glyph can be drawn, and same-origin
-    files are the only ones sw.js can cache - its fetch handler drops the rest.
---}}
-
 @props([
     // Font aliases from vite.config.js, or null for all of them. Passing a
     // subset also narrows the inlined @font-face block, not just the preloads.
@@ -23,11 +11,6 @@
 @fonts($families)
 
 @if ($icons)
-    {{-- Material Symbols draws each icon from a LIGATURE, so an element's text
-         content IS the icon's name. With no font, the browser paints those
-         identifiers as words - "dashboard", "notifications", "restaurant_menu"
-         - all over the UI. app.css therefore hides them by default and this
-         reveals them once the face is CONFIRMED available. --}}
     <script>
         (function () {
             var html = document.documentElement;
@@ -64,6 +47,5 @@
         })();
     </script>
 
-    {{-- JS off: better a visible ligature than no icons at all. --}}
     <noscript><style>.material-symbols-outlined{visibility:visible}</style></noscript>
 @endif

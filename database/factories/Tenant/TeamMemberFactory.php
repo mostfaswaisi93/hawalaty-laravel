@@ -7,9 +7,6 @@ use App\Models\Tenant\TeamMember;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * @extends Factory<TeamMember>
- */
 class TeamMemberFactory extends Factory
 {
     protected $model = TeamMember::class;

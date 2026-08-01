@@ -1,17 +1,11 @@
 @php
     $member = auth('tenant')->user();
 
-    // The catalogue is named by the tenant, and `configured` keeps it out of the
-    // rail entirely until they have done so - a new account should not carry a
-    // section it never asked for. Its icon is chosen there too.
     $catalogNaming = app(\App\Services\Tenant\CatalogNaming::class);
     $catalogLabel = $catalogNaming->catalog();
     $catalogIcon = $catalogNaming->icon();
     $catalogConfigured = $catalogNaming->isConfigured();
 
-    // Grouped because 14 flat entries are hard to scan. `permission: null` means
-    // always visible; a group whose every item is filtered away is dropped, so a
-    // Staff member never sees an empty heading.
     $navGroups = [
         [
             'label' => 'عام',
@@ -27,9 +21,7 @@
             'items' => [
                 ['href' => '/accounts', 'icon' => 'wallet', 'label' => 'الحسابات', 'match' => 'accounts*', 'permission' => \App\Enums\PermissionKey::BanksManage],
                 ['href' => '/catalogs', 'icon' => 'category', 'label' => 'الكتالوجات', 'match' => 'catalogs*', 'permission' => \App\Enums\PermissionKey::BanksManage],
-                // `translated` marks a label that CatalogNaming already resolved,
-                // so the rail does not put the tenant's own wording through __().
-                // `visible` keeps it out of the rail until the section is named.
+
                 ['href' => '/menu', 'icon' => $catalogIcon, 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'feature' => \App\Enums\PackageFeature::Menu, 'translated' => true, 'visible' => $catalogConfigured],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage, 'feature' => \App\Enums\PackageFeature::Expenses],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
@@ -51,16 +43,13 @@
         ],
     ];
 
-    // Bound by ResolveTenantConnectionFromSession. A missing license CLOSES any
-    // feature-gated entry rather than opening it.
     $currentLicense = app()->bound('currentLicense') ? app('currentLicense') : null;
 
     $visibleGroups = [];
     foreach ($navGroups as $group) {
         $items = array_values(array_filter(
             $group['items'],
-            // `visible` defaults to true, so only an entry that opts out of being
-            // shown - today just the unnamed catalogue - has to say so.
+
             fn ($item) => ($item['visible'] ?? true)
                 && (! ($item['permission'] ?? null) || $member?->hasPermission($item['permission']))
                 && (! ($item['feature'] ?? null) || (bool) $currentLicense?->hasFeature($item['feature'])),
@@ -71,7 +60,6 @@
         }
     }
 
-    // Drives the header breadcrumb, resolved from the same table as the nav.
     $currentSection = null;
     $currentGroup = null;
     foreach ($visibleGroups as $group) {
@@ -122,13 +110,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('حوالاتي'))</title>
 
-    {{-- apple-touch-icon must be a PNG: iOS ignores SVG for the home screen. --}}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    {{-- Installable to a home screen: this runs on a shop tablet all day, and
-         standalone display drops the browser chrome that has no use there. --}}
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#00236f">
     <meta name="mobile-web-app-capable" content="yes">
@@ -192,16 +177,6 @@
                     @php
                         $isActive = request()->is($item['match']);
 
-                        /*
-                         * Nav labels are Arabic source strings that need translating,
-                         * EXCEPT the catalogue entry: that one is already resolved by
-                         * CatalogNaming, which returns either a translated default or
-                         * the tenant's OWN wording. Running the tenant's wording back
-                         * through __() meant a shop that named its section
-                         * "قائمة الطعام" saw the sidebar say "Menu" in English while
-                         * the dashboard tile beside it kept the Arabic - the label is
-                         * their words, not a key to look up.
-                         */
                         $label = ($item['translated'] ?? false) ? $item['label'] : __($item['label']);
                     @endphp
                     <a
@@ -231,8 +206,6 @@
                 </a>
             @endif
 
-            {{-- Identity on its own row so a long name has the full rail to
-                 truncate into, rather than sharing it with the logout button. --}}
             <a href="/settings"
                 @mouseenter="showTip($el, @js($member?->name ?? ''))" @mouseleave="hideTip()"
                 class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-sidebar-hover"
@@ -242,21 +215,11 @@
                     {{ $member ? mb_substr($member->name, 0, 1) : '?' }}
                 </span>
                 <span class="min-w-0 flex-1" :class="collapsed && 'lg:hidden'">
-                    {{-- Bidi goes on the inner span, never the block: `dir` on a block
-                         sets its text-align too, so an Arabic name (dir=auto -> rtl)
-                         and an email (dir=ltr) ended up aligned to OPPOSITE edges of
-                         the same two-line stack. --}}
                     <span class="block truncate text-start font-body-sm text-body-sm font-bold text-on-sidebar"><span dir="auto">{{ $member?->name }}</span></span>
                     <span class="block truncate text-start font-body-sm text-[11px] text-on-sidebar-muted"><span dir="ltr">{{ $member?->email }}</span></span>
                 </span>
             </a>
 
-            {{-- Confirmed: an accidental click here drops unsaved work and forces
-                 the operator to re-enter the license code to get back in. --}}
-            {{-- The wipe runs BEFORE the post: once the session is gone the page
-                 is navigating away, and whatever this browser still held of the
-                 previous member's orders and cached screens must not be there
-                 for whoever signs in next. --}}
             <form method="POST" action="{{ route('logout') }}" id="tenant-logout-form"
                 @submit="$store.offline.wipe()">@csrf</form>
             <button
@@ -276,8 +239,6 @@
     <div class="flex min-h-screen flex-col transition-[margin] duration-300" :class="collapsed ? 'lg:ms-[5.5rem]' : 'lg:ms-64'">
         <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-4 border-b border-outline-variant bg-surface/85 px-inline-lg backdrop-blur">
             <div class="flex flex-1 items-center gap-3">
-                {{-- `hideTip()` on click: opening the rail slides the sidebar over this
-                     button, so no mouseleave fires and the bubble would hang. --}}
                 <button type="button" class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary lg:hidden" @click="hideTip(); sidebarOpen = !sidebarOpen"
                     @mouseenter="showTipBelow($el, @js(__('القائمة')))" @mouseleave="hideTip()"
                     @focus="showTipBelow($el, @js(__('القائمة')))" @blur="hideTip()"
@@ -285,8 +246,6 @@
                     <span class="material-symbols-outlined">menu</span>
                 </button>
 
-                {{-- Breadcrumb: group › page, resolved from the same nav table as
-                     the sidebar so the two can never drift apart. --}}
                 @if ($currentSection)
                     <nav class="hidden min-w-0 items-center gap-2 md:flex" aria-label="{{ __('مسار التنقل') }}">
                         <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -298,14 +257,7 @@
                         </span>
                     </nav>
                 @endif
-                {{-- Global search. Arrow keys move a cursor through the flat
-                     result list, Enter opens the highlighted one, and Ctrl/Cmd+K
-                     focuses the box from anywhere - see globalSearch() in app.js. --}}
-                {{-- Width only from `sm` up: below that this is just the 40px
-                     icon that opens the overlay, and a full-width wrapper would
-                     strand it far from the header's other controls. --}}
                 <div class="relative sm:w-full sm:max-w-lg" x-data="globalSearch()" @click.outside="open = false">
-                    {{-- desktop: inline pill with an anchored dropdown --}}
                     <div class="hidden w-full items-center gap-2 rounded-full bg-surface-container px-4 py-2 ring-1 ring-transparent transition-all focus-within:bg-surface-container-lowest focus-within:ring-primary/40 sm:flex">
                         <span class="material-symbols-outlined flex-shrink-0 !text-xl text-outline">search</span>
                         <input type="text" x-model="query" x-ref="desktopSearchInput" autocomplete="off"
@@ -320,9 +272,6 @@
                             aria-label="{{ __('بحث عن معاملة أو مستلم') }}" placeholder="{{ __('بحث عن معاملة أو مستلم...') }}"
                             class="w-full border-none bg-transparent font-body-sm text-sm outline-none placeholder:text-outline focus:ring-0" />
                         <span x-show="loading" x-cloak class="material-symbols-outlined flex-shrink-0 animate-spin !text-lg text-outline">progress_activity</span>
-                        {{-- `hideTip()` on click, because clearing empties `query` and
-                             `x-show` then pulls this button out from under the cursor -
-                             no mouseleave would ever fire and the bubble would stick. --}}
                         <button type="button" x-show="query.length" x-cloak @click="hideTip(); reset(); $refs.desktopSearchInput.focus()"
                             @mouseenter="showTipBelow($el, @js(__('مسح')))" @mouseleave="hideTip()"
                             @focus="showTipBelow($el, @js(__('مسح')))" @blur="hideTip()"
@@ -330,8 +279,6 @@
                             class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-container-high hover:text-on-surface">
                             <span class="material-symbols-outlined !text-base">close</span>
                         </button>
-                        {{-- The shortcut hint, hidden once typing starts so it
-                             never sits on top of the text. --}}
                         <kbd x-show="!query.length && !loading"
                             class="hidden flex-shrink-0 rounded-md border border-outline-variant px-1.5 py-0.5 font-numeral-lg text-[10px] font-bold text-outline lg:block" dir="ltr">Ctrl K</kbd>
                     </div>
@@ -342,7 +289,6 @@
                         <x-search-results-list />
                     </div>
 
-                    {{-- mobile: icon that opens a full-screen search overlay --}}
                     <button type="button" @click="focusSearch()"
                         class="flex h-10 w-10 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary sm:hidden"
                         aria-label="{{ __('بحث') }}">
@@ -376,9 +322,6 @@
             </div>
 
             <div class="flex items-center gap-4 md:gap-6">
-                {{-- Connection and queue state. Shown only when there is
-                     something to say: a permanent "you are online" badge is
-                     noise that trains people to stop reading it. --}}
                 <div x-show="!$store.offline.online || $store.offline.pending" x-cloak
                     class="flex items-center gap-2 rounded-full px-3 py-1.5 font-body-sm font-bold"
                     :class="$store.offline.online ? 'bg-tertiary/15 text-tertiary' : 'bg-error/15 text-error'"
@@ -392,7 +335,6 @@
                     <span class="hidden sm:inline" x-show="!$store.offline.online">{{ __('بدون اتصال') }}</span>
                 </div>
 
-                {{-- notifications --}}
                 <div class="relative" x-data="notificationBell({{ auth('tenant')->user()->unreadNotifications()->count() }})" @click.outside="open = false">
                     <button type="button" @click="toggle()"
                         @mouseenter="showTipBelow($el, @js(__('الإشعارات')))" @mouseleave="hideTip()"
@@ -405,9 +347,6 @@
 
                     <div x-show="open" x-cloak @keydown.escape.window="open = false"
                         x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        {{-- Width is viewport-clamped, not a flat w-80: the bell sits ~190px in from the
-                             header's end edge, so a fixed 320px panel anchored end-0 overflowed the page
-                             on a 375px screen and pushed half the list off-canvas. --}}
                         class="absolute end-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl sm:w-96 sm:max-w-none">
                         <div class="flex items-center justify-between border-b border-outline-variant/60 p-4">
                             <h3 class="font-headline-md text-headline-md text-on-surface">{{ __('الإشعارات') }}</h3>
@@ -447,8 +386,6 @@
                 </div>
 
                 <div class="flex items-center gap-1 border-s border-outline-variant ps-3 md:ps-4">
-                    {{-- The locale code alone carries the meaning; the translate glyph
-                         beside it was pure duplication. --}}
                     <a href="{{ route('locale.switch', $otherLocale) }}"
                         @mouseenter="showTipBelow($el, @js(__('تغيير اللغة')))" @mouseleave="hideTip()"
                         @focus="showTipBelow($el, @js(__('تغيير اللغة')))" @blur="hideTip()"
@@ -464,7 +401,6 @@
                         <span class="material-symbols-outlined" x-text="dark ? 'light_mode' : 'dark_mode'"></span>
                     </button>
 
-                    {{-- Account menu. Nested x-data so `open` is scoped to this widget. --}}
                     <div class="relative ms-1" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
                         <button type="button" @click="open = !open"
                             @mouseenter="showTipBelow($el, @js(__('حسابي')))" @mouseleave="hideTip()"
@@ -511,8 +447,6 @@
 
                                 <div class="my-1 border-t border-outline-variant/60"></div>
 
-                                {{-- Reuses the layout-level confirm modal; the form lives in
-                                     the sidebar footer, referenced here by id. --}}
                                 <button type="button" role="menuitem"
                                     @click="open = false; confirmOpen = true; confirmMessage = '{{ __('هل تريد تسجيل الخروج من حسابك؟') }}'; confirmFormId = 'tenant-logout-form'; confirmTitle = '{{ __('تأكيد تسجيل الخروج') }}'; confirmLabel = '{{ __('تسجيل الخروج') }}'"
                                     class="group flex w-full items-center gap-3 rounded-xl px-2.5 py-2 font-body-sm text-body-sm font-bold text-error transition-colors hover:bg-error/10">
@@ -528,11 +462,6 @@
             </div>
         </header>
 
-        {{-- Full width on purpose: a max-width cap left dead margin on wide monitors
-             while the tables inside were still cramped. --}}
-        {{-- tabindex="-1" so the skip link moves FOCUS here, not just the
-             viewport: a <main> is not focusable by default, and without it the
-             next Tab would return to the navigation the user just skipped. --}}
         <main id="main-content" tabindex="-1" class="w-full flex-1 p-inline-lg focus:outline-none">
             <x-flash-messages />
             @yield('content')
@@ -541,19 +470,10 @@
         <x-app-footer />
     </div>
 
-    {{-- Layout-level so the sidebar's logout can reach it from any page; pages
-         that need their own delete confirmations still include their own. --}}
     <x-confirm-modal />
 
-    {{-- One shared tooltip. Fixed so the rail's `overflow-y-auto` cannot clip it,
-         and last in the body so `.page-enter`'s leftover transform - which makes
-         its own stacking context - cannot paint over it. --}}
     <div x-show="tipText !== ''" x-cloak
         class="pointer-events-none fixed z-[110] whitespace-nowrap rounded-lg bg-inverse-surface px-3 py-1.5 font-body-sm text-body-sm font-bold text-inverse-on-surface shadow-xl"
-        {{-- The translate differs per placement, so it lives in the bound style
-             rather than a utility class. `side` clears whichever sidebar width is
-             active (5.5rem / 16rem); `below` centres on the header control using
-             physical left, which is already direction-correct off getBoundingClientRect. --}}
         :style="tipPlacement === 'side'
             ? `top:${tipTop}px; inset-inline-start:${collapsed ? '6rem' : '17rem'}; transform:translateY(-50%);`
             : `top:${tipTop}px; left:${tipLeft}px; transform:translateX(-50%);`"

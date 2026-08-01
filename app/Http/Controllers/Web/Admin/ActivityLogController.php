@@ -9,11 +9,6 @@ use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Read-only platform audit trail. Populated automatically by the admin
- * services (LicenseService, TenantProvisioner, ...) - there is no write path
- * here.
- */
 class ActivityLogController extends Controller
 {
     use HasPerPage;

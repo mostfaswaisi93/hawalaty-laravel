@@ -19,27 +19,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-/**
- * Opt-in sample data for the admin console: a cash box, partners, four months of
- * payments/costs/draws, one closed clearing run and a support inbox.
- *
- *     php artisan db:seed --class=PlatformDemoSeeder
- *
- * Goes through the SERVICES, not the models: `Box.box_balance` is maintained by
- * PaymentService (increments) and Expense/WithdrawalService (decrement, and
- * refuse to overdraw). Raw `Payment::create()` would leave every balance wrong.
- *
- * Two consequences: rows are back-dated after creation because the services
- * stamp now() while a clearing run attributes by `created_at`; and money in is
- * recorded before money out, or the overdraw guard throws.
- *
- * Idempotent - guarded on the demo box's name.
- */
 class PlatformDemoSeeder extends Seeder
 {
     private const BOX_NAME = 'الصندوق الرئيسي';
 
-    /** Under 100% in total WITH any existing partners - the residual is retained. */
     private const PARTNERS = [
         ['name' => 'مصطفى سويسي', 'percentage' => 40],
         ['name' => 'شركة الأفق للتقنية', 'percentage' => 20],
@@ -75,7 +58,6 @@ class PlatformDemoSeeder extends Seeder
         $this->command->info('Seeded the platform console: box, partners, 4 months of payments/expenses/withdrawals, a confirmed clearing run and a support inbox.');
     }
 
-    /** @return \Illuminate\Support\Collection<int, Partner> */
     private function seedPartners()
     {
         return collect(self::PARTNERS)->map(
@@ -86,20 +68,12 @@ class PlatformDemoSeeder extends Seeder
         );
     }
 
-    /**
-     * Four closed months plus the current one, so the trend has a shape.
-     *
-     * @param  \Illuminate\Support\Collection<int, License>  $licenses
-     * @param  \Illuminate\Support\Collection<int, Partner>  $partners
-     */
     private function seedTrading(Box $box, $licenses, $partners): void
     {
         $payments = app(PaymentService::class);
         $expenses = app(ExpenseService::class);
         $withdrawals = app(WithdrawalService::class);
 
-        // Costs are a SHARE of the month's income, never fixed figures: most
-        // packages are priced at 0, so hard-coded costs overdrew the box.
         $costWeights = [
             ['استضافة الخوادم', 0.50],
             ['رسوم بوابة الرسائل', 0.30],
@@ -114,12 +88,12 @@ class PlatformDemoSeeder extends Seeder
             $month = Carbon::today()->startOfMonth()->subMonths($monthsAgo);
             $income = 0.0;
 
-            // --- money IN: one subscription payment per paying license ------
             foreach ($licenses as $index => $license) {
                 $amount = (float) ($license->package?->price ?? 0);
 
                 if ($amount <= 0) {
-                    continue; // a free tier genuinely pays nothing
+                    continue;
+
                 }
 
                 $payment = $payments->create([
@@ -133,22 +107,22 @@ class PlatformDemoSeeder extends Seeder
             }
 
             if ($income <= 0) {
-                continue; // nothing came in; spending it would overdraw
+                continue;
+
             }
 
             $earned += $income;
 
-            // --- money OUT: running costs -----------------------------------
             $budget = round($income * $costShareOfIncome, 2);
 
             foreach ($costWeights as $i => [$description, $weight]) {
                 $amount = round($budget * $weight, 2);
 
                 if ($amount < 1) {
-                    continue; // not worth a line on the finance page
+                    continue;
+
                 }
 
-                // Expenses carry their own `date`, so no created_at fix-up.
                 $expenses->create([
                     'boxId' => $box->id,
                     'description' => $description,
@@ -157,7 +131,6 @@ class PlatformDemoSeeder extends Seeder
                 ]);
             }
 
-            // Partner draws, skipping the open month so it still shows owed.
             if ($monthsAgo === 0) {
                 continue;
             }
@@ -165,7 +138,6 @@ class PlatformDemoSeeder extends Seeder
             foreach ($partners as $i => $partner) {
                 $draw = round($income * $drawShareOfProfit * ((float) $partner->percentage / 100), 2);
 
-                // Never overdraw - the service throws rather than go negative.
                 if ($draw < 1 || bccomp((string) $box->fresh()->box_balance, (string) $draw, 2) < 0) {
                     continue;
                 }
@@ -185,10 +157,6 @@ class PlatformDemoSeeder extends Seeder
         }
     }
 
-    /**
-     * One confirmed run up to the end of last month, leaving the current one
-     * open. Skipped rather than forced if the percentages over-allocate.
-     */
     private function seedSettlement(): void
     {
         $total = (float) Partner::sum('percentage');
@@ -210,7 +178,6 @@ class PlatformDemoSeeder extends Seeder
         }
     }
 
-    /** The /admin/contact-messages inbox, with two left unread for the badge. */
     private function seedContactMessages(): void
     {
         $messages = [
@@ -224,8 +191,6 @@ class PlatformDemoSeeder extends Seeder
         foreach ($messages as $i => [$name, $email, $phone, $company, $subject, $body, $plan, $read]) {
             $created = Carbon::now()->subDays($i * 2 + 1)->setTime(11, 30);
 
-            // Matched on sender + subject: the box guard replays this method
-            // after a clean-out, and plain create() doubled the inbox.
             $message = ContactMessage::firstOrCreate(
                 ['email' => $email, 'subject' => $subject],
                 [
@@ -234,7 +199,8 @@ class PlatformDemoSeeder extends Seeder
                     'company' => $company,
                     'message' => $body,
                     'plan' => $plan,
-                    'ip_address' => '192.0.2.'.(10 + $i),   // TEST-NET-1, never a real host
+                    'ip_address' => '192.0.2.'.(10 + $i),
+
                     'locale' => 'ar',
                 ],
             );
@@ -251,7 +217,6 @@ class PlatformDemoSeeder extends Seeder
         }
     }
 
-    /** Only the keys an operator would brand; the rest keep registry defaults. */
     private function seedSettings(): void
     {
         foreach ([
@@ -263,7 +228,6 @@ class PlatformDemoSeeder extends Seeder
         }
     }
 
-    /** Rewrites `created_at` past the service's now() stamp, bypassing the model. */
     private function backdate(Payment|Withdrawal $model, Carbon $when): void
     {
         DB::table($model->getTable())->where('id', $model->id)->update([

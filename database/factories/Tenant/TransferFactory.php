@@ -7,9 +7,6 @@ use App\Enums\TransferStatus;
 use App\Models\Tenant\Transfer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Transfer>
- */
 class TransferFactory extends Factory
 {
     protected $model = Transfer::class;

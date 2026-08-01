@@ -55,19 +55,12 @@
                         <p class="{{ $hint }}">{{ __('ابدأ بـ «تسجيل فقط» للتجربة - تظهر الرسالة في السجل دون إرسالها فعليًا.') }}</p>
                     </div>
 
-                    {{-- Wrapping label, so the checkbox needs no `for`/`id` pair -
-                         but it does need `cursor-pointer`, which is both the
-                         affordance for a clickable row and the marker
-                         ViewMarkupTest uses to tell this pattern apart from a
-                         label that names nothing. --}}
                     <label class="flex cursor-pointer items-center gap-3 rounded-xl bg-surface-container-low p-3">
                         <input type="checkbox" name="enabled" value="1" class="h-5 w-5 rounded"
                                @checked(old('enabled', $values['whatsapp_enabled']) == '1') />
                         <span class="font-body-sm text-body-sm text-on-surface">{{ __('تفعيل إشعارات واتساب') }}</span>
                     </label>
 
-                    {{-- Credentials only matter for the cloud driver; hiding them
-                         keeps the log-driver demo path down to two controls. --}}
                     <div x-show="driver === 'cloud'" x-cloak class="space-y-5 border-t border-outline-variant/50 pt-5">
 
                         <div class="flex items-start gap-2.5 rounded-xl bg-surface-container-low p-3">
@@ -134,8 +127,6 @@
 
                         <div class="flex items-start gap-2.5 rounded-xl bg-surface-container-low p-3">
                             <span class="material-symbols-outlined !text-lg text-on-surface-variant">warning</span>
-                            {{-- يُبنى بالتجميع عمدًا: كتابة القوسين المزدوجين حرفيًا هنا
-                                 يجعل Blade يظنّهما بداية تعبير echo فيفشل الملف بـ ParseError. --}}
                             @php($templateVar = '{'.'{1}}')
                             <p class="{{ $hint }}">{{ __('القالب يجب أن يحتوي متغيّرًا واحدًا :var — يُمرَّر نص الطلب كاملًا فيه. عدد مختلف يُرجع الخطأ 132000.', ['var' => $templateVar]) }}</p>
                         </div>
@@ -192,8 +183,6 @@
                                    value="{{ old('phone') }}" class="{{ $field }}" />
 
                             @if ($recipients !== [])
-                                {{-- أرقام ميتا المسجّلة: الرقم التجريبي لا يرسل لغيرها،
-                                     فعرضها كأزرار يمنع خطأ 131030 قبل وقوعه. --}}
                                 <datalist id="wa-known-recipients">
                                     @foreach ($recipients as $recipient)
                                         <option value="{{ $recipient }}"></option>

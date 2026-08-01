@@ -5,13 +5,6 @@ namespace App\Services\Tenant;
 use App\Models\Tenant\TenantSetting;
 use Throwable;
 
-/**
- * What this tenant calls its catalogue: the section, one grouping, one entry.
- *
- * The same software runs a bakery, a fuel station and a bookshop, so every one
- * of those words is the tenant's to choose. Resolved once per request and falls
- * back to the defaults if the table is unreachable.
- */
 class CatalogNaming
 {
     public const CATALOG = 'catalog_label';
@@ -22,13 +15,10 @@ class CatalogNaming
 
     public const ICON = 'catalog_icon';
 
-    /** Trade-neutral, unlike the old `restaurant_menu` default. */
     public const DEFAULT_ICON = 'category';
 
-    /** @var array<string, string>|null */
     private ?array $resolved = null;
 
-    /** @return array<string, string> */
     public function defaults(): array
     {
         return [
@@ -38,12 +28,6 @@ class CatalogNaming
         ];
     }
 
-    /**
-     * Shortcuts for the naming dialog, each paired with its trade's icon. Free
-     * text stays available - this is a shortcut, not a whitelist.
-     *
-     * @return array<int, array{label: string, icon: string}>
-     */
     public function catalogPresets(): array
     {
         return [
@@ -62,13 +46,11 @@ class CatalogNaming
         ];
     }
 
-    /** @return array<int, string> */
     public function categoryPresets(): array
     {
         return [__('فئة'), __('نوع'), __('قسم'), __('مجموعة'), __('تصنيف')];
     }
 
-    /** @return array<int, string> */
     public function itemPresets(): array
     {
         return [__('صنف'), __('منتج'), __('خدمة'), __('سلعة'), __('عنصر')];
@@ -96,19 +78,11 @@ class CatalogNaming
         return filled($icon) ? $icon : self::DEFAULT_ICON;
     }
 
-    /**
-     * Whether the owner has named the section. It stays out of the navigation
-     * until then - only an explicit label counts, never a default.
-     */
     public function isConfigured(): bool
     {
         return filled($this->all()[self::CATALOG] ?? null);
     }
 
-    /**
-     * The stored value with NO fallback. Forms need this: pre-filling a field
-     * with the default would persist the placeholder as a real choice.
-     */
     public function raw(string $key): ?string
     {
         $value = $this->all()[$key] ?? null;
@@ -124,7 +98,6 @@ class CatalogNaming
         return filled($value) ? $value : ($defaults[$key] ?? '');
     }
 
-    /** @return array<string, string> */
     public function all(): array
     {
         if ($this->resolved !== null) {
@@ -132,25 +105,18 @@ class CatalogNaming
         }
 
         try {
-            // ICON is listed explicitly - it has no textual default, so keying
-            // this off defaults() alone never loaded it.
             return $this->resolved = TenantSetting::query()
                 ->whereIn('key', [...array_keys($this->defaults()), self::ICON])
                 ->pluck('value', 'key')
                 ->all();
         } catch (Throwable) {
-            // No tenant connection yet; defaults keep every page rendering.
             return $this->resolved = [];
         }
     }
 
-    /**
-     * @param  array<string, string|null>  $labels
-     */
     public function put(array $labels): void
     {
         foreach ($labels as $key => $value) {
-            // ICON is writable despite being absent from defaults().
             if ($key !== self::ICON && ! array_key_exists($key, $this->defaults())) {
                 continue;
             }

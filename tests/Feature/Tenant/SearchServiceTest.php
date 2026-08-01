@@ -13,14 +13,6 @@ use App\Models\Tenant\Transfer;
 use App\Services\Tenant\SearchService;
 use Tests\TenantTestCase;
 
-/**
- * Global search, shared by the header pill and the mobile API.
- *
- * Two things here are load-bearing rather than cosmetic:
- *   - a PHONE has to find the customer's ORDERS, not just the customer row;
- *   - soft-deleted rows must not come back, which an unwrapped OR would let
- *     happen because the soft-delete scope only binds to the last branch.
- */
 class SearchServiceTest extends TenantTestCase
 {
     private SearchService $service;
@@ -58,10 +50,6 @@ class SearchServiceTest extends TenantTestCase
         );
     }
 
-    /**
-     * A phone lives on the customer row, so orders must be reached through the
-     * relation to be findable by the most common search there is.
-     */
     public function test_an_order_is_found_by_its_customers_phone(): void
     {
         $customer = Customer::factory()->create(['name' => 'ليلى', 'phone' => '0597654321']);
@@ -82,10 +70,6 @@ class SearchServiceTest extends TenantTestCase
         $this->assertCount(1, $this->service->search('شاورما', $this->owner)['orders']);
     }
 
-    /**
-     * With the OR left unwrapped, the soft-delete scope binds to the last branch
-     * only and a deleted order matching an earlier branch comes back.
-     */
     public function test_soft_deleted_orders_and_banks_stay_hidden(): void
     {
         $transfer = Transfer::factory()->create(['customer' => 'مطلوب حذفه']);
@@ -98,10 +82,6 @@ class SearchServiceTest extends TenantTestCase
         $this->assertCount(0, $this->service->search('محذوف', $this->owner)['banks']);
     }
 
-    /**
-     * An operator looks for the INSTITUTION as often as the holder ("بنك
-     * فلسطين", not "سامي"), so the account is reachable by either.
-     */
     public function test_an_account_is_found_by_its_institution_name(): void
     {
         $bankName = \App\Models\Tenant\BankName::factory()->create(['name' => 'بنك فلسطين']);
@@ -111,7 +91,6 @@ class SearchServiceTest extends TenantTestCase
         $this->assertCount(1, $this->service->search('سامي', $this->owner)['banks']);
     }
 
-    /** A catalogue hit carries the icon the catalogue page would draw. */
     public function test_a_catalogue_entry_falls_back_to_its_categorys_icon(): void
     {
         $category = MenuCategory::create(['name' => 'وقود', 'position' => 0, 'icon' => 'local_gas_station']);
@@ -135,14 +114,10 @@ class SearchServiceTest extends TenantTestCase
 
         $this->assertCount(0, $results['banks']);
         $this->assertCount(0, $results['menuItems']);
-        // ...while the groups every member may see still work.
+
         $this->assertTrue($powerless->hasPermission(PermissionKey::BanksManage) === false);
     }
 
-    /**
-     * `%` is a LIKE wildcard. Unescaped, "%%" would match every row - a way to
-     * dump the tables through a box that is supposed to need two real characters.
-     */
     public function test_like_wildcards_in_the_query_are_escaped(): void
     {
         Customer::factory()->create(['name' => 'سارة', 'phone' => '0598765432']);

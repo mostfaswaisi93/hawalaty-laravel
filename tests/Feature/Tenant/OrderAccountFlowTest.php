@@ -11,10 +11,6 @@ use App\Models\Tenant\Transfer;
 use App\Services\Tenant\TransferService;
 use Tests\TenantTestCase;
 
-/**
- * Orders post to an ACCOUNT: the form picks one, the order stores
- * `account_id`, and the money lands on that account's ledger.
- */
 class OrderAccountFlowTest extends TenantTestCase
 {
     private function member(): TeamMember
@@ -33,7 +29,6 @@ class OrderAccountFlowTest extends TenantTestCase
         ]);
     }
 
-    /** @return array<string, mixed> */
     private function orderPayload(MenuItem $item, array $overrides = []): array
     {
         return [
@@ -62,7 +57,6 @@ class OrderAccountFlowTest extends TenantTestCase
 
         $this->assertSame($account->id, $transfer->account_id);
 
-        // The account received money -> a DEBIT, and the balance rises.
         $entry = $account->ledgerEntries()->sole();
         $this->assertSame(50.0, (float) $entry->debit);
         $this->assertSame(0.0, (float) $entry->credit);
@@ -102,7 +96,6 @@ class OrderAccountFlowTest extends TenantTestCase
         $this->assertSame(0, LedgerEntry::count());
     }
 
-    /** A wallet account is the same transfer path, told apart by its `kind`. */
     public function test_a_wallet_order_posts_to_the_wallet_account(): void
     {
         $item = $this->menuItem(50);
@@ -119,8 +112,6 @@ class OrderAccountFlowTest extends TenantTestCase
         $this->assertSame('wallet', $transfer->account->kind->value);
         $this->assertSame(50.0, (float) $wallet->fresh()->balance);
     }
-
-    // ─────────────── HTTP / validation ───────────────
 
     public function test_the_order_page_offers_the_accounts(): void
     {
@@ -149,11 +140,6 @@ class OrderAccountFlowTest extends TenantTestCase
         $this->assertSame($account->id, Transfer::firstOrFail()->account_id);
     }
 
-    /**
-     * `amount` stays what the customer OWES, so every revenue figure keeps
-     * working; the discount is stored beside it only so the invoice can show
-     * the arithmetic.
-     */
     public function test_a_discount_comes_off_the_amount_and_is_recorded(): void
     {
         $item = $this->menuItem(50);
@@ -168,7 +154,6 @@ class OrderAccountFlowTest extends TenantTestCase
         $this->assertSame(12.5, (float) $transfer->discount);
     }
 
-    /** A discount larger than the order would drive `amount` below the DB's CHECK. */
     public function test_a_discount_cannot_exceed_the_order_total(): void
     {
         $item = $this->menuItem(50);
@@ -196,10 +181,6 @@ class OrderAccountFlowTest extends TenantTestCase
         $this->assertSame(0.0, (float) $transfer->discount);
     }
 
-    /**
-     * The reference is what an order is reconciled against, so entering the
-     * same one twice - the classic double-booking - has to be refused.
-     */
     public function test_a_duplicate_reference_number_is_rejected(): void
     {
         $item = $this->menuItem(50);
@@ -240,7 +221,6 @@ class OrderAccountFlowTest extends TenantTestCase
         $this->assertSame(0, Transfer::count());
     }
 
-    /** A cash order has no slip, so it needs no reference - and two may coexist. */
     public function test_cash_orders_need_no_reference_and_do_not_collide(): void
     {
         $item = $this->menuItem(50);
@@ -279,10 +259,6 @@ class OrderAccountFlowTest extends TenantTestCase
         ])->assertSessionHasErrors('changeAccountId');
     }
 
-    /**
-     * The offline-sync path validates with rules() ALONE, so the destination
-     * requirement has to live there rather than in withValidator().
-     */
     public function test_the_destination_guard_applies_to_the_sync_rules(): void
     {
         $rules = (new \App\Http\Requests\Tenant\Transfer\StoreTransferRequest)->rules();

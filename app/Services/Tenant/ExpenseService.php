@@ -10,11 +10,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ExpenseService
 {
-    /**
-     * Paginated (matching History/ActivityLog) - every logged expense is a
-     * new row with no ceiling, so an unbounded get() would eventually load
-     * the tenant's entire expense history on one request.
-     */
     public function list(?string $search = null, int $perPage = 20): LengthAwarePaginator
     {
         $query = Expense::query()->with(['account.bankName', 'account.walletName', 'account.currency'])->whereSearch('description', $search);

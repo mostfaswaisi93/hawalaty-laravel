@@ -12,17 +12,6 @@ use App\Models\Tenant\Transfer;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 
-/**
- * The tenant API's write paths.
- *
- * Reads were covered by TenantApiSmokeTest; these are the ones that change
- * data, so a break here is worse than a blank screen. Two properties matter:
- *
- *   - the write actually lands, in the shape the client sent;
- *   - a member WITHOUT the permission is refused. The API has no navigation to
- *     hide an action behind, so the endpoint is the only thing standing between
- *     a staff token and a bank record.
- */
 class TenantApiWriteTest extends TenantApiTestCase
 {
     protected function setUp(): void
@@ -32,7 +21,6 @@ class TenantApiWriteTest extends TenantApiTestCase
         Notification::fake();
     }
 
-    /** A member holding no permission at all - the "no permission" path. */
     private function actAsPowerless(): TeamMember
     {
         $member = TeamMember::factory()->create(['role_id' => Role::factory()->create()->id]);
@@ -40,8 +28,6 @@ class TenantApiWriteTest extends TenantApiTestCase
 
         return $member;
     }
-
-    // --- catalogue --------------------------------------------------------
 
     public function test_a_catalogue_entry_can_be_created_and_priced(): void
     {
@@ -70,8 +56,6 @@ class TenantApiWriteTest extends TenantApiTestCase
         $this->assertSame(0, MenuItem::count());
     }
 
-    // --- expenses ---------------------------------------------------------
-
     public function test_an_expense_can_be_recorded_and_removed(): void
     {
         $this->actAsOwner();
@@ -91,9 +75,6 @@ class TenantApiWriteTest extends TenantApiTestCase
         $this->assertSame(0, Expense::count());
     }
 
-    // --- orders -----------------------------------------------------------
-
-    /** Status is the only field an update may change - the amount is server-owned. */
     public function test_an_order_status_can_be_changed_but_not_its_amount(): void
     {
         $this->actAsOwner();
@@ -116,12 +97,9 @@ class TenantApiWriteTest extends TenantApiTestCase
 
         $this->deleteJson("/api/v1/transfers/{$transfer->id}")->assertNoContent();
 
-        // Soft-deleted: financial records survive for the audit trail.
         $this->assertSame(0, Transfer::count());
         $this->assertSame(1, Transfer::withTrashed()->count());
     }
-
-    // --- team & roles -----------------------------------------------------
 
     public function test_a_team_member_can_be_invited(): void
     {

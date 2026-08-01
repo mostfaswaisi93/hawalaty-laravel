@@ -6,16 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('personal_access_tokens', function (Blueprint $table) {
             $table->id();
-            // ulidMorphs, not morphs: every tokenable model in this app
-            // (Admin, and every tenant's team members) uses HasUlids string
-            // primary keys, not auto-incrementing integers.
+
             $table->ulidMorphs('tokenable');
             $table->text('name');
             $table->string('token', 64)->unique();
@@ -26,9 +21,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('personal_access_tokens');

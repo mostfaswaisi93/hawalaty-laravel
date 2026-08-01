@@ -1,15 +1,3 @@
-{{--
-    success/error are transient confirmations, so they float as a dismissible
-    toast pinned to the bottom-centre of the viewport and auto-close. Bottom
-    rather than top so the toast never overlaps a page's own header/banner,
-    which is where the eye already is right after a save. Validation errors
-    deliberately stay inline: they refer to specific fields the user has to go
-    back and fix, so they must not disappear on a timer.
-
-    `fixed` here is safe because this component renders from the layout, outside
-    the `.page-enter` wrapper - see the note on .page-enter in app.css about
-    transformed ancestors capturing fixed positioning.
---}}
 @if (session('success') || session('error'))
     @php
         $isSuccess = (bool) session('success');
@@ -37,9 +25,6 @@
             {{ $isSuccess ? 'check_circle' : 'error' }}
         </span>
         <p class="font-body-sm text-body-sm font-bold">{{ $flash }}</p>
-        {{-- Same as x-modal-close: dismissing removes the element from under the
-             cursor, so the bubble is cleared on click rather than relying on a
-             mouseleave that never fires. --}}
         <button type="button" @click="hideTip(); show = false"
             @mouseenter="showTipBelow($el, @js(__('إغلاق')))" @mouseleave="hideTip()"
             @focus="showTipBelow($el, @js(__('إغلاق')))" @blur="hideTip()"

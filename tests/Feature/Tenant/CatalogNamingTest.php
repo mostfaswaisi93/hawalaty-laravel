@@ -10,19 +10,10 @@ use App\Services\Tenant\CatalogIcons;
 use App\Services\Tenant\CatalogNaming;
 use Tests\TenantTestCase;
 
-/**
- * The catalogue is not necessarily a food menu.
- *
- * The app shipped hard-coded as a restaurant, but the same software runs a fruit
- * shop or a fuel station. These pin that each tenant owns its own wording, that
- * the restaurant defaults still apply to anyone who never changes them, and that
- * a per-item icon can only ever be a whitelisted glyph.
- */
 class CatalogNamingTest extends TenantTestCase
 {
     private function naming(): CatalogNaming
     {
-        // Fresh instance: the service memoises per request.
         return new CatalogNaming;
     }
 
@@ -31,14 +22,6 @@ class CatalogNamingTest extends TenantTestCase
         return TeamMember::factory()->create(['role_id' => $this->seedStandardRoles()['owner']->id]);
     }
 
-    /**
-     * The defaults go through __(), so an untouched tenant sees the app's own
-     * wording in whatever language they are viewing. Compared against the
-     * translator rather than a literal for exactly that reason.
-     *
-     * The default is trade-NEUTRAL: a new account must not be told it runs a
-     * restaurant before it has entered anything.
-     */
     public function test_an_untouched_tenant_keeps_the_shipped_wording_in_the_active_locale(): void
     {
         $naming = $this->naming();
@@ -87,7 +70,6 @@ class CatalogNamingTest extends TenantTestCase
         $this->assertSame('أنواع المحروقات', $this->naming()->catalog());
     }
 
-    /** Only registered keys are writable - a stray key must not become a setting. */
     public function test_an_unknown_key_is_ignored(): void
     {
         $this->naming()->put(['something_else' => 'nope']);
@@ -105,12 +87,6 @@ class CatalogNamingTest extends TenantTestCase
             ->assertSee('أصناف الفاكهة');
     }
 
-    /**
-     * The sidebar was reading the tenant's wording while the catalogue page
-     * itself still said "قائمة الطعام" - `$naming` was handed to the view and
-     * never used, so a fuel station saw its own name in the nav and a
-     * restaurant menu the moment it clicked through.
-     */
     public function test_the_catalogue_page_uses_the_tenants_own_wording(): void
     {
         $owner = $this->owner();
@@ -123,8 +99,7 @@ class CatalogNamingTest extends TenantTestCase
         $this->actingAs($owner, 'tenant')->get('/menu')
             ->assertOk()
             ->assertSee('أنواع المحروقات')
-            // The buttons compose with a placeholder rather than a glued-on
-            // adjective, so any gender of noun stays grammatical.
+
             ->assertSee('إضافة تصنيف')
             ->assertSee('إضافة منتج')
             ->assertDontSee('قائمة الطعام');
@@ -154,8 +129,6 @@ class CatalogNamingTest extends TenantTestCase
             ->assertSessionHasErrors('catalogLabel');
     }
 
-    // --- icons ---
-
     public function test_an_item_can_carry_a_whitelisted_icon(): void
     {
         $category = MenuCategory::create(['name' => 'فواكه', 'icon' => 'nutrition', 'position' => 0]);
@@ -171,11 +144,6 @@ class CatalogNamingTest extends TenantTestCase
         $this->assertSame('nutrition', $category->fresh()->icon);
     }
 
-    /**
-     * The value is rendered as a ligature inside a span, so free text would be a
-     * way to put content on the page - and an unknown ligature draws as its own
-     * literal name, which looks broken.
-     */
     public function test_an_unknown_icon_is_rejected_by_validation(): void
     {
         $owner = $this->owner();
@@ -204,11 +172,6 @@ class CatalogNamingTest extends TenantTestCase
         $this->assertSame('category', $icons->resolve('made-up', 'also-made-up'));
     }
 
-    /**
-     * End to end: pick an icon in the form, and it is what the listing draws.
-     * The column and the whitelist existed before the picker did, so this is the
-     * test that proves the feature is actually reachable from the screen.
-     */
     public function test_an_icon_chosen_in_the_form_is_stored_and_rendered(): void
     {
         $owner = $this->owner();
@@ -225,16 +188,12 @@ class CatalogNamingTest extends TenantTestCase
 
         $this->assertSame('grocery', MenuItem::firstOrFail()->icon);
 
-        // The chosen glyph reaches the listing. A "lunch_dining is absent"
-        // assertion would be wrong here - the picker legitimately offers it as
-        // one of the restaurant options further down the same page.
         $this->actingAs($owner, 'tenant')->get('/menu')
             ->assertOk()
             ->assertViewHas('catalogIcons')
             ->assertSee('>grocery<', false);
     }
 
-    /** An entry with no icon of its own inherits the category's. */
     public function test_an_iconless_entry_falls_back_to_its_category_glyph(): void
     {
         $owner = $this->owner();

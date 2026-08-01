@@ -54,8 +54,6 @@
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h2 class="truncate font-headline-md text-headline-md text-on-surface">{{ $roleLabel($role) }}</h2>
                                     @if ($role->is_system)
-                                        {{-- Built-in roles are cloned at provisioning and deliberately
-                                             immutable, so the badge explains why the actions are absent. --}}
                                         <span class="rounded-full bg-surface-container-high px-2.5 py-0.5 text-[10px] font-bold text-on-surface-variant">{{ __('دور أساسي') }}</span>
                                     @endif
                                 </div>
@@ -112,11 +110,8 @@
             @endforeach
         </div>
 
-        {{-- add / edit --}}
         <div x-show="open" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none">
             <div class="fixed inset-0 bg-black/40" x-show="open" x-transition.opacity></div>
-            {{-- Focus the first field on open, like every other modal in the app:
-                 without it a keyboard user is still on the page behind the dialog. --}}
             <div x-show="open" @keydown.escape.window="open = false" role="dialog" aria-modal="true" aria-labelledby="role-modal-title"
                 x-init="$watch('open', v => v && $nextTick(() => $el.querySelector('input:not([type=hidden]), select, textarea')?.focus()))"
                 x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
@@ -139,9 +134,6 @@
                     <div class="space-y-2">
                         <p class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الصلاحيات') }}</p>
 
-                        {{-- Each permission is submitted as its own checkbox rather than a
-                             multi-select: the description matters as much as the name when
-                             deciding whether to grant something. --}}
                         @foreach ($permissions as $permission)
                             <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
                                 :class="has(@js($permission->value)) ? 'border-primary bg-primary/5' : 'border-outline-variant hover:bg-surface-container-low'">

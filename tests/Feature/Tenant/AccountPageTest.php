@@ -12,12 +12,6 @@ use App\Models\Tenant\WalletType;
 use App\Services\Tenant\AccountService;
 use Tests\TenantTestCase;
 
-/**
- * Phase 2b - the accounts screens and their guards: who may reach them,
- * bank/wallet creation, the currency-must-be-supported rule, the manual ledger
- * entry, and the two deletion guards (an account with history, and a catalog
- * row still used by an account).
- */
 class AccountPageTest extends TenantTestCase
 {
     private function owner(): TeamMember
@@ -40,8 +34,6 @@ class AccountPageTest extends TenantTestCase
 
     public function test_the_index_is_gated_on_banks_manage(): void
     {
-        // seedStandardRoles() inserts the 7 UNIQUE permissions, so it must be
-        // called once per test - seed here and build both members from it.
         $roles = $this->seedStandardRoles();
         $staff = TeamMember::factory()->create(['role_id' => $roles['staff']->id]);
         $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
@@ -82,7 +74,8 @@ class AccountPageTest extends TenantTestCase
     public function test_a_currency_not_supported_by_the_bank_is_rejected(): void
     {
         $currency = Currency::factory()->create();
-        $bank = BankName::factory()->create(); // supports no currencies
+        $bank = BankName::factory()->create();
+
         $type = AccountType::factory()->create();
 
         $this->actingAs($this->owner(), 'tenant')->post('/accounts', [
@@ -212,7 +205,6 @@ class AccountPageTest extends TenantTestCase
         $this->assertNull(Account::find($account->id));
     }
 
-    /** A catalog row still referenced by an account must not be deletable. */
     public function test_a_bank_name_in_use_by_an_account_cannot_be_deleted(): void
     {
         $account = Account::factory()->create();

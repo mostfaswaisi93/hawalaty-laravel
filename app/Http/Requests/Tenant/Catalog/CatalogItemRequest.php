@@ -6,21 +6,10 @@ use App\Services\Tenant\CatalogRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * One request for every catalog's store AND update, because every catalog row
- * is the same shape: a `name`, an optional `symbol` (currencies only), and an
- * `active` flag. The `{catalog}` route segment decides which table `name` must
- * be unique in and whether `symbol` is required.
- *
- * Store requires `name`; update relaxes it to `sometimes` so the active toggle
- * - which posts only `active` - is a valid partial update (mirrors
- * UpdateBankRequest).
- */
 class CatalogItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Gated in CatalogController::canManage() (BanksManage).
         return true;
     }
 
@@ -29,14 +18,11 @@ class CatalogItemRequest extends FormRequest
         $registry = app(CatalogRegistry::class);
         $catalog = (string) $this->route('catalog');
 
-        // Unknown catalog -> 404 before any rule references a missing model.
         $meta = $registry->get($catalog);
         $table = (new $meta['model'])->getTable();
 
         $creating = $this->isMethod('post');
-        // `name` uniqueness counts soft-deleted rows (Rule::unique queries the
-        // raw table) exactly as the DB unique index does, so the two never
-        // disagree - same trade-off as banks.code.
+
         $presence = $creating ? ['required'] : ['sometimes', 'required'];
 
         $rules = [
@@ -53,8 +39,6 @@ class CatalogItemRequest extends FormRequest
             $rules['symbol'] = [...$presence, 'string', 'max:8'];
         }
 
-        // Banks / wallets / cash boxes: the currencies they support. Optional
-        // (`sometimes`), so the active-toggle partial update never clears them.
         if ($meta['currencies']) {
             $rules['currencies'] = ['sometimes', 'nullable', 'array'];
             $rules['currencies.*'] = ['string', Rule::exists('tenant.currencies', 'id')];
