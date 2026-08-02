@@ -34,6 +34,7 @@ class StockService
     public function __construct(
         private readonly BusinessProfile $business,
         private readonly BatchService $batches,
+        private readonly RecipeService $recipes,
     ) {}
 
     /**
@@ -156,7 +157,20 @@ class StockService
         // Silent rather than throwing: this runs at the till, inside the order
         // transaction. A vertical with no inventory module has no ledger to
         // write to, and a services workspace must not fail a sale over it.
-        if (! $this->business->tracksStock() || ! $item->isStocked()) {
+        if (! $this->business->tracksStock()) {
+            return collect();
+        }
+
+        // A dish assembled at the till is not held as a dish. What leaves the
+        // shelf is its ingredients, exploded down to whatever is actually
+        // counted, so a burger takes bread and meat rather than a burger.
+        if ($this->recipes->enabled() && $item->assemblesToOrder()) {
+            $this->assertPositive($quantity);
+
+            return $this->issueComponents($item, $quantity, $locationId, $attributes);
+        }
+
+        if (! $item->isStocked()) {
             return collect();
         }
 
@@ -227,6 +241,34 @@ class StockService
             'expires_at' => $batch->expires_at,
             'reason' => $reason,
         ]);
+    }
+
+    /**
+     * Deplete a recipe's ingredients instead of the finished item.
+     *
+     * Recorded as consumption rather than a sale: what was sold is the order,
+     * and what left the shelf is flour. Keeping the two apart is what lets a
+     * kitchen compare theoretical against actual usage at all.
+     *
+     * @return Collection<int, StockMovement>
+     */
+    private function issueComponents(MenuItem $item, float $quantity, ?string $locationId, array $attributes): Collection
+    {
+        $movements = collect();
+
+        foreach ($this->recipes->explode($item, $quantity) as $row) {
+            $movements = $movements->concat($this->issue(
+                $row['item'],
+                $row['quantity'],
+                StockMovementType::Consumption,
+                $locationId,
+                array_merge($attributes, [
+                    'reason' => $attributes['reason'] ?? __('مكوّنات :item', ['item' => $item->name]),
+                ]),
+            ));
+        }
+
+        return $movements;
     }
 
     private function writeIssue(

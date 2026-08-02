@@ -24,8 +24,20 @@ class StoreTransferRequest extends FormRequest
 
             'items.*.itemId' => ['required', 'string', 'exists:tenant.menu_items,id'],
             'items.*.name' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
+
+            /*
+             * Fractional, and floored just above zero rather than at one: a till
+             * that cannot ring up 1.35 kg of tomatoes or 22.7 litres of diesel
+             * cannot serve four of the twelve trades. Whole-number units are
+             * enforced by the unit's own step in the UI, not by refusing
+             * decimals outright here.
+             */
+            'items.*.quantity' => ['required', 'numeric', 'gt:0', 'max:99999999'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
+
+            // Ids only. What each option costs is looked up server-side.
+            'items.*.modifiers' => ['nullable', 'array'],
+            'items.*.modifiers.*' => ['string', 'exists:tenant.modifiers,id'],
 
             'discount' => ['nullable', 'numeric', 'min:0'],
 

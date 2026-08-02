@@ -29,6 +29,7 @@ class TransferService
         private readonly WhatsAppSender $whatsapp,
         private readonly AccountService $accounts,
         private readonly StockService $stock,
+        private readonly ModifierService $modifiers,
     ) {}
 
     public function list(array $filters): LengthAwarePaginator
@@ -66,15 +67,32 @@ class TransferService
     public function create(array $data): Transfer
     {
         $transfer = DB::transaction(function () use ($data) {
-            $menuItems = MenuItem::whereIn('id', array_column($data['items'], 'itemId'))->get()->keyBy('id');
+            $menuItems = MenuItem::with('modifierGroups')
+                ->whereIn('id', array_column($data['items'], 'itemId'))
+                ->get()
+                ->keyBy('id');
 
+            /*
+             * Options are resolved and priced here, once, from the database.
+             * The till posts which ones were picked and nothing else about them:
+             * a price that arrives from the browser is a price the customer can
+             * edit.
+             */
+            $chosen = [];
             $amount = 0;
             $summaryParts = [];
 
-            foreach ($data['items'] as $item) {
+            foreach ($data['items'] as $index => $item) {
                 $menuItem = $menuItems->get($item['itemId']);
-                $amount += $item['quantity'] * $menuItem->price;
-                $summaryParts[] = "{$menuItem->name} ×{$item['quantity']}";
+                $modifiers = $this->modifiers->resolveFor($menuItem, $item['modifiers'] ?? []);
+
+                $chosen[$index] = $modifiers;
+
+                $unitPrice = (float) $menuItem->price + $this->modifiers->priceDelta($modifiers);
+                $amount += $item['quantity'] * $unitPrice;
+
+                $suffix = $modifiers->isNotEmpty() ? ' ('.$modifiers->pluck('name')->implode('، ').')' : '';
+                $summaryParts[] = "{$menuItem->name}{$suffix} ×{$item['quantity']}";
             }
 
             $discount = min(max((float) ($data['discount'] ?? 0), 0), $amount);
@@ -107,14 +125,40 @@ class TransferService
                 'confirmation_token' => ($data['paymentMethod'] ?? null) === 'bank' ? Str::random(48) : null,
             ]);
 
-            foreach ($data['items'] as $item) {
+            foreach ($data['items'] as $index => $item) {
                 $menuItem = $menuItems->get($item['itemId']);
-                $transfer->lineItems()->create([
+                $modifiers = $chosen[$index] ?? collect();
+
+                $lineItem = $transfer->lineItems()->create([
                     'menu_item_id' => $item['itemId'],
                     'name' => $menuItem->name,
                     'quantity' => $item['quantity'],
                     'price' => $menuItem->price,
                 ]);
+
+                foreach ($modifiers as $modifier) {
+                    // Name and price copied, not joined: the receipt has to keep
+                    // saying what was sold after the menu moves on.
+                    $lineItem->modifiers()->create([
+                        'modifier_id' => $modifier->id,
+                        'name' => $modifier->name,
+                        'price_delta' => $modifier->price_delta,
+                    ]);
+
+                    if ($modifier->consumesStock() && $modifier->component instanceof MenuItem) {
+                        $this->stock->issue(
+                            $modifier->component,
+                            (float) $modifier->component_quantity * (float) $item['quantity'],
+                            StockMovementType::Consumption,
+                            null,
+                            [
+                                'reference_type' => 'transfer',
+                                'reference_id' => $transfer->id,
+                                'reason' => __('إضافة :modifier', ['modifier' => $modifier->name]),
+                            ],
+                        );
+                    }
+                }
 
                 /*
                  * Take it off the shelf.
@@ -142,7 +186,7 @@ class TransferService
         });
 
         $transfer->load([
-            'lineItems', 'changeAccount', 'customerProfile',
+            'lineItems.modifiers', 'changeAccount', 'customerProfile',
             'account.bankName', 'account.walletName',
         ]);
 

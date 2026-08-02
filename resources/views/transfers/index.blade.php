@@ -108,11 +108,14 @@
                             <p class="font-body-sm">{{ __('لم تُضِف أي صنف بعد') }}</p>
                         </div>
 
-                        <template x-for="line in cart" :key="line.id">
+                        <template x-for="line in cart" :key="line.key">
                             <div class="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3">
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate font-body-sm font-bold text-on-surface" x-text="line.name"></p>
-                                    <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(line.price)"></span> ₪</p>
+                                    <p x-show="line.mods && line.mods.length" x-cloak
+                                        class="truncate text-[11px] text-primary"
+                                        x-text="(line.mods || []).map(m => m.name).join('، ')"></p>
+                                    <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(unitPrice(line))"></span> ₪</p>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button type="button" @click="dec(line)" aria-label="{{ __('إنقاص') }}" title="{{ __('إنقاص') }}"
@@ -355,12 +358,69 @@
                     </div>
                 </div>
 
-                <template x-for="(line, idx) in cart" :key="'in-' + line.id">
+                <div x-show="optionsItem" x-cloak style="display:none" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                    role="dialog" aria-modal="true" aria-labelledby="options-dialog-title">
+                    <div class="fixed inset-0 bg-black/40" x-show="optionsItem" x-transition.opacity @click="optionsItem = null"></div>
+
+                    <div class="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                        x-show="optionsItem" @keydown.escape.window="optionsItem = null"
+                        x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+
+                        <x-modal-close on-close="optionsItem = null" />
+
+                        <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
+                            <h3 id="options-dialog-title" class="font-headline-md text-headline-md" x-text="optionsItem?.name"></h3>
+                            <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">{{ __('اختر ما يريده الزبون.') }}</p>
+                        </div>
+
+                        <div class="space-y-5 p-6">
+                            <template x-for="group in (optionsItem?.groups || [])" :key="group.id">
+                                <fieldset class="space-y-2">
+                                    <legend class="flex items-center gap-2 font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">
+                                        <span x-text="group.name"></span>
+                                        <span x-show="group.required" class="rounded bg-error/10 px-1.5 py-0.5 text-error" x-cloak>{{ __('إلزامي') }}</span>
+                                    </legend>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <template x-for="option in group.options" :key="option.id">
+                                            <button type="button" @click="toggleOption(group, option)"
+                                                class="flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-start transition"
+                                                :class="isChosen(group.id, option.id)
+                                                    ? 'border-primary bg-primary text-on-primary'
+                                                    : 'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline'"
+                                                :aria-pressed="isChosen(group.id, option.id)">
+                                                <span class="min-w-0 truncate font-body-sm" x-text="option.name"></span>
+                                                <span x-show="option.delta !== 0" x-cloak class="whitespace-nowrap font-numeral-lg text-xs" dir="ltr"
+                                                    x-text="(option.delta > 0 ? '+' : '') + fmt(option.delta)"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </fieldset>
+                            </template>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
+                            <p class="font-numeral-lg font-bold" dir="ltr"><span x-text="fmt(optionsPrice)"></span> ₪</p>
+                            <div class="flex gap-3">
+                                <button type="button" @click="optionsItem = null" class="rounded-xl px-5 py-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                                <button type="button" @click="confirmOptions()" :disabled="!optionsValid"
+                                    class="rounded-xl bg-primary px-5 py-3 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                    {{ __('إضافة للسلة') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <template x-for="(line, idx) in cart" :key="'in-' + line.key">
                     <div class="hidden">
                         <input type="hidden" :name="`items[${idx}][itemId]`" :value="line.id" />
                         <input type="hidden" :name="`items[${idx}][name]`" :value="line.name" />
                         <input type="hidden" :name="`items[${idx}][quantity]`" :value="line.qty" />
                         <input type="hidden" :name="`items[${idx}][price]`" :value="line.price" />
+                        <template x-for="mod in (line.mods || [])" :key="'m-' + line.key + '-' + mod.id">
+                            <input type="hidden" :name="`items[${idx}][modifiers][]`" :value="mod.id" />
+                        </template>
                     </div>
                 </template>
             </aside>
@@ -427,17 +487,97 @@
                     return out;
                 },
 
-                get subtotal() { return this.cart.reduce((sum, l) => sum + l.price * l.qty, 0); },
+                get subtotal() { return this.cart.reduce((sum, l) => sum + this.unitPrice(l) * l.qty, 0); },
 
                 get total() { return Math.max(this.subtotal - (parseFloat(this.discount) || 0), 0); },
                 get itemCount() { return this.cart.reduce((sum, l) => sum + l.qty, 0); },
 
-                qtyOf(id) { const l = this.cart.find(c => c.id === id); return l ? l.qty : 0; },
+                /* Price of one unit with the chosen options folded in. Display
+                   only - the server prices the order again from the database. */
+                unitPrice(line) { return line.price + (line.mods || []).reduce((sum, m) => sum + m.delta, 0); },
+
+                /* Same dish with different options is a different line, so the
+                   badge on the menu tile has to add them up. */
+                qtyOf(id) { return this.cart.filter(c => c.id === id).reduce((sum, l) => sum + l.qty, 0); },
+
+                lineKey(itemId, mods) {
+                    return itemId + '|' + mods.map(m => m.id).sort().join(',');
+                },
+
                 addItem(item) {
-                    const existing = this.cart.find(c => c.id === item.id);
+                    if (item.groups && item.groups.length) { this.openOptions(item); return; }
+                    this.pushLine(item, []);
+                },
+
+                pushLine(item, mods) {
+                    const key = this.lineKey(item.id, mods);
+                    const existing = this.cart.find(c => c.key === key);
+
                     if (existing) { existing.qty++; }
-                    else { this.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 }); }
+                    else { this.cart.push({ key, id: item.id, name: item.name, price: item.price, qty: 1, mods }); }
+
                     if (this.paymentMethod === 'bank') { this.transferredAmount = this.total.toFixed(2); }
+                },
+
+                /* Option picker. Defaults are pre-selected so the common order is
+                   one tap, and the confirm button stays disabled until every
+                   required group has been answered. */
+                optionsItem: null,
+                optionsChosen: {},
+
+                openOptions(item) {
+                    this.optionsItem = item;
+                    this.optionsChosen = {};
+
+                    item.groups.forEach(group => {
+                        const defaults = group.options.filter(o => o.default).map(o => o.id);
+                        this.optionsChosen[group.id] = group.single ? defaults.slice(0, 1) : defaults;
+                    });
+                },
+
+                isChosen(groupId, optionId) { return (this.optionsChosen[groupId] || []).includes(optionId); },
+
+                toggleOption(group, option) {
+                    const current = this.optionsChosen[group.id] || [];
+
+                    if (group.single) { this.optionsChosen[group.id] = current.includes(option.id) && ! group.required ? [] : [option.id]; return; }
+
+                    if (current.includes(option.id)) {
+                        this.optionsChosen[group.id] = current.filter(id => id !== option.id);
+                        return;
+                    }
+
+                    if (group.max !== null && current.length >= group.max) { return; }
+
+                    this.optionsChosen[group.id] = [...current, option.id];
+                },
+
+                get chosenModifiers() {
+                    if (! this.optionsItem) return [];
+
+                    return this.optionsItem.groups.flatMap(group =>
+                        group.options.filter(o => this.isChosen(group.id, o.id))
+                    );
+                },
+
+                get optionsPrice() {
+                    if (! this.optionsItem) return 0;
+                    return this.optionsItem.price + this.chosenModifiers.reduce((sum, m) => sum + m.delta, 0);
+                },
+
+                get optionsValid() {
+                    if (! this.optionsItem) return false;
+
+                    return this.optionsItem.groups.every(group => {
+                        const taken = (this.optionsChosen[group.id] || []).length;
+                        return taken >= group.min && (group.max === null || taken <= group.max);
+                    });
+                },
+
+                confirmOptions() {
+                    if (! this.optionsValid) return;
+                    this.pushLine(this.optionsItem, this.chosenModifiers);
+                    this.optionsItem = null;
                 },
                 inc(line) { line.qty++; if (this.paymentMethod === 'bank') this.transferredAmount = this.total.toFixed(2); },
                 dec(line) {
@@ -470,6 +610,7 @@
                             name: l.name,
                             quantity: l.qty,
                             price: l.price,
+                            modifiers: (l.mods || []).map(m => m.id),
                         })),
                     };
 

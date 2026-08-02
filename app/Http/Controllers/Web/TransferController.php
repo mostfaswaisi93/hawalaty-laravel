@@ -14,6 +14,7 @@ use App\Services\Tenant\TransferService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Js;
 use Illuminate\View\View;
+use Throwable;
 
 class TransferController extends Controller
 {
@@ -28,7 +29,9 @@ class TransferController extends Controller
         }
 
         $categories = MenuCategory::query()
-            ->with(['menuItems' => fn ($query) => $query->where('active', true)->orderBy('name')])
+            ->with(['menuItems' => fn ($query) => $query->where('active', true)->orderBy('name')
+                ->with(['modifierGroups' => fn ($groups) => $groups->where('active', true)
+                    ->with(['modifiers' => fn ($modifiers) => $modifiers->where('active', true)])])])
             ->orderBy('position')
             ->get()
             ->filter(fn (MenuCategory $category) => $category->menuItems->isNotEmpty())
@@ -61,6 +64,23 @@ class TransferController extends Controller
                     'id' => $item->id,
                     'name' => $item->name,
                     'price' => (float) $item->price,
+                    'step' => $item->unit()->step(),
+                    // Shipped with the menu so choosing options costs no round
+                    // trip - the till has to stay usable on a bad connection.
+                    'groups' => $item->modifierGroups->map(fn ($group) => [
+                        'id' => $group->id,
+                        'name' => $group->name,
+                        'single' => $group->isSingle(),
+                        'required' => (bool) $group->is_required,
+                        'min' => $group->minSelections(),
+                        'max' => $group->maxSelections(),
+                        'options' => $group->modifiers->map(fn ($modifier) => [
+                            'id' => $modifier->id,
+                            'name' => $modifier->name,
+                            'delta' => (float) $modifier->price_delta,
+                            'default' => (bool) $modifier->is_default,
+                        ])->values(),
+                    ])->values(),
                 ])->values(),
             ])->values()
         );
@@ -92,7 +112,13 @@ class TransferController extends Controller
             abort(403);
         }
 
-        $transfer = $this->service->create($request->validated());
+        try {
+            $transfer = $this->service->create($request->validated());
+        } catch (Throwable $e) {
+            // A broken option selection - a required size skipped, two picked
+            // where one is allowed - is the cashier's to fix, not a 500.
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('transfers.created', $transfer->id);
     }

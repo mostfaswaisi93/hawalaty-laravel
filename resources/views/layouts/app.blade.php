@@ -23,6 +23,9 @@
                 ['href' => '/catalogs', 'icon' => 'category', 'label' => 'الكتالوجات', 'match' => 'catalogs*', 'permission' => \App\Enums\PermissionKey::BanksManage],
 
                 ['href' => '/menu', 'icon' => $catalogIcon, 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'feature' => \App\Enums\PackageFeature::Menu, 'translated' => true, 'visible' => $catalogConfigured],
+                ['href' => '/recipes', 'icon' => 'blender', 'label' => 'الوصفات', 'match' => 'recipes*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'capability' => \App\Enums\BusinessCapability::Recipes],
+                ['href' => '/modifiers', 'icon' => 'tune', 'label' => 'الإضافات والخيارات', 'match' => 'modifiers*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'capability' => \App\Enums\BusinessCapability::Modifiers],
+                ['href' => '/production', 'icon' => 'factory', 'label' => 'الإنتاج', 'match' => 'production*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Recipes],
                 ['href' => '/inventory', 'icon' => 'inventory_2', 'label' => 'المخزون', 'match' => 'inventory*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Inventory],
                 ['href' => '/batches', 'icon' => 'event_available', 'label' => 'اللوط والصلاحية', 'match' => 'batches*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Batches],
                 ['href' => '/stock-counts', 'icon' => 'checklist', 'label' => 'الجرد', 'match' => 'stock-counts*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Inventory],

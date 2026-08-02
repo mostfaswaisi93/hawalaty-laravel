@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
@@ -58,6 +59,49 @@ class MenuItem extends Model
     public function batches(): HasMany
     {
         return $this->hasMany(Batch::class);
+    }
+
+    /**
+     * What this item is made of.
+     */
+    public function recipeComponents(): HasMany
+    {
+        return $this->hasMany(RecipeComponent::class, 'parent_item_id')->orderBy('position');
+    }
+
+    /**
+     * Recipes this item appears in as an ingredient. Guards deletion and answers
+     * "what breaks if this ingredient goes away".
+     */
+    public function usedInRecipes(): HasMany
+    {
+        return $this->hasMany(RecipeComponent::class, 'component_item_id');
+    }
+
+    public function modifierGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(ModifierGroup::class, 'menu_item_modifier_group')
+            ->withPivot('position')
+            ->orderBy('menu_item_modifier_group.position');
+    }
+
+    public function hasRecipe(): bool
+    {
+        return $this->recipeComponents()->exists();
+    }
+
+    /**
+     * Whether selling one of these should consume its components rather than
+     * itself.
+     *
+     * A restaurant assembles to order, so the dish is never stocked and its
+     * ingredients are. A bakery produces to stock, so the loaf IS stocked and
+     * its flour was already consumed by the production run - depleting the
+     * recipe again at the till would double-count.
+     */
+    public function assemblesToOrder(): bool
+    {
+        return ! $this->isService() && ! $this->track_stock && $this->hasRecipe();
     }
 
     public function purchaseLines(): HasMany

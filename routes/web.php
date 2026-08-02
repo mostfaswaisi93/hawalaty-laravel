@@ -29,10 +29,13 @@ use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\InventoryController;
 use App\Http\Controllers\Web\MenuController;
+use App\Http\Controllers\Web\ModifierController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\OrderConfirmationController;
+use App\Http\Controllers\Web\ProductionController;
 use App\Http\Controllers\Web\PurchaseController;
 use App\Http\Controllers\Web\ReceiptController;
+use App\Http\Controllers\Web\RecipeController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RobotsController;
 use App\Http\Controllers\Web\RoleController;
@@ -168,6 +171,36 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
         Route::put('stock-counts/{stockCount}', [StockCountController::class, 'update'])->name('stock-counts.update')->whereUlid('stockCount');
         Route::post('stock-counts/{stockCount}/post', [StockCountController::class, 'post'])->name('stock-counts.post')->whereUlid('stockCount');
         Route::post('stock-counts/{stockCount}/cancel', [StockCountController::class, 'cancel'])->name('stock-counts.cancel')->whereUlid('stockCount');
+    });
+
+    /*
+     * Composition. Recipes serve both food verticals; production runs only make
+     * sense where the finished item is stocked, so the screen is gated on
+     * inventory as well.
+     */
+    Route::middleware('capability:recipes')->group(function () {
+        Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
+        Route::get('recipes/{item}', [RecipeController::class, 'edit'])->name('recipes.edit')->whereUlid('item');
+        Route::put('recipes/{item}', [RecipeController::class, 'update'])->name('recipes.update')->whereUlid('item');
+
+        Route::middleware('capability:inventory')->group(function () {
+            Route::get('production', [ProductionController::class, 'index'])->name('production.index');
+            Route::post('production', [ProductionController::class, 'store'])->name('production.store');
+            Route::get('production/{production}', [ProductionController::class, 'show'])->name('production.show')->whereUlid('production');
+            Route::post('production/{production}/post', [ProductionController::class, 'post'])->name('production.post')->whereUlid('production');
+            Route::post('production/{production}/cancel', [ProductionController::class, 'cancel'])->name('production.cancel')->whereUlid('production');
+        });
+    });
+
+    Route::middleware('capability:modifiers')->group(function () {
+        Route::get('modifiers', [ModifierController::class, 'index'])->name('modifiers.index');
+        Route::post('modifiers/groups', [ModifierController::class, 'storeGroup'])->name('modifiers.groups.store');
+        Route::put('modifiers/groups/{group}', [ModifierController::class, 'updateGroup'])->name('modifiers.groups.update')->whereUlid('group');
+        Route::delete('modifiers/groups/{group}', [ModifierController::class, 'destroyGroup'])->name('modifiers.groups.destroy')->whereUlid('group');
+        Route::post('modifiers/groups/{group}/options', [ModifierController::class, 'storeModifier'])->name('modifiers.options.store')->whereUlid('group');
+        Route::put('modifiers/options/{modifier}', [ModifierController::class, 'updateModifier'])->name('modifiers.options.update')->whereUlid('modifier');
+        Route::delete('modifiers/options/{modifier}', [ModifierController::class, 'destroyModifier'])->name('modifiers.options.destroy')->whereUlid('modifier');
+        Route::put('modifiers/items/{item}', [ModifierController::class, 'syncItem'])->name('modifiers.items.sync')->whereUlid('item');
     });
 
     Route::middleware('capability:purchasing')->group(function () {
