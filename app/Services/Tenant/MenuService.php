@@ -8,6 +8,7 @@ use App\Enums\AuditEntityType;
 use App\Enums\TaxCategory;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
+use App\Models\Tenant\PriceChange;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,8 @@ class MenuService
 
         $item->load('menuCategory');
 
+        $this->recordPrice($item, null, (float) $item->price);
+
         AuditLogger::record(AuditAction::Created, AuditEntityType::MenuItem, $item->name, AuditCategory::Menu);
 
         return $item;
@@ -105,12 +108,37 @@ class MenuService
             $update['active'] = $data['active'];
         }
 
+        // Read before the write, or there is nothing left to compare against.
+        $previous = (float) $item->price;
+
         $item->update($update);
         $item->load('menuCategory');
+
+        if (array_key_exists('price', $data) && abs((float) $item->price - $previous) >= 0.0005) {
+            $this->recordPrice($item, $previous, (float) $item->price);
+        }
 
         AuditLogger::record(AuditAction::Updated, AuditEntityType::MenuItem, $item->name, AuditCategory::Menu);
 
         return $item;
+    }
+
+    /**
+     * Note a price alongside the cost it was chosen against.
+     *
+     * The cost is the point. Knowing a price was set at 10 says nothing; knowing
+     * it was set at 10 when the item cost 6, and the item now costs 9, is the
+     * whole margin-erosion report.
+     */
+    private function recordPrice(MenuItem $item, ?float $old, float $new): void
+    {
+        PriceChange::create([
+            'menu_item_id' => $item->id,
+            'old_price' => $old,
+            'new_price' => $new,
+            'cost_at_change' => (float) $item->cost,
+            'team_member_id' => auth('tenant')->id(),
+        ]);
     }
 
     public function deleteItem(MenuItem $item): void
@@ -192,12 +220,23 @@ class MenuService
                 ];
 
                 if ($item) {
+                    // A bulk import is the most common way a price moves and the
+                    // easiest way to move one by accident, so it is exactly the
+                    // path that has to leave a trail.
+                    $previous = (float) $item->price;
+
                     $item->update($attributes);
                     $updated++;
+
+                    if (abs((float) $item->price - $previous) >= 0.0005) {
+                        $this->recordPrice($item, $previous, (float) $item->price);
+                    }
                 } else {
                     $item = MenuItem::create([...$attributes, 'menu_category_id' => $category->id, 'name' => $name]);
                     $itemsByKey->put($itemKey, $item);
                     $created++;
+
+                    $this->recordPrice($item, null, (float) $item->price);
                 }
             }
         });

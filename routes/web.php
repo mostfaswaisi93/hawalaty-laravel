@@ -32,6 +32,7 @@ use App\Http\Controllers\Web\FuelController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\InventoryController;
 use App\Http\Controllers\Web\InvoiceController;
+use App\Http\Controllers\Web\MarginController;
 use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\ModifierController;
 use App\Http\Controllers\Web\NotificationController;
@@ -151,6 +152,16 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::post('invoices/returns/{saleReturn}', [InvoiceController::class, 'credit'])->name('invoices.credit')->whereUlid('saleReturn');
     Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show')->whereUlid('invoice');
     Route::get('invoices/{invoice}/xml', [InvoiceController::class, 'xml'])->name('invoices.xml')->whereUlid('invoice');
+
+    /*
+     * Margin and pricing. Gated on the catalogue permission rather than a new
+     * one: whoever sets a price is who these reports are written for, and the
+     * figures are meaningless to anyone who cannot act on them.
+     */
+    Route::get('margins', [MarginController::class, 'index'])->name('margins.index');
+    Route::get('margins/pricing', [MarginController::class, 'pricing'])->name('margins.pricing');
+    Route::get('margins/valuation', [MarginController::class, 'valuation'])->name('margins.valuation');
+    Route::get('margins/history/{item}', [MarginController::class, 'history'])->name('margins.history')->whereUlid('item');
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
     Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show'])->name('transfers.receipt');

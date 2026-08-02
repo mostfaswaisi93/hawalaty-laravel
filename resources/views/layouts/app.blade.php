@@ -44,6 +44,7 @@
                 ['href' => '/suppliers', 'icon' => 'store', 'label' => 'الموردون', 'match' => 'suppliers*', 'permission' => \App\Enums\PermissionKey::PurchasesManage, 'capability' => \App\Enums\BusinessCapability::Purchasing],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage, 'feature' => \App\Enums\PackageFeature::Expenses],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
+                ['href' => '/margins', 'icon' => 'trending_up', 'label' => 'الهامش والتسعير', 'match' => 'margins*', 'permission' => \App\Enums\PermissionKey::MenuManage],
                 ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
             ],
         ],
