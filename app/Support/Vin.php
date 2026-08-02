@@ -65,8 +65,6 @@ final class Vin
      *
      * The code repeats on a thirty-year cycle, so the older reading is only
      * returned when the newer one would be in the future.
-     *
-     * @return int|null
      */
     public static function modelYear(string $vin): ?int
     {

@@ -40,6 +40,7 @@ use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\RecipeController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RobotsController;
+use App\Http\Controllers\Web\SchedulingController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SerialController;
@@ -53,6 +54,7 @@ use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
 use App\Http\Controllers\Web\VariantController;
 use App\Http\Controllers\Web\WarrantyController;
+use App\Http\Controllers\Web\WorkOrderController;
 use App\Http\Controllers\Web\WhatsAppSettingsController;
 use App\Http\Controllers\Web\WhatsAppWebhookController;
 use App\Http\Middleware\SetLocale;
@@ -210,6 +212,22 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
             Route::post('production/{production}/post', [ProductionController::class, 'post'])->name('production.post')->whereUlid('production');
             Route::post('production/{production}/cancel', [ProductionController::class, 'cancel'])->name('production.cancel')->whereUlid('production');
         });
+    });
+
+    Route::middleware('capability:scheduling')->group(function () {
+        Route::get('scheduling', [SchedulingController::class, 'index'])->name('scheduling.index');
+        Route::post('scheduling', [SchedulingController::class, 'store'])->name('scheduling.store');
+        Route::get('scheduling/resources', [SchedulingController::class, 'resources'])->name('scheduling.resources');
+        Route::post('scheduling/resources', [SchedulingController::class, 'storeResource'])->name('scheduling.resources.store');
+        Route::put('scheduling/resources/{resource}', [SchedulingController::class, 'updateResource'])->name('scheduling.resources.update')->whereUlid('resource');
+        Route::put('scheduling/{appointment}', [SchedulingController::class, 'update'])->name('scheduling.update')->whereUlid('appointment');
+
+        Route::get('work-orders', [WorkOrderController::class, 'index'])->name('work-orders.index');
+        Route::post('work-orders', [WorkOrderController::class, 'store'])->name('work-orders.store');
+        Route::get('work-orders/{workOrder}', [WorkOrderController::class, 'show'])->name('work-orders.show')->whereUlid('workOrder');
+        Route::put('work-orders/{workOrder}', [WorkOrderController::class, 'update'])->name('work-orders.update')->whereUlid('workOrder');
+        Route::post('work-orders/{workOrder}/invoice', [WorkOrderController::class, 'invoice'])->name('work-orders.invoice')->whereUlid('workOrder');
+        Route::post('work-orders/{workOrder}/cancel', [WorkOrderController::class, 'cancel'])->name('work-orders.cancel')->whereUlid('workOrder');
     });
 
     Route::middleware('capability:fitment')->group(function () {
