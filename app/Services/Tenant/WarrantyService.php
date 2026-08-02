@@ -88,8 +88,10 @@ class WarrantyService
         return DB::connection('tenant')->transaction(function () use ($claim, $data, $status) {
             $claim->update([
                 'status' => $status,
-                'repair_cost' => $data['repairCost'] ?? $claim->repair_cost,
-                'charged_amount' => $data['chargedAmount'] ?? $claim->charged_amount,
+                // Coalesced to zero, not to the model's attribute: a claim built
+                // without these loaded would write nulls into non-null columns.
+                'repair_cost' => $data['repairCost'] ?? $claim->repair_cost ?? 0,
+                'charged_amount' => $data['chargedAmount'] ?? $claim->charged_amount ?? 0,
                 'resolution' => $data['resolution'] ?? $claim->resolution,
 
                 // Stamped once, when it stops being someone's job. Reopening and

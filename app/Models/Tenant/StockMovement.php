@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * is what makes the history defensible and what makes offline sync safe.
  */
 #[Fillable([
-    'menu_item_id', 'location_id', 'batch_id', 'type', 'quantity', 'unit_cost',
+    'menu_item_id', 'location_id', 'batch_id', 'serial_id', 'type', 'quantity', 'unit_cost',
     'batch_number', 'expires_at', 'serial_number',
     'reference_type', 'reference_id', 'reason', 'team_member_id',
 ])]

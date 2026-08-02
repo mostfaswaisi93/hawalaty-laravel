@@ -33,7 +33,7 @@
             'serialised' => (bool) $i->track_serials,
         ])->values()) }},
         otherCosts: {{ (float) (($purchase ?? null)?->other_costs ?? 0) }},
-        lines: {{ \Illuminate\Support\Js::from($existing ?: [['itemId' => '', 'quantity' => '', 'unitCost' => '', 'taxRate' => '', 'batchNumber' => '', 'expiresAt' => '']]) }},
+        lines: {{ \Illuminate\Support\Js::from($existing ?: [['itemId' => '', 'quantity' => '', 'unitCost' => '', 'taxRate' => '', 'batchNumber' => '', 'expiresAt' => '', 'serials' => '']]) }},
         itemById(id) { return this.catalog.find(i => i.id === id) || null },
         onItemChange(index) {
             const item = this.itemById(this.lines[index].itemId);
@@ -172,6 +172,22 @@
                                 <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" :for="'line-expiry-' + index">{{ __('تاريخ الصلاحية') }}</label>
                                 <input :id="'line-expiry-' + index" type="date" :name="'lines[' + index + '][expiresAt]'" x-model="line.expiresAt" required dir="ltr"
                                     class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                            </div>
+                        @endif
+
+                        @if ($tracksSerials)
+                            <div class="space-y-1.5 sm:col-span-12" x-show="byId(line.itemId)?.serialised" x-cloak>
+                                <label class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" :for="'line-serials-' + index">
+                                    {{ __('الأرقام التسلسلية') }}
+                                </label>
+                                <textarea :id="'line-serials-' + index" :name="'lines[' + index + '][serials]'" x-model="line.serials" rows="3" dir="ltr"
+                                    placeholder="{{ __('رقم في كل سطر — أو امسحها بالقارئ تباعًا') }}"
+                                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 font-body-sm outline-none focus:border-transparent focus:ring-2 focus:ring-primary"></textarea>
+                                <p class="font-body-sm"
+                                    :class="serialCount(line) === (parseFloat(line.quantity) || 0) ? 'text-outline' : 'text-error'">
+                                    <span x-text="serialCount(line)"></span> / <span x-text="parseFloat(line.quantity) || 0"></span>
+                                    {{ __('رقم مقابل الكمية') }}
+                                </p>
                             </div>
                         @endif
 

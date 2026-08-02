@@ -33,7 +33,9 @@ class SyncService
 
         foreach ($events as $event) {
             try {
-                DB::transaction(function () use ($event, $device, &$applied, &$alreadyApplied) {
+                // Named connection: a bare DB::transaction() wraps the platform
+                // database, so a half-applied event would have stuck.
+                DB::connection('tenant')->transaction(function () use ($event, $device, &$applied, &$alreadyApplied) {
                     if (SyncEvent::where('client_uuid', $event['clientUuid'])->exists()) {
                         $alreadyApplied[] = $event['clientUuid'];
 

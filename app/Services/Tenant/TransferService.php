@@ -67,7 +67,18 @@ class TransferService
 
     public function create(array $data): Transfer
     {
-        $transfer = DB::transaction(function () use ($data) {
+        /*
+         * On the tenant connection, explicitly.
+         *
+         * A bare DB::transaction() opens one on the default connection, which is
+         * the platform database - so none of the writes below were ever actually
+         * wrapped. It went unnoticed while nothing here could fail midway; now
+         * that a sale can be rejected partway through (an unavailable serial, a
+         * missing required option) it would leave an order behind with no stock
+         * movements against it, which is exactly the drift the ledger exists to
+         * prevent.
+         */
+        $transfer = DB::connection('tenant')->transaction(function () use ($data) {
             $menuItems = MenuItem::with('modifierGroups')
                 ->whereIn('id', array_column($data['items'], 'itemId'))
                 ->get()

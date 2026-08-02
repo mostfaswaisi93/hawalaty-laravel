@@ -27,6 +27,7 @@ use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DeviceController;
 use App\Http\Controllers\Web\ExpenseController;
+use App\Http\Controllers\Web\FitmentController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\InventoryController;
 use App\Http\Controllers\Web\MenuController;
@@ -209,6 +210,16 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
             Route::post('production/{production}/post', [ProductionController::class, 'post'])->name('production.post')->whereUlid('production');
             Route::post('production/{production}/cancel', [ProductionController::class, 'cancel'])->name('production.cancel')->whereUlid('production');
         });
+    });
+
+    Route::middleware('capability:fitment')->group(function () {
+        Route::get('fitment', [FitmentController::class, 'index'])->name('fitment.index');
+        Route::get('fitment/vehicles', [FitmentController::class, 'vehicles'])->name('fitment.vehicles');
+        Route::post('fitment/makes', [FitmentController::class, 'storeMake'])->name('fitment.makes.store');
+        Route::post('fitment/makes/{make}/models', [FitmentController::class, 'storeModel'])->name('fitment.models.store')->whereUlid('make');
+        Route::delete('fitment/models/{model}', [FitmentController::class, 'destroyModel'])->name('fitment.models.destroy')->whereUlid('model');
+        Route::get('fitment/{item}', [FitmentController::class, 'edit'])->name('fitment.edit')->whereUlid('item');
+        Route::put('fitment/{item}', [FitmentController::class, 'update'])->name('fitment.update')->whereUlid('item');
     });
 
     Route::middleware('capability:variants')->group(function () {

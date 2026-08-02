@@ -17,7 +17,9 @@ class SalaryService
 {
     public function pay(TeamMember $member, array $data): SalaryPayment
     {
-        return DB::transaction(function () use ($member, $data) {
+        // Named connection: a bare DB::transaction() wraps the platform
+        // database, leaving these tenant writes unprotected.
+        return DB::connection('tenant')->transaction(function () use ($member, $data) {
             $paidFor = isset($data['paidFor']) && $data['paidFor']
                 ? Carbon::parse($data['paidFor'])
                 : Carbon::today();

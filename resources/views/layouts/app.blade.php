@@ -27,6 +27,7 @@
                 ['href' => '/modifiers', 'icon' => 'tune', 'label' => 'الإضافات والخيارات', 'match' => 'modifiers*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'capability' => \App\Enums\BusinessCapability::Modifiers],
                 ['href' => '/allergens', 'icon' => 'allergies', 'label' => 'مسبّبات الحساسية', 'match' => 'allergens*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'capability' => \App\Enums\BusinessCapability::Allergens],
                 ['href' => '/variants', 'icon' => 'grid_view', 'label' => 'التنويعات', 'match' => 'variants*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'capability' => \App\Enums\BusinessCapability::Variants],
+                ['href' => '/fitment', 'icon' => 'directions_car', 'label' => 'بحث القطع', 'match' => 'fitment*', 'permission' => null, 'capability' => \App\Enums\BusinessCapability::Fitment],
                 ['href' => '/production', 'icon' => 'factory', 'label' => 'الإنتاج', 'match' => 'production*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Recipes],
                 ['href' => '/inventory', 'icon' => 'inventory_2', 'label' => 'المخزون', 'match' => 'inventory*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Inventory],
                 ['href' => '/batches', 'icon' => 'event_available', 'label' => 'اللوط والصلاحية', 'match' => 'batches*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Batches],

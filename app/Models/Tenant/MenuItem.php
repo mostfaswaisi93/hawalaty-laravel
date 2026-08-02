@@ -13,7 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'menu_category_id', 'parent_item_id', 'name', 'icon', 'kind', 'price', 'active',
+    'menu_category_id', 'parent_item_id', 'superseded_by_item_id',
+    'name', 'icon', 'kind', 'price', 'core_charge', 'active',
     'barcode', 'sku', 'plu_code',
     'unit_code', 'purchase_unit_code', 'purchase_conversion',
     'cost', 'tax_rate', 'tax_included', 'track_stock', 'reorder_point',
@@ -33,6 +34,7 @@ class MenuItem extends Model
         return [
             'price' => 'decimal:3',
             'cost' => 'decimal:3',
+            'core_charge' => 'decimal:2',
             'tax_rate' => 'decimal:2',
             'purchase_conversion' => 'decimal:3',
             'reorder_point' => 'decimal:3',
@@ -115,6 +117,34 @@ class MenuItem extends Model
     public function serialNumbers(): HasMany
     {
         return $this->hasMany(SerialNumber::class);
+    }
+
+    public function fitments(): HasMany
+    {
+        return $this->hasMany(ItemFitment::class);
+    }
+
+    public function references(): HasMany
+    {
+        return $this->hasMany(ItemReference::class);
+    }
+
+    /**
+     * The part that replaced this one, if it was withdrawn.
+     */
+    public function supersededBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'superseded_by_item_id');
+    }
+
+    public function supersedes(): HasMany
+    {
+        return $this->hasMany(self::class, 'superseded_by_item_id');
+    }
+
+    public function isSuperseded(): bool
+    {
+        return $this->superseded_by_item_id !== null;
     }
 
     /**
