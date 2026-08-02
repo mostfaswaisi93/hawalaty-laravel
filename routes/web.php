@@ -41,6 +41,7 @@ use App\Http\Controllers\Web\PurchaseController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\RecipeController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\ReturnController;
 use App\Http\Controllers\Web\RobotsController;
 use App\Http\Controllers\Web\SchedulingController;
 use App\Http\Controllers\Web\RoleController;
@@ -119,6 +120,19 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::get('transfers/{transfer}/created', [TransferController::class, 'created'])->name('transfers.created')->whereUlid('transfer');
 
     Route::post('sync/push', [WebSyncController::class, 'push'])->name('sync.push');
+
+    /*
+     * Returns are not gated on a capability: every trade takes goods back. What
+     * differs is whether they can be resold, and that is decided inside the
+     * service by the vertical rather than by hiding the screen.
+     */
+    Route::get('returns', [ReturnController::class, 'index'])->name('returns.index');
+    Route::get('returns/create', [ReturnController::class, 'create'])->name('returns.create');
+    Route::post('returns', [ReturnController::class, 'store'])->name('returns.store');
+    Route::get('returns/{saleReturn}', [ReturnController::class, 'show'])->name('returns.show')->whereUlid('saleReturn');
+    Route::put('returns/{saleReturn}', [ReturnController::class, 'update'])->name('returns.update')->whereUlid('saleReturn');
+    Route::post('returns/{saleReturn}/complete', [ReturnController::class, 'complete'])->name('returns.complete')->whereUlid('saleReturn');
+    Route::post('returns/{saleReturn}/reject', [ReturnController::class, 'reject'])->name('returns.reject')->whereUlid('saleReturn');
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
     Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show'])->name('transfers.receipt');

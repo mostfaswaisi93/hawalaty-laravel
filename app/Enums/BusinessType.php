@@ -167,6 +167,46 @@ enum BusinessType: string
     }
 
     /**
+     * Whether returned goods may go back on the shelf.
+     *
+     * Not a policy the shop sets - a property of what it sells. Once food or
+     * medicine has left the premises its chain of custody is broken, and no
+     * amount of "it looks fine" makes it saleable again. The four verticals
+     * below therefore destroy returns rather than restocking them, and the
+     * module does not offer the choice.
+     */
+    public function allowsRestockOnReturn(): bool
+    {
+        return ! in_array($this, [
+            self::Restaurant,
+            self::Bakery,
+            self::Produce,
+            self::Pharmacy,
+        ], true);
+    }
+
+    /**
+     * Days a customer has to bring something back, as a starting policy.
+     *
+     * Zero means the trade does not take returns at all, which is the honest
+     * default for prepared food. Everything here is a default the shop can
+     * override - unlike the restock rule above, which it cannot.
+     */
+    public function returnWindowDays(): int
+    {
+        return match ($this) {
+            self::Restaurant, self::Bakery => 0,
+            self::Produce => 1,
+            self::Pharmacy => 0,
+            self::Electronics => 7,
+            self::Clothing => 14,
+            self::AutoParts => 14,
+            self::Services => 0,
+            default => 7,
+        };
+    }
+
+    /**
      * Unit of measure the catalog defaults to, as a UN/CEFACT Rec 20 code.
      */
     public function defaultUnitCode(): string

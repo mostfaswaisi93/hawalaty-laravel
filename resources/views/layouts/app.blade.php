@@ -14,6 +14,7 @@
                 ['href' => '/transfers', 'icon' => 'send', 'label' => 'طلب جديد', 'match' => 'transfers*', 'permission' => \App\Enums\PermissionKey::TransfersCreate],
                 ['href' => '/scheduling', 'icon' => 'calendar_month', 'label' => 'المواعيد', 'match' => 'scheduling*', 'permission' => \App\Enums\PermissionKey::TransfersCreate, 'capability' => \App\Enums\BusinessCapability::Scheduling],
                 ['href' => '/work-orders', 'icon' => 'build', 'label' => 'أوامر الشغل', 'match' => 'work-orders*', 'permission' => \App\Enums\PermissionKey::TransfersCreate, 'capability' => \App\Enums\BusinessCapability::Scheduling],
+                ['href' => '/returns', 'icon' => 'assignment_return', 'label' => 'المرتجعات', 'match' => 'returns*', 'permission' => \App\Enums\PermissionKey::TransfersCreate],
                 ['href' => '/history', 'icon' => 'history', 'label' => 'السجل', 'match' => 'history*', 'permission' => null],
                 ['href' => '/customers', 'icon' => 'contacts', 'label' => 'العملاء', 'match' => 'customers*', 'permission' => null],
             ],
