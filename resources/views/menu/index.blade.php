@@ -126,9 +126,17 @@
 
                                             <div class="flex items-center gap-1">
                                                 <button type="button" @click="openEditItem(@js(['id' => $item->id, 'name' => $item->name, 'icon' => $item->icon ?? '', 'menuCategoryId' => $item->menu_category_id, 'price' => (float) $item->price, 'taxRate' => (float) $item->tax_rate, 'taxCategory' => $item->tax_category ?: \App\Enums\TaxCategory::inferFrom((float) $item->tax_rate)->value, 'taxIncluded' => (bool) $item->tax_included, 'active' => (bool) $item->active]))"
-                                                    class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}" title="{{ __('تعديل') }}">
+                                                    class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل سريع') }}" title="{{ __('تعديل سريع') }}">
                                                     <span class="material-symbols-outlined !text-xl">edit</span>
                                                 </button>
+
+                                                {{-- The modal covers the common case; everything the trade adds
+                                                     on top of a name and a price lives on the full record. --}}
+                                                <a href="{{ route('menu.items.edit', $item->id) }}"
+                                                    class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+                                                    aria-label="{{ __('كل بيانات الصنف') }}" title="{{ __('كل بيانات الصنف') }}">
+                                                    <span class="material-symbols-outlined !text-xl">tune</span>
+                                                </a>
 
                                                 <form method="POST" action="{{ route('menu.items.destroy', $item->id) }}" id="delete-item-{{ $item->id }}" class="inline-flex">
                                                     @csrf @method('DELETE')
@@ -272,7 +280,8 @@
                 <x-modal-close on-close="importOpen = false" />
                 <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
                     <h3 id="import-modal-title" class="font-headline-md text-headline-md">{{ __('استيراد القائمة (CSV)') }}</h3>
-                    <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV بأعمدة category, name, price, active لاستيراد أصناف جديدة أو تحديث الموجودة.') }}</p>
+                    <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('اختر ملف CSV. المطلوب category و name و price، والباقي اختياري: active, barcode, sku, unit, cost, tax_rate, tax_category, tax_included, track_stock, reorder_point. العمود الغائب يترك قيمته كما هي.') }}</p>
+                    <p class="mt-1 font-body-sm text-outline">{{ __('نزّل ملف التصدير أوّلًا لتحصل على الأعمدة جاهزة بالترتيب الصحيح.') }}</p>
                 </div>
                 <form method="POST" action="{{ route('menu.import') }}" enctype="multipart/form-data" class="space-y-4 p-6" @submit="submitting = true">
                     @csrf

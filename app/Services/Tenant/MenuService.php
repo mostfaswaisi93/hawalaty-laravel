@@ -285,6 +285,21 @@ class MenuService
         AuditLogger::record(AuditAction::Deleted, AuditEntityType::MenuItem, $name, AuditCategory::Menu);
     }
 
+    /**
+     * The columns a round trip has to survive.
+     *
+     * Export and import read the same list, so a file exported from here can be
+     * edited in a spreadsheet and put straight back. Two lists that drifted
+     * apart would silently drop whichever column only one of them knew about.
+     *
+     * @var list<string>
+     */
+    public const CSV_COLUMNS = [
+        'category', 'name', 'price', 'active',
+        'barcode', 'sku', 'unit', 'cost', 'tax_rate', 'tax_category', 'tax_included',
+        'track_stock', 'reorder_point',
+    ];
+
     public function exportRows(): array
     {
         return MenuCategory::query()
@@ -296,6 +311,16 @@ class MenuService
                 'name' => self::sanitizeCsvField($item->name),
                 'price' => (string) $item->price,
                 'active' => $item->active ? '1' : '0',
+
+                'barcode' => self::sanitizeCsvField((string) $item->barcode),
+                'sku' => self::sanitizeCsvField((string) $item->sku),
+                'unit' => (string) $item->unit_code,
+                'cost' => (string) $item->cost,
+                'tax_rate' => (string) $item->tax_rate,
+                'tax_category' => (string) $item->tax_category,
+                'tax_included' => $item->tax_included ? '1' : '0',
+                'track_stock' => $item->track_stock ? '1' : '0',
+                'reorder_point' => $item->reorder_point === null ? '' : (string) $item->reorder_point,
             ]))
             ->all();
     }
@@ -350,10 +375,62 @@ class MenuService
 
                 $itemKey = "{$category->id}|{$name}";
                 $item = $itemsByKey->get($itemKey);
+
+                $cell = function (string $column) use ($row, $columnIndex): ?string {
+                    $index = $columnIndex[$column] ?? null;
+
+                    if ($index === null || ! array_key_exists($index, $row)) {
+                        return null;
+                    }
+
+                    $value = trim((string) $row[$index]);
+
+                    // An absent column and an empty cell are the same thing here:
+                    // a spreadsheet that omits `barcode` must not wipe barcodes.
+                    return $value === '' ? null : $value;
+                };
+
+                $flag = fn (?string $value, bool $default) => $value === null
+                    ? $default
+                    : ! in_array(strtolower($value), ['0', 'false', 'no'], true);
+
                 $attributes = [
                     'price' => $price,
                     'active' => in_array(strtolower((string) $active), ['0', 'false', 'no', ''], true) ? false : true,
                 ];
+
+                foreach ([
+                    'barcode' => 'barcode',
+                    'sku' => 'sku',
+                    'unit' => 'unit_code',
+                    'cost' => 'cost',
+                    'tax_rate' => 'tax_rate',
+                    'tax_category' => 'tax_category',
+                    'reorder_point' => 'reorder_point',
+                ] as $column => $target) {
+                    $value = $cell($column);
+
+                    if ($value !== null) {
+                        $attributes[$target] = $value;
+                    }
+                }
+
+                // Booleans need the current value as their default, or a file
+                // without the column would reset every item to the schema
+                // default rather than leaving it alone.
+                if ($cell('tax_included') !== null || ! $item) {
+                    $attributes['tax_included'] = $flag($cell('tax_included'), true);
+                }
+
+                if ($cell('track_stock') !== null || ! $item) {
+                    $attributes['track_stock'] = $flag($cell('track_stock'), (bool) ($item?->track_stock ?? true));
+                }
+
+                // Same reasoning as the edit screen: cost is the ledger's once
+                // anything has moved, and a spreadsheet must not overwrite it.
+                if (array_key_exists('cost', $attributes) && $item && $item->movements()->exists()) {
+                    unset($attributes['cost']);
+                }
 
                 if ($item) {
                     // A bulk import is the most common way a price moves and the

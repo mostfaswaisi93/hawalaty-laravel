@@ -197,6 +197,7 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
         Route::post('menu/categories', [MenuController::class, 'storeCategory'])->name('menu.categories.store');
         Route::delete('menu/categories/{category}', [MenuController::class, 'destroyCategory'])->name('menu.categories.destroy');
         Route::post('menu/items', [MenuController::class, 'storeItem'])->name('menu.items.store');
+        Route::get('menu/items/{item}/edit', [MenuController::class, 'editItem'])->name('menu.items.edit')->whereUlid('item');
         Route::put('menu/items/{item}', [MenuController::class, 'updateItem'])->name('menu.items.update');
         Route::delete('menu/items/{item}', [MenuController::class, 'destroyItem'])->name('menu.items.destroy');
     });
