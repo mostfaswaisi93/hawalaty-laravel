@@ -70,6 +70,13 @@
                         <dd class="mt-1 font-body-lg">{{ $license->package?->name ?? '-' }}</dd>
                     </div>
                     <div>
+                        <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تصنيف النشاط') }}</dt>
+                        <dd class="mt-1 flex items-center gap-1.5 font-body-lg">
+                            <span class="material-symbols-outlined !text-xl text-primary">{{ $license->businessType()->icon() }}</span>
+                            {{ $license->businessType()->label() }}
+                        </dd>
+                    </div>
+                    <div>
                         <dt class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('ينتهي في') }}</dt>
                         <dd class="mt-1 font-body-lg">{{ $license->expired_at?->translatedFormat('j F Y') ?? '-' }}</dd>
                     </div>
@@ -127,6 +134,47 @@
                         x-text="submitting ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ الباقة'))"
                         title="{{ __('حفظ الباقة') }}">{{ __('حفظ الباقة') }}</button>
                 </form>
+
+                <div class="mt-6 border-t border-outline-variant/50 pt-6"
+                    x-data="{ submitting: false, vertical: @js($license->businessType()->value) }">
+                    <h3 class="font-body-lg font-bold text-on-surface">{{ __('تصنيف النشاط') }}</h3>
+                    <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('يحدّد الوحدات المتاحة داخل النسخة. التغيير لا يحذف أي بيانات — الوحدات التي تُطفأ تحتفظ بسجلّاتها وتختفي من الواجهة فقط.') }}</p>
+
+                    <form method="POST" action="{{ route('admin.licenses.change-business-type', $license->id) }}" class="mt-4"
+                        @submit.prevent="if (confirm('{{ __('تغيير تصنيف النشاط لهذه النسخة؟') }}')) { submitting = true; $el.submit() }">
+                        @csrf
+                        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            @foreach ($businessTypes as $type)
+                                <label class="flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 transition"
+                                    :class="vertical === @js($type->value)
+                                        ? 'border-primary bg-primary text-on-primary'
+                                        : 'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline'">
+                                    <input type="radio" name="businessType" value="{{ $type->value }}" x-model="vertical" class="sr-only" />
+                                    <span class="material-symbols-outlined !text-xl flex-shrink-0">{{ $type->icon() }}</span>
+                                    <span class="font-body-sm leading-tight">{{ $type->label() }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        @foreach ($businessTypes as $type)
+                            <div x-show="vertical === @js($type->value)" x-cloak class="mt-3 rounded-xl bg-surface-container-low p-3">
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach ($type->capabilities() as $capability)
+                                        <span class="inline-flex items-center gap-1 rounded-lg bg-secondary-container px-2 py-1 font-label-sm text-label-sm text-on-secondary-container">
+                                            <span class="material-symbols-outlined !text-sm">{{ $capability->icon() }}</span>{{ $capability->label() }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                                <p class="mt-2 font-body-sm text-outline" dir="ltr">{{ implode(' · ', $type->standards()) }}</p>
+                            </div>
+                        @endforeach
+
+                        <button type="submit" :disabled="submitting || vertical === @js($license->businessType()->value)"
+                            class="mt-4 rounded-xl bg-surface-container px-5 py-3 font-body-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+                            x-text="submitting ? @js(__('جارٍ الحفظ...')) : @js(__('حفظ التصنيف'))"
+                            title="{{ __('حفظ التصنيف') }}">{{ __('حفظ التصنيف') }}</button>
+                    </form>
+                </div>
             </x-card>
 
             <x-card title="{{ __('آخر نشاط المستأجر') }}">

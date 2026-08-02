@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BusinessType;
 use App\Enums\LicenseStatus;
 use App\Enums\PermissionKey;
 use App\Enums\RoleKey;
@@ -10,9 +11,11 @@ use App\Models\Admin;
 use App\Models\DatabaseConnection;
 use App\Models\License;
 use App\Models\Package;
+use App\Models\Tenant\ConstantList;
 use App\Models\Tenant\Permission;
 use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
+use App\Services\Tenant\CatalogNaming;
 use App\Settings\PlatformSettings;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +33,8 @@ class TenantProvisioner
             ? Package::findOrFail($data['packageId'])
             : Package::orderBy('price')->firstOrFail();
 
+        $businessType = BusinessType::tryFrom((string) ($data['businessType'] ?? '')) ?? BusinessType::default();
+
         $license = null;
         $connection = null;
 
@@ -45,6 +50,7 @@ class TenantProvisioner
 
                 'address' => $data['address'] ?? null,
                 'phone' => $data['phone'] ?? null,
+                'business_type' => $businessType,
                 'package_id' => $package->id,
                 'status' => LicenseStatus::Trial,
                 'expired_at' => now()->addDays($this->trialDays()),
@@ -187,6 +193,28 @@ class TenantProvisioner
             'role_id' => $ownerRole->id,
             'active' => true,
         ]);
+
+        $this->seedVerticalDefaults($license->businessType());
+    }
+
+    /**
+     * Open the workspace with the terminology and constant lists its trade uses,
+     * so the owner is not asked to invent vocabulary the vertical already has.
+     */
+    protected function seedVerticalDefaults(BusinessType $businessType): void
+    {
+        $naming = $businessType->naming();
+
+        app(CatalogNaming::class)->put([
+            CatalogNaming::CATALOG => $naming['catalog'],
+            CatalogNaming::CATEGORY => $naming['category'],
+            CatalogNaming::ITEM => $naming['item'],
+            CatalogNaming::ICON => $businessType->icon(),
+        ]);
+
+        foreach ($businessType->constantLists() as $key => $title) {
+            ConstantList::firstOrCreate(['key' => $key], ['title' => $title]);
+        }
     }
 
     protected function cleanup(?string $dbName, ?string $dbUser, ?DatabaseConnection $connection, ?License $license): void

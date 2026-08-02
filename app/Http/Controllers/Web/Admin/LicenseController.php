@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Enums\BusinessType;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
+use App\Http\Requests\Admin\License\ChangeBusinessTypeRequest;
 use App\Http\Requests\Admin\License\ChangePackageRequest;
 use App\Http\Requests\Admin\License\StoreLicenseRequest;
 use App\Models\License;
@@ -32,6 +34,7 @@ class LicenseController extends Controller
                 $perPage,
             ),
             'packages' => Package::query()->orderBy('price')->get(),
+            'businessTypes' => BusinessType::cases(),
             'search' => $request->query('search'),
             'status' => $request->query('status'),
             'packageId' => $request->query('packageId'),
@@ -44,6 +47,7 @@ class LicenseController extends Controller
         $data = $this->service->show(License::findOrFail($license));
 
         $data['packages'] = Package::query()->orderBy('price')->get();
+        $data['businessTypes'] = BusinessType::cases();
 
         return view('admin.licenses.show', $data);
     }
@@ -95,5 +99,16 @@ class LicenseController extends Controller
         );
 
         return redirect()->back()->with('success', __('تم تغيير باقة الترخيص.'));
+    }
+
+    public function changeBusinessType(ChangeBusinessTypeRequest $request, string $license): RedirectResponse
+    {
+        $type = $this->service->changeBusinessType(
+            License::findOrFail($license),
+            BusinessType::from($request->validated()['businessType']),
+            auth('admin')->user(),
+        );
+
+        return redirect()->back()->with('success', __('تم تغيير تصنيف النشاط إلى :type.', ['type' => $type->label()]));
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureBusinessCapability;
 use App\Http\Middleware\EnsurePackageFeature;
 use App\Http\Middleware\ResolveTenantConnection;
 use App\Http\Middleware\ResolveTenantConnectionFromSession;
@@ -43,6 +44,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
 
             'package' => EnsurePackageFeature::class,
+
+            'capability' => EnsureBusinessCapability::class,
         ]);
 
         $middleware->throttleApi();

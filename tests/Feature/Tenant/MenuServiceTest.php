@@ -89,7 +89,10 @@ class MenuServiceTest extends TenantTestCase
         ]);
 
         $this->assertSame('شاورما دجاج', $item->name);
-        $this->assertSame('12.50', $item->price);
+
+        // Three decimals: unit prices carry them so a litre of fuel or a single
+        // tablet from a split strip can be priced the way its trade prices it.
+        $this->assertSame('12.500', $item->price);
         $this->assertTrue($item->active);
         $this->assertTrue($item->relationLoaded('menuCategory'));
         $this->assertSame($category->id, $item->menuCategory->id);
@@ -101,7 +104,7 @@ class MenuServiceTest extends TenantTestCase
 
         $updated = app(MenuService::class)->updateItem($item, ['price' => '20.00']);
 
-        $this->assertSame('20.00', $updated->price);
+        $this->assertSame('20.000', $updated->price);
         $this->assertSame('مسخن', $updated->name);
     }
 
@@ -209,7 +212,7 @@ class MenuServiceTest extends TenantTestCase
         $item = MenuItem::where('name', 'حمص')->first();
         $this->assertNotNull($item);
         $this->assertSame($category->id, $item->menu_category_id);
-        $this->assertSame('15.50', $item->price);
+        $this->assertSame('15.500', $item->price);
         $this->assertTrue($item->active);
     }
 
@@ -239,7 +242,7 @@ class MenuServiceTest extends TenantTestCase
 
         $this->assertSame(['created' => 1, 'updated' => 1, 'skipped' => 0], $result);
         $this->assertSame(2, MenuItem::count());
-        $this->assertSame('20.00', $item->fresh()->price);
+        $this->assertSame('20.000', $item->fresh()->price);
         $this->assertNotNull(MenuItem::where('name', 'فتوش')->first());
     }
 

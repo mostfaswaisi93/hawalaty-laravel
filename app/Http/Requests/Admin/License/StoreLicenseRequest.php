@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin\License;
 
+use App\Enums\BusinessType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class StoreLicenseRequest extends FormRequest
@@ -23,6 +25,7 @@ class StoreLicenseRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()],
             'packageId' => ['nullable', 'string', 'exists:packages,id'],
+            'businessType' => ['required', Rule::enum(BusinessType::class)],
 
             'dbName' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_]+$/'],
             'dbUsername' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_]+$/'],
@@ -37,6 +40,7 @@ class StoreLicenseRequest extends FormRequest
         return [
             'dbName.regex' => __('اسم قاعدة البيانات: حروف إنجليزية وأرقام وشرطة سفلية فقط.'),
             'dbUsername.regex' => __('اسم المستخدم: حروف إنجليزية وأرقام وشرطة سفلية فقط.'),
+            'businessType.required' => __('اختر تصنيف النشاط - هو الذي يحدّد الوحدات التي تُفتح لهذه النسخة.'),
         ];
     }
 }

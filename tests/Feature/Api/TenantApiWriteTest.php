@@ -41,7 +41,7 @@ class TenantApiWriteTest extends TenantApiTestCase
             'active' => true,
         ])->assertCreated();
 
-        $this->assertSame('45.50', MenuItem::sole()->price);
+        $this->assertSame('45.500', MenuItem::sole()->price);
     }
 
     public function test_a_member_without_the_permission_cannot_touch_the_catalogue(): void

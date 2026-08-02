@@ -30,15 +30,6 @@
                 categoryLabel: @js(old('categoryLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::CATEGORY) ?? '')),
                 itemLabel: @js(old('itemLabel', $naming->raw(\App\Services\Tenant\CatalogNaming::ITEM) ?? '')),
                 catalogIcon: @js(old('catalogIcon', $naming->isConfigured() ? $naming->icon() : '')),
-                /*
-                 * Picking a trade fills the name AND its icon in one go. It never
-                 * overwrites a name already typed - the preset is a starting point,
-                 * not a correction.
-                 */
-                applyPreset(label, icon) {
-                    this.catalogLabel = label;
-                    if (! this.catalogIcon) { this.catalogIcon = icon; }
-                },
             }"
             @keydown.escape.window="open = false">
 
@@ -90,17 +81,15 @@
                         @csrf
                         @method('PUT')
 
+                        @php $businessType = app(\App\Services\Tenant\BusinessProfile::class)->type(); @endphp
                         <div class="space-y-2">
-                            <span id="trade-presets-label" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('اختر نوع نشاطك') }}</span>
-                            <div class="flex flex-wrap gap-2" role="group" aria-labelledby="trade-presets-label">
-                                @foreach ($naming->catalogPresets() as $preset)
-                                    <button type="button" @click="applyPreset(@js($preset['label']), @js($preset['icon']))"
-                                        class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-sm text-body-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10 hover:text-primary hover:shadow-md"
-                                        :class="catalogLabel === @js($preset['label']) && '!border-primary bg-primary/10 font-bold text-primary'">
-                                        <span class="material-symbols-outlined !text-xl">{{ $preset['icon'] }}</span>
-                                        {{ $preset['label'] }}
-                                    </button>
-                                @endforeach
+                            <span class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تصنيف نشاطك') }}</span>
+                            <div class="flex items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                                <span class="material-symbols-outlined !text-2xl flex-shrink-0 text-primary">{{ $businessType->icon() }}</span>
+                                <div class="min-w-0">
+                                    <p class="font-body-lg font-bold text-on-surface">{{ $businessType->label() }}</p>
+                                    <p class="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">{{ __('يُضبط من إدارة المنصّة، وهو الذي يحدّد الوحدات المتاحة لك. تواصل مع الدعم لتغييره.') }}</p>
+                                </div>
                             </div>
                         </div>
 

@@ -33,14 +33,29 @@
         <section class="xl:order-2 xl:col-span-1">
             <h2 class="mb-4 font-label-caps text-label-caps uppercase tracking-wider text-secondary">{{ __('روابط سريعة') }}</h2>
             <div class="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                @foreach ([
-                    ['/transfers', 'add_shopping_cart', __('طلب جديد'), __('أنشئ طلباً واحسب المجموع تلقائياً')],
-                    ['/history', 'receipt_long', __('السجل'), __('تصفّح وابحث في كل طلباتك')],
-                    ['/banks', 'account_balance', __('البنوك والمحافظ'), __('أدر وسائل الدفع')],
-                    ['/menu', 'restaurant_menu', $catalogNaming->catalog(), __('نظّم الفئات والأصناف')],
-                    ['/reports', 'assessment', __('التقارير'), __('تابع إيراداتك ونشاطك')],
-                    ['/team', 'group', __('الفريق'), __('ادعُ موظفين وامنح صلاحيات')],
-                ] as [$href, $icon, $title, $desc])
+                @php
+                    /*
+                     * Filtered the same way the sidebar is: a link the reader
+                     * cannot open is worse than no link, because it looks like the
+                     * page is broken rather than like the feature is not theirs.
+                     * `permission`/`feature` null means always shown - which is
+                     * what a signed-out visitor gets.
+                     */
+                    $member = auth('tenant')->user();
+                    $license = app()->bound('currentLicense') ? app('currentLicense') : null;
+
+                    $quickLinks = array_filter([
+                        ['/transfers', 'add_shopping_cart', __('طلب جديد'), __('أنشئ طلباً واحسب المجموع تلقائياً'), \App\Enums\PermissionKey::TransfersCreate, null, true],
+                        ['/history', 'receipt_long', __('السجل'), __('تصفّح وابحث في كل طلباتك'), null, null, true],
+                        ['/accounts', 'wallet', __('الحسابات'), __('أدر وسائل الدفع'), \App\Enums\PermissionKey::BanksManage, null, true],
+                        ['/menu', $catalogNaming->icon(), $catalogNaming->catalog(), __('نظّم الفئات والأصناف'), \App\Enums\PermissionKey::MenuManage, \App\Enums\PackageFeature::Menu, $catalogNaming->isConfigured()],
+                        ['/reports', 'assessment', __('التقارير'), __('تابع إيراداتك ونشاطك'), null, null, true],
+                        ['/team', 'group', __('الفريق'), __('ادعُ موظفين وامنح صلاحيات'), \App\Enums\PermissionKey::TeamManage, \App\Enums\PackageFeature::Team, true],
+                    ], fn ($l) => $l[6]
+                        && (! $l[4] || ! $member || $member->hasPermission($l[4]))
+                        && (! $l[5] || ! $license || $license->hasFeature($l[5])));
+                @endphp
+                @foreach ($quickLinks as [$href, $icon, $title, $desc])
                     <a href="{{ $href }}" class="tonal-elevation press group flex items-start gap-4 rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-5 transition-all hover:border-primary">
                         <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
                             <span class="material-symbols-outlined">{{ $icon }}</span>
@@ -59,7 +74,7 @@
             <div class="stagger space-y-3">
                 @foreach ([
                     [__('كيف أنشئ طلباً جديداً؟'), __('من «طلب جديد»، اختر الأصناف من القائمة لتُضاف إلى السلة، حدّد اسم العميل وطريقة الدفع (نقدي أو تحويل بنكي)، ثم اضغط «إنشاء الطلب». يُحسب الإجمالي تلقائياً من الأصناف.')],
-                    [__('كيف أضيف بنكاً أو محفظة؟'), __('من «البنوك والمحافظ» اضغط «إضافة»، أدخل الاسم والنوع (بنك/محفظة) والرمز واختيارياً الهاتف. يمكنك تفعيل أو إيقاف أي وسيلة دفع في أي وقت من مفتاح الحالة.')],
+                    [__('كيف أضيف حساباً بنكياً أو محفظة؟'), __('من «الحسابات» اضغط «إضافة»، أدخل صاحب الحساب والنوع (بنك/محفظة) والعملة واختيارياً رقم واتساب للإشعارات. يمكنك تفعيل أو إيقاف أي حساب في أي وقت من مفتاح الحالة.')],
                     [__('كيف أنظّم :catalog؟', ['catalog' => $catalogNaming->catalog()]), __('من «:catalog» أنشئ :category أولاً، ثم أضِف :items إليها مع أسعارها. يمكنك إخفاء أي :item مؤقتاً بإيقاف «متاح للطلب» دون حذفه.', ['catalog' => $catalogNaming->catalog(), 'category' => $catalogNaming->category(), 'items' => __('الأصناف'), 'item' => $catalogNaming->item()])],
                     [__('ما الفرق بين الأدوار؟'), __('المالك يملك كل الصلاحيات. المدير يملك كل الصلاحيات عدا إدارة الفريق. الموظف يمكنه إنشاء الطلبات فقط. يمكنك تعيين الدور المناسب لكل عضو من صفحة «الفريق».')],
                     [__('ماذا تعني حالات الطلب؟'), __('«مكتملة» أي تم استلام الدفع وإنهاء الطلب، «قيد الانتظار» أي جديد لم يُنجَز بعد، و«فاشلة» أي أُلغي أو تعذّر إتمامه.')],
@@ -94,7 +109,16 @@
                     <span class="material-symbols-outlined !text-xl">mail</span>
                     {{ __('راسلنا') }}
                 </a>
-                <span class="font-body-sm text-on-surface-variant" dir="ltr">+970 59 000 0000</span>
+                {{-- The operator's own number from /admin/settings, not a constant -
+                     it was hardcoded here while `support_phone` was already being
+                     shared with this view. --}}
+                @if ($supportPhone)
+                    <a href="tel:{{ preg_replace('/[^\d+]/', '', $supportPhone) }}"
+                        class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary">
+                        <span class="material-symbols-outlined !text-xl">call</span>
+                        <span dir="ltr">{{ $supportPhone }}</span>
+                    </a>
+                @endif
             </div>
         </section>
 

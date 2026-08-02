@@ -183,6 +183,39 @@
                             @endforeach
                         </select>
                     </div>
+                    <fieldset class="space-y-2 md:col-span-2" x-data="{ vertical: @js(old('businessType', \App\Enums\BusinessType::default()->value)) }">
+                        <legend class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تصنيف النشاط') }}</legend>
+                        <p class="font-body-sm text-outline">{{ __('يحدّد هذا الاختيار الوحدات والشاشات التي تُفتح داخل النسخة. لا يستطيع العميل تغييره.') }}</p>
+                        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            @foreach ($businessTypes as $type)
+                                <label class="flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 transition"
+                                    :class="vertical === @js($type->value)
+                                        ? 'border-primary bg-primary text-on-primary'
+                                        : 'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline'">
+                                    <input type="radio" name="businessType" value="{{ $type->value }}" x-model="vertical" class="sr-only" required />
+                                    <span class="material-symbols-outlined !text-xl flex-shrink-0">{{ $type->icon() }}</span>
+                                    <span class="font-body-sm leading-tight">{{ $type->label() }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @foreach ($businessTypes as $type)
+                            <div x-show="vertical === @js($type->value)" x-cloak class="rounded-xl bg-surface-container-low p-3">
+                                <p class="font-body-sm text-on-surface-variant">{{ $type->description() }}</p>
+                                <div class="mt-2 flex flex-wrap gap-1.5">
+                                    @foreach ($type->capabilities() as $capability)
+                                        <span class="inline-flex items-center gap-1 rounded-lg bg-secondary-container px-2 py-1 font-label-sm text-label-sm text-on-secondary-container">
+                                            <span class="material-symbols-outlined !text-sm">{{ $capability->icon() }}</span>{{ $capability->label() }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                                <p class="mt-2 font-body-sm text-outline" dir="ltr">{{ implode(' · ', $type->standards()) }}</p>
+                            </div>
+                        @endforeach
+                        @error('businessType')
+                            <p class="font-body-sm text-error">{{ $message }}</p>
+                        @enderror
+                    </fieldset>
+
                     <div class="space-y-1.5 md:col-span-2">
                         <label for="admin-licenses-password" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('كلمة مرور المالك') }}</label>
                         <input id="admin-licenses-password" type="password" name="password" required dir="ltr" placeholder="{{ __('8 أحرف على الأقل، حروف وأرقام') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />

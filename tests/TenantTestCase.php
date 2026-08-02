@@ -41,9 +41,14 @@ abstract class TenantTestCase extends TestCase
         $this->bindCurrentLicense();
     }
 
-    protected function bindCurrentLicense(): void
+    /**
+     * Bind the license the tenant plane reads its package features and business
+     * vertical from. Pass a type to exercise a capability-gated path.
+     */
+    protected function bindCurrentLicense(?\App\Enums\BusinessType $businessType = null): void
     {
         $license = new \App\Models\License;
+        $license->business_type = $businessType ?? \App\Enums\BusinessType::default();
         $license->setRelation('package', new \App\Models\Package([
             'features' => array_column(\App\Enums\PackageFeature::cases(), 'value'),
         ]));

@@ -5,6 +5,14 @@ namespace App\Services\Tenant;
 use App\Models\Tenant\TenantSetting;
 use Throwable;
 
+/**
+ * What this workspace calls the things it sells.
+ *
+ * The trade itself is not chosen here - it is a platform-owned property of the
+ * license (see {@see \App\Enums\BusinessType}) and is seeded into these settings
+ * at provisioning. What remains tenant-editable is only the wording: a pharmacy
+ * may prefer "المستحضرات" to "الأدوية" without changing which modules it has.
+ */
 class CatalogNaming
 {
     public const CATALOG = 'catalog_label';
@@ -25,24 +33,6 @@ class CatalogNaming
             self::CATALOG => __('قائمة الأصناف'),
             self::CATEGORY => __('فئة'),
             self::ITEM => __('صنف'),
-        ];
-    }
-
-    public function catalogPresets(): array
-    {
-        return [
-            ['label' => __('قائمة الطعام'), 'icon' => 'restaurant_menu'],
-            ['label' => __('المخبوزات'), 'icon' => 'bakery_dining'],
-            ['label' => __('المحروقات'), 'icon' => 'local_gas_station'],
-            ['label' => __('الخضار والفواكه'), 'icon' => 'nutrition'],
-            ['label' => __('البقالة'), 'icon' => 'storefront'],
-            ['label' => __('الكتب والقرطاسية'), 'icon' => 'menu_book'],
-            ['label' => __('السجائر والتبغ'), 'icon' => 'smoking_rooms'],
-            ['label' => __('الملابس'), 'icon' => 'checkroom'],
-            ['label' => __('الإلكترونيات'), 'icon' => 'smartphone'],
-            ['label' => __('الأدوية'), 'icon' => 'pill'],
-            ['label' => __('قطع الغيار'), 'icon' => 'build'],
-            ['label' => __('الخدمات'), 'icon' => 'home_repair_service'],
         ];
     }
 

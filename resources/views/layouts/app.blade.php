@@ -23,6 +23,10 @@
                 ['href' => '/catalogs', 'icon' => 'category', 'label' => 'الكتالوجات', 'match' => 'catalogs*', 'permission' => \App\Enums\PermissionKey::BanksManage],
 
                 ['href' => '/menu', 'icon' => $catalogIcon, 'label' => $catalogLabel, 'match' => 'menu*', 'permission' => \App\Enums\PermissionKey::MenuManage, 'feature' => \App\Enums\PackageFeature::Menu, 'translated' => true, 'visible' => $catalogConfigured],
+                ['href' => '/inventory', 'icon' => 'inventory_2', 'label' => 'المخزون', 'match' => 'inventory*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Inventory],
+                ['href' => '/stock-counts', 'icon' => 'checklist', 'label' => 'الجرد', 'match' => 'stock-counts*', 'permission' => \App\Enums\PermissionKey::InventoryManage, 'capability' => \App\Enums\BusinessCapability::Inventory],
+                ['href' => '/purchases', 'icon' => 'local_shipping', 'label' => 'المشتريات', 'match' => 'purchases*', 'permission' => \App\Enums\PermissionKey::PurchasesManage, 'capability' => \App\Enums\BusinessCapability::Purchasing],
+                ['href' => '/suppliers', 'icon' => 'store', 'label' => 'الموردون', 'match' => 'suppliers*', 'permission' => \App\Enums\PermissionKey::PurchasesManage, 'capability' => \App\Enums\BusinessCapability::Purchasing],
                 ['href' => '/expenses', 'icon' => 'payments', 'label' => 'المصروفات', 'match' => 'expenses*', 'permission' => \App\Enums\PermissionKey::ExpensesManage, 'feature' => \App\Enums\PackageFeature::Expenses],
                 ['href' => '/balance', 'icon' => 'balance', 'label' => 'الموازنة المالية', 'match' => 'balance*', 'permission' => null],
                 ['href' => '/reports', 'icon' => 'assessment', 'label' => 'التقارير', 'match' => 'reports*', 'permission' => null],
@@ -44,7 +48,14 @@
     ];
 
     $currentLicense = app()->bound('currentLicense') ? app('currentLicense') : null;
+    $business = app(\App\Services\Tenant\BusinessProfile::class);
 
+    /*
+     * Three independent gates, and they answer different questions:
+     * `permission` is who the member is, `feature` is what the operator sold, and
+     * `capability` is what the trade needs. A pharmacy without batch tracking is
+     * not a downgrade to sell around - it is the wrong system.
+     */
     $visibleGroups = [];
     foreach ($navGroups as $group) {
         $items = array_values(array_filter(
@@ -52,7 +63,8 @@
 
             fn ($item) => ($item['visible'] ?? true)
                 && (! ($item['permission'] ?? null) || $member?->hasPermission($item['permission']))
-                && (! ($item['feature'] ?? null) || (bool) $currentLicense?->hasFeature($item['feature'])),
+                && (! ($item['feature'] ?? null) || (bool) $currentLicense?->hasFeature($item['feature']))
+                && (! ($item['capability'] ?? null) || $business->hasAny((array) $item['capability'])),
         ));
 
         if ($items !== []) {

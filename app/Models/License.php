@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessCapability;
+use App\Enums\BusinessType;
 use App\Enums\LicenseStatus;
 use App\Enums\PackageFeature;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -11,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['license_code', 'customer_name', 'address', 'phone', 'package_id', 'status', 'expired_at', 'customer_balance'])]
+#[Fillable(['license_code', 'customer_name', 'address', 'phone', 'business_type', 'package_id', 'status', 'expired_at', 'customer_balance'])]
 class License extends Model
 {
     use HasUlids;
@@ -20,9 +22,31 @@ class License extends Model
     {
         return [
             'status' => LicenseStatus::class,
+            'business_type' => BusinessType::class,
             'expired_at' => 'date',
             'customer_balance' => 'decimal:2',
         ];
+    }
+
+    public function businessType(): BusinessType
+    {
+        return $this->business_type ?? BusinessType::default();
+    }
+
+    /**
+     * Whether the license's vertical switches this module on.
+     *
+     * Distinct from hasFeature(): a package feature is something the operator
+     * sells, a capability is something the trade requires.
+     */
+    public function hasCapability(BusinessCapability|string $capability): bool
+    {
+        $case = $capability instanceof BusinessCapability
+            ? $capability
+            : BusinessCapability::tryFrom($capability);
+
+        return $case instanceof BusinessCapability
+            && $this->businessType()->hasCapability($case);
     }
 
     public function package(): BelongsTo

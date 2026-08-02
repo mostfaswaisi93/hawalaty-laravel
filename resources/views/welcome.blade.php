@@ -99,7 +99,7 @@
     ];
 
     $metaTitle = __('حوالاتي - نظام إدارة الطلبات والحسابات لأي مشروع');
-    $metaDescription = __('نظام عربي متكامل لإدارة الطلبات والحسابات والمحافظ والمصروفات والتقارير لأي مشروع - بصلاحيات دقيقة، وعمل بلا إنترنت، وتجربة مجانية ١٤ يوماً.');
+    $metaDescription = __('نظام عربي متكامل لإدارة الطلبات والحسابات والمحافظ والمصروفات والتقارير لأي مشروع - بصلاحيات دقيقة، وعمل بلا إنترنت، وتجربة مجانية :days يوماً.', ['days' => $trialDays]);
 
     $schemas = [
         [
@@ -372,7 +372,7 @@
                     </div>
 
                     <ul class="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-body-sm text-outline lg:justify-start">
-                        @foreach ([__('١٤ يوماً مجاناً'), __('بدون بطاقة ائتمان'), __('إلغاء في أي وقت')] as $promise)
+                        @foreach ([__(':days يوماً مجاناً', ['days' => $trialDays]), __('بدون بطاقة ائتمان'), __('إلغاء في أي وقت')] as $promise)
                             <li class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined !text-base text-primary" data-weight="fill" aria-hidden="true">check_circle</span>{{ $promise }}
                             </li>
@@ -682,28 +682,61 @@
                 </div>
 
                 @php
-                    $plans = [
-                        [
+                    /*
+                     * Built from the packages that are actually sold, so the price,
+                     * the device allowance and the feature list cannot disagree with
+                     * what a signup grants. Only the SELLING copy - the tagline and
+                     * which card is highlighted - lives here, keyed by package name;
+                     * a package with no entry still renders, just without them.
+                     */
+                    $planCopy = [
+                        'Basic' => ['title' => __('البداية'), 'tagline' => __('جرّب النظام كاملاً قبل أن تدفع'), 'popular' => false],
+                        'Pro' => ['title' => __('الاحترافية'), 'tagline' => __('لمشروع قائم بفريق صغير'), 'popular' => true],
+                        'Enterprise' => ['title' => __('الأعمال'), 'tagline' => __('لعدة فروع وفريق كامل'), 'popular' => false],
+                    ];
 
-                            'name' => __('البداية'), 'monthly' => 0, 'devices' => __('جهازين'),
-                            'tagline' => __('جرّب النظام كاملاً قبل أن تدفع'), 'popular' => false, 'enterprise' => false,
-                            'features' => [__('إدارة الطلبات'), __('الكتالوج والأسعار'), __('التقارير الأساسية'), __('مستخدم واحد'), __('العمل بلا إنترنت')],
-                        ],
-                        [
-                            'name' => __('الاحترافية'), 'monthly' => 99, 'devices' => __('١٠ أجهزة'),
-                            'tagline' => __('لمشروع قائم بفريق صغير'), 'popular' => true, 'enterprise' => false,
-                            'features' => [__('كل مزايا البداية'), __('الحسابات والمحافظ والصناديق'), __('المصروفات والمطابقة'), __('الفريق والصلاحيات'), __('تقارير متقدمة وتصدير'), __('إشعارات واتساب')],
-                        ],
-                        [
-                            'name' => __('الأعمال'), 'monthly' => 299, 'devices' => __('٥٠ جهازاً'),
-                            'tagline' => __('لعدة فروع وفريق كامل'), 'popular' => false, 'enterprise' => false,
-                            'features' => [__('كل مزايا الاحترافية'), __('إدارة الأجهزة'), __('الثوابت المخصّصة'), __('النسخ الاحتياطي'), __('سجل نشاط موسّع'), __('دعم ذو أولوية')],
-                        ],
-                        [
-                            'name' => __('إنتربرايز'), 'monthly' => null, 'devices' => __('أجهزة غير محدودة'),
-                            'tagline' => __('لمؤسسة بمتطلبات خاصة'), 'popular' => false, 'enterprise' => true,
-                            'features' => [__('كل مزايا الأعمال'), __('خادم مخصّص إن رغبت'), __('تكامل عبر الـ API'), __('اتفاقية مستوى خدمة (SLA)'), __('مدير حساب مخصّص'), __('تدريب وإعداد للفريق')],
-                        ],
+                    $plans = [];
+                    $previousLabels = [];
+                    $previousTitle = null;
+
+                    foreach ($packages as $package) {
+                        $copy = $planCopy[$package->name] ?? [];
+
+                        $labels = collect($package->features ?? [])
+                            ->map(fn (string $key) => \App\Enums\PackageFeature::tryFrom($key)?->label())
+                            ->filter()
+                            ->values()
+                            ->all();
+
+                        // Each tier lists what it ADDS, under a line pointing at the
+                        // one below - the same shape the hand-written table had, but
+                        // computed, so it stays true when a package is re-ticked.
+                        $added = array_values(array_diff($labels, $previousLabels));
+
+                        $plans[] = [
+                            'name' => $copy['title'] ?? $package->name,
+                            'monthly' => (float) $package->price,
+                            'devices' => $package->device_limit > 0
+                                ? __('حتى :count أجهزة', ['count' => $package->device_limit])
+                                : __('أجهزة غير محدودة'),
+                            'tagline' => $copy['tagline'] ?? '',
+                            'popular' => $copy['popular'] ?? false,
+                            'enterprise' => false,
+                            'features' => $previousTitle
+                                ? array_merge([__('كل مزايا :plan', ['plan' => $previousTitle])], $added)
+                                : $labels,
+                        ];
+
+                        $previousLabels = $labels;
+                        $previousTitle = $copy['title'] ?? $package->name;
+                    }
+
+                    // Not a package: there is nothing to sign up for, so it stays a
+                    // "talk to us" card rather than pretending to be a tier.
+                    $plans[] = [
+                        'name' => __('إنتربرايز'), 'monthly' => null, 'devices' => __('أجهزة غير محدودة'),
+                        'tagline' => __('لمؤسسة بمتطلبات خاصة'), 'popular' => false, 'enterprise' => true,
+                        'features' => [__('كل مزايا :plan', ['plan' => $previousTitle]), __('خادم مخصّص إن رغبت'), __('تكامل عبر الـ API'), __('اتفاقية مستوى خدمة (SLA)'), __('مدير حساب مخصّص'), __('تدريب وإعداد للفريق')],
                     ];
                 @endphp
 
@@ -735,7 +768,7 @@
                                 @if ($plan['enterprise'])
                                     <span class="font-display-lg text-3xl font-bold text-on-surface">{{ __('تسعير مخصّص') }}</span>
                                 @elseif ($plan['monthly'] === 0)
-                                    <span class="font-display-lg text-5xl font-bold text-on-surface" dir="ltr">14</span>
+                                    <span class="font-display-lg text-5xl font-bold text-on-surface" dir="ltr">{{ $trialDays }}</span>
                                     <span class="mb-2 font-body-sm text-on-surface-variant">{{ __('يوماً مجاناً') }}</span>
                                 @else
                                     <span class="font-display-lg text-5xl font-bold text-on-surface" dir="ltr" x-text="price({{ $plan['monthly'] }})">{{ $plan['monthly'] }}</span>
@@ -746,7 +779,9 @@
                                 @endif
                             </div>
 
-                            <p class="mt-1 font-body-sm text-outline">{{ $plan['enterprise'] ? $plan['devices'] : __('حتى').' '.$plan['devices'] }}</p>
+                            {{-- `devices` already reads "حتى N أجهزة" or "غير محدودة",
+                                 so it is printed as-is. --}}
+                            <p class="mt-1 font-body-sm text-outline">{{ $plan['devices'] }}</p>
 
                             <ul class="mt-7 flex-1 space-y-3">
                                 @foreach ($plan['features'] as $feature)
@@ -960,7 +995,7 @@
                         <span>{{ __('أنشئ حسابك المجاني') }}</span>
                         <span class="material-symbols-outlined rtl:-scale-x-100 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">arrow_forward</span>
                     </a>
-                    <p class="mt-5 font-body-sm text-white/60">{{ __('١٤ يوماً مجاناً - بدون بطاقة ائتمان.') }}</p>
+                    <p class="mt-5 font-body-sm text-white/60">{{ __(':days يوماً مجاناً - بدون بطاقة ائتمان.', ['days' => $trialDays]) }}</p>
                 </div>
             </div>
         </section>

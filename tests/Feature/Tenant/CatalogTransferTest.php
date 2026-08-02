@@ -80,7 +80,7 @@ class CatalogTransferTest extends TenantTestCase
 
         $this->assertSame(1, MenuCategory::count());
         $this->assertSame(2, MenuItem::count());
-        $this->assertSame('40.00', MenuItem::where('name', 'كباب')->sole()->price);
+        $this->assertSame('40.000', MenuItem::where('name', 'كباب')->sole()->price);
     }
 
     public function test_a_negative_price_does_not_get_imported(): void
@@ -110,7 +110,7 @@ class CatalogTransferTest extends TenantTestCase
         }
 
         $this->assertSame(1, MenuItem::count());
-        $this->assertSame('45.00', MenuItem::sole()->price);
+        $this->assertSame('45.000', MenuItem::sole()->price);
     }
 
     public function test_a_member_without_the_permission_cannot_import(): void
@@ -143,6 +143,6 @@ class CatalogTransferTest extends TenantTestCase
 
         $this->assertSame(1, MenuCategory::count());
         $this->assertSame(2, MenuItem::count());
-        $this->assertSame('5.50', MenuItem::where('name', 'قهوة')->sole()->price);
+        $this->assertSame('5.500', MenuItem::where('name', 'قهوة')->sole()->price);
     }
 }

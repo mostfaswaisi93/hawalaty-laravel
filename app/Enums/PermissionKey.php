@@ -11,6 +11,8 @@ enum PermissionKey: string
     case ConstantsManage = 'constants.manage';
     case DevicesManage = 'devices.manage';
     case TeamManage = 'team.manage';
+    case InventoryManage = 'inventory.manage';
+    case PurchasesManage = 'purchases.manage';
 
     public function label(): string
     {
@@ -22,6 +24,8 @@ enum PermissionKey: string
             self::ConstantsManage => __('إدارة الثوابت'),
             self::DevicesManage => __('إدارة الأجهزة'),
             self::TeamManage => __('إدارة الفريق'),
+            self::InventoryManage => __('إدارة المخزون'),
+            self::PurchasesManage => __('إدارة المشتريات'),
         };
     }
 
@@ -35,6 +39,8 @@ enum PermissionKey: string
             self::ConstantsManage => __('تعديل القوائم الثابتة ومسمّيات القائمة.'),
             self::DevicesManage => __('عرض الأجهزة المرتبطة وإلغاء أيّ منها.'),
             self::TeamManage => __('دعوة الأعضاء وتعديل أدوارهم ورواتبهم.'),
+            self::InventoryManage => __('تسوية الأرصدة وتسجيل التلف والنقل والجرد.'),
+            self::PurchasesManage => __('إدارة الموردين وأوامر الشراء واستلام البضاعة.'),
         };
     }
 
@@ -48,6 +54,8 @@ enum PermissionKey: string
             self::ConstantsManage => 'tune',
             self::DevicesManage => 'devices',
             self::TeamManage => 'group',
+            self::InventoryManage => 'inventory_2',
+            self::PurchasesManage => 'local_shipping',
         };
     }
 }

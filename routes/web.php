@@ -26,9 +26,11 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DeviceController;
 use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\HistoryController;
+use App\Http\Controllers\Web\InventoryController;
 use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\OrderConfirmationController;
+use App\Http\Controllers\Web\PurchaseController;
 use App\Http\Controllers\Web\ReceiptController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RobotsController;
@@ -37,6 +39,8 @@ use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\ServiceWorkerController;
 use App\Http\Controllers\Web\SitemapController;
+use App\Http\Controllers\Web\StockCountController;
+use App\Http\Controllers\Web\SupplierController;
 use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
@@ -141,6 +145,40 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
         Route::delete('menu/items/{item}', [MenuController::class, 'destroyItem'])->name('menu.items.destroy');
     });
 
+    /*
+     * Inventory and purchasing exist only for verticals that stock goods. The
+     * capability gate is separate from the package gate on purpose: a pharmacy
+     * without batch tracking is not a cheaper plan, it is the wrong system.
+     */
+    Route::middleware('capability:inventory')->group(function () {
+        Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
+        Route::get('inventory/{item}', [InventoryController::class, 'show'])->name('inventory.show')->whereUlid('item');
+        Route::post('inventory/movements', [InventoryController::class, 'store'])->name('inventory.movements.store');
+
+        Route::get('stock-counts', [StockCountController::class, 'index'])->name('stock-counts.index');
+        Route::post('stock-counts', [StockCountController::class, 'store'])->name('stock-counts.store');
+        Route::get('stock-counts/{stockCount}', [StockCountController::class, 'show'])->name('stock-counts.show')->whereUlid('stockCount');
+        Route::put('stock-counts/{stockCount}', [StockCountController::class, 'update'])->name('stock-counts.update')->whereUlid('stockCount');
+        Route::post('stock-counts/{stockCount}/post', [StockCountController::class, 'post'])->name('stock-counts.post')->whereUlid('stockCount');
+        Route::post('stock-counts/{stockCount}/cancel', [StockCountController::class, 'cancel'])->name('stock-counts.cancel')->whereUlid('stockCount');
+    });
+
+    Route::middleware('capability:purchasing')->group(function () {
+        Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+        Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+        Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update')->whereUlid('supplier');
+        Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy')->whereUlid('supplier');
+
+        Route::get('purchases', [PurchaseController::class, 'index'])->name('purchases.index');
+        Route::get('purchases/create', [PurchaseController::class, 'create'])->name('purchases.create');
+        Route::post('purchases', [PurchaseController::class, 'store'])->name('purchases.store');
+        Route::get('purchases/{purchase}', [PurchaseController::class, 'show'])->name('purchases.show')->whereUlid('purchase');
+        Route::put('purchases/{purchase}', [PurchaseController::class, 'update'])->name('purchases.update')->whereUlid('purchase');
+        Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('purchases.receive')->whereUlid('purchase');
+        Route::post('purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])->name('purchases.cancel')->whereUlid('purchase');
+        Route::delete('purchases/{purchase}', [PurchaseController::class, 'destroy'])->name('purchases.destroy')->whereUlid('purchase');
+    });
+
     Route::middleware('package:expenses')->group(function () {
         Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
         Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
@@ -218,6 +256,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('licenses/{license}/migrate', [AdminLicenseController::class, 'migrate'])->name('licenses.migrate');
         Route::post('licenses/{license}/change-package', [AdminLicenseController::class, 'changePackage'])->name('licenses.change-package');
+        Route::post('licenses/{license}/change-business-type', [AdminLicenseController::class, 'changeBusinessType'])->name('licenses.change-business-type');
 
         Route::get('packages', [AdminPackageController::class, 'index'])->name('packages.index');
         Route::post('packages', [AdminPackageController::class, 'store'])->name('packages.store');
