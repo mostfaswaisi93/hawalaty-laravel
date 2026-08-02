@@ -46,11 +46,10 @@
                                     <legend class="px-1 font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ $axis->title }}</legend>
                                     <div class="flex flex-wrap gap-2">
                                         @foreach ($axis->items as $value)
-                                            <label class="cursor-pointer">
-                                                <input type="checkbox" name="axes[{{ $axis->id }}][]" value="{{ $value->id }}" class="peer sr-only" />
-                                                <span class="inline-flex items-center rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-sm transition peer-checked:border-primary peer-checked:bg-primary peer-checked:text-on-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
-                                                    {{ $value->value }}
-                                                </span>
+                                            <input id="axis-{{ $axis->id }}-{{ $value->id }}" type="checkbox" name="axes[{{ $axis->id }}][]" value="{{ $value->id }}" class="peer sr-only" />
+                                            <label for="axis-{{ $axis->id }}-{{ $value->id }}"
+                                                class="inline-flex cursor-pointer items-center rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-sm transition peer-checked:border-primary peer-checked:bg-primary peer-checked:text-on-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary">
+                                                {{ $value->value }}
                                             </label>
                                         @endforeach
                                     </div>
@@ -204,12 +203,12 @@
                                     <input type="number" step="0.001" min="0" name="variants[{{ $variant->id }}][price]" value="{{ (float) $variant->price }}" dir="ltr"
                                         aria-label="{{ __('سعر :variant', ['variant' => $variant->name]) }}"
                                         class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-numeral-lg outline-none focus:ring-2 focus:ring-primary" />
-                                    <label class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2">
                                         <input type="hidden" name="variants[{{ $variant->id }}][active]" value="0" />
-                                        <input type="checkbox" name="variants[{{ $variant->id }}][active]" value="1" @checked($variant->active)
+                                        <input id="variant-active-{{ $variant->id }}" type="checkbox" name="variants[{{ $variant->id }}][active]" value="1" @checked($variant->active)
                                             class="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary" />
-                                        <span class="font-body-sm">{{ __('مفعّلة') }}</span>
-                                    </label>
+                                        <label for="variant-active-{{ $variant->id }}" class="font-body-sm">{{ __('مفعّلة') }}</label>
+                                    </div>
                                 </div>
                             @endforeach
                         </x-slot:cards>

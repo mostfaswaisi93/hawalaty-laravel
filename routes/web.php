@@ -41,6 +41,7 @@ use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RobotsController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
+use App\Http\Controllers\Web\SerialController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\ServiceWorkerController;
 use App\Http\Controllers\Web\SitemapController;
@@ -50,6 +51,7 @@ use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
 use App\Http\Controllers\Web\VariantController;
+use App\Http\Controllers\Web\WarrantyController;
 use App\Http\Controllers\Web\WhatsAppSettingsController;
 use App\Http\Controllers\Web\WhatsAppWebhookController;
 use App\Http\Middleware\SetLocale;
@@ -165,6 +167,21 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
             Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
             Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show')->whereUlid('batch');
             Route::post('batches/{batch}/write-off', [BatchController::class, 'writeOff'])->name('batches.write-off')->whereUlid('batch');
+        });
+
+        Route::middleware('capability:serials')->group(function () {
+            Route::get('serials', [SerialController::class, 'index'])->name('serials.index');
+            Route::post('serials', [SerialController::class, 'store'])->name('serials.store');
+            Route::get('serials/{serial}', [SerialController::class, 'show'])->name('serials.show')->whereUlid('serial');
+            Route::put('serials/{serial}', [SerialController::class, 'update'])->name('serials.update')->whereUlid('serial');
+        });
+
+        Route::middleware('capability:warranty')->group(function () {
+            Route::get('warranty', [WarrantyController::class, 'index'])->name('warranty.index');
+            Route::get('warranty/lookup', [WarrantyController::class, 'lookup'])->name('warranty.lookup');
+            Route::post('warranty', [WarrantyController::class, 'store'])->name('warranty.store');
+            Route::get('warranty/{claim}', [WarrantyController::class, 'show'])->name('warranty.show')->whereUlid('claim');
+            Route::put('warranty/{claim}', [WarrantyController::class, 'update'])->name('warranty.update')->whereUlid('claim');
         });
 
         Route::get('stock-counts', [StockCountController::class, 'index'])->name('stock-counts.index');

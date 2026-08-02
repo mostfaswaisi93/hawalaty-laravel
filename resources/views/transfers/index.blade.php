@@ -121,6 +121,9 @@
                                     <p x-show="line.mods && line.mods.length" x-cloak
                                         class="truncate text-[11px] text-primary"
                                         x-text="(line.mods || []).map(m => m.name).join('، ')"></p>
+                                    <p x-show="line.serials && line.serials.length" x-cloak
+                                        class="truncate text-[11px] text-on-surface-variant" dir="ltr"
+                                        x-text="(line.serials || []).join('، ')"></p>
                                     <p class="text-[11px] text-on-surface-variant" dir="ltr"><span x-text="fmt(unitPrice(line))"></span> ₪</p>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -422,6 +425,61 @@
                     </div>
                 </div>
 
+                <div x-show="serialsItem" x-cloak style="display:none" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                    role="dialog" aria-modal="true" aria-labelledby="serials-dialog-title">
+                    <div class="fixed inset-0 bg-black/40" x-show="serialsItem" x-transition.opacity @click="serialsItem = null"></div>
+
+                    <div class="relative z-10 flex max-h-[90vh] w-full max-w-md flex-col rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                        x-show="serialsItem" @keydown.escape.window="serialsItem = null"
+                        x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+
+                        <x-modal-close on-close="serialsItem = null" />
+
+                        <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
+                            <h3 id="serials-dialog-title" class="font-headline-md text-headline-md" x-text="serialsItem?.name"></h3>
+                            <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">{{ __('امسح أو اختر الوحدات الخارجة — لكل وحدة رقمها.') }}</p>
+                        </div>
+
+                        <div class="border-b border-outline-variant/60 p-4">
+                            <input type="text" x-model="serialFilter" dir="ltr"
+                                placeholder="{{ __('امسح الرقم التسلسلي...') }}" aria-label="{{ __('بحث بالرقم التسلسلي') }}"
+                                @keydown.enter.prevent="serialOptions.length === 1 && toggleSerial(serialOptions[0].serial)"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        </div>
+
+                        <div class="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+                            <template x-if="!serialOptions.length">
+                                <p class="py-8 text-center font-body-sm text-on-surface-variant">{{ __('لا توجد وحدات متاحة') }}</p>
+                            </template>
+                            <template x-for="unit in serialOptions" :key="unit.id">
+                                <button type="button" @click="toggleSerial(unit.serial)"
+                                    class="flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-start transition"
+                                    :class="serialsChosen.includes(unit.serial)
+                                        ? 'border-primary bg-primary text-on-primary'
+                                        : 'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline'"
+                                    :aria-pressed="serialsChosen.includes(unit.serial)">
+                                    <span class="min-w-0 truncate font-body-sm font-bold" dir="ltr" x-text="unit.serial"></span>
+                                    <span class="material-symbols-outlined !text-lg" x-show="serialsChosen.includes(unit.serial)" x-cloak>check</span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-3 border-t border-outline-variant/60 bg-surface-container-low px-6 py-4">
+                            <p class="font-body-sm text-on-surface-variant">
+                                <span class="font-numeral-lg font-bold" x-text="serialsChosen.length"></span>
+                                {{ __('وحدة') }}
+                            </p>
+                            <div class="flex gap-3">
+                                <button type="button" @click="serialsItem = null" class="rounded-xl px-5 py-3 font-body-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('إلغاء') }}</button>
+                                <button type="button" @click="confirmSerials()" :disabled="!serialsChosen.length"
+                                    class="rounded-xl bg-primary px-5 py-3 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                    {{ __('إضافة للسلة') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <template x-for="(line, idx) in cart" :key="'in-' + line.key">
                     <div class="hidden">
                         <input type="hidden" :name="`items[${idx}][itemId]`" :value="line.id" />
@@ -430,6 +488,9 @@
                         <input type="hidden" :name="`items[${idx}][price]`" :value="line.price" />
                         <template x-for="mod in (line.mods || [])" :key="'m-' + line.key + '-' + mod.id">
                             <input type="hidden" :name="`items[${idx}][modifiers][]`" :value="mod.id" />
+                        </template>
+                        <template x-for="serial in (line.serials || [])" :key="'s-' + line.key + '-' + serial">
+                            <input type="hidden" :name="`items[${idx}][serials][]`" :value="serial" />
                         </template>
                     </div>
                 </template>
@@ -515,18 +576,62 @@
                 },
 
                 addItem(item) {
+                    /* A serialised unit cannot be added anonymously: which
+                       handset leaves is the point of serialising it. */
+                    if (item.serialised) { this.openSerials(item); return; }
                     if (item.groups && item.groups.length) { this.openOptions(item); return; }
                     this.pushLine(item, []);
                 },
 
-                pushLine(item, mods) {
-                    const key = this.lineKey(item.id, mods);
+                pushLine(item, mods, serials = []) {
+                    /* Serialised lines never merge - each is a named unit. */
+                    const key = serials.length
+                        ? item.id + '#' + serials.join(',')
+                        : this.lineKey(item.id, mods);
+
                     const existing = this.cart.find(c => c.key === key);
 
-                    if (existing) { existing.qty++; }
-                    else { this.cart.push({ key, id: item.id, name: item.name, price: item.price, qty: 1, mods }); }
+                    if (existing && ! serials.length) { existing.qty++; }
+                    else if (! existing) {
+                        this.cart.push({
+                            key, id: item.id, name: item.name, price: item.price,
+                            qty: serials.length || 1, mods, serials,
+                        });
+                    }
 
                     if (this.paymentMethod === 'bank') { this.transferredAmount = this.total.toFixed(2); }
+                },
+
+                /* Serial picker: scan or tick the units going out. */
+                serialsItem: null,
+                serialsChosen: [],
+                serialFilter: '',
+
+                openSerials(item) {
+                    this.serialsItem = item;
+                    this.serialsChosen = [];
+                    this.serialFilter = '';
+                },
+
+                get serialOptions() {
+                    if (! this.serialsItem) return [];
+                    const taken = this.cart.flatMap(l => l.serials || []);
+                    const term = this.serialFilter.trim().toLowerCase();
+
+                    return this.serialsItem.serials
+                        .filter(s => ! taken.includes(s.serial))
+                        .filter(s => ! term || s.serial.toLowerCase().includes(term));
+                },
+
+                toggleSerial(serial) {
+                    const at = this.serialsChosen.indexOf(serial);
+                    if (at === -1) this.serialsChosen.push(serial); else this.serialsChosen.splice(at, 1);
+                },
+
+                confirmSerials() {
+                    if (! this.serialsChosen.length) return;
+                    this.pushLine(this.serialsItem, [], [...this.serialsChosen]);
+                    this.serialsItem = null;
                 },
 
                 /* Option picker. Defaults are pre-selected so the common order is
@@ -621,6 +726,7 @@
                             quantity: l.qty,
                             price: l.price,
                             modifiers: (l.mods || []).map(m => m.id),
+                            serials: l.serials || [],
                         })),
                     };
 

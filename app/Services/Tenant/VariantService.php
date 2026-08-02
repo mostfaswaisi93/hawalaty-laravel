@@ -92,6 +92,11 @@ class VariantService
         }
 
         return DB::connection('tenant')->transaction(function () use ($parent, $selection, $combinations) {
+            // Variants copy the style's shared attributes, so the style has to
+            // be holding all of them. A model built without them would hand down
+            // nulls into columns the schema fills with defaults.
+            $parent->refresh();
+
             $this->syncAxes($parent, array_keys($selection));
 
             $values = ConstantListItem::query()
@@ -239,8 +244,10 @@ class VariantService
     /**
      * Cartesian product of the chosen values, preserving axis order.
      *
+     * Each returned entry maps an axis id to the value id chosen on it.
+     *
      * @param  array<string, list<string>>  $selection
-     * @return list<array<string, string>>  each entry is axisId => valueId
+     * @return list<array<string, string>>
      */
     private function combinations(array $selection): array
     {

@@ -7,6 +7,8 @@
 --}}
 @php
     $tracksBatches = $business->has(\App\Enums\BusinessCapability::Batches);
+    $tracksSerials = $business->has(\App\Enums\BusinessCapability::Serials);
+    $serialised = $items->where('track_serials', true)->pluck('id')->all();
     $existing = ($purchase ?? null)?->lines->map(fn ($line) => [
         'itemId' => $line->menu_item_id,
         'quantity' => (float) $line->quantity,
@@ -14,6 +16,7 @@
         'taxRate' => (float) $line->tax_rate,
         'batchNumber' => $line->batch_number ?? '',
         'expiresAt' => $line->expires_at?->format('Y-m-d') ?? '',
+        'serials' => implode("\n", $line->serials ?? []),
     ])->values()->all() ?? [];
 @endphp
 
@@ -27,6 +30,7 @@
             'taxRate' => (float) $i->tax_rate,
             'unit' => $i->purchaseUnit()->shortLabel(),
             'step' => $i->purchaseUnit()->step(),
+            'serialised' => (bool) $i->track_serials,
         ])->values()) }},
         otherCosts: {{ (float) (($purchase ?? null)?->other_costs ?? 0) }},
         lines: {{ \Illuminate\Support\Js::from($existing ?: [['itemId' => '', 'quantity' => '', 'unitCost' => '', 'taxRate' => '', 'batchNumber' => '', 'expiresAt' => '']]) }},
@@ -37,7 +41,8 @@
             if (! this.lines[index].unitCost) this.lines[index].unitCost = item.cost || '';
             if (this.lines[index].taxRate === '' ) this.lines[index].taxRate = item.taxRate;
         },
-        addLine() { this.lines.push({ itemId: '', quantity: '', unitCost: '', taxRate: '', batchNumber: '', expiresAt: '' }) },
+        addLine() { this.lines.push({ itemId: '', quantity: '', unitCost: '', taxRate: '', batchNumber: '', expiresAt: '', serials: '' }) },
+        serialCount(line) { return (line.serials || '').split(/[\r\n,]+/).map(s => s.trim()).filter(Boolean).length },
         removeLine(index) { if (this.lines.length > 1) this.lines.splice(index, 1) },
         lineNet(line) { return (parseFloat(line.quantity) || 0) * (parseFloat(line.unitCost) || 0) },
         lineTax(line) { return this.lineNet(line) * ((parseFloat(line.taxRate) || 0) / 100) },

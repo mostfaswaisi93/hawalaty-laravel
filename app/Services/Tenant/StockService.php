@@ -6,6 +6,7 @@ use App\Enums\StockMovementType;
 use App\Models\Tenant\Batch;
 use App\Models\Tenant\Location;
 use App\Models\Tenant\MenuItem;
+use App\Models\Tenant\SerialNumber;
 use App\Models\Tenant\StockMovement;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -178,6 +179,13 @@ class StockService
 
         $locationId = $this->resolveLocation($locationId);
 
+        // A serialised unit cannot leave anonymously. Which handset went out is
+        // the whole reason the item is serialised, and letting a bare quantity
+        // through would leave the ledger and the identity layer disagreeing.
+        if ($item->track_serials && ! array_key_exists('serial_id', $attributes)) {
+            throw new RuntimeException(__('هذا الصنف يخضع للتتبّع التسلسلي — حدّد الأرقام الخارجة.'));
+        }
+
         if (! $this->batches->enabled() || array_key_exists('batch_id', $attributes)) {
             return collect([$this->writeIssue($item, $quantity, $type, $locationId, $attributes)]);
         }
@@ -205,6 +213,67 @@ class StockService
 
             return $movements;
         });
+    }
+
+    /**
+     * Issue named units, one movement each.
+     *
+     * One row per serial rather than a single row of quantity N: a sale of three
+     * handsets is three facts, and collapsing them would lose which one went to
+     * which order. Receipts stay aggregate - units arriving together are
+     * interchangeable until someone picks one.
+     *
+     * @param  Collection<int, SerialNumber>  $units
+     * @return Collection<int, StockMovement>
+     */
+    public function issueSerials(
+        MenuItem $item,
+        Collection $units,
+        StockMovementType $type = StockMovementType::Sale,
+        ?string $locationId = null,
+        array $attributes = [],
+    ): Collection {
+        if (! $this->business->tracksStock() || ! $item->isStocked()) {
+            return collect();
+        }
+
+        $locationId = $this->resolveLocation($locationId);
+
+        return DB::connection('tenant')->transaction(fn () => $units->map(
+            fn (SerialNumber $unit) => $this->writeIssue($item, 1, $type, $locationId, array_merge($attributes, [
+                'serial_id' => $unit->id,
+                'serial_number' => $unit->serial,
+                'batch_id' => $unit->batch_id,
+            ])),
+        ));
+    }
+
+    /**
+     * Destroy a named unit and take it off the books in one act.
+     */
+    public function scrapSerial(SerialNumber $unit, string $reason, ?string $locationId = null): ?StockMovement
+    {
+        $item = $unit->item;
+
+        if (! $item instanceof MenuItem) {
+            throw new RuntimeException(__('الرقم التسلسلي غير مرتبط بصنف.'));
+        }
+
+        if (trim($reason) === '') {
+            throw new RuntimeException(__('اذكر سبب الإتلاف.'));
+        }
+
+        if (! $unit->status->isAvailable()) {
+            throw new RuntimeException(__('هذه الوحدة ليست في المخزون.'));
+        }
+
+        return $this->issueSerials(
+            $item,
+            collect([$unit]),
+            StockMovementType::Waste,
+            $locationId ?? $unit->location_id,
+            ['reason' => $reason],
+        )->first();
     }
 
     /**

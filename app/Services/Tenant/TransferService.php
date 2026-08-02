@@ -30,6 +30,7 @@ class TransferService
         private readonly AccountService $accounts,
         private readonly StockService $stock,
         private readonly ModifierService $modifiers,
+        private readonly SerialService $serials,
     ) {}
 
     public function list(array $filters): LengthAwarePaginator
@@ -171,13 +172,24 @@ class TransferService
                  * ones fan out into one movement per lot picked - which is what
                  * makes a recall answerable later.
                  */
-                $this->stock->issue(
-                    $menuItem,
-                    (float) $item['quantity'],
-                    StockMovementType::Sale,
-                    null,
-                    ['reference_type' => 'transfer', 'reference_id' => $transfer->id],
-                );
+                $reference = ['reference_type' => 'transfer', 'reference_id' => $transfer->id];
+
+                if ($menuItem->track_serials && $this->serials->enabled()) {
+                    // The customer walked out with specific units; the record has
+                    // to name them, and the warranty clock starts on each one.
+                    $units = $this->serials->reserve($menuItem, $item['serials'] ?? []);
+
+                    $this->stock->issueSerials($menuItem, $units, StockMovementType::Sale, null, $reference);
+                    $this->serials->markSold($units, $menuItem, $transfer->id, $customer?->id);
+                } else {
+                    $this->stock->issue(
+                        $menuItem,
+                        (float) $item['quantity'],
+                        StockMovementType::Sale,
+                        null,
+                        $reference,
+                    );
+                }
             }
 
             $this->postLedgerEntries($transfer);

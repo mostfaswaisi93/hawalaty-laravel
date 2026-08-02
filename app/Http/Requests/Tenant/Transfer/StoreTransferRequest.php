@@ -39,6 +39,11 @@ class StoreTransferRequest extends FormRequest
             'items.*.modifiers' => ['nullable', 'array'],
             'items.*.modifiers.*' => ['string', 'exists:tenant.modifiers,id'],
 
+            // Which physical units are leaving. Existence and availability are
+            // checked against the item in the service; here we only take them.
+            'items.*.serials' => ['nullable', 'array'],
+            'items.*.serials.*' => ['string', 'max:64'],
+
             'discount' => ['nullable', 'numeric', 'min:0'],
 
             'paymentMethod' => ['required', Rule::in(['cash', 'bank'])],

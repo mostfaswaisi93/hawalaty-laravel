@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'barcode', 'sku', 'plu_code',
     'unit_code', 'purchase_unit_code', 'purchase_conversion',
     'cost', 'tax_rate', 'tax_included', 'track_stock', 'reorder_point',
-    'allergens_reviewed_at',
+    'track_serials', 'warranty_months', 'allergens_reviewed_at',
 ])]
 class MenuItem extends Model
 {
@@ -39,6 +39,8 @@ class MenuItem extends Model
             'active' => 'boolean',
             'tax_included' => 'boolean',
             'track_stock' => 'boolean',
+            'track_serials' => 'boolean',
+            'warranty_months' => 'integer',
             'allergens_reviewed_at' => 'datetime',
         ];
     }
@@ -108,6 +110,11 @@ class MenuItem extends Model
     public function batches(): HasMany
     {
         return $this->hasMany(Batch::class);
+    }
+
+    public function serialNumbers(): HasMany
+    {
+        return $this->hasMany(SerialNumber::class);
     }
 
     /**

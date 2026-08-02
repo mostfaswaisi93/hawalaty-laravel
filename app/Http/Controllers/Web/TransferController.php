@@ -34,8 +34,11 @@ class TransferController extends Controller
             // sellable(), not active(): a style with variants is a container,
             // and ringing one up would sell a shirt of no particular size.
             ->with(['menuItems' => fn ($query) => $query->sellable()->orderBy('name')
-                ->with(['modifierGroups' => fn ($groups) => $groups->where('active', true)
-                    ->with(['modifiers' => fn ($modifiers) => $modifiers->where('active', true)])])])
+                ->with([
+                    'modifierGroups' => fn ($groups) => $groups->where('active', true)
+                        ->with(['modifiers' => fn ($modifiers) => $modifiers->where('active', true)]),
+                    'serialNumbers' => fn ($serials) => $serials->available()->orderBy('received_at'),
+                ])])
             ->orderBy('position')
             ->get()
             ->filter(fn (MenuCategory $category) => $category->menuItems->isNotEmpty())
@@ -79,6 +82,12 @@ class TransferController extends Controller
                     'name' => $item->name,
                     'price' => (float) $item->price,
                     'step' => $item->unit()->step(),
+                    'serialised' => (bool) $item->track_serials,
+                    // Only what is on the shelf; the picker must not offer a
+                    // handset that has already gone out.
+                    'serials' => $item->track_serials
+                        ? $item->serialNumbers->map(fn ($unit) => ['id' => $unit->id, 'serial' => $unit->serial])->values()
+                        : [],
                     'allergens' => $allergenLabels->get($item->id, collect())
                         ->map(fn (array $row) => [
                             'name' => $row['allergen']->label(),

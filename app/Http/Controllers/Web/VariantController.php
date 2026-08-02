@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Enums\PermissionKey;
-use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Models\Tenant\Location;
 use App\Models\Tenant\MenuItem;
 use App\Services\Tenant\CatalogNaming;

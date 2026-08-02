@@ -3,6 +3,7 @@
 namespace App\Services\Tenant;
 
 use App\Enums\StockMovementType;
+use App\Models\Tenant\Batch;
 use App\Models\Tenant\Location;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\Purchase;
@@ -24,6 +25,7 @@ class PurchaseService
     public function __construct(
         private readonly StockService $stock,
         private readonly BatchService $batches,
+        private readonly SerialService $serials,
     ) {}
 
     public function list(?string $search, ?string $status, int $perPage = 20): LengthAwarePaginator
@@ -143,6 +145,23 @@ class PurchaseService
                     $purchase->location_id,
                     $attributes,
                 );
+
+                /*
+                 * Units arriving together are interchangeable until someone
+                 * picks one, so the receipt stays a single movement and the
+                 * identities are recorded alongside it. What matters is that
+                 * every unit gets a row now - the sale later cannot invent one.
+                 */
+                if ($item->track_serials && $this->serials->enabled()) {
+                    $this->serials->register(
+                        $item,
+                        $line->serials ?? [],
+                        round($landedUnitCost, 3),
+                        $purchase->location_id,
+                        isset($attributes['batch_id']) ? Batch::find($attributes['batch_id']) : null,
+                        $purchase->id,
+                    );
+                }
             }
 
             $purchase->update([
@@ -208,6 +227,7 @@ class PurchaseService
                 'line_total' => round($net + $tax, 2),
                 'batch_number' => $line['batchNumber'] ?? null,
                 'expires_at' => $line['expiresAt'] ?? null,
+                'serials' => $this->serialsFrom($line['serials'] ?? null),
             ]);
 
             $subtotal += $net;
@@ -219,6 +239,30 @@ class PurchaseService
             'tax_total' => round($taxTotal, 2),
             'total' => round($subtotal + $taxTotal + (float) $purchase->other_costs, 2),
         ]);
+    }
+
+    /**
+     * Serials arrive as one-per-line text off a delivery note, which is how a
+     * storekeeper actually types or scans them.
+     *
+     * @return list<string>|null
+     */
+    private function serialsFrom(mixed $raw): ?array
+    {
+        if (blank($raw)) {
+            return null;
+        }
+
+        $values = is_array($raw) ? $raw : preg_split('/[\r\n,]+/', (string) $raw);
+
+        $clean = collect($values)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return $clean === [] ? null : $clean;
     }
 
     private function assertDraft(Purchase $purchase): void
