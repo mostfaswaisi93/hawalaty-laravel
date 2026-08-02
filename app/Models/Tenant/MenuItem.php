@@ -55,6 +55,11 @@ class MenuItem extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function batches(): HasMany
+    {
+        return $this->hasMany(Batch::class);
+    }
+
     public function purchaseLines(): HasMany
     {
         return $this->hasMany(PurchaseLineItem::class);

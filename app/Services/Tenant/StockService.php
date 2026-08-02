@@ -3,6 +3,7 @@
 namespace App\Services\Tenant;
 
 use App\Enums\StockMovementType;
+use App\Models\Tenant\Batch;
 use App\Models\Tenant\Location;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\StockMovement;
@@ -30,7 +31,10 @@ use RuntimeException;
  */
 class StockService
 {
-    public function __construct(private readonly BusinessProfile $business) {}
+    public function __construct(
+        private readonly BusinessProfile $business,
+        private readonly BatchService $batches,
+    ) {}
 
     /**
      * On-hand quantity for an item, optionally at one location.
@@ -103,6 +107,7 @@ class StockService
 
         return DB::connection('tenant')->transaction(function () use ($item, $quantity, $unitCost, $type, $locationId, $attributes) {
             $locationId = $this->resolveLocation($locationId);
+            $attributes = $this->resolveBatch($item, $attributes);
 
             $onHand = $this->onHand($item->id);
             $currentCost = (float) $item->cost;
@@ -129,10 +134,17 @@ class StockService
     /**
      * Record an outflow at the item's current average cost.
      *
+     * Returns a collection because one issue can become several rows: when the
+     * vertical tracks lots the quantity is split across them earliest-expiry
+     * first, and a sale that spans two lots has to be recorded as two lines or
+     * the recall trace is a lie.
+     *
      * Deliberately does not refuse to go negative. A shop that sells the last
      * unit while the receipt is still in a drawer is describing reality, and
      * blocking the sale to protect a number would be the wrong trade-off at the
      * till. The negative balance is surfaced as an exception to fix, not hidden.
+     *
+     * @return Collection<int, StockMovement>
      */
     public function issue(
         MenuItem $item,
@@ -140,21 +152,125 @@ class StockService
         StockMovementType $type = StockMovementType::Sale,
         ?string $locationId = null,
         array $attributes = [],
-    ): ?StockMovement {
-        if (! $item->isStocked()) {
-            return null;
+    ): Collection {
+        // Silent rather than throwing: this runs at the till, inside the order
+        // transaction. A vertical with no inventory module has no ledger to
+        // write to, and a services workspace must not fail a sale over it.
+        if (! $this->business->tracksStock() || ! $item->isStocked()) {
+            return collect();
         }
 
         $this->assertPositive($quantity);
 
+        $locationId = $this->resolveLocation($locationId);
+
+        if (! $this->batches->enabled() || array_key_exists('batch_id', $attributes)) {
+            return collect([$this->writeIssue($item, $quantity, $type, $locationId, $attributes)]);
+        }
+
+        return DB::connection('tenant')->transaction(function () use ($item, $quantity, $type, $locationId, $attributes) {
+            $picked = $this->batches->allocate($item, $quantity, $locationId);
+            $movements = collect();
+
+            foreach ($picked['allocations'] as $allocation) {
+                $batch = $allocation['batch'];
+
+                $movements->push($this->writeIssue($item, $allocation['quantity'], $type, $locationId, array_merge($attributes, [
+                    'batch_id' => $batch->id,
+                    'batch_number' => $batch->batch_number,
+                    'expires_at' => $batch->expires_at,
+                ])));
+            }
+
+            // Nothing sellable left to pick from. The movement is still written,
+            // unallocated, so the sale is recorded and the shortfall shows up in
+            // the negative-balance report instead of vanishing.
+            if ($picked['unallocated'] > 0) {
+                $movements->push($this->writeIssue($item, $picked['unallocated'], $type, $locationId, $attributes));
+            }
+
+            return $movements;
+        });
+    }
+
+    /**
+     * Write off a specific lot, whole or in part.
+     *
+     * Expired stock is never picked by FEFO, so the only way it leaves the
+     * ledger is here - deliberately, with a reason, by someone who chose to.
+     */
+    public function writeOffBatch(Batch $batch, float $quantity, string $reason, ?string $locationId = null): StockMovement
+    {
+        $item = $batch->item;
+
+        if (! $item instanceof MenuItem) {
+            throw new RuntimeException(__('اللوط غير مرتبط بصنف.'));
+        }
+
+        $this->assertStocked($item);
+        $this->assertPositive($quantity);
+
+        if (trim($reason) === '') {
+            throw new RuntimeException(__('الإتلاف بدون سبب غير مسموح.'));
+        }
+
+        $locationId = $this->resolveLocation($locationId);
+        $available = $batch->onHand($locationId);
+
+        if ($quantity > $available + 0.0005) {
+            throw new RuntimeException(__('الكمية أكبر من رصيد اللوط المتاح.'));
+        }
+
+        return $this->writeIssue($item, $quantity, StockMovementType::Waste, $locationId, [
+            'batch_id' => $batch->id,
+            'batch_number' => $batch->batch_number,
+            'expires_at' => $batch->expires_at,
+            'reason' => $reason,
+        ]);
+    }
+
+    private function writeIssue(
+        MenuItem $item,
+        float $quantity,
+        StockMovementType $type,
+        string $locationId,
+        array $attributes,
+    ): StockMovement {
         return StockMovement::create(array_merge([
             'menu_item_id' => $item->id,
-            'location_id' => $this->resolveLocation($locationId),
+            'location_id' => $locationId,
             'type' => $type,
             'quantity' => -1 * abs($quantity),
             'unit_cost' => (float) $item->cost,
             'team_member_id' => auth('tenant')->id(),
         ], $attributes));
+    }
+
+    /**
+     * Any inflow of a lot-tracked item has to land in a lot.
+     *
+     * Resolved here rather than at the call site so a receipt written from
+     * anywhere - a purchase, an import, a future returns flow - cannot leave a
+     * batch number floating with no lot behind it.
+     */
+    private function resolveBatch(MenuItem $item, array $attributes): array
+    {
+        if (! $this->batches->enabled()
+            || filled($attributes['batch_id'] ?? null)
+            || blank($attributes['batch_number'] ?? null)) {
+            return $attributes;
+        }
+
+        $batch = $this->batches->findOrCreate(
+            $item,
+            (string) $attributes['batch_number'],
+            $attributes['expires_at'] ?? null,
+        );
+
+        $attributes['batch_id'] = $batch->id;
+        $attributes['expires_at'] = $batch->expires_at;
+
+        return $attributes;
     }
 
     /**
@@ -194,8 +310,10 @@ class StockService
      * Write stock off. Separate from an adjustment because the reason is the
      * point: a bakery's daily write-off is a cost line to manage, not a counting
      * error to explain away.
+     *
+     * @return Collection<int, StockMovement>
      */
-    public function waste(MenuItem $item, float $quantity, string $reason, ?string $locationId = null): ?StockMovement
+    public function waste(MenuItem $item, float $quantity, string $reason, ?string $locationId = null): Collection
     {
         return $this->issue($item, $quantity, StockMovementType::Waste, $locationId, ['reason' => $reason]);
     }

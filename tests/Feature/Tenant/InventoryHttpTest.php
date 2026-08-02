@@ -12,6 +12,8 @@ use App\Models\Tenant\StockCount;
 use App\Models\Tenant\StockMovement;
 use App\Models\Tenant\Supplier;
 use App\Models\Tenant\TeamMember;
+use App\Models\Tenant\Transfer;
+use App\Services\Tenant\BatchService;
 use App\Services\Tenant\StockService;
 use Tests\TenantTestCase;
 
@@ -285,6 +287,95 @@ class InventoryHttpTest extends TenantTestCase
         foreach (['/inventory', '/stock-counts', '/purchases', '/suppliers'] as $path) {
             $this->actingAs($owner, 'tenant')->get($path)->assertForbidden();
         }
+    }
+
+    public function test_a_sale_takes_the_goods_off_the_shelf(): void
+    {
+        $owner = $this->owner();
+        $this->location();
+        $item = $this->stockedItem();
+
+        app(StockService::class)->receive($item, 10, 5);
+
+        $this->actingAs($owner, 'tenant')
+            ->post('/transfers', [
+                'customer' => 'أبو أحمد',
+                'paymentMethod' => 'cash',
+                'hasChange' => '0',
+                'items' => [[
+                    'itemId' => $item->id,
+                    'quantity' => 3,
+                    'name' => $item->name,
+                    'price' => (string) $item->price,
+                ]],
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(7.0, app(StockService::class)->onHand($item->id));
+
+        // The movement points back at the order, which is what makes a recall
+        // answerable later.
+        $sale = StockMovement::where('type', StockMovementType::Sale)->sole();
+        $this->assertSame('transfer', $sale->reference_type);
+        $this->assertSame(Transfer::sole()->id, $sale->reference_id);
+    }
+
+    public function test_a_service_sale_touches_no_ledger(): void
+    {
+        $owner = $this->owner();
+        $this->location();
+
+        $service = MenuItem::factory()->create([
+            'menu_category_id' => MenuCategory::factory()->create()->id,
+            'kind' => 'service',
+            'track_stock' => false,
+        ]);
+
+        $this->actingAs($owner, 'tenant')
+            ->post('/transfers', [
+                'customer' => 'عميل',
+                'paymentMethod' => 'cash',
+                'hasChange' => '0',
+                'items' => [[
+                    'itemId' => $service->id,
+                    'quantity' => 1,
+                    'name' => $service->name,
+                    'price' => (string) $service->price,
+                ]],
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(0, StockMovement::count());
+    }
+
+    public function test_the_batches_pages_render_and_write_off(): void
+    {
+        $owner = $this->owner();
+        $this->location();
+        $item = $this->stockedItem();
+
+        $batch = app(BatchService::class)->findOrCreate($item, 'LOT-9', now()->subDay()->toDateString());
+        app(StockService::class)->receive($item, 6, 2, StockMovementType::Purchase, null, [
+            'batch_id' => $batch->id,
+            'batch_number' => 'LOT-9',
+            'expires_at' => $batch->expires_at,
+        ]);
+
+        $this->actingAs($owner, 'tenant')->get('/batches')->assertOk()->assertSee('LOT-9');
+        $this->actingAs($owner, 'tenant')->get("/batches/{$batch->id}")->assertOk();
+
+        $this->actingAs($owner, 'tenant')
+            ->post("/batches/{$batch->id}/write-off", ['quantity' => '6', 'reason' => 'انتهاء الصلاحية'])
+            ->assertRedirect();
+
+        $this->assertSame(0.0, $batch->onHand());
+    }
+
+    public function test_the_batches_pages_are_closed_to_a_vertical_without_lots(): void
+    {
+        $this->bindCurrentLicense(BusinessType::Bookstore);
+
+        $this->actingAs($this->owner(), 'tenant')->get('/batches')->assertForbidden();
     }
 
     public function test_guests_are_redirected(): void

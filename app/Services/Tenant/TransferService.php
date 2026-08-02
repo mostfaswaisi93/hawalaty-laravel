@@ -5,6 +5,7 @@ namespace App\Services\Tenant;
 use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
+use App\Enums\StockMovementType;
 use App\Enums\TransferStatus;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\MenuItem;
@@ -27,6 +28,7 @@ class TransferService
         private readonly CustomerService $customers,
         private readonly WhatsAppSender $whatsapp,
         private readonly AccountService $accounts,
+        private readonly StockService $stock,
     ) {}
 
     public function list(array $filters): LengthAwarePaginator
@@ -113,6 +115,25 @@ class TransferService
                     'quantity' => $item['quantity'],
                     'price' => $menuItem->price,
                 ]);
+
+                /*
+                 * Take it off the shelf.
+                 *
+                 * Inside the same transaction as the order: an order that exists
+                 * without its stock movement overstates what is available, and
+                 * the next stocktake would blame the difference on shrinkage.
+                 *
+                 * Services and untracked items return nothing, and lot-tracked
+                 * ones fan out into one movement per lot picked - which is what
+                 * makes a recall answerable later.
+                 */
+                $this->stock->issue(
+                    $menuItem,
+                    (float) $item['quantity'],
+                    StockMovementType::Sale,
+                    null,
+                    ['reference_type' => 'transfer', 'reference_id' => $transfer->id],
+                );
             }
 
             $this->postLedgerEntries($transfer);

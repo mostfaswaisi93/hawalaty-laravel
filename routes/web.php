@@ -18,6 +18,7 @@ use App\Http\Controllers\Web\Admin\SettlementController as AdminSettlementContro
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use App\Http\Controllers\Web\Auth\TenantAuthController;
 use App\Http\Controllers\Web\BalanceController;
+use App\Http\Controllers\Web\BatchController;
 use App\Http\Controllers\Web\CatalogController;
 use App\Http\Controllers\Web\ConstantController;
 use App\Http\Controllers\Web\ContactController;
@@ -154,6 +155,12 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
         Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
         Route::get('inventory/{item}', [InventoryController::class, 'show'])->name('inventory.show')->whereUlid('item');
         Route::post('inventory/movements', [InventoryController::class, 'store'])->name('inventory.movements.store');
+
+        Route::middleware('capability:batches')->group(function () {
+            Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
+            Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show')->whereUlid('batch');
+            Route::post('batches/{batch}/write-off', [BatchController::class, 'writeOff'])->name('batches.write-off')->whereUlid('batch');
+        });
 
         Route::get('stock-counts', [StockCountController::class, 'index'])->name('stock-counts.index');
         Route::post('stock-counts', [StockCountController::class, 'store'])->name('stock-counts.store');

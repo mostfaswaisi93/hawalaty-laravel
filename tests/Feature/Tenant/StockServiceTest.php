@@ -92,7 +92,7 @@ class StockServiceTest extends TenantTestCase
         $this->location();
 
         $this->service()->receive($item, 10, 10);
-        $sale = $this->service()->issue($item, 2);
+        $sale = $this->service()->issue($item, 2)->sole();
 
         $this->service()->receive($item, 10, 30);
 
@@ -107,7 +107,7 @@ class StockServiceTest extends TenantTestCase
         $this->location();
 
         $this->service()->receive($item, 10, 1);
-        $movement = $this->service()->issue($item, 4);
+        $movement = $this->service()->issue($item, 4)->sole();
 
         $this->assertSame('-4.000', $movement->quantity);
         $this->assertSame(StockMovementType::Sale, $movement->type);
@@ -130,7 +130,7 @@ class StockServiceTest extends TenantTestCase
         $item = $this->item(['kind' => 'service']);
         $this->location();
 
-        $this->assertNull($this->service()->issue($item, 1));
+        $this->assertTrue($this->service()->issue($item, 1)->isEmpty());
         $this->assertSame(0, StockMovement::forItem($item->id)->count());
     }
 

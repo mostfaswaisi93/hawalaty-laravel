@@ -21,7 +21,10 @@ use RuntimeException;
  */
 class PurchaseService
 {
-    public function __construct(private readonly StockService $stock) {}
+    public function __construct(
+        private readonly StockService $stock,
+        private readonly BatchService $batches,
+    ) {}
 
     public function list(?string $search, ?string $status, int $perPage = 20): LengthAwarePaginator
     {
@@ -113,18 +116,32 @@ class PurchaseService
                     ? ($lineValue + $share) / (float) $line->quantity
                     : (float) $line->unit_cost;
 
+                $attributes = [
+                    'batch_number' => $line->batch_number,
+                    'expires_at' => $line->expires_at,
+                    'reference_type' => 'purchase',
+                    'reference_id' => $purchase->id,
+                ];
+
+                // Opened here rather than left to the ledger because this is the
+                // only place that knows who supplied the lot, and a recall starts
+                // by asking exactly that.
+                if ($this->batches->enabled() && filled($line->batch_number)) {
+                    $attributes['batch_id'] = $this->batches->findOrCreate(
+                        $item,
+                        (string) $line->batch_number,
+                        $line->expires_at?->toDateString(),
+                        $purchase->supplier_id,
+                    )->id;
+                }
+
                 $this->stock->receive(
                     $item,
                     (float) $line->quantity,
                     round($landedUnitCost, 3),
                     StockMovementType::Purchase,
                     $purchase->location_id,
-                    [
-                        'batch_number' => $line->batch_number,
-                        'expires_at' => $line->expires_at,
-                        'reference_type' => 'purchase',
-                        'reference_id' => $purchase->id,
-                    ],
+                    $attributes,
                 );
             }
 
