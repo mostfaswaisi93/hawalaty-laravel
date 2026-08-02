@@ -204,13 +204,21 @@ class MarginService
         $cumulative = 0.0;
 
         return $rows->map(function (array $row) use (&$cumulative, $total) {
+            /*
+             * An item takes the band it *starts* in, not the one it ends in.
+             * Classifying on the running total after the item would put the top
+             * contributor in C whenever it is large enough to cross 95 on its
+             * own - and the biggest earner in the shop landing in the ignore-me
+             * bucket is exactly backwards.
+             */
+            $opening = ($cumulative / $total) * 100;
+
             $cumulative += $row['margin'];
-            $share = ($cumulative / $total) * 100;
 
             return array_merge($row, [
                 'contribution' => round(($row['margin'] / $total) * 100, 1),
-                'cumulative' => round($share, 1),
-                'class' => $share <= 80 ? 'A' : ($share <= 95 ? 'B' : 'C'),
+                'cumulative' => round(($cumulative / $total) * 100, 1),
+                'class' => $opening < 80 ? 'A' : ($opening < 95 ? 'B' : 'C'),
             ]);
         });
     }

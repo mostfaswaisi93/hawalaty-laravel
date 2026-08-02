@@ -15,21 +15,31 @@ use App\Http\Controllers\Api\V1\Admin\SettingController;
 use App\Http\Controllers\Api\V1\Admin\SettlementController as AdminSettlementController;
 use App\Http\Controllers\Api\V1\Admin\WithdrawalController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\BatchController;
 use App\Http\Controllers\Api\V1\ConstantListController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\ExpenseController;
+use App\Http\Controllers\Api\V1\FitmentController;
+use App\Http\Controllers\Api\V1\InventoryController;
+use App\Http\Controllers\Api\V1\InvoiceController as TenantInvoiceController;
+use App\Http\Controllers\Api\V1\MarginController;
 use App\Http\Controllers\Api\V1\MenuCategoryController;
 use App\Http\Controllers\Api\V1\MenuItemController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\ReturnController as TenantReturnController;
 use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\SchedulingController;
 use App\Http\Controllers\Api\V1\SearchController;
+use App\Http\Controllers\Api\V1\SerialController;
 use App\Http\Controllers\Api\V1\SyncController;
 use App\Http\Controllers\Api\V1\TeamMemberController;
 use App\Http\Controllers\Api\V1\TransferController;
+use App\Http\Controllers\Api\V1\VariantController;
+use App\Http\Controllers\Api\V1\WarrantyController as TenantWarrantyController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -95,6 +105,78 @@ Route::prefix('v1')->group(function () {
         Route::get('activity-log', [ActivityLogController::class, 'index']);
 
         Route::get('reports', [ReportController::class, 'index']);
+
+        /*
+         * The vertical modules.
+         *
+         * Gated on the same capabilities as their screens, so a client that
+         * queries a module the trade does not have gets a 403 saying so rather
+         * than an empty list it would mistake for "nothing to show".
+         *
+         * Read-heavy by design. Writes that move stock, money or goods stay on
+         * the paths that already own their transaction - a second entry point
+         * into a return or a stock adjustment would be a second place for the
+         * rules to be got wrong.
+         */
+        Route::middleware('capability:inventory')->group(function () {
+            Route::get('inventory', [InventoryController::class, 'index']);
+            Route::get('inventory/{item}', [InventoryController::class, 'show'])->whereUlid('item');
+
+            Route::middleware('capability:batches')->group(function () {
+                Route::get('batches', [BatchController::class, 'index']);
+                Route::get('batches/expiring', [BatchController::class, 'expiring']);
+                Route::get('batches/{batch}/sold-on', [BatchController::class, 'soldOn'])->whereUlid('batch');
+            });
+
+            Route::middleware('capability:serials')->group(function () {
+                Route::get('serials', [SerialController::class, 'index']);
+                Route::get('serials/{serial}', [SerialController::class, 'show'])->whereUlid('serial');
+            });
+
+            Route::middleware('capability:warranty')->group(function () {
+                Route::get('warranty', [TenantWarrantyController::class, 'index']);
+                Route::get('warranty/lookup', [TenantWarrantyController::class, 'lookup']);
+                Route::post('warranty', [TenantWarrantyController::class, 'store']);
+            });
+        });
+
+        Route::middleware('capability:variants')->group(function () {
+            Route::get('variants', [VariantController::class, 'index']);
+            Route::get('variants/{item}', [VariantController::class, 'show'])->whereUlid('item');
+        });
+
+        Route::middleware('capability:fitment')->group(function () {
+            Route::get('fitment/parts', [FitmentController::class, 'parts']);
+            Route::get('fitment/reference', [FitmentController::class, 'reference']);
+            Route::get('fitment/vin', [FitmentController::class, 'vin']);
+            Route::get('fitment/vehicles', [FitmentController::class, 'vehicles']);
+            Route::get('fitment/{item}/supersessions', [FitmentController::class, 'supersessions'])->whereUlid('item');
+        });
+
+        Route::middleware('capability:scheduling')->group(function () {
+            Route::get('appointments', [SchedulingController::class, 'appointments']);
+            Route::get('appointments/slots', [SchedulingController::class, 'slots']);
+            Route::get('service-resources', [SchedulingController::class, 'resources']);
+            Route::get('work-orders', [SchedulingController::class, 'workOrders']);
+            Route::get('work-orders/{workOrder}', [SchedulingController::class, 'workOrder'])->whereUlid('workOrder');
+        });
+
+        // Returns and invoicing are not capability-gated: every trade takes
+        // goods back, and no tax authority cares what trade issued a document.
+        Route::get('returns', [TenantReturnController::class, 'index']);
+        Route::get('returns/{saleReturn}', [TenantReturnController::class, 'show'])->whereUlid('saleReturn');
+        Route::get('transfers/{transfer}/return-policy', [TenantReturnController::class, 'policy'])->whereUlid('transfer');
+
+        Route::get('invoices', [TenantInvoiceController::class, 'index']);
+        Route::get('invoices/verify', [TenantInvoiceController::class, 'verify']);
+        Route::post('invoices/sales/{transfer}', [TenantInvoiceController::class, 'issue'])->whereUlid('transfer');
+        Route::get('invoices/{invoice}', [TenantInvoiceController::class, 'show'])->whereUlid('invoice');
+        Route::get('invoices/{invoice}/xml', [TenantInvoiceController::class, 'xml'])->whereUlid('invoice');
+
+        Route::get('margins', [MarginController::class, 'index']);
+        Route::get('margins/abc', [MarginController::class, 'abc']);
+        Route::get('margins/pricing', [MarginController::class, 'pricing']);
+        Route::get('margins/valuation', [MarginController::class, 'valuation']);
 
         Route::post('sync/push', [SyncController::class, 'push']);
         Route::get('sync/pull', [SyncController::class, 'pull']);
