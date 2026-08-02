@@ -8,7 +8,6 @@ use App\Models\Tenant\Location;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\PriceChange;
-use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Services\Tenant\MarginService;
 use App\Services\Tenant\MenuService;

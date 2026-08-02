@@ -25,6 +25,10 @@ class SchedulingController extends Controller
      *
      * A day rather than a range: a resource can only be in one place at a time,
      * and the overlap that matters is the one inside a single day.
+     *
+     * The service groups by resource because that is how the board reads on
+     * screen. Flattened here - a client that wants a board can group again, and
+     * one that wants a list should not have to unpick a shape it did not ask for.
      */
     public function appointments(Request $request): AnonymousResourceCollection
     {
@@ -35,9 +39,13 @@ class SchedulingController extends Controller
 
         $date = $validated['date'] ?? Carbon::today()->toDateString();
 
-        return AppointmentResource::collection(
-            $this->scheduling->day($date, $validated['resourceId'] ?? null)
-        );
+        $appointments = $this->scheduling
+            ->day($date, $validated['resourceId'] ?? null)
+            ->flatten(1)
+            ->sortBy('starts_at')
+            ->values();
+
+        return AppointmentResource::collection($appointments);
     }
 
     /**

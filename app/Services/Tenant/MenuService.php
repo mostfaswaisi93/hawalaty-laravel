@@ -12,9 +12,12 @@ use App\Models\Tenant\PriceChange;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class MenuService
 {
+    public function __construct(private readonly StockService $stock) {}
+
     public function listCategories(): Collection
     {
         return MenuCategory::query()->orderBy('position')->get();
@@ -51,15 +54,70 @@ class MenuService
         return MenuItem::query()->with('menuCategory')->whereSearch('name', $search)->get();
     }
 
+    /**
+     * Input key to column, for everything that is a straight copy.
+     *
+     * A map rather than thirty near-identical `if (array_key_exists(...))`
+     * blocks: the fields differ only in name, and writing that difference out
+     * thirty times is thirty chances to write it wrong.
+     *
+     * @var array<string, string>
+     */
+    private const FIELDS = [
+        'name' => 'name',
+        'menuCategoryId' => 'menu_category_id',
+        'price' => 'price',
+        'active' => 'active',
+
+        'barcode' => 'barcode',
+        'sku' => 'sku',
+        'pluCode' => 'plu_code',
+
+        'unitCode' => 'unit_code',
+        'purchaseUnitCode' => 'purchase_unit_code',
+        'purchaseConversion' => 'purchase_conversion',
+
+        'taxRate' => 'tax_rate',
+        'taxIncluded' => 'tax_included',
+
+        'trackStock' => 'track_stock',
+        'reorderPoint' => 'reorder_point',
+
+        'trackSerials' => 'track_serials',
+        'warrantyMonths' => 'warranty_months',
+        'serviceMinutes' => 'service_minutes',
+        'coreCharge' => 'core_charge',
+
+        'isPrescription' => 'is_prescription',
+        'controlSchedule' => 'control_schedule',
+        'atcCode' => 'atc_code',
+        'activeIngredient' => 'active_ingredient',
+        'strength' => 'strength',
+        'dosageForm' => 'dosage_form',
+        'coldChain' => 'cold_chain',
+    ];
+
+    /**
+     * Fields stored as null rather than an empty string, so "not set" and "set
+     * to nothing" stay distinguishable in the catalogue.
+     *
+     * @var list<string>
+     */
+    private const NULLABLE_TEXT = [
+        'icon', 'barcode', 'sku', 'pluCode',
+        'controlSchedule', 'atcCode', 'activeIngredient', 'strength', 'dosageForm',
+    ];
+
     public function createItem(array $data): MenuItem
     {
         $rate = (float) ($data['taxRate'] ?? 0);
 
-        $item = MenuItem::create([
+        $item = MenuItem::create(array_merge($this->mapped($data), [
             'menu_category_id' => $data['menuCategoryId'],
             'name' => $data['name'],
-            'icon' => filled($data['icon'] ?? null) ? $data['icon'] : null,
             'price' => $data['price'],
+            'kind' => ($data['kind'] ?? 'goods') === 'service' ? 'service' : 'goods',
+            'icon' => $this->text($data['icon'] ?? null),
             'tax_rate' => $rate,
 
             // Inferred when nobody has said, so an invoice never carries a blank
@@ -67,7 +125,7 @@ class MenuService
             'tax_category' => $data['taxCategory'] ?? TaxCategory::inferFrom($rate)->value,
             'tax_included' => $data['taxIncluded'] ?? true,
             'active' => $data['active'] ?? true,
-        ]);
+        ]));
 
         $item->load('menuCategory');
 
@@ -80,32 +138,32 @@ class MenuService
 
     public function updateItem(MenuItem $item, array $data): MenuItem
     {
-        $update = [];
+        $this->assertSafeToChange($item, $data);
 
-        if (array_key_exists('name', $data)) {
-            $update['name'] = $data['name'];
-        }
-        if (array_key_exists('menuCategoryId', $data)) {
-            $update['menu_category_id'] = $data['menuCategoryId'];
-        }
+        $update = $this->mapped($data);
+
         if (array_key_exists('icon', $data)) {
-            $update['icon'] = filled($data['icon']) ? $data['icon'] : null;
+            $update['icon'] = $this->text($data['icon']);
         }
-        if (array_key_exists('price', $data)) {
-            $update['price'] = $data['price'];
+
+        if (array_key_exists('kind', $data)) {
+            $update['kind'] = $data['kind'] === 'service' ? 'service' : 'goods';
         }
-        if (array_key_exists('taxRate', $data)) {
-            $update['tax_rate'] = (float) ($data['taxRate'] ?? 0);
-        }
+
         if (array_key_exists('taxCategory', $data)) {
             $update['tax_category'] = $data['taxCategory']
                 ?: TaxCategory::inferFrom((float) ($data['taxRate'] ?? $item->tax_rate))->value;
         }
-        if (array_key_exists('taxIncluded', $data)) {
-            $update['tax_included'] = $data['taxIncluded'];
-        }
-        if (array_key_exists('active', $data)) {
-            $update['active'] = $data['active'];
+
+        /*
+         * Cost is the rolled weighted average once anything has moved. Typing
+         * over it then is an unaudited restatement of what the shop paid, and
+         * the ledger - which is the version an auditor follows - would disagree
+         * with the catalogue from that moment on. Before the first movement
+         * there is nothing to contradict, so an opening cost is allowed.
+         */
+        if (array_key_exists('cost', $data) && ! $item->movements()->exists()) {
+            $update['cost'] = (float) $data['cost'];
         }
 
         // Read before the write, or there is nothing left to compare against.
@@ -121,6 +179,84 @@ class MenuService
         AuditLogger::record(AuditAction::Updated, AuditEntityType::MenuItem, $item->name, AuditCategory::Menu);
 
         return $item;
+    }
+
+    /**
+     * Refuse the changes that would make the ledger stop describing reality.
+     *
+     * None of these are style preferences. Each one leaves recorded history
+     * saying something that is no longer true, and history is the thing this
+     * system exists to keep straight.
+     */
+    private function assertSafeToChange(MenuItem $item, array $data): void
+    {
+        $hasHistory = $item->movements()->exists();
+
+        // Quantities in the ledger were counted in the old unit. Reinterpreting
+        // them as a new one turns 5 kilos into 5 pieces without a single row
+        // changing.
+        if ($hasHistory
+            && array_key_exists('unitCode', $data)
+            && $data['unitCode'] !== $item->unit_code) {
+            throw new RuntimeException(__('لا يمكن تغيير وحدة القياس بعد أن تحرّك المخزون — كميات الدفتر مسجّلة بالوحدة القديمة.'));
+        }
+
+        // Goods that have moved cannot become a service: a service has nothing
+        // to count, and the balance would be orphaned rather than closed.
+        if ($hasHistory
+            && array_key_exists('kind', $data)
+            && $data['kind'] === 'service'
+            && ! $item->isService()) {
+            throw new RuntimeException(__('لا يمكن تحويل صنف تحرّك مخزونه إلى خدمة — صفِّ رصيده أولًا.'));
+        }
+
+        $onHand = $hasHistory ? $this->stock->onHand($item->id) : 0.0;
+
+        if (abs($onHand) < 0.0005) {
+            return;
+        }
+
+        // Switching tracking off with a balance still on the shelf abandons it:
+        // nothing would issue it, and nothing would report it missing.
+        if (array_key_exists('trackStock', $data)
+            && ! $data['trackStock']
+            && $item->track_stock) {
+            throw new RuntimeException(__('لا يمكن إيقاف تتبّع المخزون ورصيد الصنف ليس صفرًا — صفِّه أولًا.'));
+        }
+
+        // Turning serial tracking on strands whatever is already on the shelf:
+        // those units have no serials, and an issue of a serialised item without
+        // one is refused - so the balance becomes unsellable.
+        if (array_key_exists('trackSerials', $data)
+            && $data['trackSerials']
+            && ! $item->track_serials) {
+            throw new RuntimeException(__('لا يمكن تشغيل التتبّع التسلسلي ورصيد الصنف ليس صفرًا — الوحدات الموجودة بلا أرقام ولن تقدر تخرج.'));
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mapped(array $data): array
+    {
+        $update = [];
+
+        foreach (self::FIELDS as $input => $column) {
+            if (! array_key_exists($input, $data)) {
+                continue;
+            }
+
+            $update[$column] = in_array($input, self::NULLABLE_TEXT, true)
+                ? $this->text($data[$input])
+                : $data[$input];
+        }
+
+        return $update;
+    }
+
+    private function text(mixed $value): ?string
+    {
+        return filled($value) ? trim((string) $value) : null;
     }
 
     /**
