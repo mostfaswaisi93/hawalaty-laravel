@@ -28,6 +28,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DeviceController;
 use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\FitmentController;
+use App\Http\Controllers\Web\FuelController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\InventoryController;
 use App\Http\Controllers\Web\MenuController;
@@ -213,6 +214,18 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
             Route::post('production/{production}/post', [ProductionController::class, 'post'])->name('production.post')->whereUlid('production');
             Route::post('production/{production}/cancel', [ProductionController::class, 'cancel'])->name('production.cancel')->whereUlid('production');
         });
+    });
+
+    Route::middleware('capability:fuel_station')->group(function () {
+        Route::get('fuel', [FuelController::class, 'index'])->name('fuel.index');
+        Route::get('fuel/equipment', [FuelController::class, 'equipment'])->name('fuel.equipment');
+        Route::post('fuel/tanks', [FuelController::class, 'storeTank'])->name('fuel.tanks.store');
+        Route::post('fuel/tanks/{tank}/pumps', [FuelController::class, 'storePump'])->name('fuel.pumps.store')->whereUlid('tank');
+        Route::post('fuel/prices', [FuelController::class, 'storePrice'])->name('fuel.prices.store');
+        Route::post('fuel/shifts', [FuelController::class, 'openShift'])->name('fuel.shifts.open');
+        Route::get('fuel/shifts/{shift}', [FuelController::class, 'shift'])->name('fuel.shift')->whereUlid('shift');
+        Route::put('fuel/shifts/{shift}', [FuelController::class, 'record'])->name('fuel.shifts.record')->whereUlid('shift');
+        Route::post('fuel/shifts/{shift}/close', [FuelController::class, 'closeShift'])->name('fuel.shifts.close')->whereUlid('shift');
     });
 
     Route::middleware('capability:prescription')->group(function () {

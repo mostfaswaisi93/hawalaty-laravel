@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'reference', 'customer_id', 'customer_name', 'customer_phone',
@@ -80,7 +81,7 @@ class WorkOrder extends Model
      * When the shop's own guarantee on the work runs out - distinct from the
      * manufacturer's warranty on the parts fitted.
      */
-    public function workmanshipEndsAt(): ?\Illuminate\Support\Carbon
+    public function workmanshipEndsAt(): ?Carbon
     {
         if ($this->delivered_at === null || $this->workmanship_warranty_days <= 0) {
             return null;

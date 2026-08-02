@@ -12,7 +12,6 @@ use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\ServiceResource;
 use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
-use App\Models\Tenant\WorkOrder;
 use App\Services\Tenant\SchedulingService;
 use App\Services\Tenant\StockService;
 use App\Services\Tenant\WorkOrderService;
