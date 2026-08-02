@@ -80,6 +80,42 @@
                 </a>
             </div>
 
+            @if ($invoice)
+                <div class="reveal-up mt-4 flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-success/30 bg-success/5 p-4 text-success" style="--d:360ms">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <p class="font-body-sm font-bold" dir="ltr">{{ $invoice->number }}</p>
+                    <a href="{{ route('invoices.show', $invoice->id) }}" class="font-body-sm font-bold underline">{{ __('عرض الفاتورة الضريبية') }}</a>
+                </div>
+            @elseif ($invoicingConfigured)
+                <div class="reveal-up mt-4 rounded-2xl border border-outline-variant bg-surface-container-low p-4 text-start" style="--d:360ms" x-data="{ open: false }">
+                    <button type="button" @click="open = !open" class="flex w-full items-center justify-between gap-3 font-body-sm font-bold text-on-surface">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined !text-xl text-on-surface-variant">receipt_long</span>
+                            {{ __('إصدار فاتورة ضريبية') }}
+                        </span>
+                        <span class="material-symbols-outlined !text-xl text-on-surface-variant transition-transform" :class="open && 'rotate-180'">expand_more</span>
+                    </button>
+
+                    <form method="POST" action="{{ route('invoices.issue', $order->id) }}" class="mt-4 space-y-4" x-show="open" x-cloak style="display:none">
+                        @csrf
+
+                        <p class="font-body-sm text-on-surface-variant">
+                            {{ __('اترك الرقم الضريبي فارغًا لفاتورة مبسّطة للمستهلك. أدخِله ليصدر مستند بيع لمنشأة.') }}
+                        </p>
+
+                        <x-form-field name="buyerName" label="{{ __('اسم المشتري') }}" icon="person" :value="$order->customer" />
+                        <x-form-field name="buyerTaxNumber" label="{{ __('الرقم الضريبي للمشتري') }}" icon="badge" dir="ltr" />
+                        <x-form-field name="buyerAddress" label="{{ __('عنوان المشتري') }}" icon="location_on" />
+
+                        <button type="submit"
+                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                            <span class="material-symbols-outlined !text-xl">verified</span>
+                            {{ __('أصدر الفاتورة') }}
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <a href="{{ route('history.index') }}" class="mt-4 inline-block font-body-sm font-bold text-on-surface-variant hover:text-primary hover:underline">
                 {{ __('عرض السجل') }}
             </a>

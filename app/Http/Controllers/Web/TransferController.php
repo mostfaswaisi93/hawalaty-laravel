@@ -10,8 +10,10 @@ use App\Http\Requests\Tenant\Transfer\StoreTransferRequest;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\ConstantList;
 use App\Models\Tenant\Customer;
+use App\Models\Tenant\Invoice;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\MenuCategory;
+use App\Services\Tenant\InvoiceService;
 use App\Services\Tenant\TransferService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Js;
@@ -159,8 +161,15 @@ class TransferController extends Controller
             return redirect()->route('dashboard');
         }
 
+        $order = Transfer::with(['lineItems', 'account.currency'])->findOrFail($transfer);
+
         return view('transfers.created', [
-            'order' => Transfer::with(['lineItems', 'account.currency'])->findOrFail($transfer),
+            'order' => $order,
+
+            // Offered here rather than buried in a list: the moment a buyer asks
+            // for a tax invoice is the moment the sale closes, not later.
+            'invoice' => Invoice::where('transfer_id', $order->id)->first(),
+            'invoicingConfigured' => app(InvoiceService::class)->isConfigured(),
         ]);
     }
 }

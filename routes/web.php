@@ -31,6 +31,7 @@ use App\Http\Controllers\Web\FitmentController;
 use App\Http\Controllers\Web\FuelController;
 use App\Http\Controllers\Web\HistoryController;
 use App\Http\Controllers\Web\InventoryController;
+use App\Http\Controllers\Web\InvoiceController;
 use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\ModifierController;
 use App\Http\Controllers\Web\NotificationController;
@@ -133,6 +134,23 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
     Route::put('returns/{saleReturn}', [ReturnController::class, 'update'])->name('returns.update')->whereUlid('saleReturn');
     Route::post('returns/{saleReturn}/complete', [ReturnController::class, 'complete'])->name('returns.complete')->whereUlid('saleReturn');
     Route::post('returns/{saleReturn}/reject', [ReturnController::class, 'reject'])->name('returns.reject')->whereUlid('saleReturn');
+
+    /*
+     * Invoicing is not gated on a capability either: a tax authority does not
+     * care what trade issued the document. What differs is only the content,
+     * and that comes from the catalogue.
+     *
+     * Static segments before the wildcard, or /invoices/settings resolves as an
+     * invoice whose id is "settings".
+     */
+    Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('invoices/settings', [InvoiceController::class, 'settings'])->name('invoices.settings');
+    Route::put('invoices/settings', [InvoiceController::class, 'saveSettings'])->name('invoices.settings.save');
+    Route::get('invoices/verify', [InvoiceController::class, 'verify'])->name('invoices.verify');
+    Route::post('invoices/sales/{transfer}', [InvoiceController::class, 'issue'])->name('invoices.issue')->whereUlid('transfer');
+    Route::post('invoices/returns/{saleReturn}', [InvoiceController::class, 'credit'])->name('invoices.credit')->whereUlid('saleReturn');
+    Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show')->whereUlid('invoice');
+    Route::get('invoices/{invoice}/xml', [InvoiceController::class, 'xml'])->name('invoices.xml')->whereUlid('invoice');
 
     Route::get('history', [HistoryController::class, 'index'])->name('history.index');
     Route::get('transfers/{transfer}/receipt', [ReceiptController::class, 'show'])->name('transfers.receipt');

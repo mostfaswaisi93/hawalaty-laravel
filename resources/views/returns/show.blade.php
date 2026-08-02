@@ -56,6 +56,31 @@
             </div>
         @endif
 
+        @if ($return->isCompleted())
+            @if ($creditNote)
+                <div class="reveal-up flex flex-wrap items-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-low p-4" style="--d:80ms">
+                    <span class="material-symbols-outlined text-on-surface-variant">receipt_long</span>
+                    <p class="font-body-sm font-bold" dir="ltr">{{ $creditNote->number }}</p>
+                    <a href="{{ route('invoices.show', $creditNote->id) }}" class="font-body-sm font-bold text-primary underline">{{ __('عرض الإشعار الدائن') }}</a>
+                </div>
+            @elseif ($invoicingConfigured)
+                <div class="reveal-up flex flex-col gap-3 rounded-2xl border border-outline-variant bg-surface-container-low p-4 sm:flex-row sm:items-center sm:justify-between" style="--d:80ms">
+                    <div class="min-w-0">
+                        <p class="font-body-sm font-bold text-on-surface">{{ __('لم يصدر إشعار دائن لهذا المرتجع') }}</p>
+                        <p class="mt-1 font-body-sm text-on-surface-variant">{{ __('المستند العكسي هو ما يسترد به المحل الضريبة التي أقرّ بها على البيعة الأصلية — البيعة تبقى كما هي ولا تُلغى.') }}</p>
+                    </div>
+                    <form method="POST" action="{{ route('invoices.credit', $return->id) }}">
+                        @csrf
+                        <button type="submit"
+                            class="flex items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95">
+                            <span class="material-symbols-outlined !text-xl">receipt_long</span>
+                            {{ __('أصدر إشعارًا دائنًا') }}
+                        </button>
+                    </form>
+                </div>
+            @endif
+        @endif
+
         @if ($return->isWithoutReceipt())
             <div class="reveal-up flex items-start gap-3 rounded-2xl border border-secondary-container/40 bg-secondary-container/10 p-4 text-secondary" style="--d:100ms">
                 <span class="material-symbols-outlined flex-shrink-0">receipt_long</span>

@@ -6,10 +6,12 @@ use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Controllers\Web\Concerns\ListsAccounts;
+use App\Models\Tenant\Invoice;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\SaleReturn;
 use App\Models\Tenant\Transfer;
 use App\Services\Tenant\CatalogNaming;
+use App\Services\Tenant\InvoiceService;
 use App\Services\Tenant\ReturnService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +26,7 @@ class ReturnController extends Controller
     public function __construct(
         private readonly ReturnService $returns,
         private readonly CatalogNaming $naming,
+        private readonly InvoiceService $invoices,
     ) {}
 
     public function index(Request $request): View|RedirectResponse
@@ -103,11 +106,18 @@ class ReturnController extends Controller
             return redirect()->route('dashboard')->with('error', __('ليست لديك صلاحية لإدارة المرتجعات.'));
         }
 
+        $record = SaleReturn::with(['lines.item', 'transfer', 'teamMember', 'account'])->findOrFail($saleReturn);
+
         return view('returns.show', [
-            'return' => SaleReturn::with(['lines.item', 'transfer', 'teamMember', 'account'])->findOrFail($saleReturn),
+            'return' => $record,
             'accounts' => $this->activeAccounts(),
             'allowsRestock' => $this->returns->allowsRestock(),
             'naming' => $this->naming,
+
+            // A refund the customer holds a tax invoice for needs a credit note
+            // against it, or the tax already declared is never reclaimed.
+            'creditNote' => Invoice::where('sale_return_id', $record->id)->first(),
+            'invoicingConfigured' => $this->invoices->isConfigured(),
         ]);
     }
 

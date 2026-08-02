@@ -5,6 +5,7 @@ namespace App\Services\Tenant;
 use App\Enums\AuditAction;
 use App\Enums\AuditCategory;
 use App\Enums\AuditEntityType;
+use App\Enums\TaxCategory;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use Illuminate\Database\Eloquent\Collection;
@@ -51,11 +52,19 @@ class MenuService
 
     public function createItem(array $data): MenuItem
     {
+        $rate = (float) ($data['taxRate'] ?? 0);
+
         $item = MenuItem::create([
             'menu_category_id' => $data['menuCategoryId'],
             'name' => $data['name'],
             'icon' => filled($data['icon'] ?? null) ? $data['icon'] : null,
             'price' => $data['price'],
+            'tax_rate' => $rate,
+
+            // Inferred when nobody has said, so an invoice never carries a blank
+            // category - the standard has no default for it.
+            'tax_category' => $data['taxCategory'] ?? TaxCategory::inferFrom($rate)->value,
+            'tax_included' => $data['taxIncluded'] ?? true,
             'active' => $data['active'] ?? true,
         ]);
 
@@ -81,6 +90,16 @@ class MenuService
         }
         if (array_key_exists('price', $data)) {
             $update['price'] = $data['price'];
+        }
+        if (array_key_exists('taxRate', $data)) {
+            $update['tax_rate'] = (float) ($data['taxRate'] ?? 0);
+        }
+        if (array_key_exists('taxCategory', $data)) {
+            $update['tax_category'] = $data['taxCategory']
+                ?: TaxCategory::inferFrom((float) ($data['taxRate'] ?? $item->tax_rate))->value;
+        }
+        if (array_key_exists('taxIncluded', $data)) {
+            $update['tax_included'] = $data['taxIncluded'];
         }
         if (array_key_exists('active', $data)) {
             $update['active'] = $data['active'];

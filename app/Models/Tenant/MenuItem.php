@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'name', 'icon', 'kind', 'price', 'core_charge', 'active',
     'barcode', 'sku', 'plu_code',
     'unit_code', 'purchase_unit_code', 'purchase_conversion',
-    'cost', 'tax_rate', 'tax_included', 'track_stock', 'reorder_point',
+    'cost', 'tax_rate', 'tax_included', 'tax_category', 'track_stock', 'reorder_point',
     'track_serials', 'warranty_months', 'service_minutes', 'allergens_reviewed_at',
     'is_prescription', 'control_schedule', 'atc_code',
     'active_ingredient', 'strength', 'dosage_form', 'cold_chain',

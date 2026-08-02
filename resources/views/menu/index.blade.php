@@ -17,8 +17,8 @@
             submitting: false,
             confirmOpen: false, confirmMessage: '', confirmFormId: null,
             itemMode: '{{ old('id') ? 'edit' : 'add' }}',
-            itemForm: { id: '{{ old('id', '') }}', name: '{{ $itemHasErrors ? old('name', '') : '' }}', icon: '{{ old('icon', '') }}', menuCategoryId: '{{ old('menuCategoryId', '') }}', price: '{{ old('price', '') }}', active: {{ old('active', '1') ? 'true' : 'false' }} },
-            openAddItem(catId) { this.itemMode = 'add'; this.submitting = false; this.itemForm = { id: '', name: '', icon: '', menuCategoryId: catId || '', price: '', active: true }; this.itemOpen = true; },
+            itemForm: { id: '{{ old('id', '') }}', name: '{{ $itemHasErrors ? old('name', '') : '' }}', icon: '{{ old('icon', '') }}', menuCategoryId: '{{ old('menuCategoryId', '') }}', price: '{{ old('price', '') }}', taxRate: '{{ old('taxRate', '') }}', taxCategory: '{{ old('taxCategory', 'S') }}', taxIncluded: {{ old('taxIncluded', '1') ? 'true' : 'false' }}, active: {{ old('active', '1') ? 'true' : 'false' }} },
+            openAddItem(catId) { this.itemMode = 'add'; this.submitting = false; this.itemForm = { id: '', name: '', icon: '', menuCategoryId: catId || '', price: '', taxRate: '', taxCategory: 'S', taxIncluded: true, active: true }; this.itemOpen = true; },
             openEditItem(item) { this.itemMode = 'edit'; this.submitting = false; this.itemForm = { ...item }; this.itemOpen = true; },
         }">
 
@@ -125,7 +125,7 @@
                                             </form>
 
                                             <div class="flex items-center gap-1">
-                                                <button type="button" @click="openEditItem(@js(['id' => $item->id, 'name' => $item->name, 'icon' => $item->icon ?? '', 'menuCategoryId' => $item->menu_category_id, 'price' => (float) $item->price, 'active' => (bool) $item->active]))"
+                                                <button type="button" @click="openEditItem(@js(['id' => $item->id, 'name' => $item->name, 'icon' => $item->icon ?? '', 'menuCategoryId' => $item->menu_category_id, 'price' => (float) $item->price, 'taxRate' => (float) $item->tax_rate, 'taxCategory' => $item->tax_category ?: \App\Enums\TaxCategory::inferFrom((float) $item->tax_rate)->value, 'taxIncluded' => (bool) $item->tax_included, 'active' => (bool) $item->active]))"
                                                     class="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="{{ __('تعديل') }}" title="{{ __('تعديل') }}">
                                                     <span class="material-symbols-outlined !text-xl">edit</span>
                                                 </button>
@@ -218,6 +218,33 @@
                                 class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1.5">
+                            <label for="menu-tax-rate" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('نسبة الضريبة %') }}</label>
+                            <input id="menu-tax-rate" type="number" step="0.01" min="0" max="100" name="taxRate" x-model="itemForm.taxRate" dir="ltr" placeholder="0"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="menu-tax-category" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الفئة الضريبية') }}</label>
+                            <select id="menu-tax-category" name="taxCategory" x-model="itemForm.taxCategory"
+                                class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                                @foreach (\App\Enums\TaxCategory::cases() as $case)
+                                    <option value="{{ $case->value }}">{{ $case->label() }} ({{ $case->value }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- The rate alone cannot separate a zero-rated supply from an exempt
+                         one: both charge nothing, and the invoice has to say which. --}}
+                    <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                        <span class="min-w-0">
+                            <span class="block font-body-sm font-bold text-on-surface">{{ __('السعر شامل الضريبة') }}</span>
+                            <span class="block font-body-sm text-outline">{{ __('كما هو معروض على الرف') }}</span>
+                        </span>
+                        <input type="checkbox" name="taxIncluded" value="1" x-model="itemForm.taxIncluded" class="h-5 w-5 flex-shrink-0 rounded accent-primary" />
+                    </label>
 
                     <label class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
                         <span class="font-body-sm font-bold text-on-surface">{{ __('متاح للطلب') }}</span>

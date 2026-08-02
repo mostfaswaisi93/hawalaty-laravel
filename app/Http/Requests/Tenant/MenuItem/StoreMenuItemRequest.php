@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Tenant\MenuItem;
 
+use App\Enums\TaxCategory;
 use App\Services\Tenant\CatalogIcons;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,6 +23,11 @@ class StoreMenuItemRequest extends FormRequest
 
             'menuCategoryId' => ['required', 'string', 'exists:tenant.menu_categories,id'],
             'price' => ['required', 'numeric', 'min:0'],
+
+            'taxRate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'taxCategory' => ['nullable', Rule::enum(TaxCategory::class)],
+            'taxIncluded' => ['sometimes', 'boolean'],
+
             'active' => ['sometimes', 'boolean'],
         ];
     }
