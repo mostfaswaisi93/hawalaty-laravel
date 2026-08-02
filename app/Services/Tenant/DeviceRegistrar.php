@@ -37,6 +37,62 @@ class DeviceRegistrar
         ]);
     }
 
+    /**
+     * Records the CURRENT browser session as a device.
+     *
+     * Keyed on the session id, so a returning browser refreshes its own row
+     * instead of adding one per page load. The session id rotates on login
+     * (regenerate()), which is why this is called after that, not before.
+     *
+     * Over the limit it returns null rather than throwing: an API client can be
+     * told to free a slot, but refusing a browser login that has already
+     * succeeded would lock the owner out of the very page that manages devices.
+     */
+    public function registerSession(TeamMember $member, Request $request, ?License $license = null): ?Device
+    {
+        $sessionId = $request->hasSession() ? $request->session()->getId() : null;
+
+        if ($sessionId === null) {
+            return null;
+        }
+
+        $existing = Device::where('session_id', $sessionId)->first();
+
+        if ($existing) {
+            $existing->forceFill(['last_active_at' => now()])->save();
+
+            return $existing;
+        }
+
+        $limit = $this->limitFor($license);
+
+        if ($limit !== self::UNLIMITED && $this->activeCount() >= $limit) {
+            return null;
+        }
+
+        $agent = (string) $request->userAgent();
+
+        return Device::create([
+            'team_member_id' => $member->id,
+            'sanctum_token_id' => null,
+            'session_id' => $sessionId,
+            'name' => $this->deviceName($request, $agent),
+            'browser' => $this->browser($agent),
+            'platform_icon' => $this->platformIcon($agent),
+            'last_active_at' => now(),
+        ]);
+    }
+
+    /** Drops the row for this browser session, on sign-out. */
+    public function forgetSession(Request $request): void
+    {
+        if (! $request->hasSession()) {
+            return;
+        }
+
+        Device::where('session_id', $request->session()->getId())->delete();
+    }
+
     public function usage(?License $license = null): array
     {
         $limit = $this->limitFor($license);

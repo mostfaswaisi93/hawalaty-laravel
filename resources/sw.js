@@ -1,6 +1,6 @@
 
 
-const CACHE = 'hawalaty-v1';
+const CACHE = 'hawalaty-__BUILD_ID__';
 
 async function pageStrategy(request) {
     try {

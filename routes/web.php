@@ -35,6 +35,7 @@ use App\Http\Controllers\Web\RobotsController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SettingsController;
+use App\Http\Controllers\Web\ServiceWorkerController;
 use App\Http\Controllers\Web\SitemapController;
 use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
@@ -64,6 +65,10 @@ Route::post('contact', [ContactController::class, 'store'])
 
 Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('robots.txt', RobotsController::class)->name('robots');
+
+// Generated rather than served from public/, so its cache name carries the
+// build id - see ServiceWorkerController.
+Route::get('sw.js', ServiceWorkerController::class)->name('sw');
 
 Route::view('help', 'help.index')->middleware('tenant.session')->name('help.index');
 

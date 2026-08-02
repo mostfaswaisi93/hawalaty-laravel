@@ -25,7 +25,7 @@ class PackageSeeder extends Seeder
             [
                 'name' => 'Enterprise',
                 'price' => 299,
-                'device_limit' => 50,
+                'device_limit' => 10,
                 'features' => ['transfers', 'menu', 'reports', 'banks', 'expenses', 'team', 'devices', 'constants', 'backups', 'whatsapp'],
             ],
         ];

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Sanctum\PersonalAccessToken;
 
-#[Fillable(['team_member_id', 'sanctum_token_id', 'name', 'browser', 'platform_icon', 'last_active_at'])]
+#[Fillable(['team_member_id', 'sanctum_token_id', 'session_id', 'name', 'browser', 'platform_icon', 'last_active_at'])]
 class Device extends Model
 {
     use HasUlids;
@@ -35,8 +35,21 @@ class Device extends Model
         return $this->belongsTo(PersonalAccessToken::class, 'sanctum_token_id');
     }
 
+    public function isWeb(): bool
+    {
+        return $this->session_id !== null;
+    }
+
+    /**
+     * A device is "this one" either by its API token or by its browser session -
+     * whichever identifier it was registered with.
+     */
     public function isCurrent(?PersonalAccessToken $currentToken): bool
     {
+        if ($this->session_id !== null) {
+            return session()->isStarted() && $this->session_id === session()->getId();
+        }
+
         return $currentToken !== null && $this->sanctum_token_id === $currentToken->id;
     }
 }

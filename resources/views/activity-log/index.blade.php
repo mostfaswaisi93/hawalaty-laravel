@@ -22,9 +22,9 @@
             <p class="mt-1 font-body-lg text-on-surface-variant">{{ __('كل الإجراءات التي تمّت في مساحة عملك.') }}</p>
         </header>
 
-        <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-3" style="--d: 40ms">
+        <form method="GET" action="{{ route('activity-log.index') }}" x-data="{ submitting: false }" @submit="submitting = true" class="reveal-up tonal-elevation grid grid-cols-1 gap-4 rounded-3xl border border-outline-variant/50 bg-surface-container-lowest p-5 sm:grid-cols-2 lg:grid-cols-6" style="--d: 40ms">
             <x-keep-per-page />
-            <div class="space-y-1.5 sm:col-span-1">
+            <div class="space-y-1.5 lg:col-span-2">
                 <label for="activity-log-search" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('بحث') }}</label>
                 <div class="relative">
                     <span class="material-symbols-outlined pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline {{ app()->getLocale() === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3' }}">search</span>
@@ -41,6 +41,33 @@
                     @endforeach
                 </select>
             </div>
+            {{-- The question an audit log is opened to answer is usually "who
+                 deleted something, and when" - so action and date sit beside the
+                 category rather than only being shown as a badge on each row. --}}
+            <div class="space-y-1.5">
+                <label for="activity-log-action" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الإجراء') }}</label>
+                <select id="activity-log-action" name="action" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary">
+                    <option value="">{{ __('الكل') }}</option>
+                    @foreach (\App\Enums\AuditAction::cases() as $act)
+                        <option value="{{ $act->value }}" @selected(($filters['action'] ?? '') === $act->value)>{{ $actionLabels[$act->value] ?? $act->value }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="activity-log-from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من تاريخ') }}</label>
+                <input id="activity-log-from" type="date" name="from" value="{{ $filters['from'] ?? '' }}" dir="ltr"
+                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                @error('from')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="activity-log-to" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('إلى تاريخ') }}</label>
+                <input id="activity-log-to" type="date" name="to" value="{{ $filters['to'] ?? '' }}" dir="ltr"
+                    class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-lg outline-none focus:border-transparent focus:ring-2 focus:ring-primary" />
+                @error('to')<p class="font-body-sm text-body-sm text-error">{{ $message }}</p>@enderror
+            </div>
+
             <div class="flex items-end gap-2">
                 <button type="submit" :disabled="submitting" class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-body-sm font-bold text-on-primary shadow-lg transition-all hover:bg-primary-container hover:text-on-primary-container active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
                     <span class="material-symbols-outlined !text-xl" :class="submitting && 'animate-spin'" x-text="submitting ? 'progress_activity' : 'filter_alt'"></span>

@@ -11,6 +11,7 @@ use App\Http\Requests\Web\Auth\TenantLoginRequest;
 use App\Http\Requests\Web\Auth\TenantSignupRequest;
 use App\Models\Tenant\TeamMember;
 use App\Services\Tenant\AuditLogger;
+use App\Services\Tenant\DeviceRegistrar;
 use App\Services\TenantConnectionResolver;
 use App\Services\TenantProvisioner;
 use Illuminate\Http\RedirectResponse;
@@ -65,6 +66,10 @@ class TenantAuthController extends Controller
         $member = Auth::guard('tenant')->user();
         AuditLogger::record(AuditAction::LoggedIn, AuditEntityType::TeamMember, $member->name, AuditCategory::Auth);
 
+        // After regenerate(), so the row is keyed on the session id the browser
+        // will actually send back.
+        app(DeviceRegistrar::class)->registerSession($member, $request, $license);
+
         return redirect()->intended(route('dashboard'));
     }
 
@@ -101,6 +106,9 @@ class TenantAuthController extends Controller
 
     public function logout(): RedirectResponse
     {
+        // Before invalidate(), which rotates the id this row is keyed on.
+        app(DeviceRegistrar::class)->forgetSession(request());
+
         Auth::guard('tenant')->logout();
 
         request()->session()->forget('license_code');
