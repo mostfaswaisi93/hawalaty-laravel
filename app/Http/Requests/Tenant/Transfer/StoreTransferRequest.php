@@ -44,6 +44,18 @@ class StoreTransferRequest extends FormRequest
             'items.*.serials' => ['nullable', 'array'],
             'items.*.serials.*' => ['string', 'max:64'],
 
+            // What the law wants recorded alongside a dispensed medicine. Which
+            // of these are actually required depends on the item, so the check
+            // lives in the service where the item is known.
+            'items.*.dispensing' => ['nullable', 'array'],
+            'items.*.dispensing.patientName' => ['nullable', 'string', 'max:255'],
+            'items.*.dispensing.patientPhone' => ['nullable', 'string', 'max:50'],
+            'items.*.dispensing.patientIdNumber' => ['nullable', 'string', 'max:64'],
+            'items.*.dispensing.prescriberName' => ['nullable', 'string', 'max:255'],
+            'items.*.dispensing.prescriberLicence' => ['nullable', 'string', 'max:64'],
+            'items.*.dispensing.prescriptionNumber' => ['nullable', 'string', 'max:64'],
+            'items.*.dispensing.prescriptionDate' => ['nullable', 'date'],
+
             'discount' => ['nullable', 'numeric', 'min:0'],
 
             'paymentMethod' => ['required', Rule::in(['cash', 'bank'])],

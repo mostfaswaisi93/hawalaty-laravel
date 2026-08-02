@@ -31,6 +31,7 @@ class TransferService
         private readonly StockService $stock,
         private readonly ModifierService $modifiers,
         private readonly SerialService $serials,
+        private readonly PharmacyService $pharmacy,
     ) {}
 
     public function list(array $filters): LengthAwarePaginator
@@ -184,6 +185,31 @@ class TransferService
                  * makes a recall answerable later.
                  */
                 $reference = ['reference_type' => 'transfer', 'reference_id' => $transfer->id];
+
+                /*
+                 * Dispensing controls, before anything moves.
+                 *
+                 * A refusal rather than a warning: handing over a
+                 * prescription-only medicine without a prescription is an
+                 * offence, and the transaction rolls back rather than recording
+                 * one that should not have happened.
+                 */
+                $dispensing = $item['dispensing'] ?? [];
+
+                if ($this->pharmacy->enabled() && $menuItem->is_prescription) {
+                    $this->pharmacy->assertDispensable($menuItem, $dispensing);
+
+                    $this->pharmacy->record(
+                        $menuItem,
+                        (float) $item['quantity'],
+                        array_merge($dispensing, [
+                            'patientName' => $dispensing['patientName'] ?? $data['customer'],
+                            'patientPhone' => $dispensing['patientPhone'] ?? ($data['customerPhone'] ?? null),
+                            'customerId' => $customer?->id,
+                        ]),
+                        $transfer->id,
+                    );
+                }
 
                 if ($menuItem->track_serials && $this->serials->enabled()) {
                     // The customer walked out with specific units; the record has

@@ -34,6 +34,7 @@ use App\Http\Controllers\Web\MenuController;
 use App\Http\Controllers\Web\ModifierController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\OrderConfirmationController;
+use App\Http\Controllers\Web\PharmacyController;
 use App\Http\Controllers\Web\ProductionController;
 use App\Http\Controllers\Web\PurchaseController;
 use App\Http\Controllers\Web\ReceiptController;
@@ -212,6 +213,13 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
             Route::post('production/{production}/post', [ProductionController::class, 'post'])->name('production.post')->whereUlid('production');
             Route::post('production/{production}/cancel', [ProductionController::class, 'cancel'])->name('production.cancel')->whereUlid('production');
         });
+    });
+
+    Route::middleware('capability:prescription')->group(function () {
+        Route::get('pharmacy', [PharmacyController::class, 'index'])->name('pharmacy.index');
+        Route::get('pharmacy/search', [PharmacyController::class, 'search'])->name('pharmacy.search');
+        Route::get('pharmacy/{item}', [PharmacyController::class, 'edit'])->name('pharmacy.edit')->whereUlid('item');
+        Route::put('pharmacy/{item}', [PharmacyController::class, 'update'])->name('pharmacy.update')->whereUlid('item');
     });
 
     Route::middleware('capability:scheduling')->group(function () {
