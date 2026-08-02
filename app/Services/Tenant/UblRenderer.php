@@ -4,7 +4,6 @@ namespace App\Services\Tenant;
 
 use App\Enums\TaxCategory;
 use App\Models\Tenant\Invoice;
-use App\Models\Tenant\InvoiceLine;
 use DOMDocument;
 use DOMElement;
 

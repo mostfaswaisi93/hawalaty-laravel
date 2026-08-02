@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * An issued invoice. Immutable by contract.
@@ -80,9 +81,9 @@ class Invoice extends Model
      * Tax grouped the way EN 16931 wants it reported: one subtotal per category
      * and rate, not one per line.
      *
-     * @return \Illuminate\Support\Collection<int, array{category: string, rate: float, taxable: float, tax: float}>
+     * @return Collection<int, array{category: string, rate: float, taxable: float, tax: float}>
      */
-    public function taxBreakdown(): \Illuminate\Support\Collection
+    public function taxBreakdown(): Collection
     {
         return $this->lines
             ->groupBy(fn (InvoiceLine $line) => $line->tax_category.'|'.$line->tax_rate)
