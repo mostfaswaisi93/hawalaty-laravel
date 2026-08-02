@@ -72,6 +72,12 @@
                                 <div>
                                     <p class="font-body-lg font-bold leading-tight text-on-surface" x-text="item.name"></p>
                                     <p class="mt-1 font-body-sm text-primary" dir="ltr"><span x-text="fmt(item.price)"></span> ₪</p>
+                                    <p x-show="item.allergens && item.allergens.length" x-cloak
+                                        class="mt-1 flex items-center gap-1 text-[11px] leading-tight text-error"
+                                        :title="@js(__('مسبّبات حساسية')) + ': ' + (item.allergens || []).map(a => a.name + (a.trace ? ' (' + @js(__('أثر')) + ')' : '')).join('، ')">
+                                        <span class="material-symbols-outlined !text-sm flex-shrink-0">allergies</span>
+                                        <span class="truncate" x-text="(item.allergens || []).map(a => a.name).join('، ')"></span>
+                                    </p>
                                 </div>
                             </button>
                         </template>
@@ -371,6 +377,10 @@
                         <div class="border-b border-outline-variant/60 py-4 ps-6 pe-14">
                             <h3 id="options-dialog-title" class="font-headline-md text-headline-md" x-text="optionsItem?.name"></h3>
                             <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">{{ __('اختر ما يريده الزبون.') }}</p>
+                            <p x-show="optionsItem?.allergens?.length" x-cloak class="mt-2 flex items-start gap-1.5 font-body-sm text-error">
+                                <span class="material-symbols-outlined !text-lg flex-shrink-0">allergies</span>
+                                <span x-text="(optionsItem?.allergens || []).map(a => a.name + (a.trace ? ' (' + @js(__('أثر')) + ')' : '')).join('، ')"></span>
+                            </p>
                         </div>
 
                         <div class="space-y-5 p-6">

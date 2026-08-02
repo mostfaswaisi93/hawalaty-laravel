@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Enums\AllergenPresence;
 use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
+use App\Services\Tenant\AllergenService;
 use App\Http\Requests\Tenant\Transfer\StoreTransferRequest;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\ConstantList;
@@ -29,7 +31,9 @@ class TransferController extends Controller
         }
 
         $categories = MenuCategory::query()
-            ->with(['menuItems' => fn ($query) => $query->where('active', true)->orderBy('name')
+            // sellable(), not active(): a style with variants is a container,
+            // and ringing one up would sell a shirt of no particular size.
+            ->with(['menuItems' => fn ($query) => $query->sellable()->orderBy('name')
                 ->with(['modifierGroups' => fn ($groups) => $groups->where('active', true)
                     ->with(['modifiers' => fn ($modifiers) => $modifiers->where('active', true)])])])
             ->orderBy('position')
@@ -56,6 +60,16 @@ class TransferController extends Controller
 
         $customerNames = Customer::query()->orderBy('name')->pluck('name');
 
+        /*
+         * Allergens ride along with the menu so the cashier can answer "does
+         * this have nuts" without leaving the till. Resolved in bulk: the
+         * per-item path walks the recipe graph with a query per level, which a
+         * menu screen cannot afford.
+         */
+        $allergenLabels = app(AllergenService::class)->enabled()
+            ? app(AllergenService::class)->labelsFor($categories->flatMap->menuItems)
+            : collect();
+
         $menuJson = Js::from(
             $categories->map(fn (MenuCategory $category) => [
                 'id' => $category->id,
@@ -65,6 +79,11 @@ class TransferController extends Controller
                     'name' => $item->name,
                     'price' => (float) $item->price,
                     'step' => $item->unit()->step(),
+                    'allergens' => $allergenLabels->get($item->id, collect())
+                        ->map(fn (array $row) => [
+                            'name' => $row['allergen']->label(),
+                            'trace' => $row['presence'] === AllergenPresence::MayContain,
+                        ])->values(),
                     // Shipped with the menu so choosing options costs no round
                     // trip - the till has to stay usable on a bad connection.
                     'groups' => $item->modifierGroups->map(fn ($group) => [

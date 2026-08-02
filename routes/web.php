@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\ActivityLogController;
+use App\Http\Controllers\Web\AllergenController;
 use App\Http\Controllers\Web\Admin\ActivityLogController as AdminActivityLogController;
 use App\Http\Controllers\Web\Admin\BackupController as AdminBackupController;
 use App\Http\Controllers\Web\Admin\BoxController as AdminBoxController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\Web\SupplierController;
 use App\Http\Controllers\Web\SyncController as WebSyncController;
 use App\Http\Controllers\Web\TeamController;
 use App\Http\Controllers\Web\TransferController;
+use App\Http\Controllers\Web\VariantController;
 use App\Http\Controllers\Web\WhatsAppSettingsController;
 use App\Http\Controllers\Web\WhatsAppWebhookController;
 use App\Http\Middleware\SetLocale;
@@ -190,6 +192,20 @@ Route::middleware(['tenant.session', 'auth:tenant'])->group(function () {
             Route::post('production/{production}/post', [ProductionController::class, 'post'])->name('production.post')->whereUlid('production');
             Route::post('production/{production}/cancel', [ProductionController::class, 'cancel'])->name('production.cancel')->whereUlid('production');
         });
+    });
+
+    Route::middleware('capability:variants')->group(function () {
+        Route::get('variants', [VariantController::class, 'index'])->name('variants.index');
+        Route::get('variants/{item}', [VariantController::class, 'edit'])->name('variants.edit')->whereUlid('item');
+        Route::post('variants/{item}/generate', [VariantController::class, 'generate'])->name('variants.generate')->whereUlid('item');
+        Route::put('variants/{item}', [VariantController::class, 'update'])->name('variants.update')->whereUlid('item');
+        Route::delete('variants/{item}/{variant}', [VariantController::class, 'destroy'])->name('variants.destroy')->whereUlid('item')->whereUlid('variant');
+    });
+
+    Route::middleware('capability:allergens')->group(function () {
+        Route::get('allergens', [AllergenController::class, 'index'])->name('allergens.index');
+        Route::get('allergens/{item}', [AllergenController::class, 'edit'])->name('allergens.edit')->whereUlid('item');
+        Route::put('allergens/{item}', [AllergenController::class, 'update'])->name('allergens.update')->whereUlid('item');
     });
 
     Route::middleware('capability:modifiers')->group(function () {

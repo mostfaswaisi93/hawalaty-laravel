@@ -358,8 +358,10 @@ class ModifierAndProductionTest extends TenantTestCase
     {
         $this->bindCurrentLicense(BusinessType::Grocery);
 
-        $this->actingAs($this->owner(), 'tenant')->get('/production')->assertForbidden();
-        $this->actingAs($this->owner(), 'tenant')->get('/recipes')->assertForbidden();
+        $owner = $this->owner();
+
+        $this->actingAs($owner, 'tenant')->get('/production')->assertForbidden();
+        $this->actingAs($owner, 'tenant')->get('/recipes')->assertForbidden();
     }
 
     public function test_the_till_accepts_a_fractional_quantity(): void

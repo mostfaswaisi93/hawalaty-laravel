@@ -126,6 +126,39 @@ class RecipeService
     }
 
     /**
+     * Every item a recipe reaches, at any depth.
+     *
+     * Deliberately not explode(): that one stops at whatever is stocked, because
+     * that is where depletion stops. Allergens do not stop there. Dough held as
+     * dough still contains gluten, and a bread made from it still has to say so,
+     * so this walk goes all the way down regardless of what is counted.
+     *
+     * @return Collection<int, MenuItem>
+     */
+    public function allComponents(MenuItem $item, array $seen = [], int $depth = 0): Collection
+    {
+        if ($depth >= self::MAX_DEPTH || in_array($item->id, $seen, true)) {
+            return collect();
+        }
+
+        $seen[] = $item->id;
+        $reached = collect();
+
+        foreach ($item->recipeComponents()->with('component')->get() as $component) {
+            $child = $component->component;
+
+            if (! $child instanceof MenuItem) {
+                continue;
+            }
+
+            $reached->push($child);
+            $reached = $reached->concat($this->allComponents($child, $seen, $depth + 1));
+        }
+
+        return $reached->unique('id')->values();
+    }
+
+    /**
      * What one unit costs to make, at the components' weighted-average costs.
      *
      * This is the theoretical cost that menu pricing is judged against; the

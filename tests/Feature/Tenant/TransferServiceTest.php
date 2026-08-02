@@ -31,7 +31,7 @@ class TransferServiceTest extends TenantTestCase
         $this->assertSame('90.00', $transfer->amount);
         $this->assertSame(TransferStatus::Pending, $transfer->status);
         $this->assertSame('شاورما دجاج', $transfer->lineItems->first()->name);
-        $this->assertSame('30.00', $transfer->lineItems->first()->price);
+        $this->assertSame('30.000', $transfer->lineItems->first()->price);
     }
 
     public function test_amount_sums_multiple_line_items(): void

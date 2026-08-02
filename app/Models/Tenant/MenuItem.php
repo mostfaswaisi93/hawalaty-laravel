@@ -13,10 +13,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'menu_category_id', 'name', 'icon', 'kind', 'price', 'active',
+    'menu_category_id', 'parent_item_id', 'name', 'icon', 'kind', 'price', 'active',
     'barcode', 'sku', 'plu_code',
     'unit_code', 'purchase_unit_code', 'purchase_conversion',
     'cost', 'tax_rate', 'tax_included', 'track_stock', 'reorder_point',
+    'allergens_reviewed_at',
 ])]
 class MenuItem extends Model
 {
@@ -38,12 +39,60 @@ class MenuItem extends Model
             'active' => 'boolean',
             'tax_included' => 'boolean',
             'track_stock' => 'boolean',
+            'allergens_reviewed_at' => 'datetime',
         ];
     }
 
     public function menuCategory(): BelongsTo
     {
         return $this->belongsTo(MenuCategory::class);
+    }
+
+    /**
+     * The style this variant belongs to, if it is one.
+     */
+    public function parentItem(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_item_id');
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_item_id');
+    }
+
+    /**
+     * The axes this style varies on - size, colour - as constant lists.
+     */
+    public function variantAxes(): BelongsToMany
+    {
+        return $this->belongsToMany(ConstantList::class, 'menu_item_variant_axes', 'parent_item_id', 'constant_list_id')
+            ->withPivot('position')
+            ->orderBy('menu_item_variant_axes.position');
+    }
+
+    /**
+     * Where this variant sits on each axis.
+     */
+    public function variantValues(): HasMany
+    {
+        return $this->hasMany(MenuItemVariantValue::class);
+    }
+
+    /**
+     * A style, never sold itself. Derived from having children rather than
+     * stored, so the two can never disagree.
+     */
+    public function isVariantParent(): bool
+    {
+        return $this->relationLoaded('variants')
+            ? $this->variants->isNotEmpty()
+            : $this->variants()->exists();
+    }
+
+    public function isVariant(): bool
+    {
+        return $this->parent_item_id !== null;
     }
 
     public function lineItems(): HasMany
@@ -83,6 +132,22 @@ class MenuItem extends Model
         return $this->belongsToMany(ModifierGroup::class, 'menu_item_modifier_group')
             ->withPivot('position')
             ->orderBy('menu_item_modifier_group.position');
+    }
+
+    public function allergenDeclarations(): HasMany
+    {
+        return $this->hasMany(MenuItemAllergen::class);
+    }
+
+    /**
+     * Whether anyone has ever looked at this item's allergens.
+     *
+     * Distinct from having none declared: "we checked, there are none" and
+     * "nobody has checked" are opposite answers to an inspector.
+     */
+    public function allergensReviewed(): bool
+    {
+        return $this->allergens_reviewed_at !== null;
     }
 
     public function hasRecipe(): bool
@@ -186,8 +251,22 @@ class MenuItem extends Model
         return $query->where('active', true);
     }
 
+    /**
+     * Items the till may ring up.
+     *
+     * A style is a container, not a product: nobody buys "the shirt", they buy
+     * the medium red one. Excluding parents here is what keeps an unsellable row
+     * off the order screen.
+     */
+    public function scopeSellable(Builder $query): Builder
+    {
+        return $query->where('active', true)->whereDoesntHave('variants');
+    }
+
     public function scopeStocked(Builder $query): Builder
     {
-        return $query->where('kind', 'goods')->where('track_stock', true);
+        return $query->where('kind', 'goods')
+            ->where('track_stock', true)
+            ->whereDoesntHave('variants');
     }
 }
