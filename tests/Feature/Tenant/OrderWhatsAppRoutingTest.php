@@ -10,6 +10,7 @@ use App\Services\Tenant\TransferService;
 use App\Services\WhatsApp\WhatsAppSettings;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TenantTestCase;
 
 class OrderWhatsAppRoutingTest extends TenantTestCase
@@ -72,7 +73,7 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $account->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         $this->assertSentTo('972595817016');
@@ -87,7 +88,7 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $chosen->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         $this->assertSentTo('972595817016');
@@ -101,7 +102,7 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $wallet->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         $this->assertSentTo('972599000123');
@@ -115,7 +116,7 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $account->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         Http::assertNothingSent();
@@ -142,7 +143,7 @@ class OrderWhatsAppRoutingTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $account->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         Http::assertSent(function (Request $request) {

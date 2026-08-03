@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Admin;
 
-use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

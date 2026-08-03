@@ -12,6 +12,7 @@
         @include('margins._tabs', ['active' => 'pricing'])
 
         <form method="GET" action="{{ route('margins.pricing') }}" class="reveal-up flex flex-col gap-3 sm:flex-row sm:items-end" style="--d:80ms">
+            <x-keep-per-page />
             <div class="flex-1 space-y-1.5">
                 <label for="target" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('الهامش المستهدف %') }}</label>
                 <input id="target" type="number" name="target" min="0" max="95" step="1" value="{{ $target }}" dir="ltr"
@@ -24,24 +25,20 @@
             </button>
         </form>
 
-        @php
-            $belowCost = $rows->where('below_cost', true);
-            $eroded = $rows->filter(fn ($row) => $row['eroded_by'] !== null && $row['eroded_by'] >= 5);
-        @endphp
-
+        {{-- Counted over the whole result, not the page. --}}
         <div class="reveal-up grid grid-cols-1 gap-4 sm:grid-cols-3" style="--d:120ms">
             <x-card>
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('تحت الهامش المستهدف') }}</p>
-                <p class="mt-1 font-numeral-lg text-headline-md font-bold">{{ $rows->count() }}</p>
+                <p class="mt-1 font-numeral-lg text-headline-md font-bold">{{ $total }}</p>
             </x-card>
             <x-card>
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('يُباع بأقل من تكلفته') }}</p>
-                <p class="mt-1 font-numeral-lg text-headline-md font-bold {{ $belowCost->isNotEmpty() ? 'text-error' : '' }}">{{ $belowCost->count() }}</p>
+                <p class="mt-1 font-numeral-lg text-headline-md font-bold {{ $belowCost > 0 ? 'text-error' : '' }}">{{ $belowCost }}</p>
                 <p class="mt-1 font-body-sm text-outline">{{ __('كل بيعة منها تزيد الخسارة') }}</p>
             </x-card>
             <x-card>
                 <p class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('هامش تآكل ٥ نقاط أو أكثر') }}</p>
-                <p class="mt-1 font-numeral-lg text-headline-md font-bold {{ $eroded->isNotEmpty() ? 'text-tertiary' : '' }}">{{ $eroded->count() }}</p>
+                <p class="mt-1 font-numeral-lg text-headline-md font-bold {{ $eroded > 0 ? 'text-tertiary' : '' }}">{{ $eroded }}</p>
                 <p class="mt-1 font-body-sm text-outline">{{ __('منذ آخر مرة عُدّل فيها السعر') }}</p>
             </x-card>
         </div>
@@ -103,6 +100,8 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                <x-table-footer :paginator="$rows" :perPage="$perPage" />
 
                 <p class="mt-5 border-t border-outline-variant/50 pt-4 font-body-sm text-on-surface-variant">
                     {{ __('«التآكل» يقارن الهامش اليوم بالهامش يوم ضُبط السعر — لا يظهر إلا للأصناف التي تغيّر سعرها بعد تشغيل هذه الميزة، لأن ما لم يُسجَّل لا يُستعاد.') }}

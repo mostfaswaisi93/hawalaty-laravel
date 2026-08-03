@@ -14,12 +14,12 @@ use App\Models\Tenant\TeamMember;
 use App\Services\Tenant\CatalogNaming;
 use App\Services\TenantProvisioner;
 use Closure;
-use Throwable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 class LicenseService
 {

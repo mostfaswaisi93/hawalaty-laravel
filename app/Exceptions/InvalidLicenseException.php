@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class InvalidLicenseException extends Exception
-{
-}
+class InvalidLicenseException extends Exception {}

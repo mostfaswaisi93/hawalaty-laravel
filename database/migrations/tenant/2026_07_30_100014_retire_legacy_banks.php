@@ -44,7 +44,5 @@ return new class extends Migration
         Schema::drop('banks');
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

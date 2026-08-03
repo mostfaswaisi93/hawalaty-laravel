@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\License\StoreLicenseRequest;
 use App\Http\Resources\Admin\LicenseResource;
 use App\Http\Resources\Tenant\AuditLogResource;
 use App\Http\Resources\Tenant\TeamMemberResource;
-use App\Models\Admin;
 use App\Models\License;
 use App\Services\Admin\LicenseService;
 use Illuminate\Http\JsonResponse;

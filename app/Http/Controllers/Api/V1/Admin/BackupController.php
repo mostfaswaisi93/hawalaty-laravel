@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Backup\StoreBackupRequest;
 use App\Http\Resources\Admin\BackupResource;
-use App\Models\Admin;
 use App\Models\Backup;
 use App\Models\License;
 use App\Services\Admin\BackupService;

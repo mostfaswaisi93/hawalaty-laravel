@@ -7,6 +7,7 @@ use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
+use App\Models\Tenant\Transfer;
 use App\Services\Tenant\TransferService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -46,7 +47,7 @@ class HttpLayerSmokeTest extends TenantTestCase
                 'items' => [['itemId' => $item->id, 'quantity' => 1, 'name' => $item->name, 'price' => (string) $item->price]],
             ])
 
-            ->assertRedirect(route('transfers.created', \App\Models\Tenant\Transfer::firstOrFail()->id));
+            ->assertRedirect(route('transfers.created', Transfer::firstOrFail()->id));
     }
 
     public function test_guest_is_redirected_to_login(): void

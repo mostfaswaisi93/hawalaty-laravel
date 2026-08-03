@@ -8,6 +8,7 @@ use App\Models\Tenant\Location;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\PriceChange;
+use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Services\Tenant\MarginService;
 use App\Services\Tenant\MenuService;
@@ -454,5 +455,37 @@ class MarginServiceTest extends TenantTestCase
         [$from, $to] = $this->today();
 
         $this->assertSame(0.0, $this->margins()->summary($from, $to)['revenue']);
+    }
+
+    /**
+     * The aggregate covers the whole period and only the rendering is paged. A
+     * total of one page is not a total.
+     */
+    public function test_the_screen_pages_its_rows_while_the_totals_stay_whole(): void
+    {
+        $roles = $this->seedStandardRoles();
+        $owner = TeamMember::factory()->create(['role_id' => $roles['owner']->id]);
+
+        $lines = [];
+
+        for ($i = 0; $i < 25; $i++) {
+            $item = $this->item(['name' => "صنف {$i}", 'price' => 100]);
+            app(StockService::class)->receive($item, 5, 60);
+            $lines[] = ['item' => $item, 'quantity' => 1];
+        }
+
+        $this->sell($lines);
+
+        $response = $this->actingAs($owner, 'tenant')->get('/margins?per_page=10');
+        $response->assertOk();
+
+        $items = $response->viewData('items');
+
+        $this->assertCount(10, $items->items());
+        $this->assertSame(25, $items->total());
+
+        // 25 x 100 sold at 60 - unchanged by the page size.
+        $this->assertSame(2500.0, $response->viewData('summary')['revenue']);
+        $this->assertSame(1000.0, $response->viewData('summary')['margin']);
     }
 }

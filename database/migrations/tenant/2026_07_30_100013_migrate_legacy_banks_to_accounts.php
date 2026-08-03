@@ -10,7 +10,5 @@ return new class extends Migration
         app(LegacyBankMigrator::class)->migrate();
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

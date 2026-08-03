@@ -59,6 +59,14 @@ class QueryBudgetTest extends TenantTestCase
             'customers' => ['/customers'],
             'reports' => ['/reports'],
             'balance' => ['/balance'],
+
+            // The margin screens aggregate over every sale in the period, so
+            // they are the likeliest place for a per-row query to creep in.
+            'margins' => ['/margins'],
+            'margins by category' => ['/margins?view=categories'],
+            'margins abc' => ['/margins?view=abc'],
+            'pricing' => ['/margins/pricing'],
+            'valuation' => ['/margins/valuation'],
         ];
     }
 

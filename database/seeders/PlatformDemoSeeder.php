@@ -10,6 +10,7 @@ use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Withdrawal;
+use App\Services\Admin\BoxService;
 use App\Services\Admin\ExpenseService;
 use App\Services\Admin\PaymentService;
 use App\Services\Admin\SettlementService;
@@ -44,7 +45,7 @@ class PlatformDemoSeeder extends Seeder
             return;
         }
 
-        $box = app(\App\Services\Admin\BoxService::class)->create([
+        $box = app(BoxService::class)->create([
             'name' => self::BOX_NAME,
             'balance' => 0,
         ]);

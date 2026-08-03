@@ -73,5 +73,4 @@ class StoreTransferRequest extends FormRequest
             'referenceNumber' => ['nullable', 'required_if:paymentMethod,bank', 'string', 'max:100', Rule::unique('tenant.transfers', 'reference_number')],
         ];
     }
-
 }

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\WhatsApp;
 
+use App\Enums\AccountKind;
 use App\Enums\PaymentMethod;
 use App\Enums\TransferStatus;
-use App\Enums\AccountKind;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\BankName;
 use App\Models\Tenant\Transfer;

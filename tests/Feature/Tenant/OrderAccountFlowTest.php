@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tenant;
 
+use App\Http\Requests\Tenant\Transfer\StoreTransferRequest;
 use App\Models\Tenant\Account;
 use App\Models\Tenant\LedgerEntry;
 use App\Models\Tenant\MenuCategory;
@@ -9,6 +10,8 @@ use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\TeamMember;
 use App\Models\Tenant\Transfer;
 use App\Services\Tenant\TransferService;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Tests\TenantTestCase;
 
 class OrderAccountFlowTest extends TenantTestCase
@@ -52,7 +55,7 @@ class OrderAccountFlowTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $account->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         $this->assertSame($account->id, $transfer->account_id);
@@ -105,7 +108,7 @@ class OrderAccountFlowTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $wallet->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ]));
 
         $this->assertSame($wallet->id, $transfer->account_id);
@@ -134,7 +137,7 @@ class OrderAccountFlowTest extends TenantTestCase
             'paymentMethod' => 'bank',
             'accountId' => $account->id,
             'transferredAmount' => 50,
-            'referenceNumber' => 'TRX-'.\Illuminate\Support\Str::random(10),
+            'referenceNumber' => 'TRX-'.Str::random(10),
         ])->assertRedirect(route('transfers.created', Transfer::firstOrFail()->id));
 
         $this->assertSame($account->id, Transfer::firstOrFail()->account_id);
@@ -261,9 +264,9 @@ class OrderAccountFlowTest extends TenantTestCase
 
     public function test_the_destination_guard_applies_to_the_sync_rules(): void
     {
-        $rules = (new \App\Http\Requests\Tenant\Transfer\StoreTransferRequest)->rules();
+        $rules = (new StoreTransferRequest)->rules();
 
-        $validator = \Illuminate\Support\Facades\Validator::make([
+        $validator = Validator::make([
             'customer' => 'زبون',
             'items' => [['itemId' => $this->menuItem()->id, 'name' => 'x', 'quantity' => 1, 'price' => 1]],
             'paymentMethod' => 'bank',

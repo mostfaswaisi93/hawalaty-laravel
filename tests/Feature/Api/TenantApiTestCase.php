@@ -3,7 +3,6 @@
 namespace Tests\Feature\Api;
 
 use App\Http\Middleware\ResolveTenantConnection;
-use App\Models\Tenant\Role;
 use App\Models\Tenant\TeamMember;
 use Laravel\Sanctum\Sanctum;
 use Tests\TenantTestCase;

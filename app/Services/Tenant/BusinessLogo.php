@@ -23,7 +23,7 @@ class BusinessLogo
         $name = Str::ulid().'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs(self::DIRECTORY, $name, 'public');
 
-        TenantSetting::updateOrCreate([ 'key' => self::KEY], ['value' => $path]);
+        TenantSetting::updateOrCreate(['key' => self::KEY], ['value' => $path]);
 
         return $path;
     }

@@ -4,6 +4,7 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\PermissionKey;
 use App\Models\Tenant\Account;
+use App\Models\Tenant\BankName;
 use App\Models\Tenant\Customer;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
@@ -84,7 +85,7 @@ class SearchServiceTest extends TenantTestCase
 
     public function test_an_account_is_found_by_its_institution_name(): void
     {
-        $bankName = \App\Models\Tenant\BankName::factory()->create(['name' => 'بنك فلسطين']);
+        $bankName = BankName::factory()->create(['name' => 'بنك فلسطين']);
         Account::factory()->create(['holder_name' => 'سامي نبهان', 'bank_name_id' => $bankName->id]);
 
         $this->assertCount(1, $this->service->search('فلسطين', $this->owner)['banks']);

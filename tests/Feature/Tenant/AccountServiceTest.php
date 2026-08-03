@@ -3,6 +3,9 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\Tenant\Account;
+use App\Models\Tenant\AccountType;
+use App\Models\Tenant\BankName;
+use App\Models\Tenant\Currency;
 use App\Models\Tenant\LedgerEntry;
 use App\Services\Tenant\AccountService;
 use Illuminate\Validation\ValidationException;
@@ -61,9 +64,9 @@ class AccountServiceTest extends TenantTestCase
 
     public function test_create_with_a_positive_opening_balance_posts_a_debit(): void
     {
-        $currency = \App\Models\Tenant\Currency::factory()->create();
-        $bank = \App\Models\Tenant\BankName::factory()->create();
-        $type = \App\Models\Tenant\AccountType::factory()->create();
+        $currency = Currency::factory()->create();
+        $bank = BankName::factory()->create();
+        $type = AccountType::factory()->create();
 
         $account = $this->service()->create([
             'kind' => 'bank',
@@ -82,9 +85,9 @@ class AccountServiceTest extends TenantTestCase
 
     public function test_create_with_a_negative_opening_balance_posts_a_credit(): void
     {
-        $currency = \App\Models\Tenant\Currency::factory()->create();
-        $bank = \App\Models\Tenant\BankName::factory()->create();
-        $type = \App\Models\Tenant\AccountType::factory()->create();
+        $currency = Currency::factory()->create();
+        $bank = BankName::factory()->create();
+        $type = AccountType::factory()->create();
 
         $account = $this->service()->create([
             'kind' => 'bank',
@@ -101,9 +104,9 @@ class AccountServiceTest extends TenantTestCase
 
     public function test_create_without_an_opening_balance_writes_no_entry(): void
     {
-        $currency = \App\Models\Tenant\Currency::factory()->create();
-        $bank = \App\Models\Tenant\BankName::factory()->create();
-        $type = \App\Models\Tenant\AccountType::factory()->create();
+        $currency = Currency::factory()->create();
+        $bank = BankName::factory()->create();
+        $type = AccountType::factory()->create();
 
         $account = $this->service()->create([
             'kind' => 'bank',

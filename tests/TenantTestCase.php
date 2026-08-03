@@ -2,8 +2,12 @@
 
 namespace Tests;
 
+use App\Enums\BusinessType;
+use App\Enums\PackageFeature;
 use App\Enums\PermissionKey;
 use App\Enums\RoleKey;
+use App\Models\License;
+use App\Models\Package;
 use App\Models\Tenant\Permission;
 use App\Models\Tenant\Role;
 use Illuminate\Support\Facades\Artisan;
@@ -45,12 +49,12 @@ abstract class TenantTestCase extends TestCase
      * Bind the license the tenant plane reads its package features and business
      * vertical from. Pass a type to exercise a capability-gated path.
      */
-    protected function bindCurrentLicense(?\App\Enums\BusinessType $businessType = null): void
+    protected function bindCurrentLicense(?BusinessType $businessType = null): void
     {
-        $license = new \App\Models\License;
-        $license->business_type = $businessType ?? \App\Enums\BusinessType::default();
-        $license->setRelation('package', new \App\Models\Package([
-            'features' => array_column(\App\Enums\PackageFeature::cases(), 'value'),
+        $license = new License;
+        $license->business_type = $businessType ?? BusinessType::default();
+        $license->setRelation('package', new Package([
+            'features' => array_column(PackageFeature::cases(), 'value'),
         ]));
 
         app()->instance('currentLicense', $license);

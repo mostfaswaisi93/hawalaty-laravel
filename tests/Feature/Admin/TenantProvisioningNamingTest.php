@@ -7,7 +7,6 @@ use App\Models\License;
 use App\Models\Package;
 use App\Services\TenantProvisioner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use ReflectionMethod;
 use RuntimeException;
 use Tests\TestCase;

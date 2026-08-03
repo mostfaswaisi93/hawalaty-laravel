@@ -17,17 +17,17 @@ use App\Models\Tenant\ConstantList;
 use App\Models\Tenant\ConstantListItem;
 use App\Models\Tenant\Currency;
 use App\Models\Tenant\Customer;
-use App\Models\Tenant\TenantSetting;
-use App\Models\Tenant\WalletName;
-use App\Models\Tenant\WalletType;
 use App\Models\Tenant\Expense;
 use App\Models\Tenant\MenuCategory;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\Role;
 use App\Models\Tenant\SalaryPayment;
 use App\Models\Tenant\TeamMember;
+use App\Models\Tenant\TenantSetting;
 use App\Models\Tenant\Transfer;
 use App\Models\Tenant\TransferLineItem;
+use App\Models\Tenant\WalletName;
+use App\Models\Tenant\WalletType;
 use App\Services\Tenant\SalaryService;
 use App\Services\TenantConnectionResolver;
 use Illuminate\Database\Seeder;
@@ -437,5 +437,4 @@ class DemoTenantSeeder extends Seeder
             ]);
         }
     }
-
 }

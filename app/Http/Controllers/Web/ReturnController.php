@@ -6,6 +6,7 @@ use App\Enums\PermissionKey;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
 use App\Http\Controllers\Web\Concerns\ListsAccounts;
+use App\Http\Requests\Tenant\SaleReturn\StoreSaleReturnRequest;
 use App\Models\Tenant\Invoice;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\SaleReturn;
@@ -15,7 +16,6 @@ use App\Services\Tenant\InvoiceService;
 use App\Services\Tenant\ReturnService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -170,27 +170,17 @@ class ReturnController extends Controller
      */
     private function validated(Request $request, bool $creating): array
     {
-        return $request->validate([
-            'transferId' => [$creating ? 'nullable' : 'prohibited', 'string', 'exists:tenant.transfers,id'],
-            'customerName' => [$creating ? 'required' : 'nullable', 'string', 'max:255'],
-            'customerPhone' => ['nullable', 'string', 'max:50'],
-            'reference' => ['nullable', 'string', 'max:64'],
-            'reason' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+        // One source for the rules, shared with the offline sync channel. Two
+        // differ on edit: the original sale is fixed, and the customer name is
+        // already on the record.
+        $rules = StoreSaleReturnRequest::baseRules();
 
-            'refundMethod' => ['required', Rule::in(['cash', 'bank', 'store_credit'])],
-            'accountId' => ['nullable', 'required_if:refundMethod,bank', 'string', 'exists:tenant.accounts,id'],
-            'restockingFee' => ['nullable', 'numeric', 'min:0'],
+        if (! $creating) {
+            $rules['transferId'] = ['prohibited'];
+            $rules['customerName'] = ['nullable', 'string', 'max:255'];
+        }
 
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.transferLineItemId' => ['nullable', 'string', 'exists:tenant.transfer_line_items,id'],
-            'lines.*.itemId' => ['nullable', 'required_without:lines.*.transferLineItemId', 'string', 'exists:tenant.menu_items,id'],
-            'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
-            'lines.*.unitPrice' => ['nullable', 'numeric', 'min:0'],
-            'lines.*.condition' => ['nullable', Rule::in(['resalable', 'damaged'])],
-            'lines.*.serialId' => ['nullable', 'string', 'exists:tenant.serial_numbers,id'],
-            'lines.*.batchId' => ['nullable', 'string', 'exists:tenant.batches,id'],
-        ], [
+        return $request->validate($rules, [
             'lines.required' => __('اختر بندًا واحدًا على الأقل للإرجاع.'),
             'accountId.required_if' => __('حدّد الحساب الذي سيُرد منه المبلغ.'),
         ]);

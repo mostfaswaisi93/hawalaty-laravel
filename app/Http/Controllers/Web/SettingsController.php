@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
 use App\Enums\PermissionKey;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\Settings\UpdateLogoRequest;
 use App\Http\Requests\Web\Settings\UpdateProfileRequest;
 use App\Services\Tenant\BusinessLogo;

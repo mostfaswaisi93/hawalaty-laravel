@@ -6,6 +6,7 @@ use App\Enums\PermissionKey;
 use App\Enums\WarrantyClaimStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\Concerns\HasPerPage;
+use App\Http\Requests\Tenant\Warranty\StoreWarrantyClaimRequest;
 use App\Models\Tenant\MenuItem;
 use App\Models\Tenant\SerialNumber;
 use App\Models\Tenant\WarrantyClaim;
@@ -51,15 +52,9 @@ class WarrantyController extends Controller
     {
         abort_unless($this->canManage(), 403);
 
-        $data = $request->validate([
-            'serialId' => ['nullable', 'string', 'exists:tenant.serial_numbers,id'],
-            'itemId' => ['required_without:serialId', 'nullable', 'string', 'exists:tenant.menu_items,id'],
-            'reference' => ['nullable', 'string', 'max:64'],
-            'customerName' => ['required', 'string', 'max:255'],
-            'customerPhone' => ['nullable', 'string', 'max:50'],
-            'issue' => ['required', 'string', 'max:2000'],
-            'underWarranty' => ['nullable', 'boolean'],
-        ]);
+        // Shared with the offline sync channel so a claim opened on a
+        // disconnected device is held to the same rules.
+        $data = $request->validate((new StoreWarrantyClaimRequest)->rules());
 
         try {
             $claim = $this->warranty->open($data);

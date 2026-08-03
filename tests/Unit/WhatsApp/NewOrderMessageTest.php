@@ -175,7 +175,7 @@ class NewOrderMessageTest extends TestCase
         $transfer = $this->transfer();
         $transfer->setRelation('customerProfile', new Customer(['name' => 'محمود', 'phone' => '+970599302930']));
 
-        $params = NewOrderMessage::parameters($transfer, "https://app.test/order/confirm/L/tok");
+        $params = NewOrderMessage::parameters($transfer, 'https://app.test/order/confirm/L/tok');
 
         foreach ($params as $value) {
             $this->assertStringNotContainsString("\n", $value);

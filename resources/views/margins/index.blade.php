@@ -29,6 +29,7 @@
 
         <form method="GET" action="{{ route('margins.index') }}" class="reveal-up flex flex-col gap-3 sm:flex-row sm:items-end" style="--d:80ms">
             <input type="hidden" name="view" value="{{ $view }}" />
+            <x-keep-per-page />
             <div class="flex-1 space-y-1.5">
                 <label for="from" class="block font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{{ __('من') }}</label>
                 <input id="from" type="date" name="from" value="{{ $from }}" dir="ltr"
@@ -186,6 +187,8 @@
                         @endforeach
                     </x-slot:cards>
                 </x-table-responsive>
+
+                <x-table-footer :paginator="$rows" :perPage="$perPage" />
 
                 @if ($view === 'abc')
                     <p class="mt-5 border-t border-outline-variant/50 pt-4 font-body-sm text-on-surface-variant">

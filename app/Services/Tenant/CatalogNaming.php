@@ -2,6 +2,7 @@
 
 namespace App\Services\Tenant;
 
+use App\Enums\BusinessType;
 use App\Models\Tenant\TenantSetting;
 use Throwable;
 
@@ -9,7 +10,7 @@ use Throwable;
  * What this workspace calls the things it sells.
  *
  * The trade itself is not chosen here - it is a platform-owned property of the
- * license (see {@see \App\Enums\BusinessType}) and is seeded into these settings
+ * license (see {@see BusinessType}) and is seeded into these settings
  * at provisioning. What remains tenant-editable is only the wording: a pharmacy
  * may prefer "المستحضرات" to "الأدوية" without changing which modules it has.
  */

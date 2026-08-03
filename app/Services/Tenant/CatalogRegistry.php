@@ -8,7 +8,6 @@ use App\Models\Tenant\CashBox;
 use App\Models\Tenant\Currency;
 use App\Models\Tenant\WalletName;
 use App\Models\Tenant\WalletType;
-use Illuminate\Database\Eloquent\Model;
 
 class CatalogRegistry
 {
